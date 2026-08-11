@@ -4,13 +4,12 @@
 // Quando pubblichi una modifica, alza il numero di VERSIONE qui sotto:
 // l'app se ne accorge da sola e propone di aggiornarsi.
 // ============================================================
-const VERSIONE = "fitpro-v15";
+const VERSIONE = "fitpro-v16";
 
 const DA_TENERE = [
   "./",
   "./index.html",
   "./manifest.webmanifest",
-  "./config.js",
   "./icon-192.png",
   "./icon-512.png",
   "./icon-maskable-512.png",
@@ -81,7 +80,17 @@ self.addEventListener("fetch", evento => {
 
   // la pagina dell'app: provo prima dalla rete, così prendi subito le novità;
   // se non c'è campo uso la copia salvata
-  if (richiesta.mode === "navigate" || url.pathname.endsWith("index.html") || url.pathname.endsWith("config.js")) {
+  // la configurazione (indirizzo e chiave del server) deve arrivare sempre fresca:
+  // una copia vecchia farebbe ripartire l'app in modalità locale, mostrando dati
+  // che non c'entrano niente con l'account
+  if (url.pathname.endsWith("config.js")) {
+    evento.respondWith(
+      fetch(richiesta, { cache: "no-store" }).catch(() => caches.match(richiesta))
+    );
+    return;
+  }
+
+  if (richiesta.mode === "navigate" || url.pathname.endsWith("index.html")) {
     evento.respondWith(
       fetch(richiesta)
         .then(risposta => {

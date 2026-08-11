@@ -827,6 +827,11 @@
   .serie-misura .valore{background:var(--surface2); border-radius:8px; padding:5px 9px;
     font-size:11.5px; color:var(--text-dim);}
   .serie-misura .valore b{font-family:'Roboto Mono',monospace; color:var(--text);}
+
+  .mp-video-gestisci{background:var(--surface2); border:1px solid var(--border); color:var(--text-dim);
+    font-size:11px; line-height:1; padding:3px 9px; border-radius:10px; cursor:pointer;
+    font-family:'Oswald',sans-serif;}
+  .mp-video-gestisci:hover{background:var(--accent); border-color:var(--accent); color:#fff;}
 </style>
   <link rel="manifest" href="manifest.webmanifest">
   <meta name="theme-color" content="#1a2033">
@@ -893,6 +898,12 @@
       <div class="hint" id="regErr" style="color:var(--accent); display:none; margin-top:6px;"></div>
       <button class="btn block" id="regBtn" style="margin-top:14px;">Registrati</button>
       <button class="link-btn" id="cloudVaiAccedi" style="margin-top:12px;">Hai già un account? Accedi</button>
+    </div>
+
+    <div id="cloudCaricamento" style="display:none; text-align:center;">
+      <h1>Connessione…</h1>
+      <div class="sub" id="cloudCaricaTxt">Sto recuperando il tuo account.</div>
+      <button class="btn block" id="cloudRiprova" style="display:none; margin-top:16px;">Riprova</button>
     </div>
 
     <div id="cloudAttesa" style="display:none;">
@@ -1513,8 +1524,8 @@
       <p class="vid-alt-desc" id="vidAltDesc"></p>
       <p class="hint" id="vidAltMsg"></p>
       <div class="vid-alt-actions">
-        <button class="btn" id="vidYoutube" type="button">▶ Cerca su YouTube</button>
-        <button class="btn secondary" id="vidOpenTab2" type="button">Apri la scheda del sito</button>
+        <button class="btn" id="vidOpenTab2" type="button">Apri la pagina</button>
+        <button class="btn secondary" id="vidYoutube" type="button">Cerca su YouTube</button>
         <button class="btn secondary" id="vidCopia" type="button">Copia il link</button>
       </div>
       <div class="vid-url-box" id="vidUrlBox" style="display:none;"></div>
@@ -2255,6 +2266,7 @@ function mpRenderList(list, titolo){
           <span class="mp-tag">${ex.g}</span>
           ${ex.tempo?'<span class="mp-tag time">a tempo</span>':''}
           <a class="mp-video${haVideoLocale(ex.n)?' mio':''}" href="${escapeAttr(getExerciseVideoInfo(ex.n).url)}" data-ex-name="${escapeAttr(ex.n)}">▶ ${haVideoLocale(ex.n)?'Video tuo':'Video'}</a>
+        <button type="button" class="mp-video-gestisci" data-gestisci="${escapeAttr(ex.n)}" title="Scegli quale video usare">⋯</button>
         </div>
       </div>
       <button type="button" class="mp-add" aria-label="Aggiungi ${ex.n}">+</button>`;
@@ -2817,8 +2829,6 @@ async function renderAmministrazioneOnline(){
   const card = document.getElementById('cardAmministrazione');
   const amministratore = sonoAmministratore();
   if(card) card.style.display = amministratore ? 'block' : 'none';
-  const blocco = document.getElementById('cardBlocco');
-  if(blocco) blocco.style.display = 'none';
   if(!amministratore || !sb) return;
 
   // online l'ingresso è protetto dall'account: la vecchia password d'invito non serve
@@ -3051,7 +3061,22 @@ let rigaOnline = null;         // la mia riga nella tabella profili
 let _salvataggioInCorso = null;
 let _daSincronizzare = false;
 
-function modalitaOnline(){ return !!(SUPABASE_URL && SUPABASE_CHIAVE && typeof supabase !== 'undefined'); }
+// configurato = l'app deve lavorare online, anche se la libreria non è ancora arrivata
+function configurataOnline(){ return !!(SUPABASE_URL && SUPABASE_CHIAVE); }
+function modalitaOnline(){ return configurataOnline() && typeof supabase !== 'undefined'; }
+
+// la libreria arriva da internet: aspetto che sia pronta invece di ripiegare
+// sulla schermata locale, che confonderebbe e mostrerebbe dati che non c'entrano
+function attendiLibreria(millisecondi){
+  const scadenza = Date.now() + (millisecondi || 12000);
+  return new Promise(risolvi=>{
+    (function controlla(){
+      if(typeof supabase !== 'undefined') return risolvi(true);
+      if(Date.now() > scadenza) return risolvi(false);
+      setTimeout(controlla, 120);
+    })();
+  });
+}
 
 function mostraStatoSync(stato, testo){
   const el = document.getElementById('cloudStato');
@@ -3081,16 +3106,27 @@ function mostraCloudGate(quale){
   document.getElementById('settingsPanel').style.display = 'none';
   const g = document.getElementById('cloudGate');
   g.style.display = 'flex';
-  document.getElementById('cloudAccedi').style.display   = quale === 'accedi'   ? 'block':'none';
-  document.getElementById('cloudRegistra').style.display = quale === 'registra' ? 'block':'none';
-  document.getElementById('cloudAttesa').style.display   = quale === 'attesa'   ? 'block':'none';
+  document.getElementById('cloudAccedi').style.display     = quale === 'accedi'      ? 'block':'none';
+  document.getElementById('cloudRegistra').style.display   = quale === 'registra'    ? 'block':'none';
+  document.getElementById('cloudAttesa').style.display     = quale === 'attesa'      ? 'block':'none';
+  document.getElementById('cloudCaricamento').style.display= quale === 'caricamento' ? 'block':'none';
 }
 function nascondiCloudGate(){ document.getElementById('cloudGate').style.display = 'none'; }
 
 // ---------- ingresso ----------
 async function avvioOnline(){
-  if(!iniziaSupabase()) return false;
+  if(!iniziaSupabase()){
+    document.getElementById('cloudCaricaTxt').textContent = "Configurazione non valida: controlla config.js.";
+    document.getElementById('cloudRiprova').style.display = 'block';
+    return false;
+  }
   mostraStatoSync('sincronizzo', 'controllo…');
+  // tornando dal link di conferma l'indirizzo contiene dei parametri: dopo averli
+  // usati li tolgo, così un aggiornamento della pagina non manda in errore
+  if(location.hash.includes('access_token') || location.search.includes('code=')){
+    await new Promise(r=>setTimeout(r, 400));
+    history.replaceState(null, '', location.origin + location.pathname);
+  }
   try{
     const { data } = await sb.auth.getSession();
     if(data && data.session){
@@ -3236,7 +3272,12 @@ document.getElementById('regBtn').addEventListener('click', async ()=>{
   if(!nome){ err.textContent = "Inserisci il tuo nome."; err.style.display='block'; return; }
   if(!emailValida(email)){ err.textContent = "Inserisci un'email valida."; err.style.display='block'; return; }
   if(pw.length < 8){ err.textContent = "La password deve avere almeno 8 caratteri."; err.style.display='block'; return; }
-  const { data, error } = await sb.auth.signUp({ email, password: pw, options:{ data:{ nome } } });
+  // l'email di conferma deve riportare esattamente a questa pagina, altrimenti si finisce su un 404
+  const ritorno = location.origin + location.pathname;
+  const { data, error } = await sb.auth.signUp({
+    email, password: pw,
+    options:{ data:{ nome }, emailRedirectTo: ritorno }
+  });
   if(error){ err.textContent = traduciErrore(error.message); err.style.display='block'; return; }
   if(data.session){
     utenteOnline = data.user;
@@ -3251,7 +3292,7 @@ document.getElementById('regBtn').addEventListener('click', async ()=>{
 document.getElementById('cloudRecuperoBtn').addEventListener('click', async ()=>{
   const email = document.getElementById('cloudEmail').value.trim().toLowerCase();
   if(!emailValida(email)){ mostraErroreAccesso("Scrivi la tua email qui sopra, poi premi di nuovo."); return; }
-  const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: location.href });
+  const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: location.origin + location.pathname });
   const el = document.getElementById('cloudErr');
   el.style.color = error ? 'var(--accent)' : 'var(--ok)';
   el.textContent = error ? traduciErrore(error.message) : "Ti ho mandato un'email per reimpostare la password.";
@@ -3259,6 +3300,7 @@ document.getElementById('cloudRecuperoBtn').addEventListener('click', async ()=>
 });
 
 document.getElementById('cloudRicontrolla').addEventListener('click', dopoAccessoOnline);
+document.getElementById('cloudRiprova').addEventListener('click', ()=>location.reload());
 document.getElementById('cloudEsci').addEventListener('click', async ()=>{
   await sb.auth.signOut();
   utenteOnline = null; rigaOnline = null;
@@ -3669,13 +3711,13 @@ function urlFileVideo(url){
 
 let _urlOggetto = null;   // indirizzo temporaneo del video caricato, da liberare alla chiusura
 
-async function openVideoPopup(nome, url, forza){
+async function openVideoPopup(nome, url, forza, gestisci){
   _vidUrl = url; _vidNome = nome || "Video";
   document.getElementById('vidTitle').textContent = _vidNome;
   document.getElementById('vidOverlay').classList.add('show');
 
   // 1) se per questo esercizio hai caricato un video, vince su qualsiasi link
-  if(haVideoLocale(_vidNome)){
+  if(haVideoLocale(_vidNome) && !gestisci){
     try{
       const rec = await vdbLeggi(_vidNome.trim().toLowerCase());
       if(rec && rec.blob){
@@ -3697,8 +3739,8 @@ async function openVideoPopup(nome, url, forza){
   }
   document.getElementById('vidEliminaLocale').style.display = 'none';
   // se il link l'hai scelto tu, lo apro comunque: decidi tu cosa vuoi vedere
-  const fileVideo = urlFileVideo(url);
-  const embed = fileVideo ? null : (urlIncorporabile(url) || (forza ? url : null));
+  const fileVideo = gestisci ? null : urlFileVideo(url);
+  const embed = gestisci ? null : (fileVideo ? null : (urlIncorporabile(url) || (forza ? url : null)));
   const wrap = document.getElementById('vidFrameWrap');
   const alt  = document.getElementById('vidAlt');
   const foot = document.getElementById('vidFoot');
@@ -3735,9 +3777,7 @@ async function openVideoPopup(nome, url, forza){
     const _paste = document.getElementById('vidPasteInput');
     if(_paste) _paste.value = "";
     document.getElementById('vidAltMsg').textContent =
-      host ? (senzaRitorno()
-        ? `${host} non permette di mostrare la sua pagina qui dentro, e da questa app non si torna indietro dopo essere usciti. Copia il link e aprilo nel browser, oppure — meglio — incolla qui sotto l'indirizzo YouTube del video: da lì in poi si aprirà sempre dentro l'app.`
-        : `${host} non permette di mostrare la sua pagina qui dentro. Puoi cercare il video su YouTube oppure aprire la scheda completa: l'app resta aperta e ci torni indietro.`)
+      host ? `${host} non permette di essere mostrato dentro altre app. Si apre in una pagina sopra l'app: chiudila e torni esattamente qui. Oppure incolla qui sotto un link YouTube e da lì in poi si aprirà nel riquadro.`
            : "Questo indirizzo non può essere riprodotto dentro l'app.";
   }
   document.getElementById('vidOverlay').classList.add('show');
@@ -3763,6 +3803,11 @@ async function apriAltrove(url){
 // navighiamo mai fuori: si copia il link e si incolla il video qui dentro.
 let _senzaRitorno = null;
 function senzaRitorno(){
+  // Restava dai tempi in cui l'app girava dentro un visualizzatore di file senza
+  // tasto indietro. Ora è una PWA installata: dai link si torna sempre.
+  return false;
+}
+function _senzaRitornoVecchio(){
   if(_senzaRitorno !== null) return _senzaRitorno;
   // niente barra del browser attorno alla pagina = quasi certamente un visualizzatore di file
   const dentroApp = (window.navigator.standalone === true)
@@ -3875,6 +3920,15 @@ document.addEventListener('keydown', e=>{
   if(e.key==='Escape' && document.getElementById('vidOverlay').classList.contains('show')) closeVideoPopup();
 });
 // tutti i pulsanti video dell'app aprono il popup invece di cambiare pagina
+// il tastino "⋯" apre il pannello per scegliere quale video usare
+document.addEventListener('click', e=>{
+  const g = e.target.closest('[data-gestisci]');
+  if(!g) return;
+  e.preventDefault(); e.stopPropagation();
+  const nome = g.dataset.gestisci;
+  openVideoPopup(nome, getExerciseVideoInfo(nome).url, false, true);
+}, true);
+
 document.addEventListener('click', e=>{
   const a = e.target.closest('a.video-link, a.mp-video');
   if(!a) return;
@@ -3882,17 +3936,25 @@ document.addEventListener('click', e=>{
   e.stopPropagation();
   const nome = a.dataset.exName || "Video";
   const url = a.getAttribute('href');
-  const info = (typeof getExerciseVideoInfo==='function' && a.dataset.exName)
-    ? getExerciseVideoInfo(a.dataset.exName) : null;
-  const scelto = !!(info && info.fonte === 'utente');
-  // Su telefono e tablet i browser non permettono finestre affiancate: resto dentro l'app.
-  // Su computer apro la finestrella, che è più comoda perché si tiene di fianco.
-  if(schermoPiccolo() || senzaRitorno()){
-    openVideoPopup(nome, url, scelto);
-  } else {
-    const win = apriFinestraVideo(url, true);
-    if(!win) openVideoPopup(nome, url, scelto);   // finestra bloccata: ripiego dentro l'app
+
+  // 1) il video che hai caricato tu vince su tutto: si riproduce dentro l'app
+  if(typeof haVideoLocale === 'function' && haVideoLocale(nome)){
+    openVideoPopup(nome, url);
+    return;
   }
+
+  // 2) video riproducibile dentro l'app (YouTube, Vimeo, Drive, file .mp4)
+  if(urlFileVideo(url) || urlIncorporabile(url)){
+    openVideoPopup(nome, url);
+    return;
+  }
+
+  // 3) pagina che vieta di essere mostrata dentro altre app (es. Muscle & Strength):
+  //    invece di un riquadro nero, la apro in una finestrella sopra l'app.
+  //    Nell'app installata iOS mostra una pagina piccola con il tasto "Fine",
+  //    quindi si torna indietro con un tocco.
+  const finestra = apriFinestraVideo(url, true);
+  if(!finestra) openVideoPopup(nome, url);   // se il browser la blocca, ripiego sul pannello
 }, true);
 
 function schermoPiccolo(){
@@ -4217,6 +4279,7 @@ function glRenderList(list, titolo){
         ${ex.slugs.map(s=>`<span class="mp-tag zone">${ZONE_LABEL[s]||s}</span>`).join('')}
         ${ex.tempo?'<span class="mp-tag time">a tempo</span>':''}
         <a class="mp-video${haVideoLocale(ex.n)?' mio':''}" href="${escapeAttr(getExerciseVideoInfo(ex.n).url)}" data-ex-name="${escapeAttr(ex.n)}">▶ ${haVideoLocale(ex.n)?'Video tuo':'Video'}</a>
+        <button type="button" class="mp-video-gestisci" data-gestisci="${escapeAttr(ex.n)}" title="Scegli quale video usare">⋯</button>
       </div>
     </div>`).join('');
 }
@@ -6493,10 +6556,27 @@ function renderAll(){
 }
 save();
 attachAutocomplete(document.getElementById('mealFoodInput'), foodSourceNames);
-preparaBloccoIniziale();
-if(modalitaOnline()){
-  avvioOnline();
+// Se l'app ha già lavorato online, non deve MAI ricadere nella modalità locale:
+// mostrerebbe profili e dati di un altro sistema, confondendo tutto.
+const GIA_ONLINE = localStorage.getItem('fitproOnline') === '1';
+
+if(configurataOnline() || GIA_ONLINE){
+  if(configurataOnline()) localStorage.setItem('fitproOnline','1');
+  mostraCloudGate('caricamento');
+  if(!configurataOnline()){
+    document.getElementById('cloudCaricaTxt').innerHTML =
+      "Non riesco a leggere la configurazione del server.<br>Controlla la connessione e riprova: i tuoi dati sono al sicuro online.";
+    document.getElementById('cloudRiprova').style.display = 'block';
+  } else {
+  attendiLibreria().then(pronta=>{
+    if(pronta) return avvioOnline();
+    document.getElementById('cloudCaricaTxt').innerHTML =
+      "Non riesco a raggiungere il servizio di accesso.<br>Controlla la connessione e riapri l'app.";
+    document.getElementById('cloudRiprova').style.display = 'block';
+  });
+  }
 } else {
+  preparaBloccoIniziale();
   mostraBlocco();
 }
 </script>
