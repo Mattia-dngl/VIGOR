@@ -4,11 +4,15 @@
 // Quando pubblichi una modifica, alza il numero di VERSIONE qui sotto:
 // l'app se ne accorge da sola e propone di aggiornarsi.
 // ============================================================
-const VERSIONE = "fitpro-v22";
+const VERSIONE = "fitpro-v23";
 
 const DA_TENERE = [
   "./",
   "./index.html",
+  "./style.css",
+  "./corpo.js",
+  "./corpo-donna.js",
+  "./esercizi.js",
   "./manifest.webmanifest",
   "./icon-192.png",
   "./icon-512.png",
