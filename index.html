@@ -1397,6 +1397,53 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
       <h3>Alimenti registrati</h3>
       <div id="mealList"><div class="empty">Nessun alimento registrato per questa data.</div></div>
     </div>
+
+    <div class="seg-toggle" style="margin-top:22px;">
+      <button class="seg-btn active" data-segd="view">Vedi piano</button>
+      <button class="seg-btn" data-segd="edit">Modifica / Aggiorna</button>
+    </div>
+
+    <div id="dietPlanViewBlock">
+      <div class="card card-diet" id="dietViewCard">
+        <h3 class="diet">Piano alimentare attuale</h3>
+        <div id="dietInfoView" class="hint"></div>
+        <div id="dietView"></div>
+      </div>
+      <div class="card" id="dietViewHiddenCard" style="display:none;">
+        <h3>Dieta non ancora visibile</h3>
+        <p class="hint">Il tuo personal trainer non ha ancora reso visibile la tua dieta.</p>
+      </div>
+    </div>
+
+    <div id="dietPlanEditBlock" style="display:none;">
+      <div class="card">
+        <div class="card-head-row">
+          <h3>Il personal trainer ti ha aggiornato la dieta?</h3>
+          <button class="btn danger" id="clearDietFormBtn">Pulisci</button>
+        </div>
+        <p class="hint">Aggiornando il piano, quello attuale viene archiviato (resta consultabile) e da qui in poi si usano i nuovi dati — la scheda di allenamento non viene toccata. Il diario di quello che mangi davvero, qui sopra, non viene mai toccato. "Pulisci" svuota i campi qui sotto per ripartire da zero invece di modificare quello attuale.</p>
+      </div>
+
+      <details class="card details-card card-diet" id="dietInfoEditCard">
+        <summary class="diet">Info generali dieta</summary>
+        <div class="details-body">
+          <div class="info-grid" id="dietInfoEditors"></div>
+        </div>
+      </details>
+
+      <div class="card card-diet" id="dietDayEditCard">
+        <h3 class="diet">Piano alimentare per giorno</h3>
+        <div id="dietDayEditors"></div>
+      </div>
+      <div class="card" id="dietLockedCard" style="display:none;">
+        <h3>Dieta bloccata</h3>
+        <p class="hint">Il tuo personal trainer ha bloccato la modifica della dieta. Contattalo se vuoi richiedere delle modifiche.</p>
+      </div>
+
+      <button class="btn block" id="saveDietBtn">Salva dieta</button>
+
+      <p class="hint" style="margin-top:14px;">Lo storico completo (scheda + dieta insieme, versione per versione) resta in Scheda → Modifica → "Schede archiviate".</p>
+    </div>
   </section>
 
   <!-- ===================== STORICO (+ VOLUME) ===================== -->
@@ -1527,25 +1574,16 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
         <h3>Scheda non ancora visibile</h3>
         <p class="hint">Il tuo personal trainer non ha ancora reso visibile la tua scheda.</p>
       </div>
-      <div class="card card-diet" id="dietViewCard">
-        <h3 class="diet">Piano alimentare attuale</h3>
-        <div id="dietInfoView" class="hint"></div>
-        <div id="dietView"></div>
-      </div>
-      <div class="card" id="dietViewHiddenCard" style="display:none;">
-        <h3>Dieta non ancora visibile</h3>
-        <p class="hint">Il tuo personal trainer non ha ancora reso visibile la tua dieta.</p>
-      </div>
     </div>
 
     <div id="programEditBlock" style="display:none;">
       <div class="card">
         <div class="card-head-row">
-          <h3>Il personal trainer ti ha aggiornato scheda o dieta?</h3>
+          <h3>Il personal trainer ti ha aggiornato la scheda?</h3>
           <button class="btn danger" id="clearFormBtn">Pulisci</button>
         </div>
-        <p class="hint">Creando un nuovo programma, quello attuale viene archiviato (resta consultabile) e da qui in poi si usano i nuovi dati. Lo storico allenamenti passati non viene mai toccato. "Pulisci" svuota i campi qui sotto per ripartire da zero invece di modificare quello attuale.</p>
-        <label>Nome/etichetta programma</label>
+        <p class="hint">Creando una nuova scheda, quella attuale viene archiviata (resta consultabile) e da qui in poi si usano i nuovi allenamenti — la dieta impostata non viene toccata. Lo storico allenamenti passati non viene mai toccato. "Pulisci" svuota i campi qui sotto per ripartire da zero invece di modificare quella attuale.</p>
+        <label>Nome/etichetta scheda</label>
         <input type="text" id="newProgramName" placeholder="Es. Scheda Settembre 2026">
       </div>
 
@@ -1560,27 +1598,12 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
         <p class="hint">Il tuo personal trainer ha bloccato la modifica della scheda. Contattalo se vuoi richiedere delle modifiche.</p>
       </div>
 
-      <details class="card details-card card-diet" id="dietInfoEditCard">
-        <summary class="diet">Info generali dieta</summary>
-        <div class="details-body">
-          <div class="info-grid" id="dietInfoEditors"></div>
-        </div>
-      </details>
-
-      <div class="card card-diet" id="dietDayEditCard">
-        <h3 class="diet">Piano alimentare per giorno</h3>
-        <div id="dietDayEditors"></div>
-      </div>
-      <div class="card" id="dietLockedCard" style="display:none;">
-        <h3>Dieta bloccata</h3>
-        <p class="hint">Il tuo personal trainer ha bloccato la modifica della dieta. Contattalo se vuoi richiedere delle modifiche.</p>
-      </div>
-
-      <button class="btn block" id="saveNewProgramBtn">Salva nuovo programma</button>
+      <button class="btn block" id="saveNewProgramBtn">Salva scheda</button>
 
       <details class="card details-card" style="margin-top:20px;">
-        <summary>Programmi archiviati</summary>
-        <div class="details-body" id="archiveList"><div class="empty">Nessun programma precedente.</div></div>
+        <summary>Schede archiviate</summary>
+        <p class="hint" style="margin-top:0;">Ogni versione qui sotto mostra anche il piano alimentare che era abbinato in quel momento.</p>
+        <div class="details-body" id="archiveList"><div class="empty">Nessuna scheda precedente.</div></div>
       </details>
 
       <details class="card details-card">
@@ -3457,6 +3480,7 @@ async function dopoAccessoOnline(){
   // il tasto per l'area riservata compare solo a chi è Personal Trainer
   document.getElementById('areaPTBtn').style.display = sonoPT() ? 'inline-flex' : 'none';
   caricaRapporti().then(()=>renderMioPT()).catch(()=>{});
+  ascoltaMioProfilo();
   document.documentElement.classList.remove('avvio');
   nascondiCloudGate();
   document.getElementById('appRoot').style.display = 'block';
@@ -3587,6 +3611,7 @@ document.getElementById('cloudRecuperoBtn').addEventListener('click', async ()=>
 document.getElementById('cloudRicontrolla').addEventListener('click', dopoAccessoOnline);
 document.getElementById('cloudRiprova').addEventListener('click', ()=>location.reload());
 document.getElementById('cloudEsci').addEventListener('click', async ()=>{
+  if(_canaleMioProfilo){ sb.removeChannel(_canaleMioProfilo); _canaleMioProfilo = null; }
   await sb.auth.signOut();
   utenteOnline = null; rigaOnline = null;
   mostraCloudGate('accedi');
@@ -3719,6 +3744,44 @@ let _clienteAperto = null; // cliente che sto guardando nell'area PT
 
 function sonoPT(){ return !!(rigaOnline && rigaOnline.is_pt); }
 function nomeDi(riga){ return (riga && (riga.nome_pubblico || riga.nome)) || 'Senza nome'; }
+
+// ---------- resto in ascolto del mio stesso profilo ----------
+// Chi gestisce l'app può darti/toglierti l'appellativo di Personal Trainer o bloccarti
+// mentre stai usando l'app: senza questo, te ne accorgeresti solo chiudendo e riaprendo.
+let _canaleMioProfilo = null;
+function ascoltaMioProfilo(){
+  if(!sb || !rigaOnline) return;
+  if(_canaleMioProfilo){ sb.removeChannel(_canaleMioProfilo); _canaleMioProfilo = null; }
+  _canaleMioProfilo = sb.channel('mio-profilo-' + rigaOnline.id)
+    .on('postgres_changes', {
+      event: 'UPDATE', schema: 'public', table: 'profili', filter: `id=eq.${rigaOnline.id}`
+    }, payload => gestisciMioProfiloAggiornato(payload.new))
+    .subscribe();
+}
+
+function gestisciMioProfiloAggiornato(nuovaRiga){
+  if(!nuovaRiga || !rigaOnline) return;
+  const eraApprovato = rigaOnline.approvato;
+  const eraPT = sonoPT();
+
+  rigaOnline = Object.assign({}, rigaOnline, nuovaRiga);
+
+  // bloccato da chi gestisce l'app: fuori subito, senza aspettare un ricaricamento a mano
+  if(eraApprovato && !rigaOnline.approvato){
+    toast("Il tuo accesso è stato bloccato da chi gestisce l'app.");
+    setTimeout(()=>location.reload(), 1400);
+    return;
+  }
+
+  // appellativo di Personal Trainer dato o tolto
+  const oraPT = sonoPT();
+  if(oraPT !== eraPT){
+    document.getElementById('areaPTBtn').style.display = oraPT ? 'inline-flex' : 'none';
+    toast(oraPT ? "Ora sei Personal Trainer ✓" : "L'appellativo di Personal Trainer ti è stato tolto");
+    // se te lo tolgono mentre sei dentro l'area riservata, ti riporto fuori
+    if(!oraPT && document.getElementById('areaPT').style.display === 'block') chiudiAreaPT();
+  }
+}
 
 async function caricaRapporti(){
   if(!sb || !utenteOnline) return [];
@@ -4093,6 +4156,8 @@ function modificaComePT(cosa){
       renderAll();
       const tab = document.querySelector(cosa === 'dieta' ? '.tab-btn[data-tab="diet"]' : '.tab-btn[data-tab="program"]');
       if(tab) tab.click();
+      const segBtn = document.querySelector(cosa === 'dieta' ? '.seg-btn[data-segd="edit"]' : '.seg-btn[data-seg="edit"]');
+      if(segBtn) segBtn.click();
       toast(`Stai lavorando sui dati di ${nomeDi(p)}`);
     });
 }
@@ -5350,6 +5415,7 @@ document.getElementById('createProfileBtn').addEventListener('click', ()=>{
 });
 document.getElementById('switchUserBtn').addEventListener('click', async ()=>{
   if(modalitaOnline() && sb){
+    if(_canaleMioProfilo){ sb.removeChannel(_canaleMioProfilo); _canaleMioProfilo = null; }
     await sb.auth.signOut();
     utenteOnline = null; rigaOnline = null;
     activeProfileId = null;
@@ -5466,7 +5532,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     document.getElementById('view-'+btn.dataset.tab).classList.add('active');
     if(btn.dataset.tab==='log' && !_bozzaPronta) ripristinaBozza();
     aggiornaVisibilitaTimer();
-    if(btn.dataset.tab==='diet') renderMealDiary();
+    if(btn.dataset.tab==='diet'){ renderMealDiary(); renderDietPlanView(); renderDietEditForm(); }
     if(btn.dataset.tab==='history'){ renderHistory(); renderVolume(); renderMeasurements(); }
     if(btn.dataset.tab==='program'){ renderProgramView(); renderNewProgramForm();
       if(typeof renderMioPT === 'function' && modalitaOnline()) renderMioPT(); }
@@ -5488,10 +5554,23 @@ document.querySelectorAll('.seg-btn[data-seg]').forEach(btn=>{
 function applyEditFormVisibility(){
   document.getElementById('workoutEditCard').style.display = 'block';
   document.getElementById('workoutLockedCard').style.display = 'none';
+}
+function applyDietEditFormVisibility(){
   document.getElementById('dietInfoEditCard').style.display = 'block';
   document.getElementById('dietDayEditCard').style.display = 'block';
   document.getElementById('dietLockedCard').style.display = 'none';
 }
+
+document.querySelectorAll('.seg-btn[data-segd]').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.seg-btn[data-segd]').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    const isView = btn.dataset.segd==='view';
+    document.getElementById('dietPlanViewBlock').style.display = isView ? 'block':'none';
+    document.getElementById('dietPlanEditBlock').style.display = isView ? 'none':'block';
+    if(!isView) applyDietEditFormVisibility();
+  });
+});
 
 document.querySelectorAll('.seg-btn[data-seg2]').forEach(btn=>{
   btn.addEventListener('click', ()=>{
@@ -6657,11 +6736,12 @@ function renderVolume(){
 // SCHEDA + DIETA (VIEW)
 // ============================================================
 function renderProgramView(){
-  const prof = activeProfile();
+  renderSchedaView();
+  renderDietPlanView();
+}
+function renderSchedaView(){
   document.getElementById('programViewCard').style.display = 'block';
   document.getElementById('programViewHiddenCard').style.display = 'none';
-  document.getElementById('dietViewCard').style.display = 'block';
-  document.getElementById('dietViewHiddenCard').style.display = 'none';
 
   const p = activeProgram();
   const wrap = document.getElementById('programView');
@@ -6681,7 +6761,12 @@ function renderProgramView(){
         return `<div class="hint">• ${ex.name} — ${ex.sets}×${ex.reps} <a href="${escapeAttr(vi.url)}" data-ex-name="${escapeAttr(ex.name)}" class="video-link">▶</a></div>`;
       }).join('')}
     </div>`).join('');
+}
+function renderDietPlanView(){
+  document.getElementById('dietViewCard').style.display = 'block';
+  document.getElementById('dietViewHiddenCard').style.display = 'none';
 
+  const p = activeProgram();
   const info = p.dietInfo || {};
   const infoLines = [
     ["Peso", info.peso], ["Altezza", info.altezza], ["Attività fisica", info.attivita],
@@ -6725,24 +6810,32 @@ let editingDietInfo = {};
 let editingDiet = {};
 
 function renderNewProgramForm(){
+  renderSchedaEditForm();
+  renderDietEditForm();
+}
+function renderSchedaEditForm(){
   const p = activeProgram();
   editingDays = JSON.parse(JSON.stringify(p.days));
-  editingDietInfo = JSON.parse(JSON.stringify(p.dietInfo || defaultDietInfo()));
-  editingDiet = (p.diet && typeof p.diet === 'object') ? JSON.parse(JSON.stringify(p.diet)) : defaultDietDays();
   document.getElementById('newProgramName').value = "";
   renderDayEditors();
-  renderDietInfoEditors();
-  renderDietDayEditors();
   renderArchiveList();
   renderCustomExList();
   applyEditFormVisibility();
+}
+function renderDietEditForm(){
+  const p = activeProgram();
+  editingDietInfo = JSON.parse(JSON.stringify(p.dietInfo || defaultDietInfo()));
+  editingDiet = (p.diet && typeof p.diet === 'object') ? JSON.parse(JSON.stringify(p.diet)) : defaultDietDays();
+  renderDietInfoEditors();
+  renderDietDayEditors();
+  applyDietEditFormVisibility();
 }
 
 function renderArchiveList(){
   const prof = activeProfile();
   const list = document.getElementById('archiveList');
   const archived = prof.programs.filter(p=>p.archivedAt);
-  if(archived.length===0){ list.innerHTML = '<div class="empty">Nessun programma precedente.</div>'; return; }
+  if(archived.length===0){ list.innerHTML = '<div class="empty">Nessuna scheda precedente.</div>'; return; }
   list.innerHTML = archived.slice().reverse().map(p=>`
     <details class="archive-sub-detail">
       <summary>
@@ -6898,15 +6991,21 @@ function renderExerciseEditors(di){
   });
 }
 document.getElementById('clearFormBtn').addEventListener('click', ()=>{
-  customConfirm("Svuotare tutti i campi del modulo? (la scheda attualmente attiva non viene toccata finché non premi \"Salva nuovo programma\")", ()=>{
+  customConfirm("Svuotare i giorni di allenamento? (la scheda attualmente attiva non viene toccata finché non premi \"Salva scheda\")", ()=>{
     editingDays = [];
-    editingDietInfo = {peso:"",altezza:"",attivita:"",calorie:"",macro:"",esclusi:"",noteIntolleranza:""};
-    editingDiet = blankDietDays();
     document.getElementById('newProgramName').value = "";
     renderDayEditors();
+    toast("Modulo svuotato — compila da zero");
+  });
+});
+
+document.getElementById('clearDietFormBtn').addEventListener('click', ()=>{
+  customConfirm("Svuotare il piano alimentare? (la dieta attualmente attiva non viene toccata finché non premi \"Salva dieta\")", ()=>{
+    editingDietInfo = {peso:"",altezza:"",attivita:"",calorie:"",macro:"",esclusi:"",noteIntolleranza:""};
+    editingDiet = blankDietDays();
     renderDietInfoEditors();
     renderDietDayEditors();
-    toast("Modulo svuotato — compila da zero o carica un PDF");
+    toast("Piano alimentare svuotato — compila da zero");
   });
 });
 
@@ -7014,14 +7113,33 @@ document.getElementById('saveNewProgramBtn').addEventListener('click', ()=>{
 
   const newProgram = {
     id: uid(), name, createdAt: today, archivedAt: null,
-    days: editingDays, dietInfo: editingDietInfo, diet: editingDiet
+    days: editingDays, dietInfo: current.dietInfo, diet: current.diet
   };
   prof.programs.push(newProgram);
   prof.activeProgramId = newProgram.id;
   save();
-  toast("Nuovo programma attivato ✓");
-  renderHeader(); renderDayChoices(); renderNewProgramForm();
+  toast("Scheda attivata ✓");
+  renderHeader(); renderDayChoices(); renderNewProgramForm(); renderProgramView();
   document.querySelector('.tab-btn[data-tab="program"]').click();
+});
+
+document.getElementById('saveDietBtn').addEventListener('click', ()=>{
+  const prof = activeProfile();
+  const today = new Date().toISOString().slice(0,10);
+
+  const current = activeProgram();
+  current.archivedAt = today;
+
+  const newProgram = {
+    id: uid(), name: current.name, createdAt: today, archivedAt: null,
+    days: current.days, dietInfo: editingDietInfo, diet: editingDiet
+  };
+  prof.programs.push(newProgram);
+  prof.activeProgramId = newProgram.id;
+  save();
+  toast("Dieta aggiornata ✓");
+  renderHeader(); renderDayChoices(); renderDietEditForm(); renderDietPlanView(); renderArchiveList();
+  document.querySelector('.tab-btn[data-tab="diet"]').click();
 });
 
 function renderProgramDetailHtml(p){
