@@ -418,8 +418,10 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
 </div>
 <div class="sticky-top">
 <header class="top">
+  <div class="header-card">
   <div class="top-row">
     <div class="header-title">
+      <div class="greeting" id="greetingLine">Ciao! 👋</div>
       <h1 id="mainTitle">Registro Allenamento</h1>
       <div class="sub" id="programLabel">Caricamento...</div>
     </div>
@@ -429,6 +431,7 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
       <button class="header-btn" id="areaPTBtn" title="Area Personal Trainer" style="display:none;">🏋</button>
       <button class="header-btn" id="switchUserBtn" title="Cambia utente">↔ <span class="header-btn-label">Cambia utente</span></button>
     </div>
+  </div>
   </div>
   <div class="pulse" id="weekPulse"></div>
   <div class="quick-summary" id="quickSummary"></div>
@@ -4686,6 +4689,8 @@ function renderHeader(){
 
   const prof = activeProfile();
   const p = activeProgram();
+  const primoNome = (prof.name || '').trim().split(/\s+/)[0] || '';
+  document.getElementById('greetingLine').textContent = primoNome ? `Ciao ${primoNome}! 👋` : 'Ciao! 👋';
   document.getElementById('programLabel').textContent = `${prof.name} · ${p.name} (dal ${formatDate(p.createdAt)})`;
 
   const pulse = pulseBox;
