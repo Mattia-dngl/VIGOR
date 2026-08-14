@@ -3706,9 +3706,24 @@ async function openVideoPopup(nome, url, forza, gestisci){
     try{ host = new URL(url).hostname.replace(/^www\./,''); }catch(e){}
     const _paste = document.getElementById('vidPasteInput');
     if(_paste) _paste.value = "";
-    document.getElementById('vidAltMsg').textContent =
-      host ? `${host} non permette di essere mostrato dentro altre app. Si apre in una pagina sopra l'app: chiudila e torni esattamente qui. Oppure incolla qui sotto un link YouTube e da lì in poi si aprirà nel riquadro.`
-           : "Questo indirizzo non può essere riprodotto dentro l'app.";
+
+    // nessun link vero assegnato (solo ricerca di riserva): metto YouTube come scelta principale.
+    // link vero ma il sito non si fa incorporare: metto "Apri la pagina" come scelta principale.
+    const eRicercaGenerica = (url === youtubeSearchUrl(nome));
+    const btnApri = document.getElementById('vidOpenTab2');
+    const btnYoutube = document.getElementById('vidYoutube');
+    if(eRicercaGenerica){
+      btnApri.style.display = 'none';
+      btnYoutube.classList.remove('secondary');
+      document.getElementById('vidAltMsg').textContent =
+        "Non c'è ancora un video assegnato a questo esercizio: tocca qui sotto per cercarlo su YouTube. Poi torna qui e incolla il link giusto, così da ora in poi si aprirà direttamente in questo riquadro.";
+    } else {
+      btnApri.style.display = 'inline-block';
+      btnYoutube.classList.add('secondary');
+      document.getElementById('vidAltMsg').textContent =
+        host ? `${host} non permette di essere mostrato dentro altre app: tocca "Apri la pagina" per vederlo (si apre sopra l'app, poi torni qui). Oppure incolla qui sotto un link YouTube e da lì in poi si aprirà direttamente nel riquadro.`
+             : "Questo indirizzo non può essere riprodotto dentro l'app.";
+    }
   }
   document.getElementById('vidOverlay').classList.add('show');
 }
@@ -3723,8 +3738,7 @@ async function apriAltrove(url){
              : "Tieni premuto sull'indirizzo qui sotto per copiarlo");
     return;
   }
-  if(schermoPiccolo()) window.open(url, '_blank', 'noopener');
-  else apriFinestraVideo(url);
+  window.open(url, '_blank', 'noopener');
 }
 
 
@@ -3879,12 +3893,10 @@ document.addEventListener('click', e=>{
     return;
   }
 
-  // 3) pagina che vieta di essere mostrata dentro altre app (es. Muscle & Strength):
-  //    invece di un riquadro nero, la apro in una finestrella sopra l'app.
-  //    Nell'app installata iOS mostra una pagina piccola con il tasto "Fine",
-  //    quindi si torna indietro con un tocco.
-  const finestra = apriFinestraVideo(url, true);
-  if(!finestra) openVideoPopup(nome, url);   // se il browser la blocca, ripiego sul pannello
+  // 3) pagina che vieta di essere mostrata dentro altre app (es. Muscle & Strength)
+  //    o nessun link assegnato (ricerca YouTube di riserva): resta comunque nel popup,
+  //    che mostra la spiegazione e le scelte (aprire, cercare su YouTube, copiare).
+  openVideoPopup(nome, url);
 }, true);
 
 function schermoPiccolo(){
