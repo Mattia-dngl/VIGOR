@@ -888,10 +888,6 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
       <h3 id="vidTitle">Video</h3>
       <button class="mp-close" id="vidClose" type="button" aria-label="Chiudi">&#10005;</button>
     </div>
-    <div class="vid-frame-wrap" id="vidFrameWrap">
-      <video id="vidPlayer" controls playsinline preload="metadata" style="display:none; width:100%; height:100%; background:#000;"></video>
-      <iframe id="vidFrame" title="Video esercizio" referrerpolicy="no-referrer"
-      allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe></div>
     <div class="vid-alt" id="vidAlt">
       <p class="vid-alt-desc" id="vidAltDesc"></p>
       <p class="hint" id="vidAltMsg"></p>
@@ -910,12 +906,6 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
         </div>
       </div>
       <p class="hint vid-incolla" id="vidSoloAdminMsg" style="display:none;">Il video di questo esercizio, della libreria base, lo gestisce solo chi amministra l'app.</p>
-    </div>
-    <div class="vid-foot" id="vidFoot">
-      <p class="hint" id="vidFootMsg">Il video si sta caricando dentro l'app.</p>
-      <button class="btn secondary" id="vidYoutubeFoot" type="button" style="display:none;">Cerca su YouTube</button>
-      <button class="btn secondary" id="vidApriFoot" type="button" style="display:none;">Apri la pagina</button>
-      <button class="btn ghost" id="vidCopia2" type="button">Copia il link</button>
     </div>
   </div>
 </div>
@@ -3292,7 +3282,7 @@ function renderDettaglioPT(sezione){
           ${(prog.days||[]).map(g=>`
             <div class="pt-scheda-ro">
               <b>${g.key} · ${g.name}</b> <span class="hint">${g.weekday || 'senza giorno fisso'}</span>
-              ${(g.exercises||[]).map(e=>`<div class="hint" style="margin-top:4px;">${e.name} — ${e.sets}×${e.reps}</div>`).join('')}
+              ${(g.exercises||[]).map(e=>`<div class="hint" style="margin-top:4px;">${e.name} — ${e.sets}×${e.reps}</div>${e.note?`<div class="exercise-note" style="margin:2px 0 4px 10px;">📌 ${escapeAttr(e.note)}</div>`:''}`).join('')}
             </div>`).join('')}
         `}
         ${puo ? '<button class="btn block" id="ptModificaScheda" style="margin-top:12px;">Modifica la scheda</button>' : ''}
@@ -3778,106 +3768,53 @@ function esercizioDiBase(nome){
   return !!(typeof libFind === 'function' && libFind(nome));
 }
 
-// GUARDA (▶): il popup si apre sempre, e mostra sempre qualcosa dentro il
-// riquadro — mai un salto fuori dall'app.
-//  - se c'è un link assegnato (YouTube, Vimeo, Drive o un sito qualunque,
-//    anche un file video vero e proprio) lo mostro sempre qui dentro
-//  - se non c'è nessun link, mostro la ricerca YouTube di riserva
-// Alcuni siti (per policy del browser, non dell'app) rifiutano di comparire
-// dentro un'altra pagina: in quel caso il riquadro resta vuoto ma la barra
-// qui sotto offre comunque un modo per vederlo, senza mai lasciare il popup
-// a metà.
+// Il popup ora serve solo a GESTIRE il video di un esercizio (vedere qual è,
+// cercarlo su YouTube, incollarne uno nuovo). Guardarlo (▶) non apre più
+// nessun popup: apre direttamente quello che c'è, così lo vede per intero,
+// senza il riquadro che a volte resta nero per via dei siti che bloccano
+// l'anteprima (una regola del sito/browser, non dell'app).
 //
-// GESTISCI (⋯): il link degli esercizi della libreria base lo può cambiare
-// solo chi amministra l'app; il link di un esercizio personale lo gestisce
-// sempre chi lo ha creato.
-async function openVideoPopup(nome, url, forza, gestisci){
+// Il link degli esercizi della libreria base lo può cambiare solo chi
+// amministra l'app; il link di un esercizio personale lo gestisce sempre
+// chi lo ha creato.
+async function openVideoPopup(nome, url){
   _vidUrl = url; _vidNome = nome || "Video";
   document.getElementById('vidTitle').textContent = _vidNome;
   document.getElementById('vidOverlay').classList.add('show');
 
-  const wrap = document.getElementById('vidFrameWrap');
-  const alt  = document.getElementById('vidAlt');
-  const foot = document.getElementById('vidFoot');
-  const player = document.getElementById('vidPlayer');
-  const frame = document.getElementById('vidFrame');
-  const msg = document.getElementById('vidFootMsg');
-  const btnYoutubeFoot = document.getElementById('vidYoutubeFoot');
-  const btnApriFoot = document.getElementById('vidApriFoot');
-
-  // ---------- "⋯" gestisci: scegliere/cambiare il video di questo esercizio ----------
-  if(gestisci){
-    player.style.display = 'none'; player.removeAttribute('src');
-    frame.style.display = 'none'; frame.src = 'about:blank';
-    wrap.style.display = 'none'; foot.style.display = 'none'; alt.style.display = 'block';
-    const lib = (typeof libFind === 'function') ? libFind(nome) : null;
-    document.getElementById('vidAltDesc').textContent = lib ? lib.d : "";
-    let host = "";
-    try{ host = new URL(url).hostname.replace(/^www\./,''); }catch(e){}
-    const _paste = document.getElementById('vidPasteInput');
-    if(_paste) _paste.value = "";
-    const eRicercaGenerica = (url === youtubeSearchUrl(nome));
-    const btnApri = document.getElementById('vidOpenTab2');
-    const btnYoutube = document.getElementById('vidYoutube');
-    if(eRicercaGenerica){
-      btnApri.style.display = 'none';
-      btnYoutube.classList.remove('secondary');
-    } else {
-      btnApri.style.display = 'inline-block';
-      btnYoutube.classList.add('secondary');
-    }
-
-    // il link degli esercizi di base lo cambia solo l'amministratore;
-    // quello degli esercizi personali lo cambia sempre chi li ha creati
-    const puoModificare = esercizioDiBase(nome) ? sonoAmministratore() : true;
-    document.getElementById('vidIncollaBox').style.display = puoModificare ? 'block' : 'none';
-    document.getElementById('vidSoloAdminMsg').style.display = puoModificare ? 'none' : 'block';
-
-    if(!puoModificare){
-      document.getElementById('vidAltMsg').textContent =
-        host ? `Video attuale: ${host}.` : "Nessun video assegnato a questo esercizio.";
-    } else if(eRicercaGenerica){
-      document.getElementById('vidAltMsg').textContent =
-        "Non c'è ancora un video assegnato a questo esercizio: tocca qui sotto per cercarlo su YouTube, oppure incolla direttamente il link giusto.";
-    } else {
-      document.getElementById('vidAltMsg').textContent =
-        host ? `Video attuale: ${host}. Incolla un altro link qui sotto per sostituirlo.`
-             : "Incolla qui sotto il link del video.";
-    }
-    return;
-  }
-
-  // ---------- ▶ guarda: sempre dentro il popup ----------
-  alt.style.display = 'none';
-  btnYoutubeFoot.style.display = 'none';
-  btnApriFoot.style.display = 'none';
-
-  // un vero file video (mp4/webm/...) dietro il link: lo riproduco direttamente
-  const fileVideo = urlFileVideo(url);
-  if(fileVideo){
-    frame.src = 'about:blank'; frame.style.display = 'none';
-    player.style.display = 'block'; player.src = fileVideo;
-    wrap.style.display = 'block'; foot.style.display = 'flex';
-    msg.textContent = "Video riprodotto direttamente nell'app.";
-    return;
-  }
-
-  // qualunque altro link, oppure — se non c'è — la ricerca YouTube di riserva.
-  // Lo apro sempre nel riquadro qui dentro.
-  player.style.display = 'none'; player.removeAttribute('src');
-  frame.style.display = 'block';
-  frame.src = urlIncorporabile(url) || url;
-  wrap.style.display = 'block'; foot.style.display = 'flex';
-
+  const lib = (typeof libFind === 'function') ? libFind(nome) : null;
+  document.getElementById('vidAltDesc').textContent = lib ? lib.d : "";
+  let host = "";
+  try{ host = new URL(url).hostname.replace(/^www\./,''); }catch(e){}
+  const _paste = document.getElementById('vidPasteInput');
+  if(_paste) _paste.value = "";
   const eRicercaGenerica = (url === youtubeSearchUrl(nome));
+  const btnApri = document.getElementById('vidOpenTab2');
+  const btnYoutube = document.getElementById('vidYoutube');
   if(eRicercaGenerica){
-    btnYoutubeFoot.style.display = 'inline-block';
-    msg.textContent = "Nessun video assegnato: qui sopra la ricerca su YouTube. Trovato quello giusto? Tocca \"⋯\" e incollalo, così da ora in poi si aprirà subito.";
+    btnApri.style.display = 'none';
+    btnYoutube.classList.remove('secondary');
   } else {
-    let host = "";
-    try{ host = new URL(url).hostname.replace(/^www\./,''); }catch(e){}
-    btnApriFoot.style.display = 'inline-block';
-    msg.textContent = host ? `Se il riquadro resta vuoto, ${host} non permette di essere mostrato qui dentro: tocca "Apri la pagina".` : "Se il riquadro resta vuoto, tocca \"Apri la pagina\".";
+    btnApri.style.display = 'inline-block';
+    btnYoutube.classList.add('secondary');
+  }
+
+  // il link degli esercizi di base lo cambia solo l'amministratore;
+  // quello degli esercizi personali lo cambia sempre chi li ha creati
+  const puoModificare = esercizioDiBase(nome) ? sonoAmministratore() : true;
+  document.getElementById('vidIncollaBox').style.display = puoModificare ? 'block' : 'none';
+  document.getElementById('vidSoloAdminMsg').style.display = puoModificare ? 'none' : 'block';
+
+  if(!puoModificare){
+    document.getElementById('vidAltMsg').textContent =
+      host ? `Video attuale: ${host}.` : "Nessun video assegnato a questo esercizio.";
+  } else if(eRicercaGenerica){
+    document.getElementById('vidAltMsg').textContent =
+      "Non c'è ancora un video assegnato a questo esercizio: tocca qui sotto per cercarlo su YouTube, oppure incolla direttamente il link giusto.";
+  } else {
+    document.getElementById('vidAltMsg').textContent =
+      host ? `Video attuale: ${host}. Incolla un altro link qui sotto per sostituirlo.`
+           : "Incolla qui sotto il link del video.";
   }
 }
 
@@ -3929,10 +3866,6 @@ async function copiaNegliAppunti(testo){
   }catch(e){ return false; }
 }
 
-document.getElementById('vidCopia2').addEventListener('click', async ()=>{
-  const ok = await copiaNegliAppunti(_vidUrl);
-  toast(ok ? "Link copiato ✓" : "Non riesco a copiare il link");
-});
 document.getElementById('vidCopia').addEventListener('click', async ()=>{
   const ok = await copiaNegliAppunti(_vidUrl);
   toast(ok ? "Link copiato ✓ incollalo nel browser" : "Non riesco a copiare: tieni premuto sull'indirizzo qui sotto");
@@ -3973,7 +3906,7 @@ document.getElementById('vidPasteBtn').addEventListener('click', ()=>{
   if(typeof renderBaseExerciseList === 'function' && document.getElementById('baseExList')) renderBaseExerciseList();
   if(typeof renderCustomExList === 'function' && document.getElementById('customExList')) renderCustomExList();
   if(typeof renderGlossario === 'function' && GL_BUILT) renderGlossario();
-  toast("Video salvato ✓ ora si apre dentro l'app");
+  toast("Video salvato ✓");
   openVideoPopup(_vidNome, url);          // lo mostro subito
 });
 
@@ -3984,22 +3917,10 @@ document.getElementById('vidYoutube').addEventListener('click', ()=>{
 document.getElementById('vidOpenTab2').addEventListener('click', ()=>{
   if(!_vidUrl) return;
   apriAltrove(_vidUrl);
-  if(!senzaRitorno()) closeVideoPopup();
-});
-document.getElementById('vidYoutubeFoot').addEventListener('click', ()=>{
-  apriAltrove(youtubeSearchUrl(_vidNome));
-});
-document.getElementById('vidApriFoot').addEventListener('click', ()=>{
-  if(!_vidUrl) return;
-  apriAltrove(_vidUrl);
 });
 
 function closeVideoPopup(){
   document.getElementById('vidOverlay').classList.remove('show');
-  document.getElementById('vidFrame').src = "about:blank";   // ferma la riproduzione
-  const _p = document.getElementById('vidPlayer');
-  try{ _p.pause(); }catch(e){}
-  _p.removeAttribute('src'); _p.load();
 }
 document.getElementById('vidClose').addEventListener('click', closeVideoPopup);
 document.getElementById('vidOverlay').addEventListener('click', e=>{
@@ -4008,14 +3929,15 @@ document.getElementById('vidOverlay').addEventListener('click', e=>{
 document.addEventListener('keydown', e=>{
   if(e.key==='Escape' && document.getElementById('vidOverlay').classList.contains('show')) closeVideoPopup();
 });
-// tutti i pulsanti video dell'app aprono il popup invece di cambiare pagina
-// il tastino "⋯" apre il pannello per scegliere quale video usare
+// il tasto "▶ Video" apre direttamente quello che c'è assegnato (link o
+// ricerca YouTube), senza popup: niente più riquadro nero.
+// il tastino "⋯" apre invece il pannello per vedere/cambiare il video.
 document.addEventListener('click', e=>{
   const g = e.target.closest('[data-gestisci]');
   if(!g) return;
   e.preventDefault(); e.stopPropagation();
   const nome = g.dataset.gestisci;
-  openVideoPopup(nome, getExerciseVideoInfo(nome).url, false, true);
+  openVideoPopup(nome, getExerciseVideoInfo(nome).url);
 }, true);
 
 document.addEventListener('click', e=>{
@@ -4023,9 +3945,7 @@ document.addEventListener('click', e=>{
   if(!a) return;
   e.preventDefault();
   e.stopPropagation();
-  const nome = a.dataset.exName || "Video";
-  const url = a.getAttribute('href');
-  openVideoPopup(nome, url);
+  apriAltrove(a.getAttribute('href'));
 }, true);
 
 function schermoPiccolo(){
@@ -4909,6 +4829,7 @@ logDateInput.addEventListener('change', ()=>{ renderDayChoices(); renderHeader()
 
 let selectedDayKey = null;
 let currentSetInputs = {};
+let _dropsetPerEsercizio = {};   // nome esercizio -> { drops:[...] }, solo per la sessione di registrazione in corso
 
 function renderReminderBanner(){
   const prof = activeProfile();
@@ -5046,6 +4967,7 @@ function buildExerciseForm(day){
   list.innerHTML = "";
   dotsWrap.innerHTML = "";
   currentSetInputs = {};
+  _dropsetPerEsercizio = {};
 
   day.exercises.forEach((ex, i)=>{
     currentSetInputs[ex.name] = [];
@@ -5058,13 +4980,20 @@ function buildExerciseForm(day){
       ? `<div class="ultima-volta">Ultima volta (${formatDate(prec.data)}): <b>${descriviSerie(prec.serie, ex.name)}</b>
            <button type="button" class="riporta-btn" data-riporta="${escapeAttr(ex.name)}">riporta</button></div>`
       : `<div class="ultima-volta vuota">Prima volta che registri questo esercizio.</div>`;
+    const nota = ex.note ? `<div class="exercise-note">📌 ${escapeAttr(ex.note)}</div>` : '';
     block.innerHTML = `<div class="exercise-name">${ex.name}<span class="target">(target: ${ex.sets}×${ex.reps})</span>
         <a href="${escapeAttr(videoInfo.url)}" data-ex-name="${escapeAttr(ex.name)}" class="video-link" style="margin-left:8px;">▶ Video</a></div>
+      ${nota}
       ${rigaPrec}
       <div class="sets-container" data-ex="${escapeAttr(ex.name)}"></div>
       <button type="button" class="add-set" data-ex="${escapeAttr(ex.name)}">+ Aggiungi serie</button>`;
     list.appendChild(block);
-    for(let k=0;k<ex.sets;k++) addSetRow(ex.name);
+    if(ex.dropset && ex.dropset.drops && ex.dropset.drops.length){
+      _dropsetPerEsercizio[ex.name] = ex.dropset;
+      for(let k=0;k<ex.sets;k++) buildDropsetRound(ex.name, k+1, ex.dropset);
+    } else {
+      for(let k=0;k<ex.sets;k++) addSetRow(ex.name);
+    }
 
     const dot = document.createElement('button');
     dot.type = 'button';
@@ -5074,7 +5003,17 @@ function buildExerciseForm(day){
     dot.addEventListener('click', ()=>{ goToExercise(i); setTimeout(()=>allineaNomiEsercizi(i), 260); });
     dotsWrap.appendChild(dot);
   });
-  list.querySelectorAll('.add-set').forEach(btn=>btn.addEventListener('click', ()=>{ addSetRow(btn.dataset.ex); updateExerciseDotsProgress(); }));
+  list.querySelectorAll('.add-set').forEach(btn=>btn.addEventListener('click', ()=>{
+    const nome = btn.dataset.ex;
+    const ds = _dropsetPerEsercizio[nome];
+    if(ds){
+      const numeroRound = Math.floor(currentSetInputs[nome].length / (1+ds.drops.length)) + 1;
+      buildDropsetRound(nome, numeroRound, ds);
+    } else {
+      addSetRow(nome);
+    }
+    updateExerciseDotsProgress();
+  }));
   list.querySelectorAll('[data-riporta]').forEach(btn=>btn.addEventListener('click', ()=>riportaUltimaVolta(btn.dataset.riporta)));
 
   list.scrollLeft = 0;
@@ -5193,6 +5132,58 @@ function addSetRow(exName){
       salvaBozza();
     });
   });
+}
+
+// Costruisce un "round" di dropset durante l'allenamento: la serie principale
+// (un normale set-row, dove inserisci il peso vero che hai sollevato) seguita
+// da una riga per ogni drop. Il peso di ogni drop si ricalcola da solo,
+// ridotto della percentuale impostata rispetto al peso della tappa precedente
+// (che sia la principale o il drop prima di lui): basta mettere il peso della
+// serie principale, il resto segue in automatico. Le ripetizioni restano
+// modificabili, precompilate con quelle previste in scheda.
+function buildDropsetRound(exName, numeroRound, dropset){
+  const container = document.querySelector(`.sets-container[data-ex="${CSS.escape(exName)}"]`);
+
+  addSetRow(exName);
+  let rigaPrec = container.lastElementChild;
+  rigaPrec.classList.add('drop-row', 'drop-row-main');
+  etichettaRiga(rigaPrec, `Serie ${numeroRound} · Principale`);
+  let kgPrec = rigaPrec.querySelector('[data-field="kg"]');
+
+  (dropset.drops||[]).forEach((drop, dj)=>{
+    addSetRow(exName);
+    const riga = container.lastElementChild;
+    riga.classList.add('drop-row');
+    etichettaRiga(riga, `Drop ${dj+1} (-${drop.riduzione||0}%)`);
+    const idx = currentSetInputs[exName].length - 1;
+
+    const repsInput = riga.querySelector('[data-field="reps"]');
+    if(repsInput && drop.reps){
+      repsInput.value = drop.reps;
+      currentSetInputs[exName][idx].reps = drop.reps;
+    }
+
+    const kgInput = riga.querySelector('[data-field="kg"]');
+    if(kgInput && kgPrec){
+      kgInput.classList.add('drop-kg-auto');
+      kgInput.placeholder = 'auto';
+      const ricalcola = ()=>{
+        const base = parseFloat(kgPrec.value);
+        if(isNaN(base)) return;
+        const calcolato = Math.round(base * (1 - (drop.riduzione||0)/100) * 4) / 4;   // arrotondo ai 0,25 kg
+        kgInput.value = calcolato;
+        currentSetInputs[exName][idx].kg = calcolato;
+        salvaBozza();
+      };
+      kgPrec.addEventListener('input', ricalcola);
+      ricalcola();
+      kgPrec = kgInput;   // il prossimo drop parte dal peso di questo
+    }
+  });
+}
+function etichettaRiga(riga, testo){
+  const num = riga.querySelector('.set-num');
+  if(num){ num.textContent = testo; num.classList.add('drop-row-label'); }
 }
 
 document.getElementById('saveLogBtn').addEventListener('click', ()=>{
@@ -5984,7 +5975,8 @@ function renderSchedaView(){
       </div>
       ${d.exercises.map(ex=>{
         const vi = getExerciseVideoInfo(ex.name);
-        return `<div class="hint">• ${ex.name} — ${ex.sets}×${ex.reps} <a href="${escapeAttr(vi.url)}" data-ex-name="${escapeAttr(ex.name)}" class="video-link">▶</a></div>`;
+        return `<div class="hint">• ${ex.name} — ${ex.sets}×${ex.reps} <a href="${escapeAttr(vi.url)}" data-ex-name="${escapeAttr(ex.name)}" class="video-link">▶</a></div>
+          ${ex.note ? `<div class="exercise-note" style="margin:2px 0 6px 14px;">📌 ${escapeAttr(ex.note)}</div>` : ''}`;
       }).join('')}
     </div>`).join('');
 }
@@ -6137,6 +6129,42 @@ function renderDayEditors(){
     renderExerciseEditors(di);
   }));
 }
+// Tabella "serie principale + drop" nell'editor scheda, come da esempio:
+// ogni drop riduce il peso di una percentuale rispetto alla tappa precedente,
+// eseguito subito dopo senza pausa.
+function dropsetEditorHtml(di, ei, ex){
+  const drops = (ex.dropset && ex.dropset.drops) || [];
+  const opzioniRiduzione = [10,15,20,25,30,35,40,50];
+  return `
+    <div class="dropset-box">
+      <div class="dropset-stage">
+        <div class="dropset-num">1</div>
+        <div class="dropset-body">
+          <div class="dropset-label">Serie principale</div>
+          <div class="dropset-fields">
+            <span class="dropset-val">${ex.sets || 0} serie × ${escapeAttr(ex.reps||'')} rip.</span>
+          </div>
+        </div>
+      </div>
+      ${drops.map((d,dj)=>`
+        <div class="dropset-stage">
+          <div class="dropset-num">${dj+2}</div>
+          <div class="dropset-body">
+            <div class="dropset-label">Drop ${dj+1}</div>
+            <div class="dropset-fields">
+              <input type="number" class="small dropset-reps" placeholder="rip." value="${escapeAttr(d.reps!=null?d.reps:'')}" data-di="${di}" data-ei="${ei}" data-dj="${dj}">
+              <select class="dropset-riduzione" data-di="${di}" data-ei="${ei}" data-dj="${dj}">
+                ${opzioniRiduzione.map(p=>`<option value="${p}" ${d.riduzione===p?'selected':''}>-${p}%</option>`).join('')}
+              </select>
+              <button type="button" class="remove-x dropset-remove" data-di="${di}" data-ei="${ei}" data-dj="${dj}">×</button>
+            </div>
+          </div>
+        </div>`).join('')}
+      <button type="button" class="btn ghost block dropset-add" data-di="${di}" data-ei="${ei}" style="margin-top:2px;">+ Aggiungi drop</button>
+      <p class="hint" style="margin:8px 0 0;">I drop vengono eseguiti senza pausa dopo la serie principale, riducendo il peso della percentuale indicata rispetto alla tappa precedente.</p>
+    </div>`;
+}
+
 function renderExerciseEditors(di){
   const list = document.querySelector(`.ex-list[data-di="${di}"]`);
   const day = editingDays[di];
@@ -6179,6 +6207,12 @@ function renderExerciseEditors(di){
       <div class="muscle-chip-group" data-di="${di}" data-ei="${ei}">
         ${MUSCLE_GROUPS.map(m=>`<div class="muscle-chip ${(ex.muscles||[]).includes(m)?'selected':''}" data-m="${m}">${m}</div>`).join('')}
       </div>
+      <input type="text" class="ex-note-input" placeholder="Nota per l'allenamento (facoltativa) — es. presa larga, attenzione alla spalla…" value="${escapeAttr(ex.note||'')}" data-di="${di}" data-ei="${ei}" data-field="note">
+      <div class="dropset-toggle-row">
+        <span>Dropset</span>
+        <label class="interruttore"><input type="checkbox" class="dropset-toggle" data-di="${di}" data-ei="${ei}" ${ex.dropset?'checked':''}><span></span></label>
+      </div>
+      ${ex.dropset ? dropsetEditorHtml(di, ei, ex) : ''}
     </div>`).join('');
 
   list.querySelectorAll('.ex-name-input').forEach(sel=>{
@@ -6203,7 +6237,60 @@ function renderExerciseEditors(di){
   list.querySelectorAll('.exercise-edit-row input:not(.ex-name-input)').forEach(inp=>{
     inp.addEventListener('input', e=>{
       const {di, ei, field} = e.target.dataset;
-      editingDays[di].exercises[ei][field] = field==='sets' ? (parseInt(e.target.value)||0) : e.target.value;
+      const ex = editingDays[di].exercises[ei];
+      ex[field] = field==='sets' ? (parseInt(e.target.value)||0) : e.target.value;
+      // aggiorno solo il testo "serie principale" della tabella dropset, senza
+      // ridisegnare tutto: altrimenti perderesti il focus mentre stai scrivendo
+      if((field==='reps'||field==='sets') && ex.dropset){
+        const val = e.target.closest('.exercise-edit-block').querySelector('.dropset-val');
+        if(val) val.textContent = `${ex.sets || 0} serie × ${ex.reps||''} rip.`;
+      }
+    });
+  });
+  list.querySelectorAll('.ex-note-input').forEach(inp=>{
+    inp.addEventListener('input', e=>{
+      const {di, ei} = e.target.dataset;
+      editingDays[di].exercises[ei].note = e.target.value;
+    });
+  });
+  list.querySelectorAll('.dropset-toggle').forEach(chk=>{
+    chk.addEventListener('change', e=>{
+      const {di, ei} = e.target.dataset;
+      const ex = editingDays[di].exercises[ei];
+      if(e.target.checked){
+        ex.dropset = { drops: [{ reps: 8, riduzione: 25 }] };
+      } else {
+        delete ex.dropset;
+      }
+      renderExerciseEditors(di);
+    });
+  });
+  list.querySelectorAll('.dropset-add').forEach(btn=>{
+    btn.addEventListener('click', e=>{
+      const {di, ei} = e.target.dataset;
+      editingDays[di].exercises[ei].dropset.drops.push({ reps: 8, riduzione: 25 });
+      renderExerciseEditors(di);
+    });
+  });
+  list.querySelectorAll('.dropset-remove').forEach(btn=>{
+    btn.addEventListener('click', e=>{
+      const {di, ei, dj} = e.target.dataset;
+      const ex = editingDays[di].exercises[ei];
+      ex.dropset.drops.splice(dj,1);
+      if(ex.dropset.drops.length===0) delete ex.dropset;
+      renderExerciseEditors(di);
+    });
+  });
+  list.querySelectorAll('.dropset-reps').forEach(inp=>{
+    inp.addEventListener('input', e=>{
+      const {di, ei, dj} = e.target.dataset;
+      editingDays[di].exercises[ei].dropset.drops[dj].reps = e.target.value;
+    });
+  });
+  list.querySelectorAll('.dropset-riduzione').forEach(sel=>{
+    sel.addEventListener('change', e=>{
+      const {di, ei, dj} = e.target.dataset;
+      editingDays[di].exercises[ei].dropset.drops[dj].riduzione = parseInt(e.target.value)||0;
     });
   });
   list.querySelectorAll('.remove-x').forEach(btn=>{
@@ -6405,7 +6492,8 @@ function renderProgramDetailHtml(p){
       </div>
       ${d.exercises.map(ex=>{
         const vi = getExerciseVideoInfo(ex.name);
-        return `<div class="hint">• ${ex.name} — ${ex.sets}×${ex.reps} <a href="${escapeAttr(vi.url)}" data-ex-name="${escapeAttr(ex.name)}" class="video-link">▶</a></div>`;
+        return `<div class="hint">• ${ex.name} — ${ex.sets}×${ex.reps} <a href="${escapeAttr(vi.url)}" data-ex-name="${escapeAttr(ex.name)}" class="video-link">▶</a></div>
+          ${ex.note ? `<div class="exercise-note" style="margin:2px 0 6px 14px;">📌 ${escapeAttr(ex.note)}</div>` : ''}`;
       }).join('')}
     </div>`).join('');
 

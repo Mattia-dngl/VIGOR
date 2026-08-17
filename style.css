@@ -447,6 +447,11 @@
   .set-row input{padding:6px 9px; font-size:13.5px;}
   .set-row .x{color:var(--text-faint); font-size:11px;}
   .add-set{color:var(--accent); font-size:11px; background:none; border:none; cursor:pointer; padding:3px 0;}
+  .set-row.drop-row{margin-left:8px; padding-left:8px; border-left:2px solid var(--accent); opacity:.92;}
+  .set-row.drop-row-main{margin-left:0; padding-left:0; border-left:none; margin-top:10px;}
+  .set-row .set-num.drop-row-label{width:auto; white-space:nowrap; color:var(--accent);
+    font-family:var(--font-display); font-size:10.5px; letter-spacing:.02em; margin-right:2px;}
+  .set-row input.drop-kg-auto{color:var(--accent); font-family:'Roboto Mono',monospace;}
   .status-badge{display:inline-block; font-size:10px; padding:2px 8px; border-radius:11px;
     text-transform:uppercase; letter-spacing:0.03em; font-family:var(--font-display);}
   .status-badge.ok{background:rgba(31,157,99,0.14); color:var(--ok);}
@@ -467,6 +472,24 @@
   .exercise-edit-block{margin-bottom:9px; padding-bottom:8px; border-bottom:1px solid var(--border);}
   .exercise-edit-block:last-child{border-bottom:none;}
   .exercise-edit-row{display:flex; gap:6px; margin-bottom:6px; align-items:center;}
+  .ex-note-input{width:100%; box-sizing:border-box; margin-top:2px; padding:8px 10px;
+    font-size:12px; color:var(--text-dim);}
+  .dropset-toggle-row{display:flex; align-items:center; justify-content:space-between;
+    margin-top:8px; font-size:12.5px; font-family:var(--font-display); color:var(--text-dim);}
+  .dropset-box{margin-top:8px; padding:10px 12px; background:var(--surface2);
+    border-radius:10px; border:1px solid var(--border);}
+  .dropset-stage{display:flex; gap:10px; padding:6px 0; position:relative;}
+  .dropset-stage:not(:last-of-type)::after{content:""; position:absolute; left:11px; top:28px;
+    bottom:-6px; width:2px; background:var(--accent); opacity:.35;}
+  .dropset-num{flex:0 0 auto; width:22px; height:22px; border-radius:50%; background:var(--accent);
+    color:#fff; font-size:11px; font-family:var(--font-display); display:flex; align-items:center;
+    justify-content:center; z-index:1;}
+  .dropset-body{flex:1; min-width:0;}
+  .dropset-label{font-family:var(--font-display); font-size:12px; color:var(--accent); margin-bottom:4px;}
+  .dropset-fields{display:flex; gap:6px; align-items:center; flex-wrap:wrap;}
+  .dropset-val{font-size:12.5px; color:var(--text-dim);}
+  .dropset-fields input.small{flex:0 0 64px;}
+  .dropset-fields select.dropset-riduzione{flex:0 0 84px; padding:7px 8px; font-size:12px;}
   .autocomplete-wrap{position:relative; flex:1; min-width:0;}
   .autocomplete-list{
     position:absolute; left:0; right:0; top:100%; margin-top:3px;
@@ -698,14 +721,7 @@
   .vid-head{display:flex; align-items:center; justify-content:space-between; gap:12px;
     padding:14px 16px; border-bottom:1px solid var(--border);}
   .vid-head h3{font-size:15px; text-transform:uppercase; margin:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
-  .vid-frame-wrap{position:relative; flex:1; min-height:0; background:#0f1217;}
-  .vid-frame-wrap iframe{display:block; width:100%; height:100%; min-height:46vh; border:0;}
-  .vid-foot{padding:11px 16px; border-top:1px solid var(--border); display:flex; gap:8px;
-    align-items:center; flex-wrap:wrap;}
-  .vid-foot .hint{margin:0; flex:1 1 220px; font-size:12px;}
-  .vid-foot .btn{margin-top:0;}
-
-  .vid-alt{display:none; padding:24px 22px; text-align:center;}
+  .vid-alt{display:block; padding:24px 22px; text-align:center;}
   .vid-alt-desc{font-size:14px; color:var(--text); line-height:1.55; margin:0 0 10px;}
   .vid-alt .hint{margin:0 0 16px;}
   .vid-alt-actions{display:flex; gap:8px; justify-content:center; flex-wrap:wrap;}
@@ -749,6 +765,9 @@
     gap:8px; flex-wrap:wrap;}
   .ultima-volta b{color:var(--text); font-family:'Roboto Mono',monospace; font-size:11.5px;}
   .ultima-volta.vuota{color:var(--text-faint); font-style:italic;}
+  .exercise-note{font-size:12px; color:var(--text); background:rgba(214,148,40,.12);
+    border-left:3px solid var(--warn, #b1790a); border-radius:6px; padding:7px 10px;
+    margin-bottom:8px; line-height:1.4;}
   .riporta-btn{margin-left:auto; background:var(--surface); border:1px solid var(--border);
     color:var(--accent); font-family:var(--font-display); font-size:10.5px; letter-spacing:.03em;
     padding:4px 10px; border-radius:10px; cursor:pointer;}
