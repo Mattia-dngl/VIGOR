@@ -238,51 +238,83 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
         <span class="home-bell-dot" id="homeBellDot" style="display:none;"></span>
       </button>
     </div>
-    <div class="home-head">
-      <h1 class="home-greeting" id="homeSaluto">Bentornato!</h1>
-      <div class="home-tagline">Disciplina oggi, risultati domani.</div>
+
+    <div class="home-hero-row">
+      <div class="home-head">
+        <h1 class="home-greeting" id="homeSaluto">Bentornato!</h1>
+        <div class="home-tagline">Ogni piccolo sforzo<br>ti porta più vicino al meglio di te.</div>
+      </div>
+      <div class="home-hero">
+        <div class="home-hero-blob"></div>
+        <svg class="home-hero-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M2 10.5h2v3H2v-3zm3-2.2h2v7.4H5V8.3zm3 2.7h8v2H8v-2zm9-2.7h2v7.4h-2V8.3zm3 2.2h2v3h-2v-3z"/></svg>
+      </div>
     </div>
 
     <div class="home-goal-card">
       <div class="home-goal-left">
         <div class="home-goal-label">OBIETTIVO SETTIMANALE</div>
-        <div class="home-goal-num" id="homeGoalNum">0 / 0</div>
+        <div class="home-goal-num"><span id="homeGoalFatti">0</span><span class="home-goal-num-dim"> / <span id="homeGoalTotali">0</span></span></div>
         <div class="home-goal-sub">allenamenti completati</div>
         <div class="home-goal-bar"><div class="home-goal-bar-fill" id="homeGoalFill" style="width:0%"></div></div>
       </div>
-      <div class="home-streak">
-        <div class="home-streak-icon">🔥</div>
-        <div class="home-streak-num" id="homeStreakNum">0</div>
-        <div class="home-streak-label">streak</div>
+      <div class="home-streak-ring">
+        <svg viewBox="0 0 80 80">
+          <circle cx="40" cy="40" r="34" class="ring-track"/>
+          <circle cx="40" cy="40" r="34" class="ring-fill" id="homeStreakRing"/>
+        </svg>
+        <div class="home-streak-center">
+          <svg viewBox="0 0 24 24" fill="currentColor" class="home-streak-flame" aria-hidden="true"><path d="M12 2c1 3-3 4-3 8a3 3 0 0 0 6 0c1 1 1.5 2.5 1.5 4A6.5 6.5 0 0 1 5 14C5 8 9 6 12 2z"/></svg>
+          <div class="home-streak-num" id="homeStreakNum">0</div>
+          <div class="home-streak-label">streak</div>
+        </div>
       </div>
     </div>
 
     <div class="home-grid">
-      <button type="button" class="home-card home-card-main" id="homeAllenatiBtn">
-        <div class="home-card-icon-badge home-card-icon-badge-lg">🏋</div>
-        <div class="home-card-text">
-          <div class="home-card-title">Allenati</div>
-          <div class="home-card-sub">Inizia il tuo allenamento</div>
+      <button type="button" class="home-card home-card-warm" id="homeAllenatiBtn">
+        <div class="home-card-icon-badge home-card-icon-badge-solid">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M2 10.5h2v3H2v-3zm3-2.2h2v7.4H5V8.3zm3 2.7h8v2H8v-2zm9-2.7h2v7.4h-2V8.3zm3 2.2h2v3h-2v-3z"/></svg>
         </div>
-        <div class="home-card-arrow">›</div>
+        <div class="home-card-title">Allenati</div>
+        <div class="home-card-sub">Inizia il tuo allenamento</div>
+        <div class="home-card-arrow home-card-arrow-solid"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg></div>
       </button>
       <button type="button" class="home-card" id="homeAccountBtn">
-        <div class="home-card-icon-badge">👤</div>
+        <div class="home-card-icon-badge">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="8" r="3.6"/><path d="M4 20c0-4.2 3.6-6.6 8-6.6s8 2.4 8 6.6v1H4v-1z"/></svg>
+        </div>
         <div class="home-card-title">Account</div>
         <div class="home-card-sub">Gestisci il tuo profilo</div>
-        <div class="home-card-arrow">›</div>
+        <div class="home-card-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg></div>
       </button>
-      <button type="button" class="home-card home-card-warm" id="homePTBtn" style="display:none;">
-        <div class="home-card-icon-badge">🏅</div>
+      <button type="button" class="home-card" id="homePTBtn" style="display:none;">
+        <div class="home-card-icon-badge home-card-icon-badge-warm">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="10" cy="8.5" r="3.6"/><path d="M2 20c0-4.2 3.6-6.6 8-6.6s8 2.4 8 6.6v1H2v-1z"/><path d="M18.5 2.5l1 2 2.2.3-1.6 1.5.4 2.2-2-1.1-2 1.1.4-2.2-1.6-1.5 2.2-.3z"/></svg>
+        </div>
         <div class="home-card-title">Personal Trainer</div>
-        <div class="home-card-sub">La tua area riservata</div>
-        <div class="home-card-arrow">›</div>
+        <div class="home-card-sub">Allenati con un professionista</div>
+        <div class="home-card-arrow home-card-arrow-warm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg></div>
       </button>
       <button type="button" class="home-card home-card-esci" id="homeEsciBtn">
-        <div class="home-card-icon-badge">↪</div>
+        <div class="home-card-icon-badge home-card-icon-badge-dark">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3h5a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-5"/><path d="M9 17l5-5-5-5"/><path d="M14 12H3"/></svg>
+        </div>
         <div class="home-card-title">Esci</div>
         <div class="home-card-sub">Disconnettiti dall'app</div>
+        <div class="home-card-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg></div>
       </button>
+    </div>
+
+    <div class="home-quote-card">
+      <div class="home-quote-mark">&#10077;</div>
+      <div class="home-quote-text">La disciplina di oggi è <span class="home-quote-accent">la libertà</span> di domani.</div>
+      <div class="home-quote-rule"></div>
+      <svg class="home-quote-mountain" viewBox="0 0 160 90" aria-hidden="true">
+        <polygon points="0,90 40,28 58,54 78,18 160,90" fill="var(--accent-dim)" opacity="0.55"/>
+        <polygon points="20,90 55,40 90,90" fill="var(--accent-dim)" opacity="0.85"/>
+        <line x1="78" y1="18" x2="78" y2="2" stroke="var(--accent)" stroke-width="2"/>
+        <path d="M78,2 L93,6 L78,10 Z" fill="var(--accent)"/>
+      </svg>
     </div>
   </div>
 </div>
@@ -2741,9 +2773,18 @@ function mostraHome(){
   try{
     const programma = p && p.programs ? p.programs.find(x=>x.id===p.activeProgramId) : null;
     const {fatti, totali} = obiettivoSettimanale(p||{}, programma);
-    document.getElementById('homeGoalNum').textContent = `${fatti} / ${totali}`;
+    document.getElementById('homeGoalFatti').textContent = fatti;
+    document.getElementById('homeGoalTotali').textContent = totali;
     document.getElementById('homeGoalFill').style.width = totali>0 ? `${Math.min(100, Math.round(fatti/totali*100))}%` : '0%';
-    document.getElementById('homeStreakNum').textContent = streakSettimane(p||{}, programma);
+    const streak = streakSettimane(p||{}, programma);
+    document.getElementById('homeStreakNum').textContent = streak;
+    // l'anello non ha un massimo "vero": lo riempio progressivamente fino a 8
+    // settimane di fila, poi resta pieno — serve solo a dare un colpo d'occhio
+    const CIRC = 2 * Math.PI * 34;
+    const quota = Math.max(0, Math.min(1, streak / 8));
+    const ring = document.getElementById('homeStreakRing');
+    ring.style.strokeDasharray = `${CIRC}`;
+    ring.style.strokeDashoffset = `${CIRC * (1 - quota)}`;
   }catch(e){ console.error(e); }
   aggiornaCampanellaHome();
   document.getElementById('homeScreen').style.display = 'block';

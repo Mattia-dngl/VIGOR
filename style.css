@@ -120,72 +120,89 @@
   .settings-head h1{font-size:19px;}
 
   /* Home: schermata con cui entri, da qui vai verso le varie parti dell'app */
-  .home-topbar{display:flex; justify-content:space-between; align-items:center; margin-bottom:22px;}
+  .home-topbar{display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;}
   .home-logo{font-family:var(--font-display); font-weight:800; font-size:22px; font-style:italic; letter-spacing:-0.01em;}
   .home-logo-accent{color:var(--accent);}
   .home-bell{position:relative; width:40px; height:40px; border-radius:50%; background:var(--surface);
     border:1px solid var(--border); display:flex; align-items:center; justify-content:center;
-    color:var(--text-dim); cursor:pointer; flex:0 0 auto;}
+    color:var(--text); cursor:pointer; flex:0 0 auto; box-shadow:0 1px 3px rgba(0,0,0,.06);}
   .home-bell svg{width:19px; height:19px;}
-  .home-bell-dot{position:absolute; top:8px; right:9px; width:8px; height:8px; border-radius:50%;
-    background:var(--accent); border:2px solid var(--bg);}
-  .home-head{margin-bottom:18px;}
-  .home-greeting{font-family:var(--font-display); font-size:26px; line-height:1.2; margin:0 0 6px;}
-  .home-tagline{font-size:13px; color:var(--text-dim);}
+  .home-bell-dot{position:absolute; top:7px; right:8px; width:8px; height:8px; border-radius:50%;
+    background:var(--accent); border:2px solid var(--surface);}
+
+  .home-hero-row{display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:16px;}
+  .home-head{flex:1; min-width:0; padding-top:6px;}
+  .home-greeting{font-family:var(--font-display); font-size:23px; line-height:1.2; margin:0 0 8px;}
+  .home-tagline{font-size:12.5px; color:var(--text-dim); line-height:1.45;}
+  .home-hero{position:relative; flex:0 0 auto; width:118px; height:118px;}
+  .home-hero-blob{position:absolute; inset:0; background:var(--accent-soft);
+    border-radius:42% 58% 65% 35% / 45% 45% 55% 55%;}
+  .home-hero-icon{position:absolute; inset:0; margin:auto; width:46px; height:46px; color:var(--accent);}
 
   .home-goal-card{
-    display:flex; align-items:stretch; gap:16px; background:var(--surface); border:1px solid var(--border);
-    border-radius:18px; padding:18px 20px; margin-bottom:16px; box-shadow:0 1px 4px rgba(0,0,0,.05);
+    display:flex; align-items:center; justify-content:space-between; gap:14px; background:var(--surface);
+    border:1px solid var(--border); border-radius:18px; padding:18px 20px; margin-bottom:12px;
+    box-shadow:0 1px 4px rgba(0,0,0,.05);
   }
   .home-goal-left{flex:1; min-width:0;}
   .home-goal-label{font-size:10.5px; letter-spacing:.05em; color:var(--text-faint); font-family:var(--font-display);}
-  .home-goal-num{font-family:var(--font-display); font-size:26px; margin:4px 0 1px;}
+  .home-goal-num{font-family:var(--font-display); font-size:27px; margin:4px 0 1px; color:var(--accent);}
+  .home-goal-num-dim{color:var(--text);}
   .home-goal-sub{font-size:12px; color:var(--text-dim); margin-bottom:10px;}
   .home-goal-bar{height:7px; border-radius:6px; background:var(--surface2); overflow:hidden;}
   .home-goal-bar-fill{height:100%; background:var(--accent); border-radius:6px; transition:width .3s;}
-  .home-streak{
-    flex:0 0 auto; display:flex; flex-direction:column; align-items:center; justify-content:center;
-    gap:2px; padding-left:16px; border-left:1px solid var(--border); min-width:64px;
-  }
-  .home-streak-icon{font-size:20px; line-height:1;}
-  .home-streak-num{font-family:var(--font-display); font-size:19px;}
-  .home-streak-label{font-size:10px; color:var(--text-faint);}
+
+  .home-streak-ring{position:relative; flex:0 0 auto; width:80px; height:80px;}
+  .home-streak-ring svg{width:80px; height:80px; transform:rotate(-90deg);}
+  .home-streak-ring .ring-track{fill:none; stroke:var(--surface2); stroke-width:5;}
+  .home-streak-ring .ring-fill{fill:none; stroke:var(--accent); stroke-width:5; stroke-linecap:round;
+    transition:stroke-dashoffset .4s;}
+  .home-streak-center{position:absolute; inset:0; display:flex; flex-direction:column; align-items:center;
+    justify-content:center; gap:0;}
+  .home-streak-flame{width:16px; height:16px; color:var(--accent); margin-bottom:1px;}
+  .home-streak-num{font-family:var(--font-display); font-size:18px; line-height:1.1;}
+  .home-streak-label{font-size:9.5px; color:var(--text-faint);}
 
   .home-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
   .home-card{
     position:relative; grid-column:span 1; text-align:left; background:var(--surface);
-    border:1px solid var(--border); border-radius:18px; padding:16px 15px; cursor:pointer;
+    border:1px solid var(--border); border-radius:18px; padding:16px 15px 46px; cursor:pointer;
     display:flex; flex-direction:column; gap:3px; box-shadow:0 1px 3px rgba(0,0,0,.04);
+    min-height:112px;
   }
   .home-card-icon-badge{
-    width:42px; height:42px; border-radius:50%; background:var(--accent-soft);
-    color:var(--accent); display:flex; align-items:center; justify-content:center; font-size:19px;
-    margin-bottom:8px;
+    width:44px; height:44px; border-radius:13px; background:var(--surface2);
+    color:var(--text-dim); display:flex; align-items:center; justify-content:center;
+    margin-bottom:10px;
   }
+  .home-card-icon-badge svg{width:21px; height:21px;}
+  .home-card-icon-badge-solid{background:var(--accent); color:#fff;}
+  .home-card-icon-badge-warm{background:var(--accent-soft); color:var(--accent);}
+  .home-card-icon-badge-dark{background:var(--text); color:#fff;}
   .home-card-arrow{
-    position:absolute; right:14px; bottom:14px; width:26px; height:26px; border-radius:50%;
-    background:rgba(0,0,0,.05); color:var(--text-dim); display:flex; align-items:center;
-    justify-content:center; font-size:16px; line-height:1;
+    position:absolute; right:14px; bottom:14px; width:30px; height:30px; border-radius:50%;
+    background:rgba(0,0,0,.055); color:var(--text-dim); display:flex; align-items:center;
+    justify-content:center;
   }
-  .home-card-title{font-family:var(--font-display); font-size:14px;}
-  .home-card-sub{font-size:11px; color:var(--text-dim); padding-right:26px;}
-
-  /* Allenati: card grande in evidenza, in orizzontale */
-  .home-card-main{
-    grid-column:1 / -1; background:var(--accent); border-color:var(--accent);
-    flex-direction:row; align-items:center; gap:14px; padding:18px 20px;
-  }
-  .home-card-main .home-card-icon-badge{background:rgba(255,255,255,.22); color:#fff; margin-bottom:0; flex:0 0 auto;}
-  .home-card-icon-badge-lg{width:50px; height:50px; font-size:23px;}
-  .home-card-text{flex:1; min-width:0;}
-  .home-card-main .home-card-title{font-size:16px; color:#fff;}
-  .home-card-main .home-card-sub{font-size:12px; color:rgba(255,255,255,.85); padding-right:0;}
-  .home-card-main .home-card-arrow{position:static; background:rgba(255,255,255,.22); color:#fff; flex:0 0 auto;}
+  .home-card-arrow svg{width:15px; height:15px;}
+  .home-card-arrow-solid{background:var(--accent); color:#fff;}
+  .home-card-arrow-warm{background:var(--accent-soft); color:var(--accent);}
+  .home-card-title{font-family:var(--font-display); font-size:14.5px;}
+  .home-card-sub{font-size:11px; color:var(--text-dim); padding-right:20px;}
 
   .home-card-warm{background:var(--accent-soft); border-color:transparent;}
-  .home-card-esci .home-card-icon-badge{background:rgba(177,121,10,.15); color:var(--warn, #b1790a);}
-  .home-card-esci .home-card-title{color:var(--warn, #b1790a);}
-  @media (min-width:480px){ .home-grid{grid-template-columns:1fr 1fr 1fr;} .home-card-main{grid-column:1 / -1;} }
+  @media (min-width:480px){ .home-grid{grid-template-columns:1fr 1fr 1fr;} }
+
+  .home-quote-card{
+    position:relative; overflow:hidden; margin-top:14px; padding:20px 22px; border-radius:18px;
+    background:var(--accent-soft);
+  }
+  .home-quote-mark{font-family:Georgia, serif; font-size:30px; color:var(--accent); line-height:1; margin-bottom:2px;}
+  .home-quote-text{font-family:var(--font-display); font-size:15.5px; line-height:1.4; max-width:66%; position:relative; z-index:1;}
+  .home-quote-accent{color:var(--accent);}
+  .home-quote-rule{width:28px; height:3px; background:var(--accent); border-radius:2px; margin-top:12px;}
+  .home-quote-mountain{position:absolute; right:0; bottom:0; width:52%; height:auto; max-height:100%;}
+
   /* Impostazioni e Account compatti: meno aria fra le sezioni, testi descrittivi più piccoli */
   #settingsPanel .card, #accountPanel .card{padding:14px 15px; margin-bottom:9px;}
   #settingsPanel .card h3, #accountPanel .card h3{font-size:13.5px; margin-bottom:3px;}
