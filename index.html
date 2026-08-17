@@ -231,10 +231,28 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
 
 <div id="homeScreen" style="display:none;">
   <div class="settings-inner home-inner">
-    <div class="home-head">
-      <h1 class="home-logo">FitPro</h1>
-      <div class="sub" id="homeSaluto">Bentornato!</div>
+    <div class="home-topbar">
+      <div class="home-logo">Fit<span class="home-logo-accent">Pro</span></div>
     </div>
+    <div class="home-head">
+      <h1 class="home-greeting" id="homeSaluto">Bentornato!</h1>
+      <div class="home-tagline">Disciplina oggi, risultati domani.</div>
+    </div>
+
+    <div class="home-goal-card">
+      <div class="home-goal-left">
+        <div class="home-goal-label">OBIETTIVO SETTIMANALE</div>
+        <div class="home-goal-num" id="homeGoalNum">0 / 0</div>
+        <div class="home-goal-sub">allenamenti completati</div>
+        <div class="home-goal-bar"><div class="home-goal-bar-fill" id="homeGoalFill" style="width:0%"></div></div>
+      </div>
+      <div class="home-streak">
+        <div class="home-streak-icon">🔥</div>
+        <div class="home-streak-num" id="homeStreakNum">0</div>
+        <div class="home-streak-label">streak</div>
+      </div>
+    </div>
+
     <div class="home-grid">
       <button type="button" class="home-card home-card-main" id="homeAllenatiBtn">
         <div class="home-card-icon">🏋</div>
@@ -272,33 +290,62 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
       <button class="switch-user" id="closeAccountBtn">✕ Chiudi</button>
     </div>
 
-    <div class="card" style="margin-top:16px;">
-      <h3>Dati generali</h3>
-      <p class="hint">Usati per la scheda e per mostrarti la figura giusta nel Glossario.</p>
-      <label>Sesso</label>
-      <div class="seg-toggle" id="setSesso">
-        <button type="button" class="seg-btn" data-val="uomo">Uomo</button>
-        <button type="button" class="seg-btn" data-val="donna">Donna</button>
+    <details class="card details-card" style="margin-top:16px;" open>
+      <summary>Dati generali</summary>
+      <div class="details-body">
+        <p class="hint">Usati per la scheda e per mostrarti la figura giusta nel Glossario.</p>
+        <label>Sesso</label>
+        <div class="seg-toggle" id="setSesso">
+          <button type="button" class="seg-btn" data-val="uomo">Uomo</button>
+          <button type="button" class="seg-btn" data-val="donna">Donna</button>
+        </div>
       </div>
-    </div>
+    </details>
 
-    <div class="card" style="margin-top:16px;">
-      <h3>Gestione account</h3>
-      <p class="hint">Modifica nome e password del profilo con cui hai fatto accesso.</p>
-      <div class="dato-riga"><span>Email dell'account</span><b id="accountEmailMostrata">—</b></div>
-      <p class="hint" style="margin:6px 0 0;">L'email identifica l'account e non si può cambiare: serve per riconoscerti e, per l'amministratore, per accedere alla gestione. Se sbagliata, chiedi di eliminare il profilo e rifallo.</p>
-      <label style="margin-top:16px;">Nome profilo</label>
-      <input type="text" id="accountNameInput">
-      <button class="btn secondary block" id="saveAccountNameBtn" style="margin-top:8px;">Salva nome</button>
+    <details class="card details-card" style="margin-top:10px;">
+      <summary>Nome e password</summary>
+      <div class="details-body">
+        <p class="hint">Modifica nome e password del profilo con cui hai fatto accesso.</p>
+        <div class="dato-riga"><span>Email dell'account</span><b id="accountEmailMostrata">—</b></div>
+        <p class="hint" style="margin:6px 0 0;">L'email identifica l'account e non si può cambiare: serve per riconoscerti e, per l'amministratore, per accedere alla gestione. Se sbagliata, chiedi di eliminare il profilo e rifallo.</p>
+        <label style="margin-top:16px;">Nome profilo</label>
+        <input type="text" id="accountNameInput">
+        <button class="btn secondary block" id="saveAccountNameBtn" style="margin-top:8px;">Salva nome</button>
 
-      <label style="margin-top:18px;">Password attuale</label>
-      <input type="password" id="accountOldPw" autocomplete="current-password">
-      <label>Nuova password</label>
-      <input type="password" id="accountNewPw" placeholder="Almeno 4 caratteri" autocomplete="new-password">
-      <label>Conferma nuova password</label>
-      <input type="password" id="accountNewPw2" placeholder="Ripeti la nuova password" autocomplete="new-password">
-      <button class="btn secondary block" id="saveAccountPwBtn" style="margin-top:8px;">Cambia password</button>
-    </div>
+        <label style="margin-top:18px;">Password attuale</label>
+        <input type="password" id="accountOldPw" autocomplete="current-password">
+        <label>Nuova password</label>
+        <input type="password" id="accountNewPw" placeholder="Almeno 4 caratteri" autocomplete="new-password">
+        <label>Conferma nuova password</label>
+        <input type="password" id="accountNewPw2" placeholder="Ripeti la nuova password" autocomplete="new-password">
+        <button class="btn secondary block" id="saveAccountPwBtn" style="margin-top:8px;">Cambia password</button>
+      </div>
+    </details>
+
+    <details class="card details-card" id="cardAmministrazione" style="margin-top:10px; display:none; border-left:3px solid var(--accent);">
+      <summary>Gestione dell'app</summary>
+      <div class="details-body">
+        <p class="hint">Sezione riservata al tuo account. Qui decidi chi entra e rimetti in piedi gli account di chi resta fuori.</p>
+
+        <h4 class="sotto-titolo" id="titoloPwIngresso">Password d'ingresso</h4>
+        <p class="hint">È quella che serve per aprire l'app, prima dei profili. Chi non ce l'ha non entra.</p>
+        <div class="dato-riga"><span>Attuale</span><b id="statoIngresso">—</b></div>
+        <label>Nuova password d'ingresso</label>
+        <input type="text" id="nuovaPwIngresso" placeholder="Nuova password" autocomplete="off">
+        <button class="btn block" id="cambiaPwIngressoBtn">Cambia la password d'ingresso</button>
+
+        <h4 class="sotto-titolo">Richieste in attesa <span id="contaAttesa"></span></h4>
+        <p class="hint" style="margin:0 0 8px;">Chi si registra non entra finché non lo approvi tu.</p>
+        <div id="elencoAttesa"></div>
+
+        <h4 class="sotto-titolo">Personal Trainer</h4>
+        <p class="hint" style="margin:0 0 8px;">Chi ha l'appellativo entra nella sua area riservata e può seguire le persone che glielo chiedono.</p>
+        <div id="riepilogoPT"></div>
+
+        <h4 class="sotto-titolo">Profili attivi</h4>
+        <div id="elencoProfiliAmm"></div>
+      </div>
+    </details>
   </div>
 </div>
 
@@ -309,106 +356,91 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
       <button class="switch-user" id="closeSettingsBtn">✕ Chiudi</button>
     </div>
 
-    <div class="card" id="cardAmministrazione" style="margin-top:16px; display:none; border-left:3px solid var(--accent);">
-      <h3>Gestione dell'app</h3>
-      <p class="hint">Sezione riservata al tuo account. Qui decidi chi entra e rimetti in piedi gli account di chi resta fuori.</p>
+    <details class="card details-card" style="margin-top:16px;">
+      <summary>Timer di recupero</summary>
+      <div class="details-body">
+        <p class="hint">Il tempo che parte in automatico premendo "Avvia". I quattro tasti rapidi restano comunque disponibili durante l'allenamento.</p>
+        <label>Durata predefinita (secondi)</label>
+        <input type="number" id="timerDurataInput" min="10" max="900" step="5" inputmode="numeric">
 
-      <h4 class="sotto-titolo" id="titoloPwIngresso">Password d'ingresso</h4>
-      <p class="hint">È quella che serve per aprire l'app, prima dei profili. Chi non ce l'ha non entra.</p>
-      <div class="dato-riga"><span>Attuale</span><b id="statoIngresso">—</b></div>
-      <label>Nuova password d'ingresso</label>
-      <input type="text" id="nuovaPwIngresso" placeholder="Nuova password" autocomplete="off">
-      <button class="btn block" id="cambiaPwIngressoBtn">Cambia la password d'ingresso</button>
+        <label style="margin-top:18px;">I 4 tasti rapidi del timer</label>
+        <p class="hint" style="margin:0 0 8px;">Sono quelli che vedi durante l'allenamento. Scrivi i secondi che vuoi e premi Salva.</p>
+        <div class="slot-timer" id="slotTimer"></div>
+        <button class="btn block" id="salvaScorciatoieBtn" style="margin-top:10px;">Salva i tasti rapidi</button>
+        <button class="btn ghost block" id="ripristinaScorciatoieBtn">Rimetti quelli iniziali</button>
+        <label style="display:flex; align-items:center; gap:9px; margin-top:16px; cursor:pointer;">
+          <input type="checkbox" id="timerSuonoChk" style="width:auto; margin:0;">
+          <span>Suono e vibrazione a fine recupero</span>
+        </label>
+        <button class="btn secondary block" id="provaSuonoBtn" style="margin-top:10px;">Prova il suono</button>
+        <p class="hint" style="margin-top:8px;">Il suono continua finché non premi "Ferma": così te ne accorgi anche se hai il telefono in tasca.</p>
+      </div>
+    </details>
 
-      <h4 class="sotto-titolo">Richieste in attesa <span id="contaAttesa"></span></h4>
-      <p class="hint" style="margin:0 0 8px;">Chi si registra non entra finché non lo approvi tu.</p>
-      <div id="elencoAttesa"></div>
+    <details class="card details-card" style="margin-top:10px;">
+      <summary>Sicurezza dei dati</summary>
+      <div class="details-body">
+        <p class="hint">Gli allenamenti stanno solo in questo telefono. Qui vedi se sono protetti e quando hai fatto l'ultimo backup.</p>
+        <div class="dato-riga"><span>Protezione dalla cancellazione</span><b id="statoPersistenza">—</b></div>
+        <div class="dato-riga"><span>Spazio occupato</span><b id="statoSpazio">—</b></div>
+        <div class="dato-riga"><span>Ultimo backup</span><b id="statoBackup">—</b></div>
+        <p class="hint" id="avvisoBackup" style="display:none; color:var(--warn); margin-top:10px;"></p>
 
-      <h4 class="sotto-titolo">Personal Trainer</h4>
-      <p class="hint" style="margin:0 0 8px;">Chi ha l'appellativo entra nella sua area riservata e può seguire le persone che glielo chiedono.</p>
-      <div id="riepilogoPT"></div>
+        <button class="btn block" id="backupOraBtn" style="margin-top:12px;">Salva una copia dei miei dati</button>
+        <label class="btn secondary block" for="ripristinaMioFile" style="text-align:center; cursor:pointer;">Ricarica una copia salvata</label>
+        <input type="file" id="ripristinaMioFile" accept="application/json,.json" style="display:none;">
+        <p class="hint" style="margin-top:8px;">La copia contiene scheda, allenamenti, dieta, misure e impostazioni. Ricaricandola sostituisci i dati attuali con quelli del file.</p>
+        <button class="btn secondary block" id="proteggiBtn" style="display:none;">Attiva la protezione</button>
+        <details class="details-card" style="margin-top:12px; border:none; padding:0;">
+          <summary>Codice di recupero del profilo</summary>
+          <div class="details-body">
+            <p class="hint">Serve a rientrare se dimentichi la password. Se non l'hai mai salvato, generane uno nuovo: quello vecchio smetterà di funzionare.</p>
+            <button class="btn secondary block" id="nuovoCodiceBtn">Genera un nuovo codice</button>
+            <div class="codice-box" id="codiceMostrato" style="display:none;"></div>
+          </div>
+        </details>
+      </div>
+    </details>
 
-      <h4 class="sotto-titolo">Profili attivi</h4>
-      <div id="elencoProfiliAmm"></div>
-    </div>
-
-    <div class="card" style="margin-top:16px;">
-      <h3>Timer di recupero</h3>
-      <p class="hint">Il tempo che parte in automatico premendo "Avvia". I quattro tasti rapidi restano comunque disponibili durante l'allenamento.</p>
-      <label>Durata predefinita (secondi)</label>
-      <input type="number" id="timerDurataInput" min="10" max="900" step="5" inputmode="numeric">
-
-      <label style="margin-top:18px;">I 4 tasti rapidi del timer</label>
-      <p class="hint" style="margin:0 0 8px;">Sono quelli che vedi durante l'allenamento. Scrivi i secondi che vuoi e premi Salva.</p>
-      <div class="slot-timer" id="slotTimer"></div>
-      <button class="btn block" id="salvaScorciatoieBtn" style="margin-top:10px;">Salva i tasti rapidi</button>
-      <button class="btn ghost block" id="ripristinaScorciatoieBtn">Rimetti quelli iniziali</button>
-      <label style="display:flex; align-items:center; gap:9px; margin-top:16px; cursor:pointer;">
-        <input type="checkbox" id="timerSuonoChk" style="width:auto; margin:0;">
-        <span>Suono e vibrazione a fine recupero</span>
-      </label>
-      <button class="btn secondary block" id="provaSuonoBtn" style="margin-top:10px;">Prova il suono</button>
-      <p class="hint" style="margin-top:8px;">Il suono continua finché non premi "Ferma": così te ne accorgi anche se hai il telefono in tasca.</p>
-    </div>
-
-    <div class="card" style="margin-top:16px;">
-      <h3>Sicurezza dei dati</h3>
-      <p class="hint">Gli allenamenti stanno solo in questo telefono. Qui vedi se sono protetti e quando hai fatto l'ultimo backup.</p>
-      <div class="dato-riga"><span>Protezione dalla cancellazione</span><b id="statoPersistenza">—</b></div>
-      <div class="dato-riga"><span>Spazio occupato</span><b id="statoSpazio">—</b></div>
-      <div class="dato-riga"><span>Ultimo backup</span><b id="statoBackup">—</b></div>
-      <p class="hint" id="avvisoBackup" style="display:none; color:var(--warn); margin-top:10px;"></p>
-
-      <button class="btn block" id="backupOraBtn" style="margin-top:12px;">Salva una copia dei miei dati</button>
-      <label class="btn secondary block" for="ripristinaMioFile" style="text-align:center; cursor:pointer;">Ricarica una copia salvata</label>
-      <input type="file" id="ripristinaMioFile" accept="application/json,.json" style="display:none;">
-      <p class="hint" style="margin-top:8px;">La copia contiene scheda, allenamenti, dieta, misure e impostazioni. Ricaricandola sostituisci i dati attuali con quelli del file.</p>
-      <button class="btn secondary block" id="proteggiBtn" style="display:none;">Attiva la protezione</button>
-      <details class="details-card" style="margin-top:12px; border:none; padding:0;">
-        <summary>Codice di recupero del profilo</summary>
-        <div class="details-body">
-          <p class="hint">Serve a rientrare se dimentichi la password. Se non l'hai mai salvato, generane uno nuovo: quello vecchio smetterà di funzionare.</p>
-          <button class="btn secondary block" id="nuovoCodiceBtn">Genera un nuovo codice</button>
-          <div class="codice-box" id="codiceMostrato" style="display:none;"></div>
-        </div>
-      </details>
-    </div>
-
-    <div class="card" style="margin-top:16px;">
-      <h3>Giorni saltati</h3>
-      <p class="hint">Se un giorno previsto dalla scheda passa senza che tu registri nulla, viene segnato da solo come saltato — così lo storico e le statistiche restano veritieri. Puoi sempre eliminare o correggere una registrazione automatica dallo Storico.</p>
-      <label style="display:flex; align-items:center; gap:9px; margin-top:10px; cursor:pointer;">
-        <input type="checkbox" id="autoSkipToggle" style="width:auto; margin:0;">
-        <span>Segna automaticamente i giorni saltati</span>
-      </label>
-    </div>
+    <details class="card details-card" style="margin-top:10px;">
+      <summary>Giorni saltati</summary>
+      <div class="details-body">
+        <p class="hint">Se un giorno previsto dalla scheda passa senza che tu registri nulla, viene segnato da solo come saltato — così lo storico e le statistiche restano veritieri. Puoi sempre eliminare o correggere una registrazione automatica dallo Storico.</p>
+        <label style="display:flex; align-items:center; gap:9px; margin-top:10px; cursor:pointer;">
+          <input type="checkbox" id="autoSkipToggle" style="width:auto; margin:0;">
+          <span>Segna automaticamente i giorni saltati</span>
+        </label>
+      </div>
+    </details>
 
     <div class="sub" id="exSectionsIntro" style="margin-top:20px;">Gestisci qui il database degli esercizi: da dove pesca i suggerimenti nella tendina "Nome esercizio" e i gruppi muscolari assegnati automaticamente.</div>
 
-    <div class="card" id="addExCard" style="margin-top:16px;">
-      <h3>Aggiungi esercizio</h3>
-      <p class="hint">Utile per macchinari specifici della tua palestra non già presenti tra i suggerimenti. Una volta aggiunto, compare nella tendina "Nome esercizio" in Scheda → Modifica, con i muscoli già pronti. Personale: visibile solo al tuo account.</p>
-      <label>Nome esercizio</label>
-      <input type="text" id="customExName" placeholder="Es. Leg press orizzontale">
-      <label>Muscoli coinvolti</label>
-      <div class="muscle-chip-group" id="customExMuscles"></div>
-      <div id="customExVideoField" style="display:none;">
-        <label>Come si registra</label>
-      <select id="customExTipo"></select>
-      <p class="hint" style="margin:6px 0 0;">Decide quali caselle compaiono quando registri: ripetizioni e carico, solo secondi, chilometri…</p>
+    <details class="card details-card" id="addExCard" style="margin-top:10px;">
+      <summary>Aggiungi esercizio</summary>
+      <div class="details-body">
+        <p class="hint">Utile per macchinari specifici della tua palestra non già presenti tra i suggerimenti. Una volta aggiunto, compare nella tendina "Nome esercizio" in Scheda → Modifica, con i muscoli già pronti. Personale: visibile solo al tuo account.</p>
+        <label>Nome esercizio</label>
+        <input type="text" id="customExName" placeholder="Es. Leg press orizzontale">
+        <label>Muscoli coinvolti</label>
+        <div class="muscle-chip-group" id="customExMuscles"></div>
+        <div id="customExVideoField" style="display:none;">
+          <label>Come si registra</label>
+        <select id="customExTipo"></select>
+        <p class="hint" style="margin:6px 0 0;">Decide quali caselle compaiono quando registri: ripetizioni e carico, solo secondi, chilometri…</p>
 
-      <label style="margin-top:16px;">Link video dimostrativo (facoltativo)</label>
-        <input type="text" id="customExVideo" placeholder="Es. https://youtube.com/...">
+        <label style="margin-top:16px;">Link video dimostrativo (facoltativo)</label>
+          <input type="text" id="customExVideo" placeholder="Es. https://youtube.com/...">
+        </div>
+        <button class="btn block" id="addCustomExBtn" style="margin-top:12px;">+ Aggiungi esercizio</button>
       </div>
-      <button class="btn block" id="addCustomExBtn" style="margin-top:12px;">+ Aggiungi esercizio</button>
-    </div>
+    </details>
 
-    <div class="card" id="myExCard">
-      <h3>I tuoi esercizi personalizzati</h3>
-      <div id="customExList"></div>
-    </div>
+    <details class="card details-card" id="myExCard" style="margin-top:10px;">
+      <summary>I tuoi esercizi personalizzati</summary>
+      <div class="details-body"><div id="customExList"></div></div>
+    </details>
 
-    <details class="card details-card" id="baseExCard" style="display:none;">
+    <details class="card details-card" id="baseExCard" style="margin-top:10px; display:none;">
       <summary>Esercizi di base (<span id="baseExCount"></span>)</summary>
       <div class="details-body">
         <p class="hint">Gli esercizi riconosciuti dall'app. Con i due pulsanti qui sotto puoi esportare l'elenco in Excel, incollare i link ai video e reimportarlo: i link compaiono poi ovunque compare l'esercizio (scheda, allenamento libero, glossario e registro).</p>
@@ -2635,6 +2667,51 @@ function nascondiCloudGate(){ document.getElementById('cloudGate').style.display
 // ---------- Home: la schermata con cui entri, da qui vai verso le varie parti ----------
 let _impostazioniProvenienza = 'home';   // dove torna "Chiudi" in Impostazioni: 'home' o 'app'
 
+// quanti allenamenti previsti dalla scheda sono già stati fatti questa settimana
+function obiettivoSettimanale(prof, programma){
+  if(!programma || !programma.days || programma.days.length===0) return {fatti:0, totali:0};
+  const oggi = new Date();
+  const lunedi = new Date(oggi);
+  lunedi.setDate(oggi.getDate() - ((oggi.getDay()+6)%7));
+  let fatti = 0, totali = 0;
+  for(let i=0;i<7;i++){
+    const d = new Date(lunedi); d.setDate(lunedi.getDate()+i);
+    const wd = WEEKDAYS[d.getDay()];
+    const scheduled = programma.days.find(dy=>dy.weekday===wd);
+    if(!scheduled) continue;
+    totali++;
+    const iso = d.toISOString().slice(0,10);
+    const log = (prof.logs||[]).find(l=>l.date===iso && l.programId===programma.id && l.status!=='saltato');
+    if(log) fatti++;
+  }
+  return {fatti, totali};
+}
+// settimane consecutive (compresa quella in corso) in cui hai fatto tutti gli allenamenti previsti
+function streakSettimane(prof, programma){
+  if(!programma || !programma.days || programma.days.length===0) return 0;
+  let streak = 0;
+  const oggi = new Date();
+  for(let w=0; w<52; w++){
+    const lunedi = new Date(oggi);
+    lunedi.setDate(oggi.getDate() - ((oggi.getDay()+6)%7) - w*7);
+    let tutteFatte = true, cePrevista = false;
+    for(let i=0;i<7;i++){
+      const d = new Date(lunedi); d.setDate(lunedi.getDate()+i);
+      if(w===0 && d>oggi) continue;   // i giorni futuri di questa settimana non contano ancora
+      const wd = WEEKDAYS[d.getDay()];
+      const scheduled = programma.days.find(dy=>dy.weekday===wd);
+      if(!scheduled) continue;
+      cePrevista = true;
+      const iso = d.toISOString().slice(0,10);
+      const log = (prof.logs||[]).find(l=>l.date===iso && l.programId===programma.id && l.status!=='saltato');
+      if(!log){ tutteFatte = false; break; }
+    }
+    if(!cePrevista) break;
+    if(tutteFatte) streak++; else break;
+  }
+  return streak;
+}
+
 function mostraHome(){
   document.getElementById('appRoot').style.display = 'none';
   document.getElementById('settingsPanel').style.display = 'none';
@@ -2642,7 +2719,14 @@ function mostraHome(){
   document.getElementById('areaPT').style.display = 'none';
   document.body.classList.remove('impostazioni-aperte', 'area-pt');
   const p = (typeof activeProfile === 'function') ? activeProfile() : null;
-  document.getElementById('homeSaluto').textContent = p && p.name ? `Bentornato, ${p.name}!` : 'Bentornato!';
+  document.getElementById('homeSaluto').textContent = p && p.name ? `Bentornato, ${p.name}! 💪` : 'Bentornato!';
+  try{
+    const programma = p && p.programs ? p.programs.find(x=>x.id===p.activeProgramId) : null;
+    const {fatti, totali} = obiettivoSettimanale(p||{}, programma);
+    document.getElementById('homeGoalNum').textContent = `${fatti} / ${totali}`;
+    document.getElementById('homeGoalFill').style.width = totali>0 ? `${Math.min(100, Math.round(fatti/totali*100))}%` : '0%';
+    document.getElementById('homeStreakNum').textContent = streakSettimane(p||{}, programma);
+  }catch(e){ console.error(e); }
   document.getElementById('homeScreen').style.display = 'block';
 }
 
@@ -2654,7 +2738,6 @@ function apriImpostazioni(provenienza){
   document.body.classList.add('impostazioni-aperte');
   aggiornaStatoDati();
   renderImpostazioniTimer();
-  renderAmministrazione();
   const _lpAuto = loggedInProfile();
   document.getElementById('autoSkipToggle').checked = !_lpAuto || _lpAuto.autoSkip !== false;
   document.getElementById('codiceMostrato').style.display = 'none';
@@ -2690,6 +2773,7 @@ function apriAccountPanel(){
   document.getElementById('homeScreen').style.display = 'none';
   document.getElementById('accountPanel').style.display = 'block';
   document.body.classList.add('impostazioni-aperte');
+  renderAmministrazione();
   const lp = loggedInProfile();
   if(!lp) return;
   document.getElementById('accountNameInput').value = lp.name;

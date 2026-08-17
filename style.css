@@ -120,15 +120,41 @@
   .settings-head h1{font-size:19px;}
 
   /* Home: schermata con cui entri, da qui vai verso le varie parti dell'app */
+  .home-topbar{display:flex; justify-content:space-between; align-items:center; margin-bottom:22px;}
+  .home-logo{font-family:var(--font-display); font-weight:800; font-size:22px; font-style:italic; letter-spacing:-0.01em;}
+  .home-logo-accent{color:var(--accent);}
   .home-head{margin-bottom:18px;}
-  .home-logo{font-family:var(--font-display); font-size:24px; margin:0 0 2px;}
+  .home-greeting{font-family:var(--font-display); font-size:26px; line-height:1.2; margin:0 0 6px;}
+  .home-tagline{font-size:13px; color:var(--text-dim);}
+
+  .home-goal-card{
+    display:flex; align-items:stretch; gap:16px; background:var(--surface); border:1px solid var(--border);
+    border-radius:18px; padding:18px 20px; margin-bottom:16px; box-shadow:0 1px 4px rgba(0,0,0,.05);
+  }
+  .home-goal-left{flex:1; min-width:0;}
+  .home-goal-label{font-size:10.5px; letter-spacing:.05em; color:var(--text-faint); font-family:var(--font-display);}
+  .home-goal-num{font-family:var(--font-display); font-size:26px; margin:4px 0 1px;}
+  .home-goal-sub{font-size:12px; color:var(--text-dim); margin-bottom:10px;}
+  .home-goal-bar{height:7px; border-radius:6px; background:var(--surface2); overflow:hidden;}
+  .home-goal-bar-fill{height:100%; background:var(--accent); border-radius:6px; transition:width .3s;}
+  .home-streak{
+    flex:0 0 auto; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:2px; padding-left:16px; border-left:1px solid var(--border); min-width:64px;
+  }
+  .home-streak-icon{font-size:20px; line-height:1;}
+  .home-streak-num{font-family:var(--font-display); font-size:19px;}
+  .home-streak-label{font-size:10px; color:var(--text-faint);}
+
   .home-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
   .home-card{
     grid-column:span 1; text-align:left; background:var(--surface); border:1px solid var(--border);
     border-radius:16px; padding:16px 14px; cursor:pointer; display:flex; flex-direction:column;
     gap:4px; box-shadow:0 1px 3px rgba(0,0,0,.04);
   }
-  .home-card-main{grid-column:1 / -1; background:var(--accent); border-color:var(--accent);}
+  .home-card-main{grid-column:1 / -1; background:var(--accent); border-color:var(--accent);
+    display:flex; flex-direction:row; align-items:center; gap:14px; padding:20px;}
+  .home-card-main .home-card-icon{font-size:30px;}
+  .home-card-main .home-card-title{font-size:16px; margin-top:0;}
   .home-card-main .home-card-title, .home-card-main .home-card-sub{color:#fff;}
   .home-card-icon{font-size:22px; line-height:1;}
   .home-card-title{font-family:var(--font-display); font-size:14px; margin-top:4px;}
@@ -137,17 +163,18 @@
   .home-card-esci{border-color:var(--warn, #b1790a);}
   .home-card-esci .home-card-title{color:var(--warn, #b1790a);}
   @media (min-width:480px){ .home-grid{grid-template-columns:1fr 1fr 1fr;} .home-card-main{grid-column:1 / -1;} }
-  /* Impostazioni compatte: meno aria fra le sezioni, testi descrittivi più piccoli */
-  #settingsPanel .card{padding:14px 15px; margin-bottom:9px;}
-  #settingsPanel .card h3{font-size:13.5px; margin-bottom:3px;}
-  #settingsPanel .card > .hint:first-of-type{margin-bottom:10px;}
-  #settingsPanel .hint{font-size:11.5px; line-height:1.4;}
-  #settingsPanel label{font-size:10px; margin-top:7px; margin-bottom:2px;}
-  #settingsPanel input, #settingsPanel select, #settingsPanel textarea{padding:8px 10px; font-size:13px;}
-  #settingsPanel .btn{padding:9px 14px; font-size:12.5px;}
-  #settingsPanel .dato-riga{padding:6px 0; font-size:12.5px;}
-  #settingsPanel details.details-card > summary{padding:9px 13px 9px 26px; font-size:12.5px;}
-  #settingsPanel details.details-card .details-body{padding:0 13px 11px;}
+  /* Impostazioni e Account compatti: meno aria fra le sezioni, testi descrittivi più piccoli */
+  #settingsPanel .card, #accountPanel .card{padding:14px 15px; margin-bottom:9px;}
+  #settingsPanel .card h3, #accountPanel .card h3{font-size:13.5px; margin-bottom:3px;}
+  #settingsPanel .card > .hint:first-of-type, #accountPanel .card > .hint:first-of-type{margin-bottom:10px;}
+  #settingsPanel .hint, #accountPanel .hint{font-size:11.5px; line-height:1.4;}
+  #settingsPanel label, #accountPanel label{font-size:10px; margin-top:7px; margin-bottom:2px;}
+  #settingsPanel input, #settingsPanel select, #settingsPanel textarea,
+  #accountPanel input, #accountPanel select, #accountPanel textarea{padding:8px 10px; font-size:13px;}
+  #settingsPanel .btn, #accountPanel .btn{padding:9px 14px; font-size:12.5px;}
+  #settingsPanel .dato-riga, #accountPanel .dato-riga{padding:6px 0; font-size:12.5px;}
+  #settingsPanel details.details-card > summary, #accountPanel details.details-card > summary{padding:9px 13px 9px 26px; font-size:12.5px;}
+  #settingsPanel details.details-card .details-body, #accountPanel details.details-card .details-body{padding:0 13px 11px;}
   #profileGate .sub{color:var(--text-dim); font-size:12px; margin-bottom:18px;}
   .profile-list{display:flex; flex-direction:column; gap:8px; margin-bottom:16px;}
   .profile-chip{
