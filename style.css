@@ -107,9 +107,36 @@
     position:fixed; inset:0; background:var(--bg); z-index:100; overflow-y:auto;
     padding:16px 16px calc(100px + env(safe-area-inset-bottom, 0px));
   }
-  #settingsPanel .settings-inner{width:100%; max-width:640px; margin:0 auto;}
+  #accountPanel{
+    position:fixed; inset:0; background:var(--bg); z-index:100; overflow-y:auto;
+    padding:16px 16px calc(100px + env(safe-area-inset-bottom, 0px));
+  }
+  #homeScreen{
+    position:fixed; inset:0; background:var(--bg); z-index:100; overflow-y:auto;
+    padding:16px 16px calc(100px + env(safe-area-inset-bottom, 0px));
+  }
+  #settingsPanel .settings-inner, #accountPanel .settings-inner, #homeScreen .settings-inner{width:100%; max-width:640px; margin:0 auto;}
   .settings-head{display:flex; justify-content:space-between; align-items:center;}
   .settings-head h1{font-size:19px;}
+
+  /* Home: schermata con cui entri, da qui vai verso le varie parti dell'app */
+  .home-head{margin-bottom:18px;}
+  .home-logo{font-family:var(--font-display); font-size:24px; margin:0 0 2px;}
+  .home-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+  .home-card{
+    grid-column:span 1; text-align:left; background:var(--surface); border:1px solid var(--border);
+    border-radius:16px; padding:16px 14px; cursor:pointer; display:flex; flex-direction:column;
+    gap:4px; box-shadow:0 1px 3px rgba(0,0,0,.04);
+  }
+  .home-card-main{grid-column:1 / -1; background:var(--accent); border-color:var(--accent);}
+  .home-card-main .home-card-title, .home-card-main .home-card-sub{color:#fff;}
+  .home-card-icon{font-size:22px; line-height:1;}
+  .home-card-title{font-family:var(--font-display); font-size:14px; margin-top:4px;}
+  .home-card-sub{font-size:11.5px; color:var(--text-dim);}
+  .home-card-main .home-card-sub{color:rgba(255,255,255,.85);}
+  .home-card-esci{border-color:var(--warn, #b1790a);}
+  .home-card-esci .home-card-title{color:var(--warn, #b1790a);}
+  @media (min-width:480px){ .home-grid{grid-template-columns:1fr 1fr 1fr;} .home-card-main{grid-column:1 / -1;} }
   /* Impostazioni compatte: meno aria fra le sezioni, testi descrittivi più piccoli */
   #settingsPanel .card{padding:14px 15px; margin-bottom:9px;}
   #settingsPanel .card h3{font-size:13.5px; margin-bottom:3px;}

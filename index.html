@@ -229,11 +229,47 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
   </div>
 </div>
 
-<div id="settingsPanel" style="display:none;">
+<div id="homeScreen" style="display:none;">
+  <div class="settings-inner home-inner">
+    <div class="home-head">
+      <h1 class="home-logo">FitPro</h1>
+      <div class="sub" id="homeSaluto">Bentornato!</div>
+    </div>
+    <div class="home-grid">
+      <button type="button" class="home-card home-card-main" id="homeAllenatiBtn">
+        <div class="home-card-icon">🏋</div>
+        <div class="home-card-title">Allenati</div>
+        <div class="home-card-sub">Scheda, registra, dieta, storico</div>
+      </button>
+      <button type="button" class="home-card" id="homeAccountBtn">
+        <div class="home-card-icon">👤</div>
+        <div class="home-card-title">Account</div>
+        <div class="home-card-sub">Nome, sesso, password</div>
+      </button>
+      <button type="button" class="home-card" id="homeImpostazioniBtn">
+        <div class="home-card-icon">⚙</div>
+        <div class="home-card-title">Impostazioni</div>
+        <div class="home-card-sub">Timer, esercizi, backup</div>
+      </button>
+      <button type="button" class="home-card" id="homePTBtn" style="display:none;">
+        <div class="home-card-icon">🏅</div>
+        <div class="home-card-title">Personal Trainer</div>
+        <div class="home-card-sub">La tua area riservata</div>
+      </button>
+      <button type="button" class="home-card home-card-esci" id="homeEsciBtn">
+        <div class="home-card-icon">↪</div>
+        <div class="home-card-title">Esci</div>
+        <div class="home-card-sub">Disconnettiti dall'app</div>
+      </button>
+    </div>
+  </div>
+</div>
+
+<div id="accountPanel" style="display:none;">
   <div class="settings-inner">
     <div class="settings-head">
-      <h1>Impostazioni</h1>
-      <button class="switch-user" id="closeSettingsBtn">✕ Chiudi</button>
+      <h1>Account</h1>
+      <button class="switch-user" id="closeAccountBtn">✕ Chiudi</button>
     </div>
 
     <div class="card" style="margin-top:16px;">
@@ -244,6 +280,33 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
         <button type="button" class="seg-btn" data-val="uomo">Uomo</button>
         <button type="button" class="seg-btn" data-val="donna">Donna</button>
       </div>
+    </div>
+
+    <div class="card" style="margin-top:16px;">
+      <h3>Gestione account</h3>
+      <p class="hint">Modifica nome e password del profilo con cui hai fatto accesso.</p>
+      <div class="dato-riga"><span>Email dell'account</span><b id="accountEmailMostrata">—</b></div>
+      <p class="hint" style="margin:6px 0 0;">L'email identifica l'account e non si può cambiare: serve per riconoscerti e, per l'amministratore, per accedere alla gestione. Se sbagliata, chiedi di eliminare il profilo e rifallo.</p>
+      <label style="margin-top:16px;">Nome profilo</label>
+      <input type="text" id="accountNameInput">
+      <button class="btn secondary block" id="saveAccountNameBtn" style="margin-top:8px;">Salva nome</button>
+
+      <label style="margin-top:18px;">Password attuale</label>
+      <input type="password" id="accountOldPw" autocomplete="current-password">
+      <label>Nuova password</label>
+      <input type="password" id="accountNewPw" placeholder="Almeno 4 caratteri" autocomplete="new-password">
+      <label>Conferma nuova password</label>
+      <input type="password" id="accountNewPw2" placeholder="Ripeti la nuova password" autocomplete="new-password">
+      <button class="btn secondary block" id="saveAccountPwBtn" style="margin-top:8px;">Cambia password</button>
+    </div>
+  </div>
+</div>
+
+<div id="settingsPanel" style="display:none;">
+  <div class="settings-inner">
+    <div class="settings-head">
+      <h1>Impostazioni</h1>
+      <button class="switch-user" id="closeSettingsBtn">✕ Chiudi</button>
     </div>
 
     <div class="card" id="cardAmministrazione" style="margin-top:16px; display:none; border-left:3px solid var(--accent);">
@@ -320,24 +383,6 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
       </label>
     </div>
 
-    <div class="card" style="margin-top:16px;">
-      <h3>Gestione account</h3>
-      <p class="hint">Modifica nome e password del profilo con cui hai fatto accesso.</p>
-      <div class="dato-riga"><span>Email dell'account</span><b id="accountEmailMostrata">—</b></div>
-      <p class="hint" style="margin:6px 0 0;">L'email identifica l'account e non si può cambiare: serve per riconoscerti e, per l'amministratore, per accedere alla gestione. Se sbagliata, chiedi di eliminare il profilo e rifallo.</p>
-      <label style="margin-top:16px;">Nome profilo</label>
-      <input type="text" id="accountNameInput">
-      <button class="btn secondary block" id="saveAccountNameBtn" style="margin-top:8px;">Salva nome</button>
-
-      <label style="margin-top:18px;">Password attuale</label>
-      <input type="password" id="accountOldPw" autocomplete="current-password">
-      <label>Nuova password</label>
-      <input type="password" id="accountNewPw" placeholder="Almeno 4 caratteri" autocomplete="new-password">
-      <label>Conferma nuova password</label>
-      <input type="password" id="accountNewPw2" placeholder="Ripeti la nuova password" autocomplete="new-password">
-      <button class="btn secondary block" id="saveAccountPwBtn" style="margin-top:8px;">Cambia password</button>
-    </div>
-
     <div class="sub" id="exSectionsIntro" style="margin-top:20px;">Gestisci qui il database degli esercizi: da dove pesca i suggerimenti nella tendina "Nome esercizio" e i gruppi muscolari assegnati automaticamente.</div>
 
     <div class="card" id="addExCard" style="margin-top:16px;">
@@ -380,7 +425,7 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
     </details>
 
     <div class="card" id="noExPermCard" style="display:none;">
-      <p class="hint">Il tuo personal trainer non ti ha dato il permesso di modificare la scheda: da qui puoi gestire solo il tuo account.</p>
+      <p class="hint">Il tuo personal trainer non ti ha dato il permesso di modificare la scheda: da qui puoi comunque gestire timer, backup e le altre impostazioni.</p>
     </div>
   </div>
 </div>
@@ -428,10 +473,8 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
       <div class="sub" id="programLabel">Caricamento...</div>
     </div>
     <div class="header-btns">
-      <button class="header-btn" id="refreshBtn" title="Aggiorna">↻ <span class="header-btn-label">Aggiorna</span></button>
       <button class="header-btn" id="settingsBtn" title="Impostazioni">⚙ <span class="header-btn-label">Impostazioni</span></button>
-      <button class="header-btn" id="areaPTBtn" title="Area Personal Trainer" style="display:none;">🏋</button>
-      <button class="header-btn" id="switchUserBtn" title="Cambia utente">↔ <span class="header-btn-label">Cambia utente</span></button>
+      <button class="header-btn" id="homeBtn" title="Torna alla home">⌂ <span class="header-btn-label">Home</span></button>
     </div>
   </div>
   </div>
@@ -2589,6 +2632,108 @@ function mostraCloudGate(quale){
 }
 function nascondiCloudGate(){ document.getElementById('cloudGate').style.display = 'none'; }
 
+// ---------- Home: la schermata con cui entri, da qui vai verso le varie parti ----------
+let _impostazioniProvenienza = 'home';   // dove torna "Chiudi" in Impostazioni: 'home' o 'app'
+
+function mostraHome(){
+  document.getElementById('appRoot').style.display = 'none';
+  document.getElementById('settingsPanel').style.display = 'none';
+  document.getElementById('accountPanel').style.display = 'none';
+  document.getElementById('areaPT').style.display = 'none';
+  document.body.classList.remove('impostazioni-aperte', 'area-pt');
+  const p = (typeof activeProfile === 'function') ? activeProfile() : null;
+  document.getElementById('homeSaluto').textContent = p && p.name ? `Bentornato, ${p.name}!` : 'Bentornato!';
+  document.getElementById('homeScreen').style.display = 'block';
+}
+
+function apriImpostazioni(provenienza){
+  _impostazioniProvenienza = provenienza;
+  document.getElementById('homeScreen').style.display = 'none';
+  document.getElementById('appRoot').style.display = 'none';
+  document.getElementById('settingsPanel').style.display = 'block';
+  document.body.classList.add('impostazioni-aperte');
+  aggiornaStatoDati();
+  renderImpostazioniTimer();
+  renderAmministrazione();
+  const _lpAuto = loggedInProfile();
+  document.getElementById('autoSkipToggle').checked = !_lpAuto || _lpAuto.autoSkip !== false;
+  document.getElementById('codiceMostrato').style.display = 'none';
+
+  const canManage = canManageExercises();
+  document.getElementById('exSectionsIntro').innerHTML = puoModificareSistema()
+    ? 'Gestisci qui il database degli esercizi. <b>Gli esercizi di base sono condivisi</b>: quello che cambi vale per tutti gli account. Quelli che aggiungi qui sotto restano invece personali.'
+    : 'Qui puoi aggiungere <b>i tuoi esercizi personali</b> — per esempio i macchinari della tua palestra. Restano visibili solo a te. La libreria di base è condivisa e la gestisce l\'amministratore.';
+  document.getElementById('exSectionsIntro').style.display = 'block';
+  document.getElementById('addExCard').style.display = canManage ? 'block' : 'none';
+  document.getElementById('customExVideoField').style.display = 'block';
+  document.getElementById('myExCard').style.display = canManage ? 'block' : 'none';
+  document.getElementById('noExPermCard').style.display = canManage ? 'none' : 'block';
+  document.getElementById('baseExCard').style.display = puoModificareSistema() ? 'block' : 'none';
+  if(canManage){
+    riempiTendinaTipi();
+    renderCustomExMuscleChips();
+    renderCustomExList();
+    renderBaseExerciseList();
+  }
+}
+function chiudiImpostazioni(){
+  document.getElementById('settingsPanel').style.display = 'none';
+  document.body.classList.remove('impostazioni-aperte');
+  if(_impostazioniProvenienza === 'app'){
+    document.getElementById('appRoot').style.display = 'block';
+  } else {
+    mostraHome();
+  }
+}
+
+function apriAccountPanel(){
+  document.getElementById('homeScreen').style.display = 'none';
+  document.getElementById('accountPanel').style.display = 'block';
+  document.body.classList.add('impostazioni-aperte');
+  const lp = loggedInProfile();
+  if(!lp) return;
+  document.getElementById('accountNameInput').value = lp.name;
+  document.getElementById('accountEmailMostrata').textContent = lp.email || "non impostata";
+  document.getElementById('accountOldPw').value = "";
+  document.getElementById('accountNewPw').value = "";
+  document.getElementById('accountNewPw2').value = "";
+  document.querySelectorAll('#setSesso .seg-btn').forEach(b=>{
+    b.classList.toggle('active', b.dataset.val === lp.sesso);
+  });
+}
+function chiudiAccountPanel(){
+  document.getElementById('accountPanel').style.display = 'none';
+  document.body.classList.remove('impostazioni-aperte');
+  mostraHome();
+}
+
+document.getElementById('homeAllenatiBtn').addEventListener('click', ()=>{
+  document.getElementById('homeScreen').style.display = 'none';
+  document.getElementById('appRoot').style.display = 'block';
+  renderAll();
+});
+document.getElementById('homeAccountBtn').addEventListener('click', apriAccountPanel);
+document.getElementById('homeImpostazioniBtn').addEventListener('click', ()=>apriImpostazioni('home'));
+document.getElementById('homePTBtn').addEventListener('click', apriAreaPT);
+document.getElementById('homeEsciBtn').addEventListener('click', async ()=>{
+  customConfirm("Uscire dall'app? Dovrai rifare l'accesso.", async ()=>{
+    if(modalitaOnline() && sb){
+      if(_canaleMioProfilo){ sb.removeChannel(_canaleMioProfilo); _canaleMioProfilo = null; }
+      await sb.auth.signOut();
+      utenteOnline = null; rigaOnline = null;
+      activeProfileId = null;
+      document.getElementById('homeScreen').style.display = 'none';
+      mostraCloudGate('accedi');
+      return;
+    }
+    actingProfileId = null;
+    document.getElementById('homeScreen').style.display = 'none';
+    document.getElementById('profileGate').style.display = 'flex';
+    renderProfileGate();
+  });
+});
+document.getElementById('closeAccountBtn').addEventListener('click', chiudiAccountPanel);
+
 // ---------- ingresso ----------
 async function avvioOnline(){
   if(!iniziaSupabase()){
@@ -2649,13 +2794,12 @@ async function dopoAccessoOnline(){
 
   // porto i dati online dentro il motore locale dell'app
   applicaDatiOnline();
-  // il tasto per l'area riservata compare solo a chi è Personal Trainer
-  document.getElementById('areaPTBtn').style.display = sonoPT() ? 'inline-flex' : 'none';
+  // la card per l'area riservata compare solo a chi è Personal Trainer
+  document.getElementById('homePTBtn').style.display = sonoPT() ? 'flex' : 'none';
   caricaRapporti().then(()=>renderMioPT()).catch(()=>{});
   ascoltaMioProfilo();
   document.documentElement.classList.remove('avvio');
   nascondiCloudGate();
-  document.getElementById('appRoot').style.display = 'block';
   controllaSaltati(true);
   renderAll();
   _timerDurata = impostazioniTimer().durata;
@@ -2664,6 +2808,7 @@ async function dopoAccessoOnline(){
   if(ripristinaBozza()) toast("Ripresa la registrazione lasciata a metà");
   _bozzaPronta = true;
   mostraStatoSync('ok', 'sincronizzato');
+  mostraHome();
 }
 
 function profiloVuotoPerCloud(){
@@ -2951,7 +3096,7 @@ function gestisciMioProfiloAggiornato(nuovaRiga){
   // appellativo di Personal Trainer dato o tolto
   const oraPT = sonoPT();
   if(oraPT !== eraPT){
-    document.getElementById('areaPTBtn').style.display = oraPT ? 'inline-flex' : 'none';
+    document.getElementById('homePTBtn').style.display = oraPT ? 'flex' : 'none';
     toast(oraPT ? "Ora sei Personal Trainer ✓" : "L'appellativo di Personal Trainer ti è stato tolto");
     // se te lo tolgono mentre sei dentro l'area riservata, ti riporto fuori
     if(!oraPT && document.getElementById('areaPT').style.display === 'block') chiudiAreaPT();
@@ -3102,8 +3247,10 @@ document.getElementById('sceltaPTOverlay').addEventListener('click', e=>{
 
 // ---------- area del Personal Trainer ----------
 function apriAreaPT(){
+  document.getElementById('homeScreen').style.display = 'none';
   document.getElementById('appRoot').style.display = 'none';
   document.getElementById('settingsPanel').style.display = 'none';
+  document.getElementById('accountPanel').style.display = 'none';
   document.body.classList.remove('impostazioni-aperte');
   document.getElementById('areaPT').style.display = 'block';
   document.getElementById('ptDettaglio').style.display = 'none';
@@ -3114,11 +3261,9 @@ function apriAreaPT(){
 function chiudiAreaPT(){
   document.getElementById('areaPT').style.display = 'none';
   document.body.classList.remove('area-pt');
-  document.getElementById('appRoot').style.display = 'block';
   _clienteAperto = null;
-  renderAll();
+  mostraHome();
 }
-document.getElementById('areaPTBtn').addEventListener('click', apriAreaPT);
 document.getElementById('ptTornaHome').addEventListener('click', chiudiAreaPT);
 document.getElementById('bannerPTTorna').addEventListener('click', tornaDaModificaPT);
 document.getElementById('ptChiudiDettaglio').addEventListener('click', ()=>{
@@ -4499,7 +4644,6 @@ function enterProfile(id){
   pendingProfileId = null;
   _autoSkipFatto = null;
   document.getElementById('profileGate').style.display='none';
-  document.getElementById('appRoot').style.display='block';
   controllaSaltati(true);
   renderAll();
   chiediProtezioneDati().then(()=>aggiornaStatoDati());
@@ -4508,6 +4652,7 @@ function enterProfile(id){
   _bozzaPronta = false;
   if(ripristinaBozza()) toast("Ripresa la registrazione lasciata a metà");
   _bozzaPronta = true;
+  mostraHome();
 }
 document.getElementById('createProfileBtn').addEventListener('click', ()=>{
   const nameInput = document.getElementById('newProfileName');
@@ -4535,28 +4680,6 @@ document.getElementById('createProfileBtn').addEventListener('click', ()=>{
   nameInput.value = ""; emailInput.value = ""; pwInput.value = ""; pw2Input.value = "";
   mostraCodiceRecupero(codice, prof.id, subito);
 });
-document.getElementById('switchUserBtn').addEventListener('click', async ()=>{
-  if(modalitaOnline() && sb){
-    if(_canaleMioProfilo){ sb.removeChannel(_canaleMioProfilo); _canaleMioProfilo = null; }
-    await sb.auth.signOut();
-    utenteOnline = null; rigaOnline = null;
-    activeProfileId = null;
-    mostraCloudGate('accedi');
-    return;
-  }
-  actingProfileId = null;
-  document.getElementById('appRoot').style.display='none';
-  document.getElementById('profileGate').style.display='flex';
-  renderProfileGate();
-});
-
-
-document.getElementById('refreshBtn').addEventListener('click', ()=>{
-  _autoSkipFatto = null;
-  controllaSaltati(true);
-  renderAll();
-  toast("Aggiornato ✓");
-});
 document.querySelectorAll('#setSesso .seg-btn').forEach(btn=>{
   btn.addEventListener('click', ()=>{
     const lp = loggedInProfile();
@@ -4572,45 +4695,8 @@ document.querySelectorAll('#setSesso .seg-btn').forEach(btn=>{
   });
 });
 
-document.getElementById('settingsBtn').addEventListener('click', ()=>{
-  document.getElementById('appRoot').style.display='none';
-  document.getElementById('settingsPanel').style.display='block';
-  document.body.classList.add('impostazioni-aperte');
-  const lp = loggedInProfile();
-  document.getElementById('accountNameInput').value = lp.name;
-  document.getElementById('accountEmailMostrata').textContent = lp.email || "non impostata";
-  document.getElementById('accountOldPw').value = "";
-  document.getElementById('accountNewPw').value = "";
-  document.getElementById('accountNewPw2').value = "";
-
-  aggiornaStatoDati();
-  renderImpostazioniTimer();
-  renderAmministrazione();
-  document.querySelectorAll('#setSesso .seg-btn').forEach(b=>{
-    b.classList.toggle('active', b.dataset.val === lp.sesso);
-  });
-  document.getElementById('codiceMostrato').style.display = 'none';
-  const _lpAuto = loggedInProfile();
-  document.getElementById('autoSkipToggle').checked = !_lpAuto || _lpAuto.autoSkip !== false;
-
-  const canManage = canManageExercises();
-  document.getElementById('exSectionsIntro').innerHTML = puoModificareSistema()
-    ? 'Gestisci qui il database degli esercizi. <b>Gli esercizi di base sono condivisi</b>: quello che cambi vale per tutti gli account. Quelli che aggiungi qui sotto restano invece personali.'
-    : 'Qui puoi aggiungere <b>i tuoi esercizi personali</b> — per esempio i macchinari della tua palestra. Restano visibili solo a te. La libreria di base è condivisa e la gestisce l\'amministratore.';
-  document.getElementById('exSectionsIntro').style.display = 'block';
-  document.getElementById('addExCard').style.display = canManage ? 'block':'none';
-  document.getElementById('customExVideoField').style.display = 'block';
-  document.getElementById('myExCard').style.display = canManage ? 'block':'none';
-  document.getElementById('baseExCard').style.display = puoModificareSistema() ? 'block':'none';
-  document.getElementById('noExPermCard').style.display = canManage ? 'none':'block';
-
-  if(canManage){
-    riempiTendinaTipi();
-    renderCustomExMuscleChips();
-    renderCustomExList();
-    renderBaseExerciseList();
-  }
-});
+document.getElementById('settingsBtn').addEventListener('click', ()=>apriImpostazioni('app'));
+document.getElementById('homeBtn').addEventListener('click', mostraHome);
 document.getElementById('autoSkipToggle').addEventListener('change', (e)=>{
   const prof = loggedInProfile();
   if(!prof) return;
@@ -4626,11 +4712,7 @@ document.getElementById('autoSkipToggle').addEventListener('change', (e)=>{
   }
 });
 
-document.getElementById('closeSettingsBtn').addEventListener('click', ()=>{
-  document.getElementById('settingsPanel').style.display='none';
-  document.body.classList.remove('impostazioni-aperte');
-  document.getElementById('appRoot').style.display='block';
-});
+document.getElementById('closeSettingsBtn').addEventListener('click', chiudiImpostazioni);
 
 document.getElementById('saveAccountNameBtn').addEventListener('click', ()=>{
   const newName = document.getElementById('accountNameInput').value.trim();
