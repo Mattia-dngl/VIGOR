@@ -901,24 +901,21 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
         <button class="btn secondary" id="vidCopia" type="button">Copia il link</button>
       </div>
       <div class="vid-url-box" id="vidUrlBox" style="display:none;"></div>
-      <div class="vid-carica">
-        <p class="hint">Oppure carica il video dal telefono: resta dentro l'app, si apre sempre qui e funziona <b>anche senza internet</b>.</p>
-        <label class="btn block" for="vidFileInput" style="margin-top:0;">Carica un video dal telefono</label>
-        <input type="file" id="vidFileInput" accept="video/*" style="display:none;">
-      </div>
 
-      <div class="vid-incolla">
-        <p class="hint">Trovato il video giusto? Incolla qui il suo indirizzo YouTube: da ora in poi quell'esercizio lo riprodurrà <b>dentro l'app</b>, senza uscire.</p>
+      <div class="vid-incolla" id="vidIncollaBox">
+        <p class="hint" id="vidIncollaMsg">Trovato il video giusto? Incolla qui il suo indirizzo: da ora in poi quell'esercizio lo aprirà direttamente.</p>
         <div class="vid-incolla-row">
-          <input type="text" id="vidPasteInput" placeholder="YouTube, Google Drive o file .mp4" autocomplete="off">
+          <input type="text" id="vidPasteInput" placeholder="Indirizzo del video" autocomplete="off">
           <button class="btn" id="vidPasteBtn" type="button">Salva</button>
         </div>
       </div>
+      <p class="hint vid-incolla" id="vidSoloAdminMsg" style="display:none;">Il video di questo esercizio, della libreria base, lo gestisce solo chi amministra l'app.</p>
     </div>
     <div class="vid-foot" id="vidFoot">
       <p class="hint" id="vidFootMsg">Il video si sta caricando dentro l'app.</p>
-      <button class="btn secondary" id="vidCopia2" type="button">Copia il link</button>
-      <button class="btn ghost" id="vidEliminaLocale" type="button" style="display:none;">Elimina il video caricato</button>
+      <button class="btn secondary" id="vidYoutubeFoot" type="button" style="display:none;">Cerca su YouTube</button>
+      <button class="btn secondary" id="vidApriFoot" type="button" style="display:none;">Apri la pagina</button>
+      <button class="btn ghost" id="vidCopia2" type="button">Copia il link</button>
     </div>
   </div>
 </div>
@@ -1053,7 +1050,7 @@ const CAMPI_SERIE = ["reps","kg","seconds","km","minuti"];
 function tipoMisura(nome){
   const n = (nome||'').trim().toLowerCase();
   if(!n) return "peso";
-  const prof = loggedInProfile();
+  const prof = activeProfile();
   if(prof && prof.customExercises && prof.customExercises[n] && prof.customExercises[n].tipo)
     return prof.customExercises[n].tipo;
   if(state.baseExerciseTipi && state.baseExerciseTipi[n]) return state.baseExerciseTipi[n];
@@ -1306,7 +1303,19 @@ function newProfile(name, email, password, approvato){
 // ============================================================
 let state = load();
 let activeProfileId = null;
-let actingProfileId = null; // sempre null qui, mantenuto solo per compatibilita' con funzioni condivise
+let actingProfileId = null; // non più usato per lo scambio profili: resta solo per compatibilita'
+
+// ============================================================
+// MODALITA' PT — un Personal Trainer che modifica la scheda/dieta di un
+// cliente lavora su una copia isolata dei suoi dati (_clienteBuffer), MAI
+// sui propri: il proprio profilo (state.profiles / activeProfileId) resta
+// sempre intatto, in memoria e sul telefono. Le modifiche al cliente si
+// salvano solo sul suo account online, mai in locale.
+// ============================================================
+let modalitaPT = false;
+let _clienteBuffer = null;
+let _clienteIdInModifica = null;
+let _ptSalvataggioTimer = null;
 
 function load(){
   let data;
@@ -1339,11 +1348,17 @@ function load(){
   return data;
 }
 function save(){
+  // in modalità PT sto modificando il cliente, non me: mai in locale sul mio
+  // telefono, solo sul suo account online (vedi programmaSalvataggioPT)
+  if(modalitaPT){ programmaSalvataggioPT(); return; }
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   if(typeof programmaInvio === 'function') programmaInvio();   // in modalità online rimanda tutto al server
 }
 
-function activeProfile(){ return state.profiles.find(p=>p.id===(actingProfileId||activeProfileId)); }
+// Il profilo "su cui sto lavorando": il mio di solito, quello del cliente
+// mentre lo sto seguendo come PT. loggedInProfile() è invece sempre e solo
+// il mio, così la mia identità (nome, account, impostazioni) non cambia mai.
+function activeProfile(){ return modalitaPT ? _clienteBuffer : loggedInProfile(); }
 function loggedInProfile(){ return state.profiles.find(p=>p.id===activeProfileId); }
 function isManager(){ return false; } // nessun ruolo owner/staff nella versione personale
 function isOwnerNotActing(){ return false; }
@@ -1518,6 +1533,7 @@ function ricostruisciFiguraCorpo(){
 // ============================================================
 let _onboardingMostrata = false;
 function controllaOnboarding(){
+  if(modalitaPT) return;   // mai sopra la sessione di modifica come PT
   const p = activeProfile();
   const gate = document.getElementById('onboardingGate');
   if(!gate || !p) return;
@@ -1608,7 +1624,7 @@ function mpRenderList(list, titolo){
         <div class="mp-ex-tags">
           <span class="mp-tag">${ex.g}</span>
           ${ex.tempo?'<span class="mp-tag time">a tempo</span>':''}
-          <a class="mp-video${haVideoLocale(ex.n)?' mio':''}" href="${escapeAttr(getExerciseVideoInfo(ex.n).url)}" data-ex-name="${escapeAttr(ex.n)}">▶ ${haVideoLocale(ex.n)?'Video tuo':'Video'}</a>
+          <a class="mp-video" href="${escapeAttr(getExerciseVideoInfo(ex.n).url)}" data-ex-name="${escapeAttr(ex.n)}">▶ Video</a>
         <button type="button" class="mp-video-gestisci" data-gestisci="${escapeAttr(ex.n)}" title="Scegli quale video usare">⋯</button>
         </div>
       </div>
@@ -1689,7 +1705,7 @@ document.getElementById('creaEsConferma').addEventListener('click', ()=>{
   const nome = document.getElementById('creaEsNome').value.trim();
   if(!nome){ toast("Scrivi il nome dell'esercizio."); return; }
   if(creaEsMuscoliScelti.length===0){ toast("Seleziona almeno un gruppo muscolare."); return; }
-  const lp = loggedInProfile();
+  const lp = activeProfile();
   if(!lp.customExercises) lp.customExercises = {};
   const video = document.getElementById('creaEsVideo').value.trim();
   const tipo = document.getElementById('creaEsTipo').value || 'peso';
@@ -2650,7 +2666,6 @@ async function dopoAccessoOnline(){
   document.documentElement.classList.remove('avvio');
   nascondiCloudGate();
   document.getElementById('appRoot').style.display = 'block';
-  caricaElencoVideoLocali().catch(()=>{});
   controllaSaltati(true);
   renderAll();
   _timerDurata = impostazioniTimer().durata;
@@ -3305,16 +3320,19 @@ function renderDettaglioPT(sezione){
 }
 
 // ---------- modificare scheda o dieta di un cliente ----------
-let _statoMio = null;   // i miei dati, messi da parte mentre lavoro su quelli del cliente
+// Il cliente non lo vedo mai "dentro al mio account": lavoro su una copia
+// isolata dei suoi dati (_clienteBuffer). Il mio profilo, in memoria e sul
+// telefono, non viene mai toccato — vedi activeProfile()/save() più sopra.
 
-// Se sto modificando la scheda di un cliente come PT e uso un mio esercizio personale,
-// lo aggiungo anche ai suoi esercizi personali: così lo ritrova già pronto (muscoli, tipo,
-// eventuale video) anche lui, senza doverlo ricreare da zero.
+// Se sto costruendo la scheda di un cliente e uso un MIO esercizio
+// personale, lo aggiungo anche ai suoi esercizi personali: così lo ritrova
+// già pronto (muscoli, tipo, eventuale video) anche lui, senza doverlo
+// ricreare da zero.
 function propagaEserciziPersonalizzatiPT(giorni){
-  if(!document.body.classList.contains('modifica-pt') || !_statoMio) return;
-  const pt = _statoMio.profiles && _statoMio.profiles[0];
+  if(!modalitaPT) return;
+  const pt = loggedInProfile();
   if(!pt || !pt.customExercises) return;
-  const cliente = loggedInProfile();
+  const cliente = _clienteBuffer;
   if(!cliente) return;
   if(!cliente.customExercises) cliente.customExercises = {};
   let aggiunti = 0;
@@ -3328,44 +3346,65 @@ function propagaEserciziPersonalizzatiPT(giorni){
       }
     });
   });
-  if(aggiunti>0) save();
 }
 
 function modificaComePT(cosa){
   if(!_clienteAperto) return;
   const p = _clienteAperto.riga;
-  customConfirm(
-    `Stai per lavorare sulla ${cosa} di ${nomeDi(p)}. L'app userà i suoi dati finché non premi "Torna all'area PT".`,
-    ()=>{
-      _statoMio = JSON.parse(JSON.stringify(state));
-      const suo = p.dati || {};
-      suo.id = p.id; suo.name = nomeDi(p); suo.approvato = true;
-      state.profiles = [suo];
-      activeProfileId = suo.id;
-      document.body.classList.add('modifica-pt');
-      document.getElementById('areaPT').style.display = 'none';
-      document.getElementById('appRoot').style.display = 'block';
-      document.getElementById('bannerPT').style.display = 'flex';
-      document.getElementById('bannerPTNome').textContent = `Stai modificando: ${nomeDi(p)}`;
-      renderAll();
-      const tab = document.querySelector(cosa === 'dieta' ? '.tab-btn[data-tab="diet"]' : '.tab-btn[data-tab="program"]');
-      if(tab) tab.click();
-      const segBtn = document.querySelector(cosa === 'dieta' ? '.seg-btn[data-segd="edit"]' : '.seg-btn[data-seg="edit"]');
-      if(segBtn) segBtn.click();
-      toast(`Stai lavorando sui dati di ${nomeDi(p)}`);
-    });
+  const buffer = JSON.parse(JSON.stringify(p.dati || {}));
+  buffer.id = p.id;
+  buffer.name = nomeDi(p);
+  buffer.approvato = true;
+  if(!buffer.programs || !buffer.programs.length) buffer.programs = [blankProgram()];
+  if(!buffer.activeProgramId) buffer.activeProgramId = buffer.programs[buffer.programs.length-1].id;
+  if(!buffer.customExercises) buffer.customExercises = {};
+  // vecchio formato (solo array di muscoli, senza video/tipo): lo aggiorno come fa load() per me
+  Object.keys(buffer.customExercises).forEach(name=>{
+    if(Array.isArray(buffer.customExercises[name])) buffer.customExercises[name] = {muscles: buffer.customExercises[name], video:''};
+  });
+  if(!buffer.measurements) buffer.measurements = [];
+  if(!buffer.mealLogs) buffer.mealLogs = [];
+
+  _clienteBuffer = buffer;
+  _clienteIdInModifica = p.id;
+  modalitaPT = true;
+  document.body.classList.add('modifica-pt');
+  document.getElementById('areaPT').style.display = 'none';
+  document.getElementById('appRoot').style.display = 'block';
+  document.getElementById('bannerPT').style.display = 'flex';
+  document.getElementById('bannerPTNome').textContent = `Stai modificando: ${nomeDi(p)}`;
+  renderAll();
+  const tab = document.querySelector(cosa === 'dieta' ? '.tab-btn[data-tab="diet"]' : '.tab-btn[data-tab="program"]');
+  if(tab) tab.click();
+  const segBtn = document.querySelector(cosa === 'dieta' ? '.seg-btn[data-segd="edit"]' : '.seg-btn[data-seg="edit"]');
+  if(segBtn) segBtn.click();
+  toast(`Stai lavorando sulla ${cosa} di ${nomeDi(p)}`);
+}
+
+// salva subito la scheda/dieta del cliente sul SUO account online — mai sul mio telefono
+async function salvaModifichePT(){
+  if(!modalitaPT || !_clienteBuffer || !_clienteIdInModifica) return true;
+  if(!sb){ toast("Serve la connessione per salvare sul suo account."); return false; }
+  const { error } = await sb.from('profili')
+    .update({ dati: _clienteBuffer, aggiornato_il: new Date().toISOString() })
+    .eq('id', _clienteIdInModifica);
+  if(error){ console.error(error); toast("Non riuscito a salvare: " + error.message); return false; }
+  return true;
+}
+function programmaSalvataggioPT(){
+  clearTimeout(_ptSalvataggioTimer);
+  _ptSalvataggioTimer = setTimeout(salvaModifichePT, 1200);   // accorpa le modifiche ravvicinate, come per il mio account
 }
 
 async function tornaDaModificaPT(){
-  if(!_clienteAperto || !_statoMio) return;
-  const suo = state.profiles[0];
-  const { error } = await sb.from('profili').update({ dati: suo, aggiornato_il: new Date().toISOString() })
-    .eq('id', _clienteAperto.riga.id);
-  if(error){ toast("Non riuscito: " + error.message); return; }
-  _clienteAperto.riga.dati = suo;
-  state = _statoMio; _statoMio = null;
-  activeProfileId = (state.profiles[0]||{}).id;
-  salvaLocale();
+  if(!modalitaPT || !_clienteAperto) return;
+  clearTimeout(_ptSalvataggioTimer);
+  const ok = await salvaModifichePT();
+  if(!ok) return;   // resto dentro finché non riesco a salvare: niente si perde
+  if(_clienteAperto) _clienteAperto.riga.dati = _clienteBuffer;
+  modalitaPT = false;
+  _clienteBuffer = null;
+  _clienteIdInModifica = null;
   document.body.classList.remove('modifica-pt');
   document.getElementById('bannerPT').style.display = 'none';
   document.getElementById('appRoot').style.display = 'none';
@@ -3673,63 +3712,11 @@ if('serviceWorker' in navigator && location.protocol.startsWith('http')){
 }
 
 // ============================================================
-// VIDEO CARICATI DAL TELEFONO
-// I file restano dentro l'app (archivio interno del browser): si aprono nel
-// popup, funzionano anche senza rete e non dipendono da nessun sito esterno.
+// dimensione leggibile (usata per lo spazio occupato in Impostazioni)
 // ============================================================
-const VDB_NOME = "fitproVideo", VDB_STORE = "video";
-let _vdb = null;
-let VIDEO_LOCALI = new Set();   // nomi degli esercizi che hanno un video caricato
-
-function vdbApri(){
-  if(_vdb) return Promise.resolve(_vdb);
-  return new Promise((ok, ko)=>{
-    const req = indexedDB.open(VDB_NOME, 1);
-    req.onupgradeneeded = ()=>{
-      const db = req.result;
-      if(!db.objectStoreNames.contains(VDB_STORE)) db.createObjectStore(VDB_STORE);
-    };
-    req.onsuccess = ()=>{ _vdb = req.result; ok(_vdb); };
-    req.onerror = ()=>ko(req.error);
-  });
-}
-function vdbAzione(modo, fn){
-  return vdbApri().then(db => new Promise((ok, ko)=>{
-    const tx = db.transaction(VDB_STORE, modo);
-    const st = tx.objectStore(VDB_STORE);
-    const r = fn(st);
-    tx.oncomplete = ()=>ok(r && r.result !== undefined ? r.result : r);
-    tx.onerror = ()=>ko(tx.error);
-  }));
-}
-const vdbSalva   = (chiave, dato) => vdbAzione('readwrite', st => st.put(dato, chiave));
-const vdbLeggi   = (chiave)       => vdbAzione('readonly',  st => st.get(chiave));
-const vdbElimina = (chiave)       => vdbAzione('readwrite', st => st.delete(chiave));
-const vdbChiavi  = ()             => vdbAzione('readonly',  st => st.getAllKeys());
-
-async function caricaElencoVideoLocali(){
-  try{
-    const chiavi = await vdbChiavi();
-    VIDEO_LOCALI = new Set(chiavi || []);
-  }catch(e){ VIDEO_LOCALI = new Set(); }
-}
-function haVideoLocale(nome){ return VIDEO_LOCALI.has((nome||'').trim().toLowerCase()); }
-
 function pesoLeggibile(byte){
   if(byte < 1024*1024) return Math.round(byte/1024) + " KB";
   return (byte/(1024*1024)).toFixed(1).replace('.', ',') + " MB";
-}
-
-async function salvaVideoLocale(nomeEsercizio, file){
-  const chiave = (nomeEsercizio||'').trim().toLowerCase();
-  await vdbSalva(chiave, { blob: file, nomeFile: file.name, tipo: file.type,
-                           peso: file.size, quando: new Date().toISOString() });
-  VIDEO_LOCALI.add(chiave);
-}
-async function eliminaVideoLocale(nomeEsercizio){
-  const chiave = (nomeEsercizio||'').trim().toLowerCase();
-  await vdbElimina(chiave);
-  VIDEO_LOCALI.delete(chiave);
 }
 
 // ============================================================
@@ -3785,66 +3772,43 @@ function urlFileVideo(url){
   return null;
 }
 
-let _urlOggetto = null;   // indirizzo temporaneo del video caricato, da liberare alla chiusura
+// Un esercizio è "di base" se sta nella libreria condivisa (esercizi.js).
+// Se non c'è, è un esercizio personale creato da chi lo sta usando.
+function esercizioDiBase(nome){
+  return !!(typeof libFind === 'function' && libFind(nome));
+}
 
+// GUARDA (▶): il popup si apre sempre, e mostra sempre qualcosa dentro il
+// riquadro — mai un salto fuori dall'app.
+//  - se c'è un link assegnato (YouTube, Vimeo, Drive o un sito qualunque,
+//    anche un file video vero e proprio) lo mostro sempre qui dentro
+//  - se non c'è nessun link, mostro la ricerca YouTube di riserva
+// Alcuni siti (per policy del browser, non dell'app) rifiutano di comparire
+// dentro un'altra pagina: in quel caso il riquadro resta vuoto ma la barra
+// qui sotto offre comunque un modo per vederlo, senza mai lasciare il popup
+// a metà.
+//
+// GESTISCI (⋯): il link degli esercizi della libreria base lo può cambiare
+// solo chi amministra l'app; il link di un esercizio personale lo gestisce
+// sempre chi lo ha creato.
 async function openVideoPopup(nome, url, forza, gestisci){
   _vidUrl = url; _vidNome = nome || "Video";
   document.getElementById('vidTitle').textContent = _vidNome;
   document.getElementById('vidOverlay').classList.add('show');
 
-  // 1) se per questo esercizio hai caricato un video, vince su qualsiasi link
-  if(haVideoLocale(_vidNome) && !gestisci){
-    try{
-      const rec = await vdbLeggi(_vidNome.trim().toLowerCase());
-      if(rec && rec.blob){
-        const player = document.getElementById('vidPlayer');
-        const frame = document.getElementById('vidFrame');
-        if(_urlOggetto) URL.revokeObjectURL(_urlOggetto);
-        _urlOggetto = URL.createObjectURL(rec.blob);
-        frame.src = 'about:blank'; frame.style.display = 'none';
-        player.style.display = 'block'; player.src = _urlOggetto;
-        document.getElementById('vidFrameWrap').style.display = 'block';
-        document.getElementById('vidFoot').style.display = 'flex';
-        document.getElementById('vidAlt').style.display = 'none';
-        document.getElementById('vidFootMsg').textContent =
-          `Video tuo (${rec.nomeFile || 'caricato'}, ${pesoLeggibile(rec.peso||0)}) — funziona anche senza internet.`;
-        document.getElementById('vidEliminaLocale').style.display = 'inline-block';
-        return;
-      }
-    }catch(e){ console.error(e); }
-  }
-  document.getElementById('vidEliminaLocale').style.display = 'none';
-  // se il link l'hai scelto tu, lo apro comunque: decidi tu cosa vuoi vedere
-  const fileVideo = gestisci ? null : urlFileVideo(url);
-  const embed = gestisci ? null : (fileVideo ? null : (urlIncorporabile(url) || (forza ? url : null)));
   const wrap = document.getElementById('vidFrameWrap');
   const alt  = document.getElementById('vidAlt');
   const foot = document.getElementById('vidFoot');
   const player = document.getElementById('vidPlayer');
   const frame = document.getElementById('vidFrame');
+  const msg = document.getElementById('vidFootMsg');
+  const btnYoutubeFoot = document.getElementById('vidYoutubeFoot');
+  const btnApriFoot = document.getElementById('vidApriFoot');
 
-  if(fileVideo){
-    // file video vero: lo riproduce direttamente l'app, funziona anche senza rete se è locale
-    frame.src = 'about:blank'; frame.style.display = 'none';
-    player.style.display = 'block'; player.src = fileVideo;
-    wrap.style.display = 'block'; foot.style.display = 'flex'; alt.style.display = 'none';
-    const msg = document.getElementById('vidFootMsg');
-    if(msg) msg.textContent = "Video riprodotto direttamente nell'app.";
-  } else if(embed){
+  // ---------- "⋯" gestisci: scegliere/cambiare il video di questo esercizio ----------
+  if(gestisci){
     player.style.display = 'none'; player.removeAttribute('src');
-    frame.style.display = 'block';
-    frame.src = embed;
-    wrap.style.display = 'block'; foot.style.display = 'flex'; alt.style.display = 'none';
-    const msg = document.getElementById('vidFootMsg');
-    if(msg) msg.textContent = urlIncorporabile(url)
-      ? "Il video si apre qui dentro."
-      : "Se il riquadro resta vuoto è il sito a non permettere di comparire dentro altre app: copia il link e aprilo nel browser.";
-  } else {
-    // niente riquadro nero: spiego e offro le due strade
-    document.getElementById('vidPlayer').style.display = 'none';
-    document.getElementById('vidPlayer').removeAttribute('src');
-    document.getElementById('vidFrame').style.display = 'block';
-    document.getElementById('vidFrame').src = "about:blank";
+    frame.style.display = 'none'; frame.src = 'about:blank';
     wrap.style.display = 'none'; foot.style.display = 'none'; alt.style.display = 'block';
     const lib = (typeof libFind === 'function') ? libFind(nome) : null;
     document.getElementById('vidAltDesc').textContent = lib ? lib.d : "";
@@ -3852,26 +3816,69 @@ async function openVideoPopup(nome, url, forza, gestisci){
     try{ host = new URL(url).hostname.replace(/^www\./,''); }catch(e){}
     const _paste = document.getElementById('vidPasteInput');
     if(_paste) _paste.value = "";
-
-    // nessun link vero assegnato (solo ricerca di riserva): metto YouTube come scelta principale.
-    // link vero ma il sito non si fa incorporare: metto "Apri la pagina" come scelta principale.
     const eRicercaGenerica = (url === youtubeSearchUrl(nome));
     const btnApri = document.getElementById('vidOpenTab2');
     const btnYoutube = document.getElementById('vidYoutube');
     if(eRicercaGenerica){
       btnApri.style.display = 'none';
       btnYoutube.classList.remove('secondary');
-      document.getElementById('vidAltMsg').textContent =
-        "Non c'è ancora un video assegnato a questo esercizio: tocca qui sotto per cercarlo su YouTube. Poi torna qui e incolla il link giusto, così da ora in poi si aprirà direttamente in questo riquadro.";
     } else {
       btnApri.style.display = 'inline-block';
       btnYoutube.classList.add('secondary');
-      document.getElementById('vidAltMsg').textContent =
-        host ? `${host} non permette di essere mostrato dentro altre app: tocca "Apri la pagina" per vederlo (si apre sopra l'app, poi torni qui). Oppure incolla qui sotto un link YouTube e da lì in poi si aprirà direttamente nel riquadro.`
-             : "Questo indirizzo non può essere riprodotto dentro l'app.";
     }
+
+    // il link degli esercizi di base lo cambia solo l'amministratore;
+    // quello degli esercizi personali lo cambia sempre chi li ha creati
+    const puoModificare = esercizioDiBase(nome) ? sonoAmministratore() : true;
+    document.getElementById('vidIncollaBox').style.display = puoModificare ? 'block' : 'none';
+    document.getElementById('vidSoloAdminMsg').style.display = puoModificare ? 'none' : 'block';
+
+    if(!puoModificare){
+      document.getElementById('vidAltMsg').textContent =
+        host ? `Video attuale: ${host}.` : "Nessun video assegnato a questo esercizio.";
+    } else if(eRicercaGenerica){
+      document.getElementById('vidAltMsg').textContent =
+        "Non c'è ancora un video assegnato a questo esercizio: tocca qui sotto per cercarlo su YouTube, oppure incolla direttamente il link giusto.";
+    } else {
+      document.getElementById('vidAltMsg').textContent =
+        host ? `Video attuale: ${host}. Incolla un altro link qui sotto per sostituirlo.`
+             : "Incolla qui sotto il link del video.";
+    }
+    return;
   }
-  document.getElementById('vidOverlay').classList.add('show');
+
+  // ---------- ▶ guarda: sempre dentro il popup ----------
+  alt.style.display = 'none';
+  btnYoutubeFoot.style.display = 'none';
+  btnApriFoot.style.display = 'none';
+
+  // un vero file video (mp4/webm/...) dietro il link: lo riproduco direttamente
+  const fileVideo = urlFileVideo(url);
+  if(fileVideo){
+    frame.src = 'about:blank'; frame.style.display = 'none';
+    player.style.display = 'block'; player.src = fileVideo;
+    wrap.style.display = 'block'; foot.style.display = 'flex';
+    msg.textContent = "Video riprodotto direttamente nell'app.";
+    return;
+  }
+
+  // qualunque altro link, oppure — se non c'è — la ricerca YouTube di riserva.
+  // Lo apro sempre nel riquadro qui dentro.
+  player.style.display = 'none'; player.removeAttribute('src');
+  frame.style.display = 'block';
+  frame.src = urlIncorporabile(url) || url;
+  wrap.style.display = 'block'; foot.style.display = 'flex';
+
+  const eRicercaGenerica = (url === youtubeSearchUrl(nome));
+  if(eRicercaGenerica){
+    btnYoutubeFoot.style.display = 'inline-block';
+    msg.textContent = "Nessun video assegnato: qui sopra la ricerca su YouTube. Trovato quello giusto? Tocca \"⋯\" e incollalo, così da ora in poi si aprirà subito.";
+  } else {
+    let host = "";
+    try{ host = new URL(url).hostname.replace(/^www\./,''); }catch(e){}
+    btnApriFoot.style.display = 'inline-block';
+    msg.textContent = host ? `Se il riquadro resta vuoto, ${host} non permette di essere mostrato qui dentro: tocca "Apri la pagina".` : "Se il riquadro resta vuoto, tocca \"Apri la pagina\".";
+  }
 }
 
 async function apriAltrove(url){
@@ -3938,52 +3945,38 @@ document.getElementById('vidPasteBtn').addEventListener('click', ()=>{
   const url = inp.value.trim();
   if(!url){ toast("Incolla prima l'indirizzo del video."); return; }
   if(!urlIncorporabile(url) && !urlFileVideo(url)){
-    toast("Serve un link YouTube, Vimeo, Google Drive o un file video (.mp4)");
+    toast("Serve un link YouTube, Vimeo, Google Drive o simile.");
     return;
   }
-  const lib = libFind(_vidNome);
-  const chiave = (lib ? lib.n : _vidNome).toLowerCase();
-  state.baseExerciseVideos[chiave] = url;
+  const eBase = esercizioDiBase(_vidNome);
+  if(eBase && !sonoAmministratore()){
+    toast("Il video di questo esercizio, della libreria base, lo gestisce solo chi amministra l'app.");
+    return;
+  }
+  if(eBase){
+    const lib = libFind(_vidNome);
+    const chiave = (lib ? lib.n : _vidNome).toLowerCase();
+    state.baseExerciseVideos[chiave] = url;
+  } else {
+    // esercizio personale: il video lo salvo su chi lo ha creato (io, o il
+    // cliente se lo sto costruendo per lui come PT), mai sulla libreria base
+    const prof = activeProfile();
+    const chiave = _vidNome.trim().toLowerCase();
+    if(prof){
+      if(!prof.customExercises) prof.customExercises = {};
+      if(!prof.customExercises[chiave]) prof.customExercises[chiave] = { muscles: getExerciseMuscles(_vidNome) || [], video: '' };
+      prof.customExercises[chiave].video = url;
+    }
+  }
   save();
   inp.value = "";
   if(typeof renderBaseExerciseList === 'function' && document.getElementById('baseExList')) renderBaseExerciseList();
+  if(typeof renderCustomExList === 'function' && document.getElementById('customExList')) renderCustomExList();
   if(typeof renderGlossario === 'function' && GL_BUILT) renderGlossario();
   toast("Video salvato ✓ ora si apre dentro l'app");
   openVideoPopup(_vidNome, url);          // lo mostro subito
 });
 
-
-document.getElementById('vidFileInput').addEventListener('change', async (e)=>{
-  const file = e.target.files[0];
-  if(!file) return;
-  const LIMITE = 200 * 1024 * 1024;
-  if(file.size > LIMITE){
-    toast("Video troppo pesante (max 200 MB). Accorcialo o riducine la qualità.");
-    e.target.value = ""; return;
-  }
-  try{
-    toast("Sto salvando il video…");
-    await salvaVideoLocale(_vidNome, file);
-    if(typeof renderGlossario === 'function' && GL_BUILT) renderGlossario();
-    if(document.getElementById('baseExList') && typeof renderBaseExerciseList === 'function') renderBaseExerciseList();
-    toast(`Video salvato ✓ (${pesoLeggibile(file.size)})`);
-    openVideoPopup(_vidNome, _vidUrl);      // lo mostro subito
-  }catch(err){
-    console.error(err);
-    toast("Non sono riuscito a salvare il video: spazio insufficiente?");
-  }
-  e.target.value = "";
-});
-
-document.getElementById('vidEliminaLocale').addEventListener('click', ()=>{
-  customConfirm(`Eliminare il video caricato per "${_vidNome}"? Tornerà a usare il link.`, async ()=>{
-    await eliminaVideoLocale(_vidNome);
-    if(typeof renderGlossario === 'function' && GL_BUILT) renderGlossario();
-    if(document.getElementById('baseExList') && typeof renderBaseExerciseList === 'function') renderBaseExerciseList();
-    toast("Video eliminato");
-    openVideoPopup(_vidNome, _vidUrl);
-  });
-});
 
 document.getElementById('vidYoutube').addEventListener('click', ()=>{
   apriAltrove(youtubeSearchUrl(_vidNome));
@@ -3993,6 +3986,13 @@ document.getElementById('vidOpenTab2').addEventListener('click', ()=>{
   apriAltrove(_vidUrl);
   if(!senzaRitorno()) closeVideoPopup();
 });
+document.getElementById('vidYoutubeFoot').addEventListener('click', ()=>{
+  apriAltrove(youtubeSearchUrl(_vidNome));
+});
+document.getElementById('vidApriFoot').addEventListener('click', ()=>{
+  if(!_vidUrl) return;
+  apriAltrove(_vidUrl);
+});
 
 function closeVideoPopup(){
   document.getElementById('vidOverlay').classList.remove('show');
@@ -4000,7 +4000,6 @@ function closeVideoPopup(){
   const _p = document.getElementById('vidPlayer');
   try{ _p.pause(); }catch(e){}
   _p.removeAttribute('src'); _p.load();
-  if(_urlOggetto){ URL.revokeObjectURL(_urlOggetto); _urlOggetto = null; }
 }
 document.getElementById('vidClose').addEventListener('click', closeVideoPopup);
 document.getElementById('vidOverlay').addEventListener('click', e=>{
@@ -4026,22 +4025,6 @@ document.addEventListener('click', e=>{
   e.stopPropagation();
   const nome = a.dataset.exName || "Video";
   const url = a.getAttribute('href');
-
-  // 1) il video che hai caricato tu vince su tutto: si riproduce dentro l'app
-  if(typeof haVideoLocale === 'function' && haVideoLocale(nome)){
-    openVideoPopup(nome, url);
-    return;
-  }
-
-  // 2) video riproducibile dentro l'app (YouTube, Vimeo, Drive, file .mp4)
-  if(urlFileVideo(url) || urlIncorporabile(url)){
-    openVideoPopup(nome, url);
-    return;
-  }
-
-  // 3) pagina che vieta di essere mostrata dentro altre app (es. Muscle & Strength)
-  //    o nessun link assegnato (ricerca YouTube di riserva): resta comunque nel popup,
-  //    che mostra la spiegazione e le scelte (aprire, cercare su YouTube, copiare).
   openVideoPopup(nome, url);
 }, true);
 
@@ -4382,7 +4365,7 @@ function glRenderList(list, titolo){
         <span class="mp-tag">${ex.g}</span>
         ${ex.slugs.map(s=>`<span class="mp-tag zone">${ZONE_LABEL[s]||s}</span>`).join('')}
         ${ex.tempo?'<span class="mp-tag time">a tempo</span>':''}
-        <a class="mp-video${haVideoLocale(ex.n)?' mio':''}" href="${escapeAttr(getExerciseVideoInfo(ex.n).url)}" data-ex-name="${escapeAttr(ex.n)}">▶ ${haVideoLocale(ex.n)?'Video tuo':'Video'}</a>
+        <a class="mp-video" href="${escapeAttr(getExerciseVideoInfo(ex.n).url)}" data-ex-name="${escapeAttr(ex.n)}">▶ Video</a>
         <button type="button" class="mp-video-gestisci" data-gestisci="${escapeAttr(ex.n)}" title="Scegli quale video usare">⋯</button>
       </div>
     </div>`).join('');
@@ -4597,9 +4580,6 @@ function enterProfile(id){
   _autoSkipFatto = null;
   document.getElementById('profileGate').style.display='none';
   document.getElementById('appRoot').style.display='block';
-  caricaElencoVideoLocali().then(()=>{
-    if(typeof renderGlossario === 'function' && GL_BUILT) renderGlossario();
-  });
   controllaSaltati(true);
   renderAll();
   chiediProtezioneDati().then(()=>aggiornaStatoDati());
@@ -5725,7 +5705,7 @@ function renderProgressTable(){
 function getExerciseMuscles(name){
   const n = (name||'').trim().toLowerCase();
   if(!n) return null;
-  const lp = loggedInProfile();
+  const lp = activeProfile();
   if(lp && lp.customExercises && lp.customExercises[n]) return lp.customExercises[n].muscles;
   if(state.baseExerciseOverrides && state.baseExerciseOverrides[n]) return state.baseExerciseOverrides[n];
   if(EXERCISE_MUSCLE_MAP[n]) return EXERCISE_MUSCLE_MAP[n];
@@ -5742,7 +5722,7 @@ function youtubeSearchUrl(name){
 function getExerciseVideoInfo(name){
   const n = (name||'').trim().toLowerCase();
   if(!n) return null;
-  const lp = loggedInProfile();
+  const lp = activeProfile();
   if(lp && lp.customExercises && lp.customExercises[n] && lp.customExercises[n].video){
     return { url: lp.customExercises[n].video, isCustomLink: true, fonte: 'utente' };
   }
@@ -6160,7 +6140,7 @@ function renderDayEditors(){
 function renderExerciseEditors(di){
   const list = document.querySelector(`.ex-list[data-di="${di}"]`);
   const day = editingDays[di];
-  const lp = loggedInProfile();
+  const lp = activeProfile();
   // solo la libreria: i vecchi nomi restano riconosciuti nelle schede già fatte,
   // ma non vengono più proposti, altrimenti compaiono doppioni tipo
   // "Curl su panca inclinata" e "curl panca inclinata"
@@ -6472,7 +6452,7 @@ function renderCustomExMuscleChips(){
 
 function renderCustomExList(){
   const wrap = document.getElementById('customExList');
-  const lp = loggedInProfile();
+  const lp = activeProfile();
   const canVideo = true;
   const entries = Object.entries(lp.customExercises || {});
   const opzioniTipo = (scelto)=>Object.entries(TIPI_MISURA).map(([k,v])=>
@@ -6493,7 +6473,7 @@ function renderCustomExList(){
     </div>`;
   }).join('');
   wrap.querySelectorAll('.mio-ex-tipo').forEach(sel=>sel.addEventListener('change', ()=>{
-    const lp2 = loggedInProfile();
+    const lp2 = activeProfile();
     if(lp2.customExercises[sel.dataset.name]){
       lp2.customExercises[sel.dataset.name].tipo = sel.value;
       save();
@@ -6502,7 +6482,7 @@ function renderCustomExList(){
   }));
   wrap.querySelectorAll('.remove-x').forEach(btn=>{
     btn.addEventListener('click', ()=>{
-      delete loggedInProfile().customExercises[btn.dataset.name];
+      delete activeProfile().customExercises[btn.dataset.name];
       save();
       renderCustomExList();
       toast("Esercizio personalizzato rimosso");
@@ -6512,7 +6492,7 @@ function renderCustomExList(){
     btn.addEventListener('click', ()=>{
       const url = prompt("Incolla il link del video dimostrativo (YouTube, Vimeo, ecc.):");
       if(url && url.trim()){
-        loggedInProfile().customExercises[btn.dataset.name].video = url.trim();
+        activeProfile().customExercises[btn.dataset.name].video = url.trim();
         save();
         renderCustomExList();
         toast("Video aggiunto ✓");
