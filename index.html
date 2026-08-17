@@ -1131,7 +1131,7 @@ function formatDateLungo(iso){
   const [y,m,d] = iso.split('-');
   return `${parseInt(d,10)} ${MESI[parseInt(m,10)-1]} ${y}`;
 }
-function escapeAttr(s){ return (s||"").replace(/"/g,'&quot;'); }
+function escapeAttr(s){ return String(s==null ? "" : s).replace(/"/g,'&quot;'); }
 
 function toTitleCase(s){
   return s.replace(/\w\S*/g, t => t.charAt(0).toUpperCase() + t.slice(1));
@@ -5164,18 +5164,21 @@ function buildDropsetRound(exName, numeroRound, dropset){
     }
 
     const kgInput = riga.querySelector('[data-field="kg"]');
-    if(kgInput && kgPrec){
+    const kgSorgente = kgPrec;   // fisso qui il riferimento: ogni drop deve restare legato alla
+                                 // tappa che aveva sopra, non a quella dell'ultimo giro del ciclo
+    if(kgInput && kgSorgente){
       kgInput.classList.add('drop-kg-auto');
       kgInput.placeholder = 'auto';
       const ricalcola = ()=>{
-        const base = parseFloat(kgPrec.value);
+        const base = parseFloat(kgSorgente.value);
         if(isNaN(base)) return;
         const calcolato = Math.round(base * (1 - (drop.riduzione||0)/100) * 4) / 4;   // arrotondo ai 0,25 kg
         kgInput.value = calcolato;
         currentSetInputs[exName][idx].kg = calcolato;
+        kgInput.dispatchEvent(new Event('input', {bubbles:true}));   // così il calcolo scende anche ai drop successivi
         salvaBozza();
       };
-      kgPrec.addEventListener('input', ricalcola);
+      kgSorgente.addEventListener('input', ricalcola);
       ricalcola();
       kgPrec = kgInput;   // il prossimo drop parte dal peso di questo
     }
@@ -6258,7 +6261,7 @@ function renderExerciseEditors(di){
       const {di, ei} = e.target.dataset;
       const ex = editingDays[di].exercises[ei];
       if(e.target.checked){
-        ex.dropset = { drops: [{ reps: 8, riduzione: 25 }] };
+        ex.dropset = { drops: [{ reps: '8', riduzione: 25 }] };
       } else {
         delete ex.dropset;
       }
@@ -6268,7 +6271,7 @@ function renderExerciseEditors(di){
   list.querySelectorAll('.dropset-add').forEach(btn=>{
     btn.addEventListener('click', e=>{
       const {di, ei} = e.target.dataset;
-      editingDays[di].exercises[ei].dropset.drops.push({ reps: 8, riduzione: 25 });
+      editingDays[di].exercises[ei].dropset.drops.push({ reps: '8', riduzione: 25 });
       renderExerciseEditors(di);
     });
   });
