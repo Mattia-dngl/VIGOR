@@ -233,6 +233,10 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
   <div class="settings-inner home-inner">
     <div class="home-topbar">
       <div class="home-logo">Fit<span class="home-logo-accent">Pro</span></div>
+      <button type="button" class="home-bell" id="homeBellBtn" title="Novità">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path d="M12 4a5 5 0 0 0-5 5v3.5c0 .8-.3 1.6-.9 2.2L5 16h14l-1.1-1.3c-.6-.6-.9-1.4-.9-2.2V9a5 5 0 0 0-5-5Z" stroke-width="1.7" stroke-linejoin="round"/><path d="M9.5 19a2.5 2.5 0 0 0 5 0" stroke-width="1.7" stroke-linecap="round"/></svg>
+        <span class="home-bell-dot" id="homeBellDot" style="display:none;"></span>
+      </button>
     </div>
     <div class="home-head">
       <h1 class="home-greeting" id="homeSaluto">Bentornato!</h1>
@@ -255,27 +259,27 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
 
     <div class="home-grid">
       <button type="button" class="home-card home-card-main" id="homeAllenatiBtn">
-        <div class="home-card-icon">🏋</div>
-        <div class="home-card-title">Allenati</div>
-        <div class="home-card-sub">Scheda, registra, dieta, storico</div>
+        <div class="home-card-icon-badge home-card-icon-badge-lg">🏋</div>
+        <div class="home-card-text">
+          <div class="home-card-title">Allenati</div>
+          <div class="home-card-sub">Inizia il tuo allenamento</div>
+        </div>
+        <div class="home-card-arrow">›</div>
       </button>
       <button type="button" class="home-card" id="homeAccountBtn">
-        <div class="home-card-icon">👤</div>
+        <div class="home-card-icon-badge">👤</div>
         <div class="home-card-title">Account</div>
-        <div class="home-card-sub">Nome, sesso, password</div>
+        <div class="home-card-sub">Gestisci il tuo profilo</div>
+        <div class="home-card-arrow">›</div>
       </button>
-      <button type="button" class="home-card" id="homeImpostazioniBtn">
-        <div class="home-card-icon">⚙</div>
-        <div class="home-card-title">Impostazioni</div>
-        <div class="home-card-sub">Timer, esercizi, backup</div>
-      </button>
-      <button type="button" class="home-card" id="homePTBtn" style="display:none;">
-        <div class="home-card-icon">🏅</div>
+      <button type="button" class="home-card home-card-warm" id="homePTBtn" style="display:none;">
+        <div class="home-card-icon-badge">🏅</div>
         <div class="home-card-title">Personal Trainer</div>
         <div class="home-card-sub">La tua area riservata</div>
+        <div class="home-card-arrow">›</div>
       </button>
       <button type="button" class="home-card home-card-esci" id="homeEsciBtn">
-        <div class="home-card-icon">↪</div>
+        <div class="home-card-icon-badge">↪</div>
         <div class="home-card-title">Esci</div>
         <div class="home-card-sub">Disconnettiti dall'app</div>
       </button>
@@ -882,8 +886,6 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
     </div>
   </section>
 </main>
-</div>
-</div>
 
 <nav class="tabs" id="navTabs">
   <button class="tab-btn" data-tab="glossario" id="tabBtnGloss">
@@ -907,6 +909,8 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
     <span class="tab-label">Storico</span>
   </button>
 </nav>
+</div>
+</div>
 <div class="toast" id="toast"></div>
 <div class="cloud-stato" id="cloudStato"><span class="pallino"></span><span id="cloudStatoTxt">sincronizzato</span></div>
 
@@ -2712,6 +2716,20 @@ function streakSettimane(prof, programma){
   return streak;
 }
 
+function aggiornaCampanellaHome(){
+  const dot = document.getElementById('homeBellDot');
+  if(!dot) return;
+  try{
+    // il pallino compare solo se c'è davvero qualcosa da guardare: richieste PT in
+    // sospeso (per chi è PT) o account in attesa di approvazione (per l'amministratore)
+    const richiestePT = (typeof _rapporti !== 'undefined' && sonoPT())
+      ? _rapporti.filter(r => r.pt_id === (utenteOnline||{}).id && r.stato === 'in_attesa').length : 0;
+    const approvazioni = (sonoAmministratore() && window._profiliAdmin)
+      ? window._profiliAdmin.filter(x=>!x.approvato).length : 0;
+    dot.style.display = (richiestePT + approvazioni) > 0 ? 'block' : 'none';
+  }catch(e){ console.error(e); }
+}
+
 function mostraHome(){
   document.getElementById('appRoot').style.display = 'none';
   document.getElementById('settingsPanel').style.display = 'none';
@@ -2727,6 +2745,7 @@ function mostraHome(){
     document.getElementById('homeGoalFill').style.width = totali>0 ? `${Math.min(100, Math.round(fatti/totali*100))}%` : '0%';
     document.getElementById('homeStreakNum').textContent = streakSettimane(p||{}, programma);
   }catch(e){ console.error(e); }
+  aggiornaCampanellaHome();
   document.getElementById('homeScreen').style.display = 'block';
 }
 
@@ -2797,8 +2816,10 @@ document.getElementById('homeAllenatiBtn').addEventListener('click', ()=>{
   renderAll();
 });
 document.getElementById('homeAccountBtn').addEventListener('click', apriAccountPanel);
-document.getElementById('homeImpostazioniBtn').addEventListener('click', ()=>apriImpostazioni('home'));
 document.getElementById('homePTBtn').addEventListener('click', apriAreaPT);
+document.getElementById('homeBellBtn').addEventListener('click', ()=>{
+  if(sonoPT()) apriAreaPT(); else apriAccountPanel();
+});
 document.getElementById('homeEsciBtn').addEventListener('click', async ()=>{
   customConfirm("Uscire dall'app? Dovrai rifare l'accesso.", async ()=>{
     if(modalitaOnline() && sb){
@@ -2880,7 +2901,7 @@ async function dopoAccessoOnline(){
   applicaDatiOnline();
   // la card per l'area riservata compare solo a chi è Personal Trainer
   document.getElementById('homePTBtn').style.display = sonoPT() ? 'flex' : 'none';
-  caricaRapporti().then(()=>renderMioPT()).catch(()=>{});
+  caricaRapporti().then(()=>{ renderMioPT(); aggiornaCampanellaHome(); }).catch(()=>{});
   ascoltaMioProfilo();
   document.documentElement.classList.remove('avvio');
   nascondiCloudGate();

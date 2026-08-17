@@ -123,6 +123,12 @@
   .home-topbar{display:flex; justify-content:space-between; align-items:center; margin-bottom:22px;}
   .home-logo{font-family:var(--font-display); font-weight:800; font-size:22px; font-style:italic; letter-spacing:-0.01em;}
   .home-logo-accent{color:var(--accent);}
+  .home-bell{position:relative; width:40px; height:40px; border-radius:50%; background:var(--surface);
+    border:1px solid var(--border); display:flex; align-items:center; justify-content:center;
+    color:var(--text-dim); cursor:pointer; flex:0 0 auto;}
+  .home-bell svg{width:19px; height:19px;}
+  .home-bell-dot{position:absolute; top:8px; right:9px; width:8px; height:8px; border-radius:50%;
+    background:var(--accent); border:2px solid var(--bg);}
   .home-head{margin-bottom:18px;}
   .home-greeting{font-family:var(--font-display); font-size:26px; line-height:1.2; margin:0 0 6px;}
   .home-tagline{font-size:13px; color:var(--text-dim);}
@@ -147,20 +153,37 @@
 
   .home-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
   .home-card{
-    grid-column:span 1; text-align:left; background:var(--surface); border:1px solid var(--border);
-    border-radius:16px; padding:16px 14px; cursor:pointer; display:flex; flex-direction:column;
-    gap:4px; box-shadow:0 1px 3px rgba(0,0,0,.04);
+    position:relative; grid-column:span 1; text-align:left; background:var(--surface);
+    border:1px solid var(--border); border-radius:18px; padding:16px 15px; cursor:pointer;
+    display:flex; flex-direction:column; gap:3px; box-shadow:0 1px 3px rgba(0,0,0,.04);
   }
-  .home-card-main{grid-column:1 / -1; background:var(--accent); border-color:var(--accent);
-    display:flex; flex-direction:row; align-items:center; gap:14px; padding:20px;}
-  .home-card-main .home-card-icon{font-size:30px;}
-  .home-card-main .home-card-title{font-size:16px; margin-top:0;}
-  .home-card-main .home-card-title, .home-card-main .home-card-sub{color:#fff;}
-  .home-card-icon{font-size:22px; line-height:1;}
-  .home-card-title{font-family:var(--font-display); font-size:14px; margin-top:4px;}
-  .home-card-sub{font-size:11.5px; color:var(--text-dim);}
-  .home-card-main .home-card-sub{color:rgba(255,255,255,.85);}
-  .home-card-esci{border-color:var(--warn, #b1790a);}
+  .home-card-icon-badge{
+    width:42px; height:42px; border-radius:50%; background:var(--accent-soft);
+    color:var(--accent); display:flex; align-items:center; justify-content:center; font-size:19px;
+    margin-bottom:8px;
+  }
+  .home-card-arrow{
+    position:absolute; right:14px; bottom:14px; width:26px; height:26px; border-radius:50%;
+    background:rgba(0,0,0,.05); color:var(--text-dim); display:flex; align-items:center;
+    justify-content:center; font-size:16px; line-height:1;
+  }
+  .home-card-title{font-family:var(--font-display); font-size:14px;}
+  .home-card-sub{font-size:11px; color:var(--text-dim); padding-right:26px;}
+
+  /* Allenati: card grande in evidenza, in orizzontale */
+  .home-card-main{
+    grid-column:1 / -1; background:var(--accent); border-color:var(--accent);
+    flex-direction:row; align-items:center; gap:14px; padding:18px 20px;
+  }
+  .home-card-main .home-card-icon-badge{background:rgba(255,255,255,.22); color:#fff; margin-bottom:0; flex:0 0 auto;}
+  .home-card-icon-badge-lg{width:50px; height:50px; font-size:23px;}
+  .home-card-text{flex:1; min-width:0;}
+  .home-card-main .home-card-title{font-size:16px; color:#fff;}
+  .home-card-main .home-card-sub{font-size:12px; color:rgba(255,255,255,.85); padding-right:0;}
+  .home-card-main .home-card-arrow{position:static; background:rgba(255,255,255,.22); color:#fff; flex:0 0 auto;}
+
+  .home-card-warm{background:var(--accent-soft); border-color:transparent;}
+  .home-card-esci .home-card-icon-badge{background:rgba(177,121,10,.15); color:var(--warn, #b1790a);}
   .home-card-esci .home-card-title{color:var(--warn, #b1790a);}
   @media (min-width:480px){ .home-grid{grid-template-columns:1fr 1fr 1fr;} .home-card-main{grid-column:1 / -1;} }
   /* Impostazioni e Account compatti: meno aria fra le sezioni, testi descrittivi più piccoli */
