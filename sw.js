@@ -4,7 +4,7 @@
 // Quando pubblichi una modifica, alza il numero di VERSIONE qui sotto:
 // l'app se ne accorge da sola e propone di aggiornarsi.
 // ============================================================
-const VERSIONE = "fitpro-v44";
+const VERSIONE = "fitpro-v45";
 
 const DA_TENERE = [
   "./",

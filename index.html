@@ -241,8 +241,7 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
         <div class="home-tagline">Ogni piccolo sforzo ti porta più vicino al meglio di te.</div>
       </div>
       <div class="home-hero">
-        <div class="home-hero-blob"></div>
-        <img src="icon-allenati.png" class="home-hero-icon" alt="">
+        <img src="home-hero.png" class="home-hero-photo" alt="">
       </div>
     </div>
 
@@ -2680,6 +2679,12 @@ function nascondiCloudGate(){ document.getElementById('cloudGate').style.display
 let _impostazioniProvenienza = 'home';   // dove torna "Chiudi" in Impostazioni: 'home' o 'app'
 
 // quanti allenamenti previsti dalla scheda sono già stati fatti questa settimana
+// data locale in formato AAAA-MM-GG: uso questa e non toISOString() (che è UTC e di
+// notte, in Italia, scavalla al giorno sbagliato) per confrontare con le date salvate
+function isoLocale(d){
+  const y = d.getFullYear(), m = String(d.getMonth()+1).padStart(2,'0'), g = String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${g}`;
+}
 function obiettivoSettimanale(prof, programma){
   if(!programma || !programma.days || programma.days.length===0) return {fatti:0, totali:0};
   const oggi = new Date();
@@ -2692,7 +2697,7 @@ function obiettivoSettimanale(prof, programma){
     const scheduled = programma.days.find(dy=>dy.weekday===wd);
     if(!scheduled) continue;
     totali++;
-    const iso = d.toISOString().slice(0,10);
+    const iso = isoLocale(d);
     const log = (prof.logs||[]).find(l=>l.date===iso && l.programId===programma.id && l.status!=='saltato');
     if(log) fatti++;
   }
@@ -2714,7 +2719,7 @@ function streakSettimane(prof, programma){
       const scheduled = programma.days.find(dy=>dy.weekday===wd);
       if(!scheduled) continue;
       cePrevista = true;
-      const iso = d.toISOString().slice(0,10);
+      const iso = isoLocale(d);
       const log = (prof.logs||[]).find(l=>l.date===iso && l.programId===programma.id && l.status!=='saltato');
       if(!log){ tutteFatte = false; break; }
     }
