@@ -66,6 +66,9 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
     <div id="cloudAccedi">
       <h1>Accedi</h1>
       <div class="sub">Con lo stesso account entri da qualsiasi telefono e ritrovi i tuoi allenamenti.</div>
+      <div class="info-banner" id="confermaEmailBanner" style="display:none; margin:12px 0;">
+        <span>Account creato! Vai nella tua email (<b id="confermaEmailIndirizzo"></b>) e tocca il link di conferma — poi torna qui e accedi.</span>
+      </div>
       <label>Email</label>
       <input type="email" id="cloudEmail" placeholder="tu@email.com" autocomplete="email" spellcheck="false">
       <label>Password</label>
@@ -733,8 +736,8 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
           <h3>Il personal trainer ti ha aggiornato la scheda?</h3>
           <button class="btn danger" id="clearFormBtn">Pulisci</button>
         </div>
-        <p class="hint">Creando una nuova scheda, quella attuale viene archiviata (resta consultabile) e da qui in poi si usano i nuovi allenamenti — la dieta impostata non viene toccata. Lo storico allenamenti passati non viene mai toccato. "Pulisci" svuota i campi qui sotto per ripartire da zero invece di modificare quella attuale.</p>
-        <label>Nome/etichetta scheda</label>
+        <p class="hint"><b>Aggiorna scheda</b> modifica quella attuale, senza crearne una nuova (utile per piccole correzioni). <b>Salva come nuova versione</b> archivia quella attuale (resta consultabile) e la sostituisce con questa — usalo quando cambia davvero l'allenamento. In entrambi i casi la dieta impostata e lo storico allenamenti passati non vengono mai toccati. "Pulisci" invece svuota i campi qui sotto per ripartire da zero.</p>
+        <label>Nome/etichetta scheda <span class="hint" style="font-weight:400;">(solo per "Salva come nuova versione")</span></label>
         <input type="text" id="newProgramName" placeholder="Es. Scheda Settembre 2026">
       </div>
 
@@ -749,7 +752,8 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
         <p class="hint">Il tuo personal trainer ha bloccato la modifica della scheda. Contattalo se vuoi richiedere delle modifiche.</p>
       </div>
 
-      <button class="btn block" id="saveNewProgramBtn">Salva scheda</button>
+      <button class="btn block" id="updateProgramBtn">Aggiorna scheda</button>
+      <button class="btn secondary block" id="saveNewProgramBtn" style="margin-top:9px;">Salva come nuova versione</button>
 
       <details class="card details-card" style="margin-top:20px;">
         <summary>Schede archiviate</summary>
@@ -849,6 +853,7 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
       </div>
       <div class="mp-side">
         <input type="text" class="mp-q" id="mpSearch" placeholder="Oppure cerca per nome — es. panca, squat, curl">
+        <button type="button" class="link-btn" id="mpCreaNuovo" style="margin:8px 0 2px; text-align:left; padding:0;">+ Non lo trovi? Crea un nuovo esercizio</button>
         <div class="mp-zone-title" id="mpZoneTitle">Tocca un muscolo sulla figura</div>
         <div class="mp-list" id="mpList"></div>
       </div>
@@ -856,6 +861,26 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
   </div>
 </div>
 
+<div class="mp-overlay" id="creaEsOverlay">
+  <div class="mp-modal" style="max-width:420px; height:auto; max-height:88vh;">
+    <div class="mp-head">
+      <h3>Crea nuovo esercizio</h3>
+      <button class="mp-close" id="creaEsClose" type="button" aria-label="Chiudi">&#10005;</button>
+    </div>
+    <div style="padding:16px; overflow-y:auto;">
+      <label>Nome esercizio</label>
+      <input type="text" id="creaEsNome" placeholder="Es. Leg press orizzontale">
+      <label style="margin-top:12px;">Muscoli coinvolti</label>
+      <div class="muscle-chip-group" id="creaEsMuscoli"></div>
+      <label style="margin-top:12px;">Come si registra</label>
+      <select id="creaEsTipo"></select>
+      <label style="margin-top:12px;">Link video dimostrativo (facoltativo)</label>
+      <input type="text" id="creaEsVideo" placeholder="Es. https://youtube.com/...">
+      <button class="btn block" id="creaEsConferma" style="margin-top:16px;">Crea e usa questo esercizio</button>
+      <p class="hint" style="margin-top:8px;">Resta anche nei tuoi esercizi personali, lo ritrovi da Impostazioni.</p>
+    </div>
+  </div>
+</div>
 
 <div class="vid-overlay" id="vidOverlay">
   <div class="vid-box">
@@ -997,20 +1022,27 @@ const TIME_BASED_EXERCISES = ["plank", "side plank"];
 // secondi per plank e isometrie, chilometri per la corsa, e così via.
 // ============================================================
 const TIPI_MISURA = {
-  "peso":     { nome:"Ripetizioni × carico", breve:"rip × kg",  campi:[
+  "peso":     { nome:"Ripetizioni e carico (es. panca, squat)", breve:"rip × kg",  campi:[
                   {chiave:"reps",    etichetta:"rip.", unita:"",    passo:1},
                   {chiave:"kg",      etichetta:"kg",   unita:"kg",  passo:0.5}] },
-  "corpo":    { nome:"Solo ripetizioni",     breve:"ripetizioni", campi:[
+  "corpo":    { nome:"Solo ripetizioni, a corpo libero (es. addominali, push-up)", breve:"ripetizioni", campi:[
                   {chiave:"reps",    etichetta:"rip.", unita:"",    passo:1}] },
-  "tempo":    { nome:"A tempo (secondi)",    breve:"secondi", campi:[
+  "tempo":    { nome:"A tempo, in secondi (es. plank breve)", breve:"secondi", campi:[
                   {chiave:"seconds", etichetta:"secondi", unita:"sec", passo:5}] },
-  "tempopeso":{ nome:"Secondi × carico",     breve:"sec × kg", campi:[
+  "tempo_min":{ nome:"A tempo, in minuti (es. camminata, cyclette)", breve:"minuti", campi:[
+                  {chiave:"seconds", etichetta:"minuti", unita:"min", passo:1, moltiplicatore:60}] },
+  "tempo_ore":{ nome:"A tempo, in ore (es. escursione, sport lungo)", breve:"ore", campi:[
+                  {chiave:"seconds", etichetta:"ore", unita:"h", passo:0.25, moltiplicatore:3600}] },
+  "tempopeso":{ nome:"A tempo in secondi, con carico (es. plank zavorrato)", breve:"sec × kg", campi:[
                   {chiave:"seconds", etichetta:"secondi", unita:"sec", passo:5},
                   {chiave:"kg",      etichetta:"kg",   unita:"kg",  passo:0.5}] },
-  "distanza": { nome:"Distanza e durata",    breve:"km + minuti", campi:[
+  "tempopeso_min":{ nome:"A tempo in minuti, con carico (es. trasporto pesi)", breve:"min × kg", campi:[
+                  {chiave:"seconds", etichetta:"minuti", unita:"min", passo:1, moltiplicatore:60},
+                  {chiave:"kg",      etichetta:"kg",   unita:"kg",  passo:0.5}] },
+  "distanza": { nome:"Distanza e durata (es. corsa, bici, cardio)", breve:"km + minuti", campi:[
                   {chiave:"km",      etichetta:"km",   unita:"km",  passo:0.1},
                   {chiave:"minuti",  etichetta:"min",  unita:"min", passo:1}] },
-  "passi":    { nome:"Ripetizioni per lato", breve:"rip. per lato", campi:[
+  "passi":    { nome:"Ripetizioni per lato (es. affondi, step up)", breve:"rip. per lato", campi:[
                   {chiave:"reps",    etichetta:"rip. lato", unita:"", passo:1},
                   {chiave:"kg",      etichetta:"kg",   unita:"kg",  passo:0.5}] }
 };
@@ -1035,6 +1067,29 @@ function tipoMisura(nome){
   return "peso";
 }
 function campiDi(nome){ return (TIPI_MISURA[tipoMisura(nome)] || TIPI_MISURA.peso).campi; }
+
+// converto fra il valore "vero" salvato (sempre in secondi, per non rompere storico/grafici)
+// e quello mostrato nel campo (secondi, minuti o ore, secondo il tipo dell'esercizio)
+function moltiplicatoreCampo(nome, chiave){
+  const c = campiDi(nome).find(c=>c.chiave===chiave);
+  return (c && c.moltiplicatore) ? c.moltiplicatore : 1;
+}
+function mostraValoreCampo(nome, chiave, grezzo){
+  if(grezzo === '' || grezzo === undefined || grezzo === null) return '';
+  const m = moltiplicatoreCampo(nome, chiave);
+  if(m === 1) return grezzo;
+  const n = parseFloat(grezzo);
+  if(isNaN(n)) return grezzo;
+  return (Math.round((n/m)*100)/100).toString();
+}
+function valoreDaCampo(nome, chiave, digitato){
+  if(digitato === '' || digitato === undefined || digitato === null) return '';
+  const m = moltiplicatoreCampo(nome, chiave);
+  if(m === 1) return digitato;
+  const n = parseFloat(digitato);
+  if(isNaN(n)) return digitato;
+  return Math.round(n*m).toString();
+}
 
 // resta per compatibilità con il resto dell'app
 function isTimeBasedExercise(nome){
@@ -1588,6 +1643,64 @@ function closeMusclePicker(){
   document.getElementById('mpOverlay').classList.remove('show');
   mpOnPick = null;
 }
+document.getElementById('mpCreaNuovo').addEventListener('click', ()=>{
+  const nomeCercato = document.getElementById('mpSearch').value.trim();
+  const callbackCorrente = mpOnPick;
+  apriCreaEsercizio(nomeCercato, (ex)=>{
+    if(callbackCorrente) callbackCorrente(ex);
+    closeMusclePicker();
+  });
+});
+
+// ============================================================
+// CREA ESERCIZIO AL VOLO — richiamabile da qualunque punto in cui si sceglie
+// un esercizio per la scheda (selettore muscoli, riga vuota), senza uscire
+// dalla schermata. Resta anche fra i propri esercizi personali.
+// ============================================================
+let creaEsMuscoliScelti = [];
+let creaEsCallback = null;
+
+function apriCreaEsercizio(nomeIniziale, callback){
+  creaEsCallback = callback;
+  creaEsMuscoliScelti = [];
+  document.getElementById('creaEsNome').value = nomeIniziale || '';
+  const wrap = document.getElementById('creaEsMuscoli');
+  wrap.innerHTML = MUSCLE_GROUPS.map(m=>`<div class="muscle-chip" data-m="${m}">${m}</div>`).join('');
+  wrap.querySelectorAll('.muscle-chip').forEach(chip=>{
+    chip.addEventListener('click', ()=>{
+      const m = chip.dataset.m;
+      if(creaEsMuscoliScelti.includes(m)) creaEsMuscoliScelti = creaEsMuscoliScelti.filter(x=>x!==m);
+      else creaEsMuscoliScelti.push(m);
+      chip.classList.toggle('selected');
+    });
+  });
+  const sel = document.getElementById('creaEsTipo');
+  sel.innerHTML = Object.entries(TIPI_MISURA).map(([k,v])=>`<option value="${k}">${v.nome}</option>`).join('');
+  document.getElementById('creaEsVideo').value = '';
+  document.getElementById('creaEsOverlay').classList.add('show');
+  setTimeout(()=>document.getElementById('creaEsNome').focus(), 50);
+}
+function chiudiCreaEsercizio(){
+  document.getElementById('creaEsOverlay').classList.remove('show');
+  creaEsCallback = null;
+}
+document.getElementById('creaEsClose').addEventListener('click', chiudiCreaEsercizio);
+document.getElementById('creaEsConferma').addEventListener('click', ()=>{
+  const nome = document.getElementById('creaEsNome').value.trim();
+  if(!nome){ toast("Scrivi il nome dell'esercizio."); return; }
+  if(creaEsMuscoliScelti.length===0){ toast("Seleziona almeno un gruppo muscolare."); return; }
+  const lp = loggedInProfile();
+  if(!lp.customExercises) lp.customExercises = {};
+  const video = document.getElementById('creaEsVideo').value.trim();
+  const tipo = document.getElementById('creaEsTipo').value || 'peso';
+  lp.customExercises[nome.toLowerCase()] = { muscles:[...creaEsMuscoliScelti], video, tipo };
+  save();
+  toast(`"${nome}" creato ✓`);
+  const cb = creaEsCallback;
+  chiudiCreaEsercizio();
+  if(cb) cb({ n: nome, g: creaEsMuscoliScelti[0], tempo: tipo.indexOf('tempo')===0 });
+  if(typeof renderCustomExList === 'function') renderCustomExList();
+});
 
 
 // ============================================================
@@ -2008,14 +2121,18 @@ function ultimaPrestazione(nomeEsercizio, escludiData){
   }
   return null;
 }
-function descriviSerie(serie){
+function descriviSerie(serie, nomeEsercizio){
   return serie.map(s => {
     if(s.km || s.minuti){
       const a = s.km ? s.km + ' km' : '';
       const b = s.minuti ? s.minuti + "'" : '';
       return [a,b].filter(Boolean).join(' in ');
     }
-    if(s.seconds) return s.seconds + 's' + (s.kg ? '×' + s.kg : '');
+    if(s.seconds){
+      const m = nomeEsercizio ? moltiplicatoreCampo(nomeEsercizio, 'seconds') : 1;
+      const unita = m === 3600 ? 'h' : (m === 60 ? 'min' : 's');
+      return mostraValoreCampo(nomeEsercizio||'', 'seconds', s.seconds) + unita + (s.kg ? '×' + s.kg : '');
+    }
     if(s.kg) return `${s.reps||'?'}×${s.kg}`;
     return `${s.reps||'?'}`;
   }).join(", ");
@@ -2032,7 +2149,7 @@ function riportaUltimaVolta(nomeEsercizio){
       if(s[f] === undefined || s[f] === '') return;
       currentSetInputs[nomeEsercizio][i][f] = s[f];
       const inp = document.querySelector(`.exercise-block input[data-ex="${CSS.escape(nomeEsercizio)}"][data-idx="${i}"][data-field="${f}"]`);
-      if(inp) inp.value = s[f];
+      if(inp) inp.value = mostraValoreCampo(nomeEsercizio, f, s[f]);
     });
   });
   updateExerciseDotsProgress();
@@ -2462,6 +2579,7 @@ function mostraCloudGate(quale){
   document.getElementById('cloudRegistra').style.display   = quale === 'registra'    ? 'block':'none';
   document.getElementById('cloudAttesa').style.display     = quale === 'attesa'      ? 'block':'none';
   document.getElementById('cloudCaricamento').style.display= quale === 'caricamento' ? 'block':'none';
+  if(quale !== 'accedi') document.getElementById('confermaEmailBanner').style.display = 'none';
 }
 function nascondiCloudGate(){ document.getElementById('cloudGate').style.display = 'none'; }
 
@@ -2640,9 +2758,13 @@ document.getElementById('regBtn').addEventListener('click', async ()=>{
     utenteOnline = data.user;
     await dopoAccessoOnline();
   } else {
-    err.style.color = 'var(--ok)';
-    err.textContent = "Account creato. Controlla la posta per confermare l'email, poi accedi.";
-    err.style.display = 'block';
+    // niente sessione = serve confermare l'email: porto subito su Accedi con un avviso ben visibile,
+    // invece di lasciare la persona sulla schermata di registrazione con un testo piccolo
+    mostraCloudGate('accedi');
+    document.getElementById('confermaEmailIndirizzo').textContent = email;
+    document.getElementById('confermaEmailBanner').style.display = 'flex';
+    document.getElementById('cloudEmail').value = email;
+    document.getElementById('cloudPw').focus();
   }
 });
 
@@ -3137,7 +3259,7 @@ function renderDettaglioPT(sezione){
           <div style="display:flex; justify-content:space-between; gap:10px;">
             <b>${formatDate(l.date)}</b><span class="hint">${l.dayName || 'Libero'}</span>
           </div>
-          ${(l.exercises||[]).map(e=>`<div class="hint" style="margin-top:4px;">${e.name}: ${descriviSerie(e.sets||[])}</div>`).join('')}
+          ${(l.exercises||[]).map(e=>`<div class="hint" style="margin-top:4px;">${e.name}: ${descriviSerie(e.sets||[], e.name)}</div>`).join('')}
           ${l.notes ? `<div class="hint" style="margin-top:6px; font-style:italic;">"${l.notes}"</div>` : ''}
         </div>`).join('')}</div>`;
     return;
@@ -3184,6 +3306,30 @@ function renderDettaglioPT(sezione){
 
 // ---------- modificare scheda o dieta di un cliente ----------
 let _statoMio = null;   // i miei dati, messi da parte mentre lavoro su quelli del cliente
+
+// Se sto modificando la scheda di un cliente come PT e uso un mio esercizio personale,
+// lo aggiungo anche ai suoi esercizi personali: così lo ritrova già pronto (muscoli, tipo,
+// eventuale video) anche lui, senza doverlo ricreare da zero.
+function propagaEserciziPersonalizzatiPT(giorni){
+  if(!document.body.classList.contains('modifica-pt') || !_statoMio) return;
+  const pt = _statoMio.profiles && _statoMio.profiles[0];
+  if(!pt || !pt.customExercises) return;
+  const cliente = loggedInProfile();
+  if(!cliente) return;
+  if(!cliente.customExercises) cliente.customExercises = {};
+  let aggiunti = 0;
+  (giorni||[]).forEach(g=>{
+    (g.exercises||[]).forEach(ex=>{
+      const chiave = (ex.name||'').trim().toLowerCase();
+      if(!chiave) return;
+      if(pt.customExercises[chiave] && !cliente.customExercises[chiave]){
+        cliente.customExercises[chiave] = JSON.parse(JSON.stringify(pt.customExercises[chiave]));
+        aggiunti++;
+      }
+    });
+  });
+  if(aggiunti>0) save();
+}
 
 function modificaComePT(cosa){
   if(!_clienteAperto) return;
@@ -3990,7 +4136,7 @@ function ripristinaBozza(){
         if(!currentSetInputs[nome][i]) return;
         currentSetInputs[nome][i][f] = s[f];
         const inp = document.querySelector(`.exercise-block input[data-ex="${CSS.escape(nome)}"][data-idx="${i}"][data-field="${f}"]`);
-        if(inp) inp.value = s[f];
+        if(inp) inp.value = mostraValoreCampo(nome, f, s[f]);
       });
     });
   });
@@ -4287,7 +4433,7 @@ function rebuildFreeForm(){
         if(s[f]!==undefined && s[f]!==''){
           currentSetInputs[name][i][f] = s[f];
           const inp = document.querySelector(`.exercise-block input[data-ex="${CSS.escape(name)}"][data-idx="${i}"][data-field="${f}"]`);
-          if(inp) inp.value = s[f];
+          if(inp) inp.value = mostraValoreCampo(name, f, s[f]);
         }
       });
     });
@@ -4929,7 +5075,7 @@ function buildExerciseForm(day){
     const videoInfo = getExerciseVideoInfo(ex.name);
     const prec = ultimaPrestazione(ex.name, document.getElementById('logDate').value);
     const rigaPrec = prec
-      ? `<div class="ultima-volta">Ultima volta (${formatDate(prec.data)}): <b>${descriviSerie(prec.serie)}</b>
+      ? `<div class="ultima-volta">Ultima volta (${formatDate(prec.data)}): <b>${descriviSerie(prec.serie, ex.name)}</b>
            <button type="button" class="riporta-btn" data-riporta="${escapeAttr(ex.name)}">riporta</button></div>`
       : `<div class="ultima-volta vuota">Prima volta che registri questo esercizio.</div>`;
     block.innerHTML = `<div class="exercise-name">${ex.name}<span class="target">(target: ${ex.sets}×${ex.reps})</span>
@@ -5062,7 +5208,7 @@ function addSetRow(exName){
   container.appendChild(row);
   row.querySelectorAll('input').forEach(inp=>{
     inp.addEventListener('input', ()=>{
-      currentSetInputs[inp.dataset.ex][inp.dataset.idx][inp.dataset.field] = inp.value;
+      currentSetInputs[inp.dataset.ex][inp.dataset.idx][inp.dataset.field] = valoreDaCampo(inp.dataset.ex, inp.dataset.field, inp.value);
       updateExerciseDotsProgress();
       salvaBozza();
     });
@@ -6024,6 +6170,7 @@ function renderExerciseEditors(di){
   function exOptionsHtml(selected){
     const sel = (selected||'').trim().toLowerCase();
     let html = `<option value="" ${!sel?'selected':''} disabled>— scegli esercizio —</option>`;
+    html += `<option value="__crea__">+ Crea nuovo esercizio…</option>`;
     if(personalNames.length>0){
       html += `<optgroup label="I tuoi esercizi">`;
       html += personalNames.map(n=>`<option value="${escapeAttr(toTitleCase(n))}" ${n===sel?'selected':''}>${toTitleCase(n)}</option>`).join('');
@@ -6057,6 +6204,16 @@ function renderExerciseEditors(di){
   list.querySelectorAll('.ex-name-input').forEach(sel=>{
     sel.addEventListener('change', e=>{
       const {di, ei} = e.target.dataset;
+      if(e.target.value === '__crea__'){
+        apriCreaEsercizio('', (ex)=>{
+          editingDays[di].exercises[ei].name = ex.n;
+          const match = getExerciseMuscles(ex.n);
+          editingDays[di].exercises[ei].muscles = match ? [...match] : [ex.g];
+          renderExerciseEditors(di);
+        });
+        renderExerciseEditors(di); // se annulla, la tendina torna al nome che c'era prima
+        return;
+      }
       editingDays[di].exercises[ei].name = e.target.value;
       const match = getExerciseMuscles(e.target.value);
       if(match) editingDays[di].exercises[ei].muscles = [...match];
@@ -6202,6 +6359,17 @@ function renderDietDayEditors(){
 }
 
 // ---- salvataggio nuovo programma ----
+document.getElementById('updateProgramBtn').addEventListener('click', ()=>{
+  if(editingDays.length===0){ toast("Aggiungi almeno un giorno di allenamento."); return; }
+  const current = activeProgram();
+  current.days = editingDays;
+  propagaEserciziPersonalizzatiPT(editingDays);
+  save();
+  toast("Scheda aggiornata ✓");
+  renderHeader(); renderDayChoices(); renderNewProgramForm(); renderProgramView();
+  document.querySelector('.tab-btn[data-tab="program"]').click();
+});
+
 document.getElementById('saveNewProgramBtn').addEventListener('click', ()=>{
   if(editingDays.length===0){ toast("Aggiungi almeno un giorno di allenamento."); return; }
   const prof = activeProfile();
@@ -6217,6 +6385,7 @@ document.getElementById('saveNewProgramBtn').addEventListener('click', ()=>{
   };
   prof.programs.push(newProgram);
   prof.activeProgramId = newProgram.id;
+  propagaEserciziPersonalizzatiPT(editingDays);
   save();
   toast("Scheda attivata ✓");
   renderHeader(); renderDayChoices(); renderNewProgramForm(); renderProgramView();
