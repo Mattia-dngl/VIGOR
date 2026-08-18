@@ -128,8 +128,8 @@
   .home-head{flex:1; min-width:0;}
   .home-greeting{font-family:var(--font-display); font-size:20px; line-height:1.25; margin:0 0 5px;}
   .home-tagline{font-size:12px; color:var(--text-dim); line-height:1.4;}
-  .home-hero{position:relative; flex:0 0 auto; width:132px;}
-  .home-hero-photo{display:block; width:100%; height:auto;}
+  .home-hero{position:relative; flex:0 0 auto; width:152px;}
+  .home-hero-photo{display:block; width:100%; height:auto; border-radius:14px;}
 
   .home-goal-card{
     display:flex; align-items:center; justify-content:space-between; gap:12px; background:var(--surface);

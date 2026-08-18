@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Roboto+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <script src="config.js"></script>
+<script src="brand.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -16,7 +17,7 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="FitPro">
+  <meta name="apple-mobile-web-app-title" content="VIGOR">
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
   <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
 </head>
@@ -30,14 +31,14 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
   <div style="text-align:center; font-family:var(--font-display); color:#535a65;">
     <div style="width:34px; height:34px; margin:0 auto 12px; border:3px solid #d7dbe1;
       border-top-color:#dd4526; border-radius:50%; animation:giraAvvio .8s linear infinite;"></div>
-    <div style="font-size:13px; letter-spacing:.08em;">FITPRO</div>
+    <div style="font-size:13px; letter-spacing:.08em;" id="avvioTestoBrand">VIGOR</div>
   </div>
 </div>
 
 
 <div id="lockScreen" style="display:none;">
   <div class="lock-inner">
-    <div class="lock-logo"><span class="lock-dot"></span>FitPro</div>
+    <div class="lock-logo"><span class="lock-dot"></span>VIGOR</div>
     <h1>App bloccata</h1>
     <div class="sub">Questa app è a invito. Inserisci la password d'ingresso per vedere i profili.</div>
     <label>Password</label>
@@ -61,7 +62,7 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
 
 <div id="cloudGate" style="display:none;">
   <div class="lock-inner">
-    <div class="lock-logo"><span class="lock-dot"></span>FitPro</div>
+    <div class="lock-logo"><span class="lock-dot"></span>VIGOR</div>
 
     <div id="cloudAccedi">
       <h1>Accedi</h1>
@@ -232,7 +233,7 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
 <div id="homeScreen" style="display:none;">
   <div class="settings-inner home-inner">
     <div class="home-topbar">
-      <div class="home-logo">Fit<span class="home-logo-accent">Pro</span></div>
+      <div class="home-logo">VIG<span class="home-logo-accent">OR</span></div>
     </div>
 
     <div class="home-hero-row">
@@ -1232,6 +1233,28 @@ function formatDateLungo(iso){
   return `${parseInt(d,10)} ${MESI[parseInt(m,10)-1]} ${y}`;
 }
 function escapeAttr(s){ return String(s==null ? "" : s).replace(/"/g,'&quot;'); }
+
+// Applica il nome/logo da brand.js a tutti i punti dove compare — se manca il
+// file, o manca un valore, resta quello scritto qui sotto di riserva.
+function applicaBrand(){
+  const b = window.BRAND_CONFIG || {};
+  const nome = b.nome || "VIGOR";
+  const parte1 = b.parte1 != null ? b.parte1 : "VIG";
+  const parte2 = b.parte2 != null ? b.parte2 : "OR";
+
+  document.querySelectorAll('.lock-logo').forEach(el=>{
+    const punto = el.querySelector('.lock-dot');
+    el.textContent = nome;
+    if(punto) el.prepend(punto);
+  });
+  const homeLogo = document.querySelector('.home-logo');
+  if(homeLogo) homeLogo.innerHTML = `${escapeAttr(parte1)}<span class="home-logo-accent">${escapeAttr(parte2)}</span>`;
+  const avvio = document.getElementById('avvioTestoBrand');
+  if(avvio) avvio.textContent = nome;
+  const metaTitolo = document.querySelector('meta[name="apple-mobile-web-app-title"]');
+  if(metaTitolo) metaTitolo.setAttribute('content', nome);
+}
+applicaBrand();
 
 function toTitleCase(s){
   return s.replace(/\w\S*/g, t => t.charAt(0).toUpperCase() + t.slice(1));
@@ -3819,7 +3842,7 @@ function scaricaBackup(){
   const a = document.createElement('a');
   a.href = url;
   const chi = (loggedInProfile()||{}).name || 'dati';
-  a.download = `fitpro-${chi.toLowerCase().replace(/[^a-z0-9]+/g,'-')}-${new Date().toISOString().slice(0,10)}.json`;
+  a.download = `${((window.BRAND_CONFIG&&window.BRAND_CONFIG.nome)||'vigor').toLowerCase()}-${chi.toLowerCase().replace(/[^a-z0-9]+/g,'-')}-${new Date().toISOString().slice(0,10)}.json`;
   a.click();
   setTimeout(()=>URL.revokeObjectURL(url), 1000);
   state.ultimoBackup = new Date().toISOString();
