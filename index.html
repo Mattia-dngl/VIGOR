@@ -6693,8 +6693,18 @@ function renderExerciseEditors(di){
       } else if(tecnica === 'restpause'){
         ex.dropset = { tipo:'restpause', drops: [{ reps: '6', riduzione: 0 }] };
       } else if(tecnica === 'superset'){
-        const altri = giorno.exercises.map((e2,idx)=>idx).filter(idx=>idx!=ei && giorno.exercises[idx].name);
-        if(altri.length > 0) collegaSuperset(giorno, parseInt(ei), altri[0]);
+        // di default abbino l'esercizio subito dopo (o, se è l'ultimo, quello subito
+        // prima): è l'abbinamento più naturale, non sempre il primo della lista
+        const idx = parseInt(ei);
+        const valido = (i) => i>=0 && i<giorno.exercises.length && i!==idx && giorno.exercises[i].name;
+        let partner = null;
+        if(valido(idx+1)) partner = idx+1;
+        else if(valido(idx-1)) partner = idx-1;
+        else {
+          const altri = giorno.exercises.map((e2,i)=>i).filter(valido);
+          if(altri.length>0) partner = altri[0];
+        }
+        if(partner!=null) collegaSuperset(giorno, idx, partner);
       }
       renderExerciseEditors(di);
     });

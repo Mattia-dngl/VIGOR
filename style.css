@@ -498,7 +498,7 @@
   .ex-dot.done{border-color:var(--ok); color:var(--ok);}
   .ex-dot.done.current{background:var(--ok); border-color:var(--ok); color:#fff;}
   .ex-carousel-track{
-    display:flex; overflow-x:auto; scroll-snap-type:x mandatory; scroll-behavior:smooth;
+    display:flex; align-items:flex-start; overflow-x:auto; scroll-snap-type:x mandatory; scroll-behavior:smooth;
     gap:0; margin:0 -2px; -webkit-overflow-scrolling:touch;
   }
   .ex-carousel-track::-webkit-scrollbar{display:none;}
