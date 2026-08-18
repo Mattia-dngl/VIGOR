@@ -6618,6 +6618,7 @@ function renderExerciseEditors(di){
 
   list.innerHTML = day.exercises.map((ex,ei)=>`
     <div class="exercise-edit-block" data-di="${di}" data-ei="${ei}">
+      <div class="exercise-edit-num">${parseInt(ei)+1}</div>
       <div class="exercise-edit-row">
         <select class="ex-name-input" data-di="${di}" data-ei="${ei}" data-field="name">
           ${exOptionsHtml(ex.name)}
@@ -6626,6 +6627,7 @@ function renderExerciseEditors(di){
         <input type="text" class="small" placeholder="rip." value="${escapeAttr(ex.reps)}" data-di="${di}" data-ei="${ei}" data-field="reps">
         <button type="button" class="remove-x" data-di="${di}" data-ei="${ei}">×</button>
       </div>
+      ${ex.supersetCon!=null && day.exercises[ex.supersetCon] ? `<div class="superset-chip">⚡ Superset con ${escapeAttr(day.exercises[ex.supersetCon].name || '(esercizio '+(parseInt(ex.supersetCon)+1)+')')}</div>` : ''}
       <div class="muscle-chip-group" data-di="${di}" data-ei="${ei}">
         ${MUSCLE_GROUPS.map(m=>`<div class="muscle-chip ${(ex.muscles||[]).includes(m)?'selected':''}" data-m="${m}">${m}</div>`).join('')}
       </div>
