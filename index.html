@@ -2733,8 +2733,12 @@ document.getElementById('cambiaPwIngressoBtn').addEventListener('click', ()=>{
 // Se restano vuoti, l'app continua a funzionare solo su questo dispositivo.
 // ============================================================
 // I due valori si mettono nel file "config.js", che è piccolo e facile da modificare.
-const SUPABASE_URL    = (window.FITPRO_CONFIG && window.FITPRO_CONFIG.url) || "";
-const SUPABASE_CHIAVE = (window.FITPRO_CONFIG && window.FITPRO_CONFIG.chiave) || "";
+// APP_CONFIG è il nome nuovo, neutro (non legato a nessun nome dell'app, così
+// non andrà mai più rinominato). FITPRO_CONFIG resta come ripiego per non
+// rompere config.js finché non lo aggiorni tu con calma.
+const _CONFIG_LETTO   = window.APP_CONFIG || window.FITPRO_CONFIG || {};
+const SUPABASE_URL    = _CONFIG_LETTO.url || "";
+const SUPABASE_CHIAVE = _CONFIG_LETTO.chiave || "";
 
 let sb = null;                 // collegamento a Supabase
 let utenteOnline = null;       // account con cui sono entrato
