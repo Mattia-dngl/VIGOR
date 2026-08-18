@@ -546,6 +546,9 @@
     font-size:12px; color:var(--text-dim);}
   .dropset-toggle-row{display:flex; align-items:center; justify-content:space-between;
     margin-top:8px; font-size:12.5px; font-family:var(--font-display); color:var(--text-dim);}
+  .tecnica-row{margin-top:10px; font-size:11px; font-family:var(--font-display); color:var(--text-dim);}
+  .seg-toggle-tecnica{margin-top:4px; margin-bottom:0; padding:3px;}
+  .seg-toggle-tecnica .seg-btn{font-size:11px; padding:7px 4px;}
   .dropset-box{margin-top:8px; padding:10px 12px; background:var(--surface2);
     border-radius:10px; border:1px solid var(--border);}
   .dropset-stage{display:flex; gap:10px; padding:6px 0; position:relative;}
@@ -838,6 +841,12 @@
   .exercise-note{font-size:12px; color:var(--text); background:rgba(214,148,40,.12);
     border-left:3px solid var(--warn, #b1790a); border-radius:6px; padding:7px 10px;
     margin-bottom:8px; line-height:1.4;}
+  .superset-badge{font-size:12px; color:var(--text); background:var(--accent-soft);
+    border-left:3px solid var(--accent); border-radius:6px; padding:7px 10px;
+    margin-bottom:8px; line-height:1.4; display:flex; align-items:center; gap:8px; flex-wrap:wrap;}
+  .superset-vai{margin-left:auto; background:var(--surface); border:1px solid var(--border);
+    color:var(--accent); font-family:var(--font-display); font-size:10.5px; letter-spacing:.03em;
+    padding:5px 10px; border-radius:20px; cursor:pointer; white-space:nowrap;}
   .riporta-btn{margin-left:auto; background:var(--surface); border:1px solid var(--border);
     color:var(--accent); font-family:var(--font-display); font-size:10.5px; letter-spacing:.03em;
     padding:4px 10px; border-radius:10px; cursor:pointer;}

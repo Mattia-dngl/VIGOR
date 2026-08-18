@@ -4,7 +4,7 @@
 // Quando pubblichi una modifica, alza il numero di VERSIONE qui sotto:
 // l'app se ne accorge da sola e propone di aggiornarsi.
 // ============================================================
-const VERSIONE = "fitpro-v45";
+const VERSIONE = "fitpro-v48";
 
 const DA_TENERE = [
   "./",
@@ -54,6 +54,35 @@ self.addEventListener("activate", evento => {
 
 self.addEventListener("message", evento => {
   if (evento.data === "AGGIORNA_SUBITO") self.skipWaiting();
+});
+
+// ============================================================
+// PROMEMORIA (notifiche push): arrivano anche ad app chiusa, mandate dal
+// server nel momento giusto. Qui gestisco solo come mostrarle e cosa fare
+// quando vengono toccate — l'invio vero e proprio parte da Supabase.
+// ============================================================
+self.addEventListener("push", evento => {
+  let dati = { title: "FitPro", body: "Hai un allenamento in programma oggi." };
+  try { if (evento.data) dati = { ...dati, ...evento.data.json() }; } catch (e) {}
+  evento.waitUntil(
+    self.registration.showNotification(dati.title, {
+      body: dati.body,
+      icon: "./icon-192.png",
+      badge: "./icon-192.png",
+      tag: "fitpro-promemoria",
+      renotify: true
+    })
+  );
+});
+
+self.addEventListener("notificationclick", evento => {
+  evento.notification.close();
+  evento.waitUntil(
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then(elenco => {
+      for (const c of elenco) { if ("focus" in c) return c.focus(); }
+      if (self.clients.openWindow) return self.clients.openWindow("./");
+    })
+  );
 });
 
 self.addEventListener("fetch", evento => {

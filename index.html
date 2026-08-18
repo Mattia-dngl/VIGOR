@@ -413,6 +413,18 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
       </div>
     </details>
 
+    <details class="card details-card" id="promemoriaCard" style="margin-top:10px; display:none;">
+      <summary>Promemoria allenamento</summary>
+      <div class="details-body">
+        <p class="hint">Un avviso sul telefono nei giorni in cui la scheda prevede un allenamento e non hai ancora registrato nulla. Arriva anche ad app chiusa, come un messaggio.</p>
+        <label style="display:flex; align-items:center; gap:9px; margin-top:10px; cursor:pointer;">
+          <input type="checkbox" id="promemoriaToggle" style="width:auto; margin:0;">
+          <span>Avvisami nei giorni di allenamento</span>
+        </label>
+        <p class="hint" id="promemoriaStato" style="margin-top:8px;"></p>
+      </div>
+    </details>
+
     <details class="card details-card" style="margin-top:10px;">
       <summary>Giorni saltati</summary>
       <div class="details-body">
@@ -773,10 +785,12 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
     </div>
 
     <div id="historyLogsBlock" style="display:none;">
-      <details class="card details-card">
+      <details class="card details-card" open>
         <summary>Progressi per esercizio</summary>
         <div class="details-body">
           <select id="progressExerciseSelect"></select>
+          <p class="hint" id="exChartSpiega" style="margin-top:8px;"></p>
+          <div class="measure-chart-box" id="exChartBox" style="display:none;"><canvas id="exerciseChart"></canvas></div>
           <div class="progress-list" id="progressTable"></div>
         </div>
       </details>
@@ -2117,6 +2131,90 @@ document.addEventListener('visibilitychange', ()=>{
 
 // ---------- impostazioni del timer ----------
 const SCORCIATOIE_TIMER = [45, 60, 90, 120, 150, 180, 240];
+// ============================================================
+// PROMEMORIA (notifiche push): un avviso sul telefono, anche ad app chiusa,
+// nei giorni in cui la scheda prevede un allenamento non ancora registrato.
+// L'invio parte da un controllo giornaliero lato server (Supabase); qui mi
+// occupo solo di attivare/disattivare la ricezione su questo dispositivo.
+// ============================================================
+const VAPID_CHIAVE_PUBBLICA = "BLNF2KoXkgCvLsEZkR-4bA-TtAXDEybdoKTqtLuIbGo5Q-zXhklQho5eb5wNgv2-2ZZMNsYKNl48IWtQfUGw8Vc";
+
+function base64UrlAUint8(base64Url){
+  const padding = '='.repeat((4 - base64Url.length % 4) % 4);
+  const base64 = (base64Url + padding).replace(/-/g, '+').replace(/_/g, '/');
+  const raw = atob(base64);
+  const uscita = new Uint8Array(raw.length);
+  for(let i=0;i<raw.length;i++) uscita[i] = raw.charCodeAt(i);
+  return uscita;
+}
+function promemoriaSupportato(){
+  return modalitaOnline() && !!sb && 'serviceWorker' in navigator && 'PushManager' in window && typeof Notification !== 'undefined';
+}
+async function renderPromemoria(){
+  const card = document.getElementById('promemoriaCard');
+  if(!promemoriaSupportato()){ card.style.display = 'none'; return; }
+  card.style.display = 'block';
+  const toggle = document.getElementById('promemoriaToggle');
+  const stato = document.getElementById('promemoriaStato');
+  try{
+    const reg = await navigator.serviceWorker.ready;
+    const sub = await reg.pushManager.getSubscription();
+    toggle.checked = !!sub;
+    if(Notification.permission === 'denied'){
+      stato.textContent = "Le notifiche sono bloccate per questa app nelle impostazioni del telefono: per attivarle, sbloccale da lì.";
+    } else {
+      stato.textContent = sub ? "Promemoria attivi su questo dispositivo." : "";
+    }
+  }catch(e){ console.error(e); }
+}
+async function attivaPromemoria(){
+  const stato = document.getElementById('promemoriaStato');
+  try{
+    const permesso = await Notification.requestPermission();
+    if(permesso !== 'granted'){
+      document.getElementById('promemoriaToggle').checked = false;
+      stato.textContent = "Permesso non concesso: non posso avvisarti.";
+      return;
+    }
+    const reg = await navigator.serviceWorker.ready;
+    let sub = await reg.pushManager.getSubscription();
+    if(!sub){
+      sub = await reg.pushManager.subscribe({ userVisibleOnly:true, applicationServerKey: base64UrlAUint8(VAPID_CHIAVE_PUBBLICA) });
+    }
+    const { error } = await sb.from('push_subscriptions').upsert({
+      profilo_id: utenteOnline.id,
+      endpoint: sub.endpoint,
+      subscription: sub.toJSON()
+    }, { onConflict: 'profilo_id,endpoint' });
+    if(error) throw error;
+    const lp = loggedInProfile();
+    if(lp){ lp.promemoria = true; save(); }
+    stato.textContent = "Promemoria attivi su questo dispositivo.";
+    toast("Promemoria attivati ✓");
+  }catch(e){
+    console.error(e);
+    document.getElementById('promemoriaToggle').checked = false;
+    stato.textContent = "Non sono riuscito ad attivarli: riprova.";
+  }
+}
+async function disattivaPromemoria(){
+  try{
+    const reg = await navigator.serviceWorker.ready;
+    const sub = await reg.pushManager.getSubscription();
+    if(sub){
+      if(sb && utenteOnline) await sb.from('push_subscriptions').delete().eq('profilo_id', utenteOnline.id).eq('endpoint', sub.endpoint);
+      await sub.unsubscribe();
+    }
+    const lp = loggedInProfile();
+    if(lp){ lp.promemoria = false; save(); }
+    document.getElementById('promemoriaStato').textContent = "";
+    toast("Promemoria disattivati");
+  }catch(e){ console.error(e); }
+}
+document.getElementById('promemoriaToggle').addEventListener('change', (e)=>{
+  if(e.target.checked) attivaPromemoria(); else disattivaPromemoria();
+});
+
 function renderImpostazioniTimer(){
   const t = impostazioniTimer();
   document.getElementById('timerDurataInput').value = t.durata;
@@ -2779,6 +2877,7 @@ function apriImpostazioni(provenienza){
   document.body.classList.add('impostazioni-aperte');
   aggiornaStatoDati();
   renderImpostazioniTimer();
+  renderPromemoria();
   const _lpAuto = loggedInProfile();
   document.getElementById('autoSkipToggle').checked = !_lpAuto || _lpAuto.autoSkip !== false;
   document.getElementById('codiceMostrato').style.display = 'none';
@@ -3551,7 +3650,7 @@ function renderDettaglioPT(sezione){
           ${(prog.days||[]).map(g=>`
             <div class="pt-scheda-ro">
               <b>${g.key} · ${g.name}</b> <span class="hint">${g.weekday || 'senza giorno fisso'}</span>
-              ${(g.exercises||[]).map(e=>`<div class="hint" style="margin-top:4px;">${e.name} — ${e.sets}×${e.reps}</div>${e.note?`<div class="exercise-note" style="margin:2px 0 4px 10px;">📌 ${escapeAttr(e.note)}</div>`:''}`).join('')}
+              ${(g.exercises||[]).map(e=>`<div class="hint" style="margin-top:4px;">${e.name} — ${e.sets}×${e.reps}${etichettaTecnica(e,g)}</div>${e.note?`<div class="exercise-note" style="margin:2px 0 4px 10px;">📌 ${escapeAttr(e.note)}</div>`:''}`).join('')}
             </div>`).join('')}
         `}
         ${puo ? '<button class="btn block" id="ptModificaScheda" style="margin-top:12px;">Modifica la scheda</button>' : ''}
@@ -4035,6 +4134,33 @@ function urlFileVideo(url){
 // Se non c'è, è un esercizio personale creato da chi lo sta usando.
 function esercizioDiBase(nome){
   return !!(typeof libFind === 'function' && libFind(nome));
+}
+// piccola etichetta da mostrare nelle viste di sola lettura della scheda, per
+// sapere a colpo d'occhio quali esercizi hanno una tecnica speciale collegata
+function etichettaTecnica(ex, giorno){
+  if(ex.dropset) return ex.dropset.tipo==='restpause' ? ' · Rest-pause' : ' · Dropset';
+  if(ex.supersetCon!=null && giorno && giorno.exercises[ex.supersetCon]) return ` · Superset con ${giorno.exercises[ex.supersetCon].name}`;
+  return '';
+}
+
+// Collega/scollega due esercizi dello stesso giorno in superset: il legame è
+// sempre reciproco (se A è abbinato a B, anche B risulta abbinato ad A), e chi
+// aveva già un abbinamento diverso lo perde.
+function scollegaSuperset(giorno, idx){
+  const ex = giorno.exercises[idx];
+  if(ex && ex.supersetCon != null && giorno.exercises[ex.supersetCon]){
+    delete giorno.exercises[ex.supersetCon].supersetCon;
+  }
+  if(ex) delete ex.supersetCon;
+}
+function collegaSuperset(giorno, idxA, idxB){
+  scollegaSuperset(giorno, idxA);
+  scollegaSuperset(giorno, idxB);
+  const exA = giorno.exercises[idxA], exB = giorno.exercises[idxB];
+  if(!exA || !exB) return;
+  delete exB.dropset;   // chi entra in superset non può avere anche una tecnica propria
+  exA.supersetCon = idxB;
+  exB.supersetCon = idxA;
 }
 
 // Il popup ora serve solo a GESTIRE il video di un esercizio (vedere qual è,
@@ -5187,8 +5313,12 @@ function buildExerciseForm(day){
            <button type="button" class="riporta-btn" data-riporta="${escapeAttr(ex.name)}">riporta</button></div>`
       : `<div class="ultima-volta vuota">Prima volta che registri questo esercizio.</div>`;
     const nota = ex.note ? `<div class="exercise-note">📌 ${escapeAttr(ex.note)}</div>` : '';
+    const partner = (ex.supersetCon!=null && day.exercises[ex.supersetCon]) ? day.exercises[ex.supersetCon] : null;
+    const supersetBadge = partner ? `<div class="superset-badge">⚡ Superset con <b>${escapeAttr(partner.name)}</b>
+        <button type="button" class="superset-vai" data-vai="${ex.supersetCon}">Vai →</button></div>` : '';
     block.innerHTML = `<div class="exercise-name">${ex.name}<span class="target">(target: ${ex.sets}×${ex.reps})</span>
         <a href="${escapeAttr(videoInfo.url)}" data-ex-name="${escapeAttr(ex.name)}" class="video-link" style="margin-left:8px;">▶ Video</a></div>
+      ${supersetBadge}
       ${nota}
       ${rigaPrec}
       <div class="sets-container" data-ex="${escapeAttr(ex.name)}"></div>
@@ -5221,6 +5351,11 @@ function buildExerciseForm(day){
     updateExerciseDotsProgress();
   }));
   list.querySelectorAll('[data-riporta]').forEach(btn=>btn.addEventListener('click', ()=>riportaUltimaVolta(btn.dataset.riporta)));
+  list.querySelectorAll('.superset-vai').forEach(btn=>btn.addEventListener('click', ()=>{
+    const i = parseInt(btn.dataset.vai);
+    goToExercise(i);
+    setTimeout(()=>allineaNomiEsercizi(i), 260);
+  }));
 
   list.scrollLeft = 0;
   updateExerciseCarouselUI(0);
@@ -5360,7 +5495,8 @@ function buildDropsetRound(exName, numeroRound, dropset){
     addSetRow(exName);
     const riga = container.lastElementChild;
     riga.classList.add('drop-row');
-    etichettaRiga(riga, `Drop ${dj+1} (-${drop.riduzione||0}%)`);
+    const nomeTappa = dropset.tipo==='restpause' ? `Rest-pause ${dj+1}` : `Drop ${dj+1} (-${drop.riduzione||0}%)`;
+    etichettaRiga(riga, nomeTappa);
     const idx = currentSetInputs[exName].length - 1;
 
     const repsInput = riga.querySelector('[data-field="reps"]');
@@ -5475,6 +5611,7 @@ document.getElementById('refreshHistoryBtn').addEventListener('click', ()=>{
 // MISURAZIONI (PESO / VITA)
 // ============================================================
 let measureChartInstance = null;
+let exerciseChartInstance = null;
 
 document.getElementById('saveMeasureBtn').addEventListener('click', ()=>{
   const prof = activeProfile();
@@ -5853,6 +5990,9 @@ function renderProgressSelect(){
   if(names.size===0){
     sel.innerHTML = '<option>Nessun dato ancora</option>';
     document.getElementById('progressTable').innerHTML = "";
+    document.getElementById('exChartBox').style.display = 'none';
+    document.getElementById('exChartSpiega').textContent = "";
+    if(exerciseChartInstance){ exerciseChartInstance.destroy(); exerciseChartInstance = null; }
     return;
   }
   [...names].sort().forEach(n=>{
@@ -5878,25 +6018,74 @@ function renderProgressTable(){
       if(timeBased){
         const maxSec = Math.max(...ex.sets.map(s=>parseFloat(s.seconds)||0));
         const setsStr = ex.sets.map(s=>`${s.seconds||'0'} sec`).join('  ');
-        return {date:l.date, maxVal:maxSec, setsStr};
+        return {date:l.date, maxVal:maxSec, setsStr, grafico:maxSec};
       }
       const maxKg = Math.max(...ex.sets.map(s=>parseFloat(s.kg)||0));
       const setsStr = ex.sets.map(s=>`${s.reps||'-'}×${s.kg||'0'}`).join('  ');
-      return {date:l.date, maxVal:maxKg, setsStr};
+      // massimale stimato (Epley) del set migliore quel giorno: tiene conto anche
+      // delle ripetizioni, non solo del peso, così i giorni a rep alte e quelli a
+      // rep basse restano confrontabili
+      const epley = Math.max(0, ...ex.sets.map(s=>{
+        const kg = parseFloat(s.kg), reps = parseFloat(s.reps);
+        return (kg>0 && reps>0) ? kg*(1+reps/30) : 0;
+      }));
+      return {date:l.date, maxVal:maxKg, setsStr, grafico: Math.round(epley*10)/10};
     });
-  if(rows.length===0){ container.innerHTML=""; return; }
-  container.innerHTML = `
-    <div class="progress-head-row">
-      <div class="progress-col-date">Data</div>
-      <div class="progress-col-sets">Serie</div>
-      <div class="progress-col-kg">${timeBased ? 'Sec max' : 'Kg max'}</div>
-    </div>
-    ${rows.map(r=>`
-      <div class="progress-row">
-        <div class="progress-col-date">${formatDate(r.date)}</div>
-        <div class="progress-col-sets">${r.setsStr}</div>
-        <div class="progress-col-kg">${r.maxVal}</div>
-      </div>`).join('')}`;
+  if(rows.length===0){ container.innerHTML=""; }
+  else {
+    container.innerHTML = `
+      <div class="progress-head-row">
+        <div class="progress-col-date">Data</div>
+        <div class="progress-col-sets">Serie</div>
+        <div class="progress-col-kg">${timeBased ? 'Sec max' : 'Kg max'}</div>
+      </div>
+      ${rows.map(r=>`
+        <div class="progress-row">
+          <div class="progress-col-date">${formatDate(r.date)}</div>
+          <div class="progress-col-sets">${r.setsStr}</div>
+          <div class="progress-col-kg">${r.maxVal}</div>
+        </div>`).join('')}`;
+  }
+
+  // ---- grafico ----
+  const box = document.getElementById('exChartBox');
+  const spiega = document.getElementById('exChartSpiega');
+  if(exerciseChartInstance){ exerciseChartInstance.destroy(); exerciseChartInstance = null; }
+  const puntiGrafico = rows.filter(r=>r.grafico>0);
+  if(!exName || puntiGrafico.length < 2 || typeof Chart === 'undefined'){
+    box.style.display = 'none';
+    spiega.textContent = puntiGrafico.length < 2 && exName ? "Registra questo esercizio almeno due volte per vedere il grafico dell'andamento." : "";
+    return;
+  }
+  box.style.display = 'block';
+  spiega.textContent = timeBased
+    ? "La durata migliore registrata a ogni sessione."
+    : "Il massimale stimato (formula di Epley) a ogni sessione, calcolato dal set più pesante: così i giorni a ripetizioni alte e quelli a ripetizioni basse restano confrontabili.";
+
+  const styles = getComputedStyle(document.documentElement);
+  const accent = styles.getPropertyValue('--accent').trim();
+  const textDim = styles.getPropertyValue('--text-dim').trim();
+  const border = styles.getPropertyValue('--border').trim();
+
+  exerciseChartInstance = new Chart(document.getElementById('exerciseChart'), {
+    type: 'line',
+    data: {
+      labels: puntiGrafico.map(r=>formatDate(r.date)),
+      datasets: [{
+        label: timeBased ? 'Durata (sec)' : 'Massimale stimato (kg)',
+        data: puntiGrafico.map(r=>r.grafico),
+        borderColor: accent, backgroundColor: accent, tension:0.25
+      }]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{ labels:{ color:textDim, font:{size:11} } } },
+      scales:{
+        x:{ ticks:{color:textDim, font:{size:10}}, grid:{color:border} },
+        y:{ ticks:{color:textDim, font:{size:10}}, grid:{color:border} }
+      }
+    }
+  });
 }
 
 // ============================================================
@@ -6184,7 +6373,7 @@ function renderSchedaView(){
       </div>
       ${d.exercises.map(ex=>{
         const vi = getExerciseVideoInfo(ex.name);
-        return `<div class="hint">• ${ex.name} — ${ex.sets}×${ex.reps} <a href="${escapeAttr(vi.url)}" data-ex-name="${escapeAttr(ex.name)}" class="video-link">▶</a></div>
+        return `<div class="hint">• ${ex.name} — ${ex.sets}×${ex.reps}${etichettaTecnica(ex,d)} <a href="${escapeAttr(vi.url)}" data-ex-name="${escapeAttr(ex.name)}" class="video-link">▶</a></div>
           ${ex.note ? `<div class="exercise-note" style="margin:2px 0 6px 14px;">📌 ${escapeAttr(ex.note)}</div>` : ''}`;
       }).join('')}
     </div>`).join('');
@@ -6338,12 +6527,14 @@ function renderDayEditors(){
     renderExerciseEditors(di);
   }));
 }
-// Tabella "serie principale + drop" nell'editor scheda, come da esempio:
-// ogni drop riduce il peso di una percentuale rispetto alla tappa precedente,
-// eseguito subito dopo senza pausa.
+// Tabella "serie principale + tappe" nell'editor scheda:
+// - dropset: ogni tappa riduce il peso di una percentuale rispetto alla tappa precedente
+// - rest-pause: stesso peso, solo una brevissima pausa tra una tappa e l'altra
 function dropsetEditorHtml(di, ei, ex){
+  const tipo = ex.dropset.tipo || 'dropset';
   const drops = (ex.dropset && ex.dropset.drops) || [];
   const opzioniRiduzione = [10,15,20,25,30,35,40,50];
+  const nomeTappa = tipo==='restpause' ? 'Rest-pause' : 'Drop';
   return `
     <div class="dropset-box">
       <div class="dropset-stage">
@@ -6359,18 +6550,40 @@ function dropsetEditorHtml(di, ei, ex){
         <div class="dropset-stage">
           <div class="dropset-num">${dj+2}</div>
           <div class="dropset-body">
-            <div class="dropset-label">Drop ${dj+1}</div>
+            <div class="dropset-label">${nomeTappa} ${dj+1}</div>
             <div class="dropset-fields">
               <input type="number" class="small dropset-reps" placeholder="rip." value="${escapeAttr(d.reps!=null?d.reps:'')}" data-di="${di}" data-ei="${ei}" data-dj="${dj}">
-              <select class="dropset-riduzione" data-di="${di}" data-ei="${ei}" data-dj="${dj}">
-                ${opzioniRiduzione.map(p=>`<option value="${p}" ${d.riduzione===p?'selected':''}>-${p}%</option>`).join('')}
-              </select>
+              ${tipo==='restpause'
+                ? `<span class="dropset-val" style="flex:1;">stesso peso, pausa breve</span>`
+                : `<select class="dropset-riduzione" data-di="${di}" data-ei="${ei}" data-dj="${dj}">
+                     ${opzioniRiduzione.map(p=>`<option value="${p}" ${d.riduzione===p?'selected':''}>-${p}%</option>`).join('')}
+                   </select>`}
               <button type="button" class="remove-x dropset-remove" data-di="${di}" data-ei="${ei}" data-dj="${dj}">×</button>
             </div>
           </div>
         </div>`).join('')}
-      <button type="button" class="btn ghost block dropset-add" data-di="${di}" data-ei="${ei}" style="margin-top:2px;">+ Aggiungi drop</button>
-      <p class="hint" style="margin:8px 0 0;">I drop vengono eseguiti senza pausa dopo la serie principale, riducendo il peso della percentuale indicata rispetto alla tappa precedente.</p>
+      <button type="button" class="btn ghost block dropset-add" data-di="${di}" data-ei="${ei}" style="margin-top:2px;">+ Aggiungi ${nomeTappa.toLowerCase()}</button>
+      <p class="hint" style="margin:8px 0 0;">${tipo==='restpause'
+        ? 'Le tappe successive si eseguono con una pausa di 10-15 secondi, allo stesso peso, per allungare la serie.'
+        : "Le tappe successive vengono eseguite senza pausa dopo la serie principale, riducendo il peso della percentuale indicata rispetto alla tappa precedente."}</p>
+    </div>`;
+}
+
+// Collega questo esercizio a un altro dello stesso giorno: si eseguono una serie
+// dell'uno e subito una dell'altro, senza pausa. Il collegamento è reciproco.
+function supersetEditorHtml(di, ei, ex, day){
+  const altri = day.exercises.map((e,idx)=>({idx, nome:e.name})).filter(o=>o.idx!=ei && o.nome);
+  if(altri.length===0){
+    return `<div class="dropset-box"><p class="hint" style="margin:0;">Aggiungi un altro esercizio a questo giorno per poterlo collegare in superset.</p></div>`;
+  }
+  const scelto = altri.find(o=>String(o.idx)===String(ex.supersetCon));
+  return `
+    <div class="dropset-box">
+      <label style="margin-top:0;">Esercizio abbinato</label>
+      <select class="superset-select" data-di="${di}" data-ei="${ei}">
+        ${altri.map(o=>`<option value="${o.idx}" ${String(o.idx)===String(ex.supersetCon)?'selected':''}>${escapeAttr(o.nome)}</option>`).join('')}
+      </select>
+      <p class="hint" style="margin-top:8px;">Farai una serie di questo esercizio, poi subito una di <b>${escapeAttr(scelto?scelto.nome:'quello abbinato')}</b>, senza pausa tra i due — poi riposo, e si ripete.</p>
     </div>`;
 }
 
@@ -6417,11 +6630,17 @@ function renderExerciseEditors(di){
         ${MUSCLE_GROUPS.map(m=>`<div class="muscle-chip ${(ex.muscles||[]).includes(m)?'selected':''}" data-m="${m}">${m}</div>`).join('')}
       </div>
       <input type="text" class="ex-note-input" placeholder="Nota per l'allenamento (facoltativa) — es. presa larga, attenzione alla spalla…" value="${escapeAttr(ex.note||'')}" data-di="${di}" data-ei="${ei}" data-field="note">
-      <div class="dropset-toggle-row">
-        <span>Dropset</span>
-        <label class="interruttore"><input type="checkbox" class="dropset-toggle" data-di="${di}" data-ei="${ei}" ${ex.dropset?'checked':''}><span></span></label>
+      <div class="tecnica-row">
+        <span>Tecnica speciale</span>
+        <div class="seg-toggle seg-toggle-tecnica">
+          <button type="button" class="seg-btn ${!ex.dropset && ex.supersetCon==null?'active':''}" data-di="${di}" data-ei="${ei}" data-tecnica="nessuna">Nessuna</button>
+          <button type="button" class="seg-btn ${ex.dropset && ex.dropset.tipo==='dropset'?'active':''}" data-di="${di}" data-ei="${ei}" data-tecnica="dropset">Dropset</button>
+          <button type="button" class="seg-btn ${ex.dropset && ex.dropset.tipo==='restpause'?'active':''}" data-di="${di}" data-ei="${ei}" data-tecnica="restpause">Rest-pause</button>
+          <button type="button" class="seg-btn ${ex.supersetCon!=null?'active':''}" data-di="${di}" data-ei="${ei}" data-tecnica="superset">Superset</button>
+        </div>
       </div>
       ${ex.dropset ? dropsetEditorHtml(di, ei, ex) : ''}
+      ${ex.supersetCon!=null ? supersetEditorHtml(di, ei, ex, day) : ''}
     </div>`).join('');
 
   list.querySelectorAll('.ex-name-input').forEach(sel=>{
@@ -6462,14 +6681,20 @@ function renderExerciseEditors(di){
       editingDays[di].exercises[ei].note = e.target.value;
     });
   });
-  list.querySelectorAll('.dropset-toggle').forEach(chk=>{
-    chk.addEventListener('change', e=>{
-      const {di, ei} = e.target.dataset;
-      const ex = editingDays[di].exercises[ei];
-      if(e.target.checked){
-        ex.dropset = { drops: [{ reps: '8', riduzione: 25 }] };
-      } else {
-        delete ex.dropset;
+  list.querySelectorAll('.seg-toggle-tecnica .seg-btn').forEach(btn=>{
+    btn.addEventListener('click', e=>{
+      const {di, ei, tecnica} = e.target.dataset;
+      const giorno = editingDays[di];
+      const ex = giorno.exercises[ei];
+      scollegaSuperset(giorno, parseInt(ei));   // parto sempre pulito: stacco un eventuale superset esistente
+      delete ex.dropset;
+      if(tecnica === 'dropset'){
+        ex.dropset = { tipo:'dropset', drops: [{ reps: '8', riduzione: 25 }] };
+      } else if(tecnica === 'restpause'){
+        ex.dropset = { tipo:'restpause', drops: [{ reps: '6', riduzione: 0 }] };
+      } else if(tecnica === 'superset'){
+        const altri = giorno.exercises.map((e2,idx)=>idx).filter(idx=>idx!=ei && giorno.exercises[idx].name);
+        if(altri.length > 0) collegaSuperset(giorno, parseInt(ei), altri[0]);
       }
       renderExerciseEditors(di);
     });
@@ -6477,7 +6702,8 @@ function renderExerciseEditors(di){
   list.querySelectorAll('.dropset-add').forEach(btn=>{
     btn.addEventListener('click', e=>{
       const {di, ei} = e.target.dataset;
-      editingDays[di].exercises[ei].dropset.drops.push({ reps: '8', riduzione: 25 });
+      const tipo = editingDays[di].exercises[ei].dropset.tipo;
+      editingDays[di].exercises[ei].dropset.drops.push({ reps: tipo==='restpause'?'6':'8', riduzione: tipo==='restpause'?0:25 });
       renderExerciseEditors(di);
     });
   });
@@ -6502,10 +6728,26 @@ function renderExerciseEditors(di){
       editingDays[di].exercises[ei].dropset.drops[dj].riduzione = parseInt(e.target.value)||0;
     });
   });
+  list.querySelectorAll('.superset-select').forEach(sel=>{
+    sel.addEventListener('change', e=>{
+      const {di, ei} = e.target.dataset;
+      collegaSuperset(editingDays[di], parseInt(ei), parseInt(e.target.value));
+      renderExerciseEditors(di);
+    });
+  });
   list.querySelectorAll('.remove-x').forEach(btn=>{
     btn.addEventListener('click', e=>{
       const {di, ei} = e.target.dataset;
-      editingDays[di].exercises.splice(ei,1);
+      const giorno = editingDays[di];
+      const idx = parseInt(ei);
+      // chi era abbinato in superset a questo esercizio si scollega, e gli indici
+      // di chi viene dopo si correggono per via dello slittamento nell'array
+      giorno.exercises.forEach(ex=>{
+        if(ex.supersetCon == null) return;
+        if(ex.supersetCon === idx) delete ex.supersetCon;
+        else if(ex.supersetCon > idx) ex.supersetCon--;
+      });
+      giorno.exercises.splice(idx,1);
       renderExerciseEditors(di);
     });
   });
@@ -6701,7 +6943,7 @@ function renderProgramDetailHtml(p){
       </div>
       ${d.exercises.map(ex=>{
         const vi = getExerciseVideoInfo(ex.name);
-        return `<div class="hint">• ${ex.name} — ${ex.sets}×${ex.reps} <a href="${escapeAttr(vi.url)}" data-ex-name="${escapeAttr(ex.name)}" class="video-link">▶</a></div>
+        return `<div class="hint">• ${ex.name} — ${ex.sets}×${ex.reps}${etichettaTecnica(ex,d)} <a href="${escapeAttr(vi.url)}" data-ex-name="${escapeAttr(ex.name)}" class="video-link">▶</a></div>
           ${ex.note ? `<div class="exercise-note" style="margin:2px 0 6px 14px;">📌 ${escapeAttr(ex.note)}</div>` : ''}`;
       }).join('')}
     </div>`).join('');
