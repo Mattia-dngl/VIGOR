@@ -4140,27 +4140,33 @@ function esercizioDiBase(nome){
 function etichettaTecnica(ex, giorno){
   if(ex.dropset) return ex.dropset.tipo==='restpause' ? ' · Rest-pause' : ' · Dropset';
   if(ex.supersetCon!=null && giorno && giorno.exercises[ex.supersetCon]) return ` · Superset con ${giorno.exercises[ex.supersetCon].name}`;
+  if(giorno){
+    const mieIdx = giorno.exercises.indexOf(ex);
+    const chiIdx = chiMiHaAbbinato(giorno, mieIdx);
+    if(chiIdx >= 0) return ` · Superset con ${giorno.exercises[chiIdx].name}`;
+  }
   return '';
 }
 
-// Collega/scollega due esercizi dello stesso giorno in superset: il legame è
-// sempre reciproco (se A è abbinato a B, anche B risulta abbinato ad A), e chi
-// aveva già un abbinamento diverso lo perde.
+// Collega questo esercizio (l'iniziatore) al suo partner per il superset. Il
+// legame è a senso unico: solo l'iniziatore passa a "tecnica: superset" — il
+// partner non viene toccato, così scegliere il superset su un esercizio non
+// attiva automaticamente anche l'editor dell'altro. Per sapere chi è stato
+// scelto come partner da qualcun altro (e mostrarglielo comunque in etichetta)
+// c'è chiMiHaAbbinato() più sotto.
 function scollegaSuperset(giorno, idx){
   const ex = giorno.exercises[idx];
-  if(ex && ex.supersetCon != null && giorno.exercises[ex.supersetCon]){
-    delete giorno.exercises[ex.supersetCon].supersetCon;
-  }
   if(ex) delete ex.supersetCon;
 }
-function collegaSuperset(giorno, idxA, idxB){
-  scollegaSuperset(giorno, idxA);
-  scollegaSuperset(giorno, idxB);
-  const exA = giorno.exercises[idxA], exB = giorno.exercises[idxB];
-  if(!exA || !exB) return;
-  delete exB.dropset;   // chi entra in superset non può avere anche una tecnica propria
-  exA.supersetCon = idxB;
-  exB.supersetCon = idxA;
+function collegaSuperset(giorno, idxIniziatore, idxPartner){
+  const ex = giorno.exercises[idxIniziatore];
+  if(!ex || !giorno.exercises[idxPartner]) return;
+  ex.supersetCon = idxPartner;
+}
+// L'esercizio a cui punta idx è quello scelto come partner; questa invece
+// cerca il verso opposto — chi, in questo giorno, ha scelto idx come partner.
+function chiMiHaAbbinato(giorno, idx){
+  return (giorno.exercises||[]).findIndex(e=>e && e.supersetCon === idx);
 }
 
 // Il popup ora serve solo a GESTIRE il video di un esercizio (vedere qual è,
@@ -5313,9 +5319,10 @@ function buildExerciseForm(day){
            <button type="button" class="riporta-btn" data-riporta="${escapeAttr(ex.name)}">riporta</button></div>`
       : `<div class="ultima-volta vuota">Prima volta che registri questo esercizio.</div>`;
     const nota = ex.note ? `<div class="exercise-note">📌 ${escapeAttr(ex.note)}</div>` : '';
-    const partner = (ex.supersetCon!=null && day.exercises[ex.supersetCon]) ? day.exercises[ex.supersetCon] : null;
+    const partnerIdx = ex.supersetCon!=null ? ex.supersetCon : chiMiHaAbbinato(day, i);
+    const partner = (partnerIdx!=null && partnerIdx>=0) ? day.exercises[partnerIdx] : null;
     const supersetBadge = partner ? `<div class="superset-badge">⚡ Superset con <b>${escapeAttr(partner.name)}</b>
-        <button type="button" class="superset-vai" data-vai="${ex.supersetCon}">Vai →</button></div>` : '';
+        <button type="button" class="superset-vai" data-vai="${partnerIdx}">Vai →</button></div>` : '';
     block.innerHTML = `<div class="exercise-name">${ex.name}<span class="target">(target: ${ex.sets}×${ex.reps})</span>
         <a href="${escapeAttr(videoInfo.url)}" data-ex-name="${escapeAttr(ex.name)}" class="video-link" style="margin-left:8px;">▶ Video</a></div>
       ${supersetBadge}
@@ -6616,9 +6623,14 @@ function renderExerciseEditors(di){
     return html;
   }
 
-  list.innerHTML = day.exercises.map((ex,ei)=>`
+  list.innerHTML = day.exercises.map((ex,ei)=>{
+    const eiNum = parseInt(ei);
+    const partnerIdx = ex.supersetCon!=null ? ex.supersetCon : chiMiHaAbbinato(day, eiNum);
+    const partnerEx = (partnerIdx!=null && partnerIdx>=0) ? day.exercises[partnerIdx] : null;
+    const chipSuperset = partnerEx ? `<div class="superset-chip">⚡ Superset con ${escapeAttr(partnerEx.name || '(esercizio '+(parseInt(partnerIdx)+1)+')')}</div>` : '';
+    return `
     <div class="exercise-edit-block" data-di="${di}" data-ei="${ei}">
-      <div class="exercise-edit-num">${parseInt(ei)+1}</div>
+      <div class="exercise-edit-num">${eiNum+1}</div>
       <div class="exercise-edit-row">
         <select class="ex-name-input" data-di="${di}" data-ei="${ei}" data-field="name">
           ${exOptionsHtml(ex.name)}
@@ -6627,7 +6639,7 @@ function renderExerciseEditors(di){
         <input type="text" class="small" placeholder="rip." value="${escapeAttr(ex.reps)}" data-di="${di}" data-ei="${ei}" data-field="reps">
         <button type="button" class="remove-x" data-di="${di}" data-ei="${ei}">×</button>
       </div>
-      ${ex.supersetCon!=null && day.exercises[ex.supersetCon] ? `<div class="superset-chip">⚡ Superset con ${escapeAttr(day.exercises[ex.supersetCon].name || '(esercizio '+(parseInt(ex.supersetCon)+1)+')')}</div>` : ''}
+      ${chipSuperset}
       <div class="muscle-chip-group" data-di="${di}" data-ei="${ei}">
         ${MUSCLE_GROUPS.map(m=>`<div class="muscle-chip ${(ex.muscles||[]).includes(m)?'selected':''}" data-m="${m}">${m}</div>`).join('')}
       </div>
@@ -6643,7 +6655,8 @@ function renderExerciseEditors(di){
       </div>
       ${ex.dropset ? dropsetEditorHtml(di, ei, ex) : ''}
       ${ex.supersetCon!=null ? supersetEditorHtml(di, ei, ex, day) : ''}
-    </div>`).join('');
+    </div>`;
+  }).join('');
 
   list.querySelectorAll('.ex-name-input').forEach(sel=>{
     sel.addEventListener('change', e=>{
