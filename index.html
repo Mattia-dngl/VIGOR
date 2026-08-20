@@ -486,7 +486,7 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
   </div>
 </div>
 
-<div id="messaggiOverlay" style="display:none; position:fixed; inset:0; background:var(--bg); z-index:340; flex-direction:column;">
+<div id="messaggiOverlay">
   <div class="msg-head">
     <button type="button" class="msg-back" id="msgChiudiBtn" aria-label="Chiudi">←</button>
     <div class="msg-avatar" id="msgAvatar">—</div>
@@ -601,6 +601,7 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
     </div>
 
     <button class="btn block" id="freeAddExBtn" style="display:none;">Scegli un esercizio dal corpo</button>
+    <button class="btn secondary block" id="freeAddExManualeBtn" style="display:none;">Aggiungi a mano (scrivi il nome)</button>
     <button class="btn ghost block" id="freeDelExBtn" style="display:none;">Togli l'esercizio che stai vedendo</button>
     <div class="card free-hint" id="freeEmptyHint" style="display:none;">Nessun esercizio ancora. Tocca il pulsante qui sopra e scegli un muscolo sulla figura.</div>
 
@@ -814,7 +815,7 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
           <div class="cal-stat skip"><b id="calSaltati">0</b><span>saltati</span></div>
         </div>
         <div class="weekdays"><span>L</span><span>M</span><span>M</span><span>G</span><span>V</span><span>S</span><span>D</span></div>
-        <div class="days" id="calGiorni"></div>
+        <div class="cal-days" id="calGiorni"></div>
         <div class="legend">
           <span class="sw"><span class="dot" style="background:var(--ok)"></span>Fatto</span>
           <span class="sw"><span class="dot" style="background:#fff;border:1.5px solid var(--warn)"></span>Saltato</span>
@@ -4562,6 +4563,7 @@ function pulisciBozza(silenzioso){
   document.getElementById('notesCard').style.display = 'none';
   document.getElementById('saveLogBtn').style.display = 'none';
   document.getElementById('freeAddExBtn').style.display = 'none';
+  document.getElementById('freeAddExManualeBtn').style.display='none';
   document.getElementById('freeDelExBtn').style.display = 'none';
   document.getElementById('freeEmptyHint').style.display = 'none';
   renderDayChoices();
@@ -4912,7 +4914,7 @@ function freeAddExercise(ex){
   if(FREE_DAY.exercises.some(e=>e.name.toLowerCase()===ex.n.toLowerCase())){
     toast("Esercizio già presente nell'allenamento."); return;
   }
-  FREE_DAY.exercises.push({ name: ex.n, sets: 3, reps: "libere", muscles: [ex.g] });
+  FREE_DAY.exercises.push({ name: ex.n, sets: 3, reps: "libere", muscles: ex.g ? [ex.g] : [] });
   rebuildFreeForm();
   salvaBozza();
   document.getElementById('freeEmptyHint').style.display = 'none';
@@ -4961,6 +4963,13 @@ document.querySelectorAll('.mp-viewtoggle button').forEach(btn=>{
 // allenamento libero
 document.getElementById('freeAddExBtn').addEventListener('click', ()=>{
   openMusclePicker("Aggiungi all'allenamento di oggi", freeAddExercise);
+});
+document.getElementById('freeAddExManualeBtn').addEventListener('click', ()=>{
+  const nome = prompt("Nome dell'esercizio:");
+  if(!nome || !nome.trim()) return;
+  const nomeTrim = nome.trim();
+  const muscoli = getExerciseMuscles(nomeTrim);
+  freeAddExercise({ n: nomeTrim, g: (muscoli && muscoli[0]) ? muscoli[0] : null });
 });
 document.getElementById('freeDelExBtn').addEventListener('click', ()=>{
   const i = currentExerciseIndex();
@@ -5422,6 +5431,7 @@ function selectDay(key){
 
   if(key==="SKIP"){
     document.getElementById('freeAddExBtn').style.display='none';
+  document.getElementById('freeAddExManualeBtn').style.display='none';
     document.getElementById('freeDelExBtn').style.display='none';
     document.getElementById('freeEmptyHint').style.display='none';
     info.innerHTML = `<span class="status-badge skip">Saltato</span> Nessun esercizio da registrare per questo giorno.`;
@@ -5438,6 +5448,7 @@ function selectDay(key){
     currentSetInputs = {};
     buildExerciseForm(FREE_DAY);
     document.getElementById('freeAddExBtn').style.display='block';
+  document.getElementById('freeAddExManualeBtn').style.display='block';
     document.getElementById('freeDelExBtn').style.display='none';
     document.getElementById('freeEmptyHint').style.display='block';
     document.getElementById('exerciseFormCard').style.display='none';
@@ -5446,6 +5457,7 @@ function selectDay(key){
     return;
   }
   document.getElementById('freeAddExBtn').style.display='none';
+  document.getElementById('freeAddExManualeBtn').style.display='none';
   document.getElementById('freeDelExBtn').style.display='none';
   document.getElementById('freeEmptyHint').style.display='none';
 
@@ -5737,6 +5749,7 @@ document.getElementById('saveLogBtn').addEventListener('click', ()=>{
   document.getElementById('notesCard').style.display = 'none';
   document.getElementById('saveLogBtn').style.display = 'none';
   document.getElementById('freeAddExBtn').style.display = 'none';
+  document.getElementById('freeAddExManualeBtn').style.display='none';
   document.getElementById('freeDelExBtn').style.display = 'none';
   document.getElementById('freeEmptyHint').style.display = 'none';
   document.getElementById('logNotes').value = "";
@@ -6172,7 +6185,7 @@ function renderCalendarioStorico(){
   const oggiIso = isoDaData(new Date());
 
   let html = '';
-  for(let i=0;i<offset;i++) html += `<div class="day empty"></div>`;
+  for(let i=0;i<offset;i++) html += `<div class="cal-day empty"></div>`;
 
   let fatti = 0, saltati = 0;
   for(let g=1; g<=giorniNelMese; g++){
@@ -6181,7 +6194,7 @@ function renderCalendarioStorico(){
     const wd = WEEKDAYS[d.getDay()];
     const previsto = p && p.days ? p.days.find(x=>x.weekday===wd) : null;
     const log = prof && prof.logs ? prof.logs.find(l=>l.date===iso && (!p || l.programId===p.id)) : null;
-    let cls = 'day';
+    let cls = 'cal-day';
     if(log && log.status==='registrato'){ cls += ' done'; fatti++; }
     else if(log && log.status==='saltato'){ cls += ' skipped'; saltati++; }
     else if(!previsto){ cls += ' rest'; }
@@ -6192,15 +6205,15 @@ function renderCalendarioStorico(){
   document.getElementById('calFatti').textContent = fatti;
   document.getElementById('calSaltati').textContent = saltati;
 
-  cont.querySelectorAll('.day:not(.empty)').forEach(el=>{
+  cont.querySelectorAll('.cal-day:not(.empty)').forEach(el=>{
     el.addEventListener('click', ()=>{
-      cont.querySelectorAll('.day.selected').forEach(x=>x.classList.remove('selected'));
+      cont.querySelectorAll('.cal-day.selected').forEach(x=>x.classList.remove('selected'));
       el.classList.add('selected');
       mostraDettaglioGiornoCalendario(el.dataset.iso);
     });
   });
 
-  const oggiEl = cont.querySelector(`.day[data-iso="${oggiIso}"]`);
+  const oggiEl = cont.querySelector(`.cal-day[data-iso="${oggiIso}"]`);
   if(oggiEl){ oggiEl.classList.add('selected'); mostraDettaglioGiornoCalendario(oggiIso); }
   else document.getElementById('calDettaglio').innerHTML = '';
 }
