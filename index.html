@@ -601,9 +601,7 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
     </div>
 
     <button class="btn block" id="freeAddExBtn" style="display:none;">Scegli un esercizio dal corpo</button>
-    <select class="btn secondary block free-add-select" id="freeAddExManualeSelect" style="display:none;">
-      <option value="" selected disabled>Aggiungi dall'elenco…</option>
-    </select>
+    <button type="button" class="btn secondary block" id="freeAddExManualeBtn2" style="display:none;">Aggiungi dall'elenco…</button>
     <button class="btn ghost block" id="freeDelExBtn" style="display:none;">Togli l'esercizio che stai vedendo</button>
     <div class="card free-hint" id="freeEmptyHint" style="display:none;">Nessun esercizio ancora. Tocca il pulsante qui sopra e scegli un muscolo sulla figura.</div>
 
@@ -999,6 +997,19 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
         <div class="mp-list" id="mpList"></div>
       </div>
     </div>
+  </div>
+</div>
+
+<div class="mp-overlay" id="esListaOverlay">
+  <div class="mp-modal" style="max-width:420px; height:auto; max-height:88vh;">
+    <div class="mp-head">
+      <h3>Aggiungi esercizio</h3>
+      <button class="mp-close" id="esListaClose" type="button" aria-label="Chiudi">&#10005;</button>
+    </div>
+    <div style="padding:14px 16px 0;">
+      <input type="text" id="esListaCerca" placeholder="Cerca per nome…">
+    </div>
+    <div id="esListaRisultati" class="es-lista-risultati"></div>
   </div>
 </div>
 
@@ -4565,7 +4576,7 @@ function pulisciBozza(silenzioso){
   document.getElementById('notesCard').style.display = 'none';
   document.getElementById('saveLogBtn').style.display = 'none';
   document.getElementById('freeAddExBtn').style.display = 'none';
-  document.getElementById('freeAddExManualeSelect').style.display='none';
+  document.getElementById('freeAddExManualeBtn2').style.display='none';
   document.getElementById('freeDelExBtn').style.display = 'none';
   document.getElementById('freeEmptyHint').style.display = 'none';
   renderDayChoices();
@@ -4966,34 +4977,65 @@ document.querySelectorAll('.mp-viewtoggle button').forEach(btn=>{
 document.getElementById('freeAddExBtn').addEventListener('click', ()=>{
   openMusclePicker("Aggiungi all'allenamento di oggi", freeAddExercise);
 });
-function riempiSelectAggiungiLibero(){
-  const sel = document.getElementById('freeAddExManualeSelect');
-  const lp = activeProfile();
-  const baseNames = EX_LIB.map(e=>e.n.toLowerCase()).sort();
-  const personalNames = Object.keys((lp && lp.customExercises) || {}).sort();
-  let html = `<option value="" selected disabled>Aggiungi dall'elenco…</option>`;
-  html += `<option value="__crea__">+ Crea nuovo esercizio…</option>`;
-  if(personalNames.length>0){
-    html += `<optgroup label="I tuoi esercizi">`;
-    html += personalNames.map(n=>`<option value="${escapeAttr(toTitleCase(n))}">${toTitleCase(n)}</option>`).join('');
-    html += `</optgroup>`;
-  }
-  html += `<optgroup label="Esercizi di base">`;
-  html += baseNames.map(n=>`<option value="${escapeAttr(toTitleCase(n))}">${toTitleCase(n)}</option>`).join('');
-  html += `</optgroup>`;
-  sel.innerHTML = html;
+// Elenco esercizi da aggiungere a mano nell'allenamento libero: stesso elenco
+// dell'editor scheda (personali + di base), ma qui in un pannello con ricerca,
+// invece di una tendina nativa (poco leggibile e difficile da rifinire).
+function apriListaEserciziLibero(){
+  document.getElementById('esListaCerca').value = '';
+  renderListaEserciziLibero('');
+  document.getElementById('esListaOverlay').classList.add('show');
+  setTimeout(()=>document.getElementById('esListaCerca').focus(), 150);
 }
-document.getElementById('freeAddExManualeSelect').addEventListener('change', (e)=>{
-  const nome = e.target.value;
-  e.target.value = '';   // torna al segnaposto: ogni scelta è un'aggiunta, non uno stato fisso
-  if(!nome) return;
-  if(nome === '__crea__'){
-    apriCreaEsercizio('', (ex)=>{ freeAddExercise({ n: ex.n, g: ex.g }); });
-    return;
+function chiudiListaEserciziLibero(){
+  document.getElementById('esListaOverlay').classList.remove('show');
+}
+function renderListaEserciziLibero(filtro){
+  const box = document.getElementById('esListaRisultati');
+  const lp = activeProfile();
+  const q = (filtro||'').trim().toLowerCase();
+  const baseNames = EX_LIB.map(e=>e.n).sort((a,b)=>a.localeCompare(b,'it'));
+  const personalNames = Object.keys((lp && lp.customExercises) || {}).map(toTitleCase).sort((a,b)=>a.localeCompare(b,'it'));
+
+  const rigaCrea = `<div class="es-lista-riga es-lista-crea" data-crea="1">
+      <span class="es-lista-plus">+</span><span>Crea nuovo esercizio…</span>
+    </div>`;
+
+  const filtraOrd = arr => arr.filter(n=>!q || n.toLowerCase().includes(q));
+  const pers = filtraOrd(personalNames);
+  const base = filtraOrd(baseNames);
+
+  let html = !q ? rigaCrea : '';
+  if(pers.length){
+    html += `<div class="es-lista-gruppo">I tuoi esercizi</div>`;
+    html += pers.map(n=>`<div class="es-lista-riga" data-nome="${escapeAttr(n)}">${escapeAttr(n)}</div>`).join('');
   }
-  const muscoli = getExerciseMuscles(nome);
-  freeAddExercise({ n: nome, g: (muscoli && muscoli[0]) ? muscoli[0] : null });
-});
+  if(base.length){
+    html += `<div class="es-lista-gruppo">Esercizi di base</div>`;
+    html += base.map(n=>`<div class="es-lista-riga" data-nome="${escapeAttr(n)}">${escapeAttr(n)}</div>`).join('');
+  }
+  if(pers.length===0 && base.length===0){
+    html += `<p class="hint" style="text-align:center; padding:20px 16px;">Nessun esercizio trovato.</p>`;
+  }
+  box.innerHTML = html;
+
+  box.querySelectorAll('.es-lista-riga[data-nome]').forEach(riga=>{
+    riga.addEventListener('click', ()=>{
+      const nome = riga.dataset.nome;
+      chiudiListaEserciziLibero();
+      const muscoli = getExerciseMuscles(nome);
+      freeAddExercise({ n: nome, g: (muscoli && muscoli[0]) ? muscoli[0] : null });
+    });
+  });
+  box.querySelectorAll('.es-lista-riga[data-crea]').forEach(riga=>{
+    riga.addEventListener('click', ()=>{
+      chiudiListaEserciziLibero();
+      apriCreaEsercizio('', (ex)=>{ freeAddExercise({ n: ex.n, g: ex.g }); });
+    });
+  });
+}
+document.getElementById('esListaCerca').addEventListener('input', e=>renderListaEserciziLibero(e.target.value));
+document.getElementById('esListaClose').addEventListener('click', chiudiListaEserciziLibero);
+document.getElementById('freeAddExManualeBtn2').addEventListener('click', apriListaEserciziLibero);
 document.getElementById('freeDelExBtn').addEventListener('click', ()=>{
   const i = currentExerciseIndex();
   const ex = FREE_DAY.exercises[i];
@@ -5454,7 +5496,7 @@ function selectDay(key){
 
   if(key==="SKIP"){
     document.getElementById('freeAddExBtn').style.display='none';
-  document.getElementById('freeAddExManualeSelect').style.display='none';
+  document.getElementById('freeAddExManualeBtn2').style.display='none';
     document.getElementById('freeDelExBtn').style.display='none';
     document.getElementById('freeEmptyHint').style.display='none';
     info.innerHTML = `<span class="status-badge skip">Saltato</span> Nessun esercizio da registrare per questo giorno.`;
@@ -5471,8 +5513,7 @@ function selectDay(key){
     currentSetInputs = {};
     buildExerciseForm(FREE_DAY);
     document.getElementById('freeAddExBtn').style.display='block';
-  document.getElementById('freeAddExManualeSelect').style.display='block';
-  riempiSelectAggiungiLibero();
+  document.getElementById('freeAddExManualeBtn2').style.display='block';
     document.getElementById('freeDelExBtn').style.display='none';
     document.getElementById('freeEmptyHint').style.display='block';
     document.getElementById('exerciseFormCard').style.display='none';
@@ -5481,7 +5522,7 @@ function selectDay(key){
     return;
   }
   document.getElementById('freeAddExBtn').style.display='none';
-  document.getElementById('freeAddExManualeSelect').style.display='none';
+  document.getElementById('freeAddExManualeBtn2').style.display='none';
   document.getElementById('freeDelExBtn').style.display='none';
   document.getElementById('freeEmptyHint').style.display='none';
 
@@ -5773,7 +5814,7 @@ document.getElementById('saveLogBtn').addEventListener('click', ()=>{
   document.getElementById('notesCard').style.display = 'none';
   document.getElementById('saveLogBtn').style.display = 'none';
   document.getElementById('freeAddExBtn').style.display = 'none';
-  document.getElementById('freeAddExManualeSelect').style.display='none';
+  document.getElementById('freeAddExManualeBtn2').style.display='none';
   document.getElementById('freeDelExBtn').style.display = 'none';
   document.getElementById('freeEmptyHint').style.display = 'none';
   document.getElementById('logNotes').value = "";

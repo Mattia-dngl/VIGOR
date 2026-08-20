@@ -128,8 +128,8 @@
   .home-head{flex:1; min-width:0;}
   .home-greeting{font-family:var(--font-display); font-size:20px; line-height:1.25; margin:0 0 5px;}
   .home-tagline{font-size:12px; color:var(--text-dim); line-height:1.4;}
-  .home-hero{position:relative; flex:0 0 auto; width:152px;}
-  .home-hero-photo{display:block; width:100%; height:auto; border-radius:14px;}
+  .home-hero{position:relative; flex:0 0 auto; width:185px;}
+  .home-hero-photo{display:block; width:100%; height:auto;}
 
   .home-goal-card{
     display:flex; align-items:center; justify-content:space-between; gap:12px; background:var(--surface);
@@ -481,11 +481,6 @@
     border-radius:var(--r-md); font-family:var(--font-display); font-weight:700; letter-spacing:0.005em;
     font-size:13.5px; cursor:pointer; text-align:center; box-shadow:var(--shadow-accent);}
   .btn.secondary{background:var(--surface); color:var(--text); border:1.5px solid var(--text-faint); box-shadow:none; font-weight:700;}
-  select.free-add-select{
-    text-align:center; cursor:pointer;
-    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2.3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
-    background-repeat:no-repeat; background-position:right 14px center; background-size:15px;
-  }
   .btn.diet-btn{background:var(--diet); box-shadow:none;}
   .btn.ghost{background:var(--accent-soft); color:var(--accent); border:none; padding:8px 12px; font-size:11.5px; box-shadow:none;}
   .btn.block{width:100%;}
@@ -767,6 +762,19 @@
   .mp-close{background:var(--surface2); border:none; width:32px; height:32px; border-radius:50%;
     font-size:14px; color:var(--text-dim); cursor:pointer; flex:0 0 auto;}
   .mp-close:hover{background:var(--accent-soft,#fdeae5); color:var(--accent);}
+
+  /* Pannello "Aggiungi esercizio" nell'allenamento libero: ricerca + elenco */
+  .es-lista-risultati{overflow-y:auto; padding:8px 8px 16px; flex:1; min-height:0;}
+  .es-lista-gruppo{font-size:10.5px; letter-spacing:.04em; color:var(--text-faint);
+    font-family:var(--font-display); padding:14px 10px 6px;}
+  .es-lista-riga{padding:12px 10px; border-radius:10px; font-size:14px; color:var(--text); cursor:pointer;}
+  .es-lista-riga:active{background:var(--surface2);}
+  .es-lista-crea{display:flex; align-items:center; gap:10px; color:var(--accent);
+    font-family:var(--font-display); font-weight:700; font-size:13.5px;
+    background:var(--accent-soft); border-radius:10px; margin:2px 2px 4px;}
+  .es-lista-plus{width:22px; height:22px; border-radius:50%; background:var(--accent); color:#fff;
+    display:flex; align-items:center; justify-content:center; font-size:14px; flex:0 0 auto;}
+
   .mp-body{display:grid; grid-template-columns:1fr; gap:0; overflow:hidden; flex:1; min-height:0;}
   @media(min-width:760px){ .mp-body{grid-template-columns:minmax(240px,42%) 1fr;} }
   .mp-figures{display:grid; grid-template-columns:1fr 1fr; gap:8px; padding:12px;
