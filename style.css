@@ -480,7 +480,12 @@
   .btn{display:inline-block; background:var(--grad-accent); color:#fff; border:none; padding:12px 18px;
     border-radius:var(--r-md); font-family:var(--font-display); font-weight:700; letter-spacing:0.005em;
     font-size:13.5px; cursor:pointer; text-align:center; box-shadow:var(--shadow-accent);}
-  .btn.secondary{background:var(--surface2); color:var(--text); border:1.5px dashed var(--border); box-shadow:none; font-weight:700;}
+  .btn.secondary{background:var(--surface); color:var(--text); border:1.5px solid var(--text-faint); box-shadow:none; font-weight:700;}
+  select.free-add-select{
+    text-align:center; cursor:pointer;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2.3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat:no-repeat; background-position:right 14px center; background-size:15px;
+  }
   .btn.diet-btn{background:var(--diet); box-shadow:none;}
   .btn.ghost{background:var(--accent-soft); color:var(--accent); border:none; padding:8px 12px; font-size:11.5px; box-shadow:none;}
   .btn.block{width:100%;}

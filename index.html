@@ -601,7 +601,9 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
     </div>
 
     <button class="btn block" id="freeAddExBtn" style="display:none;">Scegli un esercizio dal corpo</button>
-    <button class="btn secondary block" id="freeAddExManualeBtn" style="display:none;">Aggiungi a mano (scrivi il nome)</button>
+    <select class="btn secondary block free-add-select" id="freeAddExManualeSelect" style="display:none;">
+      <option value="" selected disabled>Aggiungi dall'elenco…</option>
+    </select>
     <button class="btn ghost block" id="freeDelExBtn" style="display:none;">Togli l'esercizio che stai vedendo</button>
     <div class="card free-hint" id="freeEmptyHint" style="display:none;">Nessun esercizio ancora. Tocca il pulsante qui sopra e scegli un muscolo sulla figura.</div>
 
@@ -4563,7 +4565,7 @@ function pulisciBozza(silenzioso){
   document.getElementById('notesCard').style.display = 'none';
   document.getElementById('saveLogBtn').style.display = 'none';
   document.getElementById('freeAddExBtn').style.display = 'none';
-  document.getElementById('freeAddExManualeBtn').style.display='none';
+  document.getElementById('freeAddExManualeSelect').style.display='none';
   document.getElementById('freeDelExBtn').style.display = 'none';
   document.getElementById('freeEmptyHint').style.display = 'none';
   renderDayChoices();
@@ -4964,12 +4966,33 @@ document.querySelectorAll('.mp-viewtoggle button').forEach(btn=>{
 document.getElementById('freeAddExBtn').addEventListener('click', ()=>{
   openMusclePicker("Aggiungi all'allenamento di oggi", freeAddExercise);
 });
-document.getElementById('freeAddExManualeBtn').addEventListener('click', ()=>{
-  const nome = prompt("Nome dell'esercizio:");
-  if(!nome || !nome.trim()) return;
-  const nomeTrim = nome.trim();
-  const muscoli = getExerciseMuscles(nomeTrim);
-  freeAddExercise({ n: nomeTrim, g: (muscoli && muscoli[0]) ? muscoli[0] : null });
+function riempiSelectAggiungiLibero(){
+  const sel = document.getElementById('freeAddExManualeSelect');
+  const lp = activeProfile();
+  const baseNames = EX_LIB.map(e=>e.n.toLowerCase()).sort();
+  const personalNames = Object.keys((lp && lp.customExercises) || {}).sort();
+  let html = `<option value="" selected disabled>Aggiungi dall'elenco…</option>`;
+  html += `<option value="__crea__">+ Crea nuovo esercizio…</option>`;
+  if(personalNames.length>0){
+    html += `<optgroup label="I tuoi esercizi">`;
+    html += personalNames.map(n=>`<option value="${escapeAttr(toTitleCase(n))}">${toTitleCase(n)}</option>`).join('');
+    html += `</optgroup>`;
+  }
+  html += `<optgroup label="Esercizi di base">`;
+  html += baseNames.map(n=>`<option value="${escapeAttr(toTitleCase(n))}">${toTitleCase(n)}</option>`).join('');
+  html += `</optgroup>`;
+  sel.innerHTML = html;
+}
+document.getElementById('freeAddExManualeSelect').addEventListener('change', (e)=>{
+  const nome = e.target.value;
+  e.target.value = '';   // torna al segnaposto: ogni scelta è un'aggiunta, non uno stato fisso
+  if(!nome) return;
+  if(nome === '__crea__'){
+    apriCreaEsercizio('', (ex)=>{ freeAddExercise({ n: ex.n, g: ex.g }); });
+    return;
+  }
+  const muscoli = getExerciseMuscles(nome);
+  freeAddExercise({ n: nome, g: (muscoli && muscoli[0]) ? muscoli[0] : null });
 });
 document.getElementById('freeDelExBtn').addEventListener('click', ()=>{
   const i = currentExerciseIndex();
@@ -5431,7 +5454,7 @@ function selectDay(key){
 
   if(key==="SKIP"){
     document.getElementById('freeAddExBtn').style.display='none';
-  document.getElementById('freeAddExManualeBtn').style.display='none';
+  document.getElementById('freeAddExManualeSelect').style.display='none';
     document.getElementById('freeDelExBtn').style.display='none';
     document.getElementById('freeEmptyHint').style.display='none';
     info.innerHTML = `<span class="status-badge skip">Saltato</span> Nessun esercizio da registrare per questo giorno.`;
@@ -5448,7 +5471,8 @@ function selectDay(key){
     currentSetInputs = {};
     buildExerciseForm(FREE_DAY);
     document.getElementById('freeAddExBtn').style.display='block';
-  document.getElementById('freeAddExManualeBtn').style.display='block';
+  document.getElementById('freeAddExManualeSelect').style.display='block';
+  riempiSelectAggiungiLibero();
     document.getElementById('freeDelExBtn').style.display='none';
     document.getElementById('freeEmptyHint').style.display='block';
     document.getElementById('exerciseFormCard').style.display='none';
@@ -5457,7 +5481,7 @@ function selectDay(key){
     return;
   }
   document.getElementById('freeAddExBtn').style.display='none';
-  document.getElementById('freeAddExManualeBtn').style.display='none';
+  document.getElementById('freeAddExManualeSelect').style.display='none';
   document.getElementById('freeDelExBtn').style.display='none';
   document.getElementById('freeEmptyHint').style.display='none';
 
@@ -5749,7 +5773,7 @@ document.getElementById('saveLogBtn').addEventListener('click', ()=>{
   document.getElementById('notesCard').style.display = 'none';
   document.getElementById('saveLogBtn').style.display = 'none';
   document.getElementById('freeAddExBtn').style.display = 'none';
-  document.getElementById('freeAddExManualeBtn').style.display='none';
+  document.getElementById('freeAddExManualeSelect').style.display='none';
   document.getElementById('freeDelExBtn').style.display = 'none';
   document.getElementById('freeEmptyHint').style.display = 'none';
   document.getElementById('logNotes').value = "";
