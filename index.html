@@ -486,6 +486,21 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
   </div>
 </div>
 
+<div id="messaggiOverlay" style="display:none; position:fixed; inset:0; background:var(--bg); z-index:340; flex-direction:column;">
+  <div class="msg-head">
+    <button type="button" class="msg-back" id="msgChiudiBtn" aria-label="Chiudi">←</button>
+    <div class="msg-avatar" id="msgAvatar">—</div>
+    <div class="msg-head-testo">
+      <div class="msg-head-nome" id="msgNomeAltro">—</div>
+    </div>
+  </div>
+  <div class="msg-corpo" id="msgCorpo"></div>
+  <div class="msg-input-row">
+    <input type="text" id="msgTestoInput" placeholder="Scrivi un messaggio…" autocomplete="off">
+    <button type="button" id="msgInviaBtn" aria-label="Invia">➤</button>
+  </div>
+</div>
+
 <div id="onboardingGate" style="display:none; position:fixed; inset:0; background:var(--bg); z-index:200; overflow-y:auto;">
   <div style="max-width:420px; margin:0 auto; padding:26px 16px 40px;">
     <h1 style="font-size:22px;">Un attimo prima di iniziare</h1>
@@ -786,6 +801,28 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
     </div>
 
     <div id="historyLogsBlock" style="display:none;">
+      <div class="card">
+        <div class="cal-head">
+          <h3 id="calTitolo">—</h3>
+          <div class="cal-nav">
+            <button type="button" class="cal-nav-btn" id="calPrevBtn" aria-label="mese precedente">‹</button>
+            <button type="button" class="cal-nav-btn" id="calNextBtn" aria-label="mese successivo">›</button>
+          </div>
+        </div>
+        <div class="cal-summary">
+          <div class="cal-stat done"><b id="calFatti">0</b><span>fatti</span></div>
+          <div class="cal-stat skip"><b id="calSaltati">0</b><span>saltati</span></div>
+        </div>
+        <div class="weekdays"><span>L</span><span>M</span><span>M</span><span>G</span><span>V</span><span>S</span><span>D</span></div>
+        <div class="days" id="calGiorni"></div>
+        <div class="legend">
+          <span class="sw"><span class="dot" style="background:var(--ok)"></span>Fatto</span>
+          <span class="sw"><span class="dot" style="background:#fff;border:1.5px solid var(--warn)"></span>Saltato</span>
+          <span class="sw"><span class="dot" style="border:1.5px solid var(--accent)"></span>Oggi</span>
+        </div>
+        <div id="calDettaglio" style="margin-top:14px;"></div>
+      </div>
+
       <details class="card details-card" open>
         <summary>Progressi per esercizio</summary>
         <div class="details-body">
@@ -1428,6 +1465,7 @@ let actingProfileId = null; // non più usato per lo scambio profili: resta solo
 let modalitaPT = false;
 let _clienteBuffer = null;
 let _clienteIdInModifica = null;
+let _modificaPTCosa = null;   // 'scheda' o 'dieta': cosa sto modificando, per l'avviso in chat
 let _ptSalvataggioTimer = null;
 
 function load(){
@@ -2804,12 +2842,6 @@ function nascondiCloudGate(){ document.getElementById('cloudGate').style.display
 let _impostazioniProvenienza = 'home';   // dove torna "Chiudi" in Impostazioni: 'home' o 'app'
 
 // quanti allenamenti previsti dalla scheda sono già stati fatti questa settimana
-// data locale in formato AAAA-MM-GG: uso questa e non toISOString() (che è UTC e di
-// notte, in Italia, scavalla al giorno sbagliato) per confrontare con le date salvate
-function isoLocale(d){
-  const y = d.getFullYear(), m = String(d.getMonth()+1).padStart(2,'0'), g = String(d.getDate()).padStart(2,'0');
-  return `${y}-${m}-${g}`;
-}
 function obiettivoSettimanale(prof, programma){
   if(!programma || !programma.days || programma.days.length===0) return {fatti:0, totali:0};
   const oggi = new Date();
@@ -2822,7 +2854,7 @@ function obiettivoSettimanale(prof, programma){
     const scheduled = programma.days.find(dy=>dy.weekday===wd);
     if(!scheduled) continue;
     totali++;
-    const iso = isoLocale(d);
+    const iso = isoDaData(d);
     const log = (prof.logs||[]).find(l=>l.date===iso && l.programId===programma.id && l.status!=='saltato');
     if(log) fatti++;
   }
@@ -2844,7 +2876,7 @@ function streakSettimane(prof, programma){
       const scheduled = programma.days.find(dy=>dy.weekday===wd);
       if(!scheduled) continue;
       cePrevista = true;
-      const iso = isoLocale(d);
+      const iso = isoDaData(d);
       const log = (prof.logs||[]).find(l=>l.date===iso && l.programId===programma.id && l.status!=='saltato');
       if(!log){ tutteFatte = false; break; }
     }
@@ -3319,6 +3351,101 @@ function nomeDi(riga){ return (riga && (riga.nome_pubblico || riga.nome)) || 'Se
 // Chi gestisce l'app può darti/toglierti l'appellativo di Personal Trainer o bloccarti
 // mentre stai usando l'app: senza questo, te ne accorgeresti solo chiudendo e riaprendo.
 let _canaleMioProfilo = null;
+// ============================================================
+// MESSAGGI (chat PT ↔ cliente): un messaggio per volta, in tempo reale,
+// legati a un rapporto_id (la stessa tabella usata per scheda/dieta/PT).
+// ============================================================
+let _msgRapportoId = null, _msgAltroId = null, _msgAltroNome = '';
+let _messaggi = [];
+let _canaleMessaggi = null;
+
+function inizialiDi(nome){
+  return (nome||'?').trim().split(/\s+/).slice(0,2).map(p=>p[0]).join('').toUpperCase();
+}
+
+async function apriMessaggi(rapportoId, altroId, altroNome){
+  if(!sb || !utenteOnline){ toast("Serve la connessione per i messaggi."); return; }
+  _msgRapportoId = rapportoId; _msgAltroId = altroId; _msgAltroNome = altroNome;
+  document.getElementById('msgAvatar').textContent = inizialiDi(altroNome);
+  document.getElementById('msgNomeAltro').textContent = altroNome;
+  document.getElementById('msgCorpo').innerHTML = '<p class="hint" style="text-align:center; margin-top:20px;">Carico i messaggi…</p>';
+  document.getElementById('messaggiOverlay').classList.add('show');
+  document.getElementById('msgTestoInput').value = '';
+  await caricaMessaggi();
+  ascoltaMessaggi(rapportoId);
+}
+function chiudiMessaggi(){
+  document.getElementById('messaggiOverlay').classList.remove('show');
+  if(_canaleMessaggi){ sb.removeChannel(_canaleMessaggi); _canaleMessaggi = null; }
+  _msgRapportoId = null; _msgAltroId = null; _messaggi = [];
+}
+
+async function caricaMessaggi(){
+  const { data, error } = await sb.from('messaggi').select('*')
+    .eq('rapporto_id', _msgRapportoId).order('creato_il', { ascending:true });
+  if(error){ document.getElementById('msgCorpo').innerHTML = `<p class="hint" style="text-align:center;">Non riesco a caricare i messaggi.</p>`; return; }
+  _messaggi = data || [];
+  renderMessaggi();
+  segnaMessaggiLetti();
+}
+
+function renderMessaggi(){
+  const box = document.getElementById('msgCorpo');
+  if(_messaggi.length === 0){
+    box.innerHTML = `<p class="hint" style="text-align:center; margin-top:20px;">Nessun messaggio ancora — scrivi il primo.</p>`;
+    return;
+  }
+  box.innerHTML = _messaggi.map(m=>{
+    const ora = new Date(m.creato_il).toLocaleTimeString('it-IT', {hour:'2-digit', minute:'2-digit'});
+    if(m.tipo && m.tipo !== 'testo'){
+      return `<div class="msg-bolla evento">${escapeAttr(m.testo)}</div>`;
+    }
+    const mio = m.mittente_id === utenteOnline.id;
+    return `<div class="msg-bolla ${mio?'io':'loro'}">${escapeAttr(m.testo)}<span class="ora">${ora}</span></div>`;
+  }).join('');
+  box.scrollTop = box.scrollHeight;
+}
+
+async function segnaMessaggiLetti(){
+  const daSegnare = _messaggi.filter(m=>m.mittente_id !== utenteOnline.id && !m.letto);
+  if(daSegnare.length === 0) return;
+  await sb.from('messaggi').update({ letto:true }).eq('rapporto_id', _msgRapportoId).neq('mittente_id', utenteOnline.id);
+}
+
+function ascoltaMessaggi(rapportoId){
+  if(_canaleMessaggi) sb.removeChannel(_canaleMessaggi);
+  _canaleMessaggi = sb.channel(`messaggi-${rapportoId}`)
+    .on('postgres_changes', { event:'INSERT', schema:'public', table:'messaggi', filter:`rapporto_id=eq.${rapportoId}` }, payload=>{
+      if(_messaggi.some(m=>m.id === payload.new.id)) return;
+      _messaggi.push(payload.new);
+      renderMessaggi();
+      if(payload.new.mittente_id !== utenteOnline.id) segnaMessaggiLetti();
+    })
+    .subscribe();
+}
+
+async function inviaMessaggioTesto(){
+  const input = document.getElementById('msgTestoInput');
+  const testo = input.value.trim();
+  if(!testo || !_msgRapportoId) return;
+  input.value = '';
+  const { error } = await sb.from('messaggi').insert({
+    rapporto_id: _msgRapportoId, mittente_id: utenteOnline.id, testo, tipo:'testo'
+  });
+  if(error){ toast("Messaggio non inviato: riprova."); input.value = testo; }
+}
+// avviso "automatico" nella chat quando scheda/dieta di qualcuno viene aggiornata,
+// così chi lo riceve capisce subito perché senza dover controllare da solo
+async function avvisaInChat(rapportoId, testo){
+  if(!sb || !utenteOnline || !rapportoId) return;
+  try{ await sb.from('messaggi').insert({ rapporto_id: rapportoId, mittente_id: utenteOnline.id, testo, tipo:'evento' }); }
+  catch(e){ console.error(e); }
+}
+
+document.getElementById('msgChiudiBtn').addEventListener('click', chiudiMessaggi);
+document.getElementById('msgInviaBtn').addEventListener('click', inviaMessaggioTesto);
+document.getElementById('msgTestoInput').addEventListener('keydown', e=>{ if(e.key==='Enter') inviaMessaggioTesto(); });
+
 function ascoltaMioProfilo(){
   if(!sb || !rigaOnline) return;
   if(_canaleMioProfilo){ sb.removeChannel(_canaleMioProfilo); _canaleMioProfilo = null; }
@@ -3396,6 +3523,7 @@ async function renderMioPT(){
         </div>
         <div class="azioni"><button class="pericolo" id="chiudiRapportoBtn">Termina</button></div>
       </div>
+      <button class="btn secondary block" id="apriMessaggiClienteBtn" style="margin-top:10px;">💬 Messaggi</button>
       <p class="hint" style="margin:12px 0 6px;">Cosa può fare ${nomeDi(pt)}. Vede sempre scheda, dieta, storico e progressi; qui decidi se può anche modificarli.</p>
       <div class="permesso-riga">
         <span>Può modificare la mia scheda</span>
@@ -3408,6 +3536,7 @@ async function renderMioPT(){
 
     document.getElementById('permScheda').addEventListener('change', e=>cambiaPermesso(attivo.id, 'puo_scheda', e.target.checked));
     document.getElementById('permDieta').addEventListener('change', e=>cambiaPermesso(attivo.id, 'puo_dieta', e.target.checked));
+    document.getElementById('apriMessaggiClienteBtn').addEventListener('click', ()=>apriMessaggi(attivo.id, attivo.pt_id, nomeDi(pt)));
     document.getElementById('chiudiRapportoBtn').addEventListener('click', ()=>{
       customConfirm(`Terminare il rapporto con ${nomeDi(pt)}? Non potrà più vedere né modificare i tuoi dati. La scheda che ti ha assegnato resta tua.`,
         ()=>terminaRapporto(attivo.id));
@@ -3647,7 +3776,9 @@ function renderDettaglioPT(sezione){
         <p class="hint">I permessi li decide la persona che segui, dalla sua scheda.</p>
         <div class="dato-riga"><span>Modificare la scheda</span><b class="${r.puo_scheda?'ok':'warn'}">${r.puo_scheda?'sì':'no'}</b></div>
         <div class="dato-riga"><span>Modificare la dieta</span><b class="${r.puo_dieta?'ok':'warn'}">${r.puo_dieta?'sì':'no'}</b></div>
+        <button class="btn secondary block" id="apriMessaggiPTBtn" style="margin-top:10px;">💬 Messaggi</button>
       </div>`;
+    document.getElementById('apriMessaggiPTBtn').addEventListener('click', ()=>apriMessaggi(r.id, _clienteAperto.riga.id, nomeDi(_clienteAperto.riga)));
     return;
   }
 
@@ -3752,6 +3883,7 @@ function modificaComePT(cosa){
 
   _clienteBuffer = buffer;
   _clienteIdInModifica = p.id;
+  _modificaPTCosa = cosa;
   modalitaPT = true;
   document.body.classList.add('modifica-pt');
   document.getElementById('areaPT').style.display = 'none';
@@ -3787,9 +3919,11 @@ async function tornaDaModificaPT(){
   const ok = await salvaModifichePT();
   if(!ok) return;   // resto dentro finché non riesco a salvare: niente si perde
   if(_clienteAperto) _clienteAperto.riga.dati = _clienteBuffer;
+  if(_clienteAperto.rapporto) avvisaInChat(_clienteAperto.rapporto.id, `Ho aggiornato la tua ${_modificaPTCosa === 'dieta' ? 'dieta' : 'scheda'} 📋`);
   modalitaPT = false;
   _clienteBuffer = null;
   _clienteIdInModifica = null;
+  _modificaPTCosa = null;
   document.body.classList.remove('modifica-pt');
   document.getElementById('bannerPT').style.display = 'none';
   document.getElementById('appRoot').style.display = 'none';
@@ -4014,17 +4148,19 @@ function autoRegistraSaltati(){
   if(!p.days.some(d=>d.weekday)) return 0;
 
   const oggi = new Date();
-  const oggiIso = isoDaData(oggi);
+  // un giorno di margine prima di segnare "saltato": così se ti alleni la sera
+  // e registri solo il giorno dopo, non lo trovi già segnato come perso
+  const sogliaIso = isoDaData(new Date(oggi.getFullYear(), oggi.getMonth(), oggi.getDate()-1));
 
   // si parte dalla creazione della scheda, o dal primo allenamento se precedente
-  let daIso = p.createdAt || oggiIso;
+  let daIso = p.createdAt || sogliaIso;
   const primo = prof.logs.filter(l=>l.programId===p.id).map(l=>l.date).sort()[0];
   if(primo && primo < daIso) daIso = primo;
-  if(daIso >= oggiIso) return 0;
+  if(daIso >= sogliaIso) return 0;
 
   const cur = new Date(daIso + "T12:00:00");
   let aggiunti = 0, giro = 0;
-  while(isoDaData(cur) < oggiIso && giro++ < 800){
+  while(isoDaData(cur) < sogliaIso && giro++ < 800){
     const iso = isoDaData(cur);
     const previsto = p.days.find(d=>d.weekday === WEEKDAYS[cur.getDay()]);
     const scartato = prof.autoSkipIgnorati && prof.autoSkipIgnorati.includes(iso);
@@ -5086,6 +5222,7 @@ document.querySelectorAll('.seg-btn[data-seg2]').forEach(btn=>{
     document.getElementById('historyLogsBlock').style.display = mode==='allenamenti' ? 'block':'none';
     document.getElementById('historyMisureBlock').style.display = mode==='misure' ? 'block':'none';
     if(mode==='misure') renderMeasurements();
+    if(mode==='allenamenti') renderCalendarioStorico();
   });
 });
 
@@ -6013,6 +6150,96 @@ function renderHistory(){
   }
   renderProgressSelect();
 }
+
+// ============================================================
+// CALENDARIO ALLENAMENTI (Storico → Allenamenti)
+// ============================================================
+let _calMese = new Date();
+_calMese.setDate(1);
+
+function renderCalendarioStorico(){
+  const cont = document.getElementById('calGiorni');
+  if(!cont) return;
+  const prof = activeProfile();
+  const p = activeProgram();
+  const anno = _calMese.getFullYear(), mese = _calMese.getMonth();
+  const NOMI_MESI = ["Gennaio","Febbraio","Marzo","Aprile","Maggio","Giugno","Luglio","Agosto","Settembre","Ottobre","Novembre","Dicembre"];
+  document.getElementById('calTitolo').textContent = `${NOMI_MESI[mese]} ${anno}`;
+
+  const ultimoDelMese = new Date(anno, mese+1, 0);
+  const giorniNelMese = ultimoDelMese.getDate();
+  const offset = (new Date(anno, mese, 1).getDay() + 6) % 7;   // lunedì come primo giorno
+  const oggiIso = isoDaData(new Date());
+
+  let html = '';
+  for(let i=0;i<offset;i++) html += `<div class="day empty"></div>`;
+
+  let fatti = 0, saltati = 0;
+  for(let g=1; g<=giorniNelMese; g++){
+    const d = new Date(anno, mese, g);
+    const iso = isoDaData(d);
+    const wd = WEEKDAYS[d.getDay()];
+    const previsto = p && p.days ? p.days.find(x=>x.weekday===wd) : null;
+    const log = prof && prof.logs ? prof.logs.find(l=>l.date===iso && (!p || l.programId===p.id)) : null;
+    let cls = 'day';
+    if(log && log.status==='registrato'){ cls += ' done'; fatti++; }
+    else if(log && log.status==='saltato'){ cls += ' skipped'; saltati++; }
+    else if(!previsto){ cls += ' rest'; }
+    if(iso===oggiIso) cls += ' today';
+    html += `<div class="${cls}" data-iso="${iso}">${g}</div>`;
+  }
+  cont.innerHTML = html;
+  document.getElementById('calFatti').textContent = fatti;
+  document.getElementById('calSaltati').textContent = saltati;
+
+  cont.querySelectorAll('.day:not(.empty)').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      cont.querySelectorAll('.day.selected').forEach(x=>x.classList.remove('selected'));
+      el.classList.add('selected');
+      mostraDettaglioGiornoCalendario(el.dataset.iso);
+    });
+  });
+
+  const oggiEl = cont.querySelector(`.day[data-iso="${oggiIso}"]`);
+  if(oggiEl){ oggiEl.classList.add('selected'); mostraDettaglioGiornoCalendario(oggiIso); }
+  else document.getElementById('calDettaglio').innerHTML = '';
+}
+
+function mostraDettaglioGiornoCalendario(iso){
+  const prof = activeProfile();
+  const p = activeProgram();
+  const box = document.getElementById('calDettaglio');
+  const log = prof && prof.logs ? prof.logs.find(l=>l.date===iso && (!p || l.programId===p.id)) : null;
+  if(!log){
+    box.innerHTML = `<div class="cal-detail"><p class="hint" style="margin:0;">Nessun allenamento registrato per il ${formatDate(iso)}.</p></div>`;
+    return;
+  }
+  if(log.status==='saltato'){
+    box.innerHTML = `<div class="cal-detail"><p class="hint" style="margin:0; color:var(--warn);">Segnato come saltato — ${formatDate(iso)}.</p></div>`;
+    return;
+  }
+  const esercizi = (log.exercises||[]).map(ex=>
+    `<div class="cal-detail-ex"><span>${escapeAttr(ex.name)}</span><span class="n">${escapeAttr(descriviSerie(ex.sets, ex.name))}</span></div>`
+  ).join('') || '<p class="hint" style="margin:4px 0 0;">Nessun esercizio registrato.</p>';
+  box.innerHTML = `<div class="cal-detail">
+    <div class="cal-detail-head">
+      <div class="cal-detail-letter">${escapeAttr(log.dayKey || '•')}</div>
+      <div>
+        <div class="cal-detail-title">${escapeAttr(log.dayName || 'Allenamento')}</div>
+        <div class="cal-detail-sub">${formatDate(iso)}</div>
+      </div>
+    </div>
+    ${esercizi}
+  </div>`;
+}
+document.getElementById('calPrevBtn').addEventListener('click', ()=>{
+  _calMese.setMonth(_calMese.getMonth()-1);
+  renderCalendarioStorico();
+});
+document.getElementById('calNextBtn').addEventListener('click', ()=>{
+  _calMese.setMonth(_calMese.getMonth()+1);
+  renderCalendarioStorico();
+});
 
 function renderProgressSelect(){
   const prof = activeProfile();

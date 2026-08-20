@@ -262,6 +262,69 @@
   #historyMisureBlock .card h3{margin-bottom:14px;}
   #historyMisureBlock #measureList .log-item{padding:13px 0;}
   .measure-chart-box{position:relative; height:240px; margin-top:4px;}
+
+  /* Calendario allenamenti (dentro Storico → Allenamenti) */
+  .cal-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;}
+  .cal-head h3{margin:0;}
+  .cal-nav{display:flex; gap:8px;}
+  .cal-nav-btn{width:30px; height:30px; border-radius:50%; border:1px solid var(--border);
+    background:var(--surface2); color:var(--text); font-size:14px; cursor:pointer; line-height:1;}
+  .cal-summary{display:flex; gap:8px; margin-bottom:14px;}
+  .cal-stat{flex:1; background:var(--surface2); border-radius:12px; padding:9px 12px;}
+  .cal-stat b{display:block; font-family:var(--font-display); font-size:17px;}
+  .cal-stat span{font-size:10px; color:var(--text-dim);}
+  .cal-stat.done b{color:var(--ok);}
+  .cal-stat.skip b{color:var(--warn);}
+  .weekdays{display:grid; grid-template-columns:repeat(7,1fr); text-align:center; margin-bottom:6px;}
+  .weekdays span{font-size:10px; color:var(--text-faint); font-family:var(--font-display);}
+  .days{display:grid; grid-template-columns:repeat(7,1fr); gap:5px;}
+  .day{aspect-ratio:1; border-radius:10px; display:flex; align-items:center; justify-content:center;
+    font-size:12px; cursor:pointer; border:1.5px solid transparent; background:var(--surface2); color:var(--text);}
+  .day.empty{background:none; cursor:default;}
+  .day.done{background:var(--ok); color:#fff; font-weight:700;}
+  .day.skipped{background:var(--surface); border-color:var(--warn); color:var(--warn);}
+  .day.rest{color:var(--text-faint);}
+  .day.today{border-color:var(--accent);}
+  .day.selected{outline:2px solid var(--accent); outline-offset:1px;}
+  .legend{display:flex; flex-wrap:wrap; gap:11px; margin-top:12px; font-size:10px; color:var(--text-dim);}
+  .legend .sw{display:inline-flex; align-items:center; gap:5px;}
+  .legend .dot{width:8px; height:8px; border-radius:50%;}
+  .cal-detail{background:var(--surface2); border-radius:12px; padding:12px 13px;}
+  .cal-detail-head{display:flex; align-items:center; gap:9px; margin-bottom:8px;}
+  .cal-detail-letter{width:26px; height:26px; border-radius:8px; background:var(--accent); color:#fff;
+    display:flex; align-items:center; justify-content:center; font-family:var(--font-display); font-size:12px; flex:0 0 auto;}
+  .cal-detail-title{font-size:13px; font-family:var(--font-display);}
+  .cal-detail-sub{font-size:10.5px; color:var(--text-dim);}
+  .cal-detail-ex{font-size:12px; padding:6px 0; border-top:1px solid var(--border); display:flex; justify-content:space-between;}
+  .cal-detail-ex:first-of-type{border-top:none;}
+  .cal-detail-ex .n{color:var(--text-dim);}
+
+  /* Messaggi (chat PT ↔ cliente) */
+  #messaggiOverlay{display:none;}
+  #messaggiOverlay.show{display:flex;}
+  .msg-head{display:flex; align-items:center; gap:11px; padding:14px 16px calc(12px + env(safe-area-inset-top,0px));
+    background:var(--surface); border-bottom:1px solid var(--border); flex:0 0 auto;}
+  .msg-back{width:32px; height:32px; border-radius:50%; border:1px solid var(--border); background:var(--surface2);
+    color:var(--text); font-size:15px; cursor:pointer; flex:0 0 auto;}
+  .msg-avatar{width:36px; height:36px; border-radius:11px; background:var(--surface2); color:var(--text-dim);
+    display:flex; align-items:center; justify-content:center; font-family:var(--font-display); font-size:12px; flex:0 0 auto;}
+  .msg-head-nome{font-family:var(--font-display); font-size:13.5px;}
+  .msg-corpo{flex:1; overflow-y:auto; padding:16px; display:flex; flex-direction:column; gap:9px;}
+  .msg-bolla{max-width:78%; padding:9px 13px; border-radius:15px; font-size:13px; line-height:1.4; word-break:break-word;}
+  .msg-bolla .ora{display:block; font-size:9.5px; margin-top:3px; opacity:.7;}
+  .msg-bolla.loro{align-self:flex-start; background:var(--surface); border:1px solid var(--border); border-bottom-left-radius:4px;}
+  .msg-bolla.io{align-self:flex-end; background:var(--accent); color:#fff; border-bottom-right-radius:4px;}
+  .msg-bolla.evento{align-self:center; background:var(--accent-soft); color:var(--accent-2); border-radius:10px;
+    font-size:11.5px; padding:7px 12px; max-width:90%; text-align:center;}
+  .msg-input-row{display:flex; gap:8px; padding:12px 14px calc(12px + env(safe-area-inset-bottom,0px));
+    background:var(--surface); border-top:1px solid var(--border); flex:0 0 auto;}
+  .msg-input-row input{flex:1; border:1px solid var(--border); background:var(--surface2); border-radius:20px;
+    padding:11px 15px; font-size:13px; color:var(--text); outline:none;}
+  .msg-input-row button{width:40px; height:40px; border-radius:50%; background:var(--accent); border:none;
+    color:#fff; font-size:16px; cursor:pointer; flex:0 0 auto;}
+  .msg-apri-btn{position:relative;}
+  .msg-puntino{position:absolute; top:-3px; right:-3px; width:10px; height:10px; border-radius:50%;
+    background:var(--accent); border:2px solid var(--surface);}
   .client-actions .btn{padding:8px 6px; font-size:11px;}
   .client-perms{border-top:1px solid var(--border); padding-top:2px;}
   .client-perms > summary{list-style:none; cursor:pointer; padding:7px 0 7px 16px; position:relative; font-size:11.5px; color:var(--text-faint); font-family:var(--font-display); letter-spacing:0.02em;}
