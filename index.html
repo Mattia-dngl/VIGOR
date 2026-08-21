@@ -642,9 +642,9 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
     </div>
 
     <button class="btn block" id="freeAddExBtn" style="display:none;">Scegli un esercizio dal corpo</button>
-    <button type="button" class="btn secondary block" id="freeAddExManualeBtn2" style="display:none;">Aggiungi dall'elenco…</button>
+    <button type="button" class="free-add-link" id="freeAddExManualeBtn2" style="display:none;">oppure aggiungi dall'elenco</button>
     <button class="btn ghost block" id="freeDelExBtn" style="display:none;">Togli l'esercizio che stai vedendo</button>
-    <div class="card free-hint" id="freeEmptyHint" style="display:none;">Nessun esercizio ancora. Tocca il pulsante qui sopra e scegli un muscolo sulla figura.</div>
+    <div class="free-hint" id="freeEmptyHint" style="display:none;">Scegli un muscolo sulla figura per iniziare.</div>
 
     <div class="card" id="exerciseFormCard" style="display:none;">
       <div class="ex-carousel-head">
@@ -5901,7 +5901,7 @@ function selectDay(key){
   }
 
   if(key==="LIBERO"){
-    info.innerHTML = `<span class="status-badge warn">Allenamento libero</span> Scegli gli esercizi dal corpo, poi registra serie e ripetizioni.`;
+    info.innerHTML = `<span class="status-badge warn">Allenamento libero</span>`;
     FREE_DAY.exercises = [];
     currentSetInputs = {};
     buildExerciseForm(FREE_DAY);
@@ -5957,11 +5957,23 @@ function buildExerciseForm(day){
     const partner = (partnerIdx!=null && partnerIdx>=0) ? day.exercises[partnerIdx] : null;
     const supersetBadge = partner ? `<div class="superset-badge">⚡ Superset con <b>${escapeAttr(partner.name)}</b>
         <button type="button" class="superset-vai" data-vai="${partnerIdx}">Vai →</button></div>` : '';
+    // Nell'allenamento libero non c'è una scheda pre-pianificata: la tecnica
+    // (dropset/rest-pause/superset) si sceglie qui, esercizio per esercizio,
+    // con lo stesso meccanismo già usato in "Modifica scheda".
+    const tecnicaPicker = day.key === 'LIBERO' ? `
+      <div class="tecnica-row">Tecnica speciale</div>
+      <div class="seg-toggle seg-toggle-tecnica">
+        <button type="button" class="seg-btn ${!ex.dropset && ex.supersetCon==null?'active':''}" data-libidx="${i}" data-tecnica="nessuna">Nessuna</button>
+        <button type="button" class="seg-btn ${ex.dropset && ex.dropset.tipo==='dropset'?'active':''}" data-libidx="${i}" data-tecnica="dropset">Dropset</button>
+        <button type="button" class="seg-btn ${ex.dropset && ex.dropset.tipo==='restpause'?'active':''}" data-libidx="${i}" data-tecnica="restpause">Rest-pause</button>
+        <button type="button" class="seg-btn ${ex.supersetCon!=null?'active':''}" data-libidx="${i}" data-tecnica="superset">Superset</button>
+      </div>` : '';
     block.innerHTML = `<div class="exercise-name">${ex.name}<span class="target">(target: ${ex.sets}×${ex.reps})</span>
         <a href="${escapeAttr(videoInfo.url)}" data-ex-name="${escapeAttr(ex.name)}" class="video-link" style="margin-left:8px;">▶ Video</a></div>
       ${supersetBadge}
       ${nota}
       ${rigaPrec}
+      ${tecnicaPicker}
       <div class="sets-container" data-ex="${escapeAttr(ex.name)}"></div>
       <button type="button" class="add-set" data-ex="${escapeAttr(ex.name)}">+ Aggiungi serie</button>`;
     list.appendChild(block);
@@ -5980,6 +5992,32 @@ function buildExerciseForm(day){
     dot.addEventListener('click', ()=>{ goToExercise(i); setTimeout(()=>allineaNomiEsercizi(i), 260); });
     dotsWrap.appendChild(dot);
   });
+  if(day.key === 'LIBERO'){
+    list.querySelectorAll('.seg-toggle-tecnica .seg-btn[data-libidx]').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        const i = parseInt(btn.dataset.libidx);
+        const tecnica = btn.dataset.tecnica;
+        const ex = FREE_DAY.exercises[i];
+        if(!ex) return;
+        scollegaSuperset(FREE_DAY, i);   // riparto sempre pulito, come nell'editor scheda
+        delete ex.dropset;
+        if(tecnica === 'dropset'){
+          ex.dropset = { tipo:'dropset', drops: [{ reps:'8', riduzione:25 }] };
+        } else if(tecnica === 'restpause'){
+          ex.dropset = { tipo:'restpause', drops: [{ reps:'6', riduzione:0 }] };
+        } else if(tecnica === 'superset'){
+          const valido = j => j>=0 && j<FREE_DAY.exercises.length && j!==i && FREE_DAY.exercises[j] && FREE_DAY.exercises[j].name;
+          let partner = null;
+          if(valido(i+1)) partner = i+1;
+          else if(valido(i-1)) partner = i-1;
+          else { const altri = FREE_DAY.exercises.map((e2,j)=>j).filter(valido); if(altri.length>0) partner = altri[0]; }
+          if(partner!=null) collegaSuperset(FREE_DAY, i, partner);
+          else toast("Aggiungi prima un altro esercizio per creare un superset.");
+        }
+        rebuildFreeForm();   // ricostruisce mantenendo le serie già digitate sugli altri esercizi
+      });
+    });
+  }
   list.querySelectorAll('.add-set').forEach(btn=>btn.addEventListener('click', ()=>{
     const nome = btn.dataset.ex;
     const ds = _dropsetPerEsercizio[nome];
