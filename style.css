@@ -196,6 +196,108 @@
   .home-card-warm{background:var(--accent-soft); border-color:transparent;}
   @media (min-width:480px){ .home-grid{grid-template-columns:1fr 1fr 1fr;} }
 
+  /* ============================================================
+     HOME — nuova versione: dashboard con mappa muscolare settimanale,
+     invece del menu a card. Riusa home-goal-card/home-streak-ring
+     e .home-card (per la card PT) senza modificarli.
+     ============================================================ */
+  .home-settings-btn{position:relative; width:38px; height:38px; border-radius:50%; background:var(--surface);
+    border:1px solid var(--border); display:flex; align-items:center; justify-content:center;
+    color:var(--text); cursor:pointer; flex:0 0 auto; box-shadow:0 1px 3px rgba(0,0,0,.06); margin-left:8px;}
+  .home-settings-btn svg{width:18px; height:18px;}
+  .home-topbar-icons{display:flex; align-items:center;}
+
+  .heatmap-card{background:var(--surface); border:1px solid var(--border); border-radius:16px;
+    padding:16px 16px 14px; margin-bottom:10px; box-shadow:0 1px 4px rgba(0,0,0,.05);}
+  .heatmap-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:2px;}
+  .heatmap-title{font-family:var(--font-display); font-size:14.5px; font-weight:700;}
+  .heatmap-sub{font-size:11px; color:var(--text-faint); margin-top:2px;}
+  .heatmap-viewtoggle{display:flex; gap:4px; background:var(--surface2); padding:4px; border-radius:12px; margin:12px 0 10px;}
+  .heatmap-viewtoggle button{flex:1; border:none; background:none; padding:7px; border-radius:9px; cursor:pointer;
+    font-family:var(--font-display); font-weight:700; font-size:11.5px; color:var(--text-dim); transition:.15s;}
+  .heatmap-viewtoggle button.active{background:var(--surface); color:var(--accent); box-shadow:var(--shadow-sm,0 1px 3px rgba(0,0,0,.08));}
+  .heatmap-figwrap{position:relative; display:flex; justify-content:center; padding:2px 20px 4px;}
+  .heatmap-figwrap svg{display:none; width:100%; max-width:220px; height:auto; max-height:310px;}
+  .heatmap-figwrap svg.show{display:block;}
+  .heatmap-zone-g{cursor:pointer; outline:none;}
+  .heatmap-zone-g path{fill:var(--hm-fill,#dde0e6); stroke:#fff; stroke-width:1.1; stroke-linejoin:round;
+    transition:filter .15s;}
+  .heatmap-zone-g:hover path, .heatmap-zone-g:focus-visible path{filter:brightness(1.08);}
+  .heatmap-zone-g.selected path{stroke:#15171b; stroke-width:1.6;}
+  .heatmap-info{text-align:center; font-size:12px; color:var(--text-dim); min-height:16px; margin:2px 0 12px;}
+  .heatmap-info b{color:var(--text); font-weight:700;}
+  .heatmap-legend{display:flex; align-items:center; justify-content:center; gap:10px; flex-wrap:wrap;
+    border-top:1px solid var(--border); padding-top:11px;}
+  .heatmap-legend-item{display:flex; align-items:center; gap:5px; font-size:10px; color:var(--text-faint);}
+  .heatmap-legend-dot{width:9px; height:9px; border-radius:50%;}
+
+  .home-cta-card{background:var(--grad-accent, linear-gradient(155deg,var(--accent),var(--accent-2,var(--accent))));
+    border:none; border-radius:16px; padding:16px; margin-bottom:10px; color:#fff; position:relative; overflow:hidden;
+    box-shadow:0 10px 24px -8px rgba(255,90,46,.45);}
+  .home-cta-card::after{content:""; position:absolute; right:-40px; top:-40px; width:150px; height:150px;
+    border-radius:50%; background:rgba(255,255,255,.10);}
+  .home-cta-eyebrow{font-size:10px; letter-spacing:.06em; opacity:.85; font-weight:700; font-family:var(--font-display);}
+  .home-cta-title{font-size:18px; font-weight:800; margin:5px 0 3px; line-height:1.25; font-family:var(--font-display);}
+  .home-cta-meta{font-size:11.5px; opacity:.9; margin-bottom:14px;}
+  .home-cta-btn{display:flex; align-items:center; justify-content:center; gap:8px; width:100%;
+    background:#fff; color:var(--accent-2,var(--accent)); border:none; border-radius:999px;
+    padding:13px; font-family:var(--font-display); font-weight:800; font-size:14px; cursor:pointer;
+    box-shadow:0 8px 20px -6px rgba(0,0,0,.25);}
+  .home-cta-link{display:block; text-align:center; font-size:11.5px; color:rgba(255,255,255,.92);
+    margin-top:10px; text-decoration:underline; cursor:pointer; position:relative; z-index:1;}
+  .home-cta-done{background:var(--surface); border:1px solid var(--border); color:var(--text); box-shadow:0 1px 4px rgba(0,0,0,.05);}
+  .home-cta-done .home-cta-eyebrow{color:var(--ok); opacity:1;}
+  .home-cta-done .home-cta-title{color:var(--text);}
+  .home-cta-done .home-cta-btn{background:var(--surface2); color:var(--text-dim);}
+
+  /* ============================================================
+     NAV — nuova barra persistente a 5 voci (Scheda, Dieta, Home, Account, Glossario).
+     Riusa le classi .tabs/.tab-btn/.tab-btn-main/.tab-fab già esistenti: stile identico.
+     La vecchia nav resta nel DOM ma nascosta, usata solo come "motore" interno.
+     ============================================================ */
+  #navTabsLegacy{display:none !important;}
+  #navTabsGlobale{display:none;}
+  body.app-pronta #navTabsGlobale{display:flex;}
+  body.impostazioni-aperte #navTabsGlobale{display:none !important;}
+  body.modifica-pt #navTabsGlobale{display:none !important;}
+  body.area-pt #navTabsGlobale{display:none !important;}
+
+  /* ============================================================
+     SCHEDA — toggle Scheda/Storico in cima (riusa .seg-toggle/.seg-btn esistenti)
+     ============================================================ */
+  #programStoricoBlock{display:none;}
+
+  /* ============================================================
+     "Il mio PT" — toggle Programma/Messaggi + chat compatta
+     ============================================================ */
+  .ptmsg-toggle{display:none; margin-top:10px;}
+  .ptmsg-toggle.show{display:flex;}
+  #ptMessaggiBlock{display:none;}
+  .chat-thread{display:flex; flex-direction:column; gap:8px; padding:6px 2px; max-height:340px; overflow-y:auto;}
+  .chat-bubble{max-width:80%; padding:9px 13px; border-radius:15px; font-size:12.5px; line-height:1.4; word-break:break-word;}
+  .chat-bubble.loro{background:var(--surface2); color:var(--text); align-self:flex-start; border-bottom-left-radius:5px;}
+  .chat-bubble.io{background:var(--grad-accent, var(--accent)); color:#fff; align-self:flex-end; border-bottom-right-radius:5px;}
+  .chat-time{font-size:9px; color:var(--text-faint); margin-top:1px;}
+  .chat-time.io{align-self:flex-end;}
+  .chat-time.loro{align-self:flex-start;}
+  .chat-input-row{display:flex; gap:8px; margin-top:12px;}
+  .chat-input-row input{flex:1; min-width:0; padding:11px 14px; border-radius:999px; border:1px solid var(--border);
+    background:var(--surface2); font-family:var(--font-display); font-size:12.5px; color:var(--text);}
+  .chat-send-btn{width:40px; height:40px; border-radius:50%; background:var(--accent); color:#fff; border:none;
+    display:flex; align-items:center; justify-content:center; cursor:pointer; flex:0 0 auto;}
+  .chat-send-btn svg{width:16px; height:16px;}
+  .chat-empty{font-size:12px; color:var(--text-faint); text-align:center; padding:14px 0;}
+
+  /* ============================================================
+     REGISTRA — versione più compatta: meno aria, badge più leggeri.
+     Non tocca la logica del carosello/dropset, solo le misure visive.
+     ============================================================ */
+  .exercise-block{padding:14px !important;}
+  .ultima-volta{padding:6px 10px !important; border-radius:10px !important;}
+  .superset-badge{padding:6px 10px !important; border-radius:10px !important;}
+  .set-row{margin-bottom:4px !important;}
+  .ex-carousel-counter{background:var(--surface2); padding:3px 9px; border-radius:999px; font-weight:700;}
+
   /* Impostazioni e Account compatti: meno aria fra le sezioni, testi descrittivi più piccoli */
   #settingsPanel .card, #accountPanel .card{padding:14px 15px; margin-bottom:9px;}
   #settingsPanel .card h3, #accountPanel .card h3{font-size:13.5px; margin-bottom:3px;}

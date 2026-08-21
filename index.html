@@ -234,10 +234,15 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
   <div class="settings-inner home-inner">
     <div class="home-topbar">
       <div class="home-logo">VIG<span class="home-logo-accent">OR</span></div>
-      <button type="button" class="home-bell" id="homeBellBtn" title="Notifiche">
-        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2.5a1 1 0 0 1 1 1v.63A6.5 6.5 0 0 1 18.5 10.5v3.02c0 .84.33 1.65.93 2.24L20.4 16.7c.8.8.23 2.17-.9 2.17H4.5c-1.13 0-1.7-1.37-.9-2.17l.97-.94c.6-.59.93-1.4.93-2.24V10.5a6.5 6.5 0 0 1 5.5-6.37V3.5a1 1 0 0 1 1-1Z"/><path d="M9.5 19.2a2.7 2.7 0 0 0 5 0 .5.5 0 0 0-.47-.7H9.97a.5.5 0 0 0-.47.7Z"/></svg>
-        <span class="home-bell-dot" id="homeBellDot" style="display:none;"></span>
-      </button>
+      <div class="home-topbar-icons">
+        <button type="button" class="home-bell" id="homeBellBtn" title="Notifiche">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2.5a1 1 0 0 1 1 1v.63A6.5 6.5 0 0 1 18.5 10.5v3.02c0 .84.33 1.65.93 2.24L20.4 16.7c.8.8.23 2.17-.9 2.17H4.5c-1.13 0-1.7-1.37-.9-2.17l.97-.94c.6-.59.93-1.4.93-2.24V10.5a6.5 6.5 0 0 1 5.5-6.37V3.5a1 1 0 0 1 1-1Z"/><path d="M9.5 19.2a2.7 2.7 0 0 0 5 0 .5.5 0 0 0-.47-.7H9.97a.5.5 0 0 0-.47.7Z"/></svg>
+          <span class="home-bell-dot" id="homeBellDot" style="display:none;"></span>
+        </button>
+        <button type="button" class="home-settings-btn" id="homeSettingsBtn" title="Impostazioni">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 13a7.97 7.97 0 0 0 0-2l2.1-1.6-2-3.4-2.5 1a8 8 0 0 0-1.7-1L14.9 3h-4l-.4 2.9a8 8 0 0 0-1.7 1l-2.5-1-2 3.4L6.4 11a7.97 7.97 0 0 0 0 2l-2.1 1.6 2 3.4 2.5-1a8 8 0 0 0 1.7 1L10.9 21h4l.4-2.9a8 8 0 0 0 1.7-1l2.5 1 2-3.4L19.4 13Z"/></svg>
+        </button>
+      </div>
     </div>
 
     <div id="notificheOverlay">
@@ -256,6 +261,40 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
       <div class="home-hero">
         <img src="home-hero.png" class="home-hero-photo" alt="">
       </div>
+    </div>
+
+    <!-- Mappa muscolare della settimana: stesso disegno anatomico usato in Scheda/Registra/Glossario -->
+    <div class="heatmap-card" id="homeHeatmapCard">
+      <div class="heatmap-head">
+        <div>
+          <div class="heatmap-title">La tua settimana</div>
+          <div class="heatmap-sub">Zone allenate negli ultimi 7 giorni</div>
+        </div>
+      </div>
+      <div class="heatmap-viewtoggle">
+        <button type="button" class="active" data-hmview="front">Fronte</button>
+        <button type="button" data-hmview="back">Retro</button>
+      </div>
+      <div class="heatmap-figwrap">
+        <svg id="homeHeatmapFront" class="show" viewBox="0 0 724 1448"></svg>
+        <svg id="homeHeatmapBack" viewBox="724 0 724 1448"></svg>
+      </div>
+      <div class="heatmap-info" id="homeHeatmapInfo">Tocca una zona per i dettagli</div>
+      <div class="heatmap-legend">
+        <div class="heatmap-legend-item"><span class="heatmap-legend-dot" style="background:#dde0e6"></span>Non allenato</div>
+        <div class="heatmap-legend-item"><span class="heatmap-legend-dot" style="background:#ffb59c"></span>Leggero</div>
+        <div class="heatmap-legend-item"><span class="heatmap-legend-dot" style="background:#ff7a45"></span>Moderato</div>
+        <div class="heatmap-legend-item"><span class="heatmap-legend-dot" style="background:#e8280a"></span>Intenso</div>
+      </div>
+    </div>
+
+    <!-- Allenamento di oggi: sostituisce la vecchia card "Allenati", apre direttamente Registra -->
+    <div class="home-cta-card" id="homeCtaCard">
+      <div class="home-cta-eyebrow" id="homeCtaEyebrow">ALLENAMENTO DI OGGI</div>
+      <div class="home-cta-title" id="homeCtaTitle">—</div>
+      <div class="home-cta-meta" id="homeCtaMeta"></div>
+      <button type="button" class="home-cta-btn" id="homeCtaBtn">Inizia allenamento</button>
+      <div class="home-cta-link" id="homeAllenatiBtn">Vedi la scheda completa</div>
     </div>
 
     <div class="home-goal-card">
@@ -279,31 +318,21 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
     </div>
 
     <div class="home-grid">
-      <button type="button" class="home-card home-card-warm" id="homeAllenatiBtn">
-        <img src="icon-allenati.png" class="home-card-icon-badge" alt="">
-        <div class="home-card-title">Allenati</div>
-        <div class="home-card-sub">Inizia il tuo allenamento</div>
-        <div class="home-card-arrow home-card-arrow-solid"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg></div>
-      </button>
-      <button type="button" class="home-card" id="homeAccountBtn">
-        <img src="icon-account.png" class="home-card-icon-badge" alt="">
-        <div class="home-card-title">Account</div>
-        <div class="home-card-sub">Gestisci il tuo profilo</div>
+      <button type="button" class="home-card" id="homeMioPTBtn">
+        <img src="icon-pt.png" class="home-card-icon-badge" alt="">
+        <div class="home-card-title">Il mio Personal Trainer</div>
+        <div class="home-card-sub">Scheda assegnata e messaggi</div>
         <div class="home-card-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg></div>
       </button>
-      <button type="button" class="home-card" id="homePTBtn" style="display:none;">
+      <button type="button" class="home-card home-card-warm" id="homePTBtn" style="display:none;">
         <img src="icon-pt.png" class="home-card-icon-badge" alt="">
-        <div class="home-card-title">Personal Trainer</div>
-        <div class="home-card-sub">Allenati con un professionista</div>
+        <div class="home-card-title">Area Personal Trainer</div>
+        <div class="home-card-sub">Gestisci i tuoi clienti</div>
         <div class="home-card-arrow home-card-arrow-warm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg></div>
       </button>
-      <button type="button" class="home-card home-card-esci" id="homeEsciBtn">
-        <img src="icon-esci.png" class="home-card-icon-badge" alt="">
-        <div class="home-card-title">Esci</div>
-        <div class="home-card-sub">Disconnettiti dall'app</div>
-        <div class="home-card-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg></div>
-      </button>
     </div>
+
+    <div class="home-cta-link" id="homeEsciBtn" style="color:var(--text-faint); text-decoration:none; margin-top:6px;">Esci dall'app</div>
   </div>
 </div>
 
@@ -728,7 +757,88 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
   </section>
 
   <!-- ===================== STORICO (+ VOLUME) ===================== -->
-  <section class="view" id="view-history">
+  <!-- ===================== SCHEDA (VEDI + MODIFICA) ===================== -->
+  <section class="view" id="view-program">
+    <div class="card" id="cardMioPT">
+      <div class="top-row">
+        <h3>Il mio Personal Trainer</h3>
+        <button class="btn" id="chiediPTBtn" style="margin-top:0; padding:8px 14px;">+</button>
+      </div>
+      <div id="statoMioPT" style="margin-top:10px;"></div>
+    </div>
+
+    <div class="seg-toggle">
+      <button class="seg-btn active" data-segprog="scheda">Scheda</button>
+      <button class="seg-btn" data-segprog="storico">Storico</button>
+    </div>
+
+    <div id="programSchedaBlock">
+    <div class="seg-toggle">
+      <button class="seg-btn active" data-seg="view">Vedi</button>
+      <button class="seg-btn" data-seg="edit">Modifica / Aggiorna</button>
+    </div>
+
+    <div id="programViewBlock">
+      <div class="card" id="programViewCard">
+        <h3>Scheda allenamento attuale</h3>
+        <div id="programView"></div>
+      </div>
+      <div class="card" id="programViewHiddenCard" style="display:none;">
+        <h3>Scheda non ancora visibile</h3>
+        <p class="hint">Il tuo personal trainer non ha ancora reso visibile la tua scheda.</p>
+      </div>
+    </div>
+
+    <div id="programEditBlock" style="display:none;">
+      <div class="card">
+        <div class="card-head-row">
+          <h3>Il personal trainer ti ha aggiornato la scheda?</h3>
+          <button class="btn danger" id="clearFormBtn">Pulisci</button>
+        </div>
+        <p class="hint"><b>Aggiorna scheda</b> modifica quella attuale, senza crearne una nuova (utile per piccole correzioni). <b>Salva come nuova versione</b> archivia quella attuale (resta consultabile) e la sostituisce con questa — usalo quando cambia davvero l'allenamento. In entrambi i casi la dieta impostata e lo storico allenamenti passati non vengono mai toccati. "Pulisci" invece svuota i campi qui sotto per ripartire da zero.</p>
+        <label>Nome/etichetta scheda <span class="hint" style="font-weight:400;">(solo per "Salva come nuova versione")</span></label>
+        <input type="text" id="newProgramName" placeholder="Es. Scheda Settembre 2026">
+      </div>
+
+      <div class="card" id="workoutEditCard">
+        <h3>Giorni di allenamento</h3>
+        <p class="hint">Scrivi il nome dell'esercizio: se lo riconosco (es. "Panca piana", "Curl bilanciere"...) seleziono da solo i muscoli coinvolti — puoi comunque aggiungerne o toglierne a mano sotto ogni esercizio. Gestisci il database esercizi da ⚙ in alto.</p>
+        <div id="dayEditors"></div>
+        <button class="btn secondary block" id="addDayBtn">+ Aggiungi giorno</button>
+      </div>
+      <div class="card" id="workoutLockedCard" style="display:none;">
+        <h3>Scheda bloccata</h3>
+        <p class="hint">Il tuo personal trainer ha bloccato la modifica della scheda. Contattalo se vuoi richiedere delle modifiche.</p>
+      </div>
+
+      <button class="btn block" id="updateProgramBtn">Aggiorna scheda</button>
+      <button class="btn secondary block" id="saveNewProgramBtn" style="margin-top:9px;">Salva come nuova versione</button>
+
+      <details class="card details-card" style="margin-top:20px;">
+        <summary>Schede archiviate</summary>
+        <p class="hint" style="margin-top:0;">Ogni versione qui sotto mostra anche il piano alimentare che era abbinato in quel momento.</p>
+        <div class="details-body" id="archiveList"><div class="empty">Nessuna scheda precedente.</div></div>
+      </details>
+
+      <details class="card details-card">
+        <summary>Backup dati</summary>
+        <div class="details-body">
+          <p class="hint">Tutti i dati (profili, schede, diete, storico) sono salvati solo su questo dispositivo/browser. Esporta un backup ogni tanto per non perderli, o per trasferirli su un altro dispositivo.</p>
+          <button class="btn block" id="exportBtn">Esporta backup (.json)</button>
+        </div>
+      </details>
+
+      <details class="card details-card">
+        <summary>Ripristina backup</summary>
+        <div class="details-body">
+          <p class="hint">Attenzione: importando un backup, tutti i profili e i dati attuali su questo dispositivo verranno sostituiti.</p>
+          <input type="file" id="importFile" accept="application/json">
+        </div>
+      </details>
+    </div>
+    </div>
+
+    <div id="programStoricoBlock" style="display:none;">
     <div class="seg-toggle">
       <button class="seg-btn active" data-seg2="volume">Volume</button>
       <button class="seg-btn" data-seg2="allenamenti">Allenamenti</button>
@@ -853,80 +963,6 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
         <div id="historyList"><div class="empty">Nessun allenamento registrato ancora.</div></div>
       </div>
     </div>
-  </section>
-
-  <!-- ===================== SCHEDA (VEDI + MODIFICA) ===================== -->
-  <section class="view" id="view-program">
-    <div class="card" id="cardMioPT">
-      <div class="top-row">
-        <h3>Il mio Personal Trainer</h3>
-        <button class="btn" id="chiediPTBtn" style="margin-top:0; padding:8px 14px;">+</button>
-      </div>
-      <div id="statoMioPT" style="margin-top:10px;"></div>
-    </div>
-
-    <div class="seg-toggle">
-      <button class="seg-btn active" data-seg="view">Vedi</button>
-      <button class="seg-btn" data-seg="edit">Modifica / Aggiorna</button>
-    </div>
-
-    <div id="programViewBlock">
-      <div class="card" id="programViewCard">
-        <h3>Scheda allenamento attuale</h3>
-        <div id="programView"></div>
-      </div>
-      <div class="card" id="programViewHiddenCard" style="display:none;">
-        <h3>Scheda non ancora visibile</h3>
-        <p class="hint">Il tuo personal trainer non ha ancora reso visibile la tua scheda.</p>
-      </div>
-    </div>
-
-    <div id="programEditBlock" style="display:none;">
-      <div class="card">
-        <div class="card-head-row">
-          <h3>Il personal trainer ti ha aggiornato la scheda?</h3>
-          <button class="btn danger" id="clearFormBtn">Pulisci</button>
-        </div>
-        <p class="hint"><b>Aggiorna scheda</b> modifica quella attuale, senza crearne una nuova (utile per piccole correzioni). <b>Salva come nuova versione</b> archivia quella attuale (resta consultabile) e la sostituisce con questa — usalo quando cambia davvero l'allenamento. In entrambi i casi la dieta impostata e lo storico allenamenti passati non vengono mai toccati. "Pulisci" invece svuota i campi qui sotto per ripartire da zero.</p>
-        <label>Nome/etichetta scheda <span class="hint" style="font-weight:400;">(solo per "Salva come nuova versione")</span></label>
-        <input type="text" id="newProgramName" placeholder="Es. Scheda Settembre 2026">
-      </div>
-
-      <div class="card" id="workoutEditCard">
-        <h3>Giorni di allenamento</h3>
-        <p class="hint">Scrivi il nome dell'esercizio: se lo riconosco (es. "Panca piana", "Curl bilanciere"...) seleziono da solo i muscoli coinvolti — puoi comunque aggiungerne o toglierne a mano sotto ogni esercizio. Gestisci il database esercizi da ⚙ in alto.</p>
-        <div id="dayEditors"></div>
-        <button class="btn secondary block" id="addDayBtn">+ Aggiungi giorno</button>
-      </div>
-      <div class="card" id="workoutLockedCard" style="display:none;">
-        <h3>Scheda bloccata</h3>
-        <p class="hint">Il tuo personal trainer ha bloccato la modifica della scheda. Contattalo se vuoi richiedere delle modifiche.</p>
-      </div>
-
-      <button class="btn block" id="updateProgramBtn">Aggiorna scheda</button>
-      <button class="btn secondary block" id="saveNewProgramBtn" style="margin-top:9px;">Salva come nuova versione</button>
-
-      <details class="card details-card" style="margin-top:20px;">
-        <summary>Schede archiviate</summary>
-        <p class="hint" style="margin-top:0;">Ogni versione qui sotto mostra anche il piano alimentare che era abbinato in quel momento.</p>
-        <div class="details-body" id="archiveList"><div class="empty">Nessuna scheda precedente.</div></div>
-      </details>
-
-      <details class="card details-card">
-        <summary>Backup dati</summary>
-        <div class="details-body">
-          <p class="hint">Tutti i dati (profili, schede, diete, storico) sono salvati solo su questo dispositivo/browser. Esporta un backup ogni tanto per non perderli, o per trasferirli su un altro dispositivo.</p>
-          <button class="btn block" id="exportBtn">Esporta backup (.json)</button>
-        </div>
-      </details>
-
-      <details class="card details-card">
-        <summary>Ripristina backup</summary>
-        <div class="details-body">
-          <p class="hint">Attenzione: importando un backup, tutti i profili e i dati attuali su questo dispositivo verranno sostituiti.</p>
-          <input type="file" id="importFile" accept="application/json">
-        </div>
-      </details>
     </div>
   </section>
 
@@ -959,7 +995,7 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
   </section>
 </main>
 
-<nav class="tabs" id="navTabs">
+<nav class="tabs" id="navTabsLegacy">
   <button class="tab-btn" data-tab="glossario" id="tabBtnGloss">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path d="M12 6.3c-1.7-1.2-3.8-1.8-6-1.8-.7 0-1.3.6-1.3 1.3v11c0 .7.6 1.2 1.3 1 1.8-.6 3.6-.2 4.9.7.6.4 1.4.4 2 0 1.3-.9 3.1-1.3 4.9-.7.7.2 1.3-.3 1.3-1v-11c0-.7-.6-1.3-1.3-1.3-2.2 0-4.3.6-6 1.8Z" stroke-linejoin="round" stroke-width="1.7"/><path d="M12 6.3v12.7" stroke-width="1.7"/></svg>
     <span class="tab-label">Glossario</span>
@@ -976,13 +1012,36 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path d="M7 3v8a2 2 0 0 0 4 0V3M9 11v10M17 3c-1.5 1.5-2 3.5-2 5.5 0 1.7.8 2.5 2 2.5V3zM17 11v10" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/></svg>
     <span class="tab-label">Dieta</span>
   </button>
-  <button class="tab-btn" data-tab="history" id="tabBtnHistory">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path d="M4 19V5m0 14h16M8 16V11m4 5V7m4 9v-6" stroke-linecap="round" stroke-width="2"/></svg>
-    <span class="tab-label">Storico</span>
-  </button>
 </nav>
 </div>
 </div>
+
+<!-- Nav visibile, persistente su tutte le schermate (Home/Scheda/Dieta/Account/Glossario).
+     Riusa lo stile .tabs/.tab-btn/.tab-fab esistente; la logica clicca "per conto suo"
+     i bottoni della nav storica qui sopra (rimasta come motore interno, solo nascosta). -->
+<nav class="tabs" id="navTabsGlobale">
+  <button type="button" data-go="program">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><rect x="5" y="3.5" width="14" height="17" rx="2.5" stroke-width="1.8"/><path d="M9 8.5h6M9 12h6M9 15.5h4" stroke-linecap="round" stroke-width="1.8"/></svg>
+    <span class="tab-label">Scheda</span>
+  </button>
+  <button type="button" data-go="diet">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path d="M7 3v8a2 2 0 0 0 4 0V3M9 11v10M17 3c-1.5 1.5-2 3.5-2 5.5 0 1.7.8 2.5 2 2.5V3zM17 11v10" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/></svg>
+    <span class="tab-label">Dieta</span>
+  </button>
+  <button type="button" class="tab-btn-main active" data-go="home">
+    <span class="tab-fab"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 3.2 3 11h2.4v9h5.1v-6h3v6h5.1v-9H21z"/></svg></span>
+    <span class="tab-label">Home</span>
+  </button>
+  <button type="button" data-go="account">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><circle cx="12" cy="8.2" r="3.4" stroke-width="1.8"/><path d="M5 19c1.2-4 4-6 7-6s5.8 2 7 6" stroke-linecap="round" stroke-width="1.8"/></svg>
+    <span class="tab-label">Account</span>
+  </button>
+  <button type="button" data-go="glossario">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path d="M12 6.3c-1.7-1.2-3.8-1.8-6-1.8-.7 0-1.3.6-1.3 1.3v11c0 .7.6 1.2 1.3 1 1.8-.6 3.6-.2 4.9.7.6.4 1.4.4 2 0 1.3-.9 3.1-1.3 4.9-.7.7.2 1.3-.3 1.3-1v-11c0-.7-.6-1.3-1.3-1.3-2.2 0-4.3.6-6 1.8Z" stroke-linejoin="round" stroke-width="1.7"/><path d="M12 6.3v12.7" stroke-width="1.7"/></svg>
+    <span class="tab-label">Glossario</span>
+  </button>
+</nav>
+
 <div class="toast" id="toast"></div>
 <div class="cloud-stato" id="cloudStato"><span class="pallino"></span><span id="cloudStatoTxt">sincronizzato</span></div>
 
@@ -1661,6 +1720,100 @@ function mpBuildFigure(svg, parts, outline){
   });
   svg.appendChild(mpEl("path",{d:outline,class:"mp-outline"}));
 }
+
+// ============================================================
+// HOME — mappa muscolare "questa settimana": stessa geometria (GEO/GEO_DONNA,
+// CHEST_BANDS, ZONE_LABEL) della mappa cliccabile di Scheda/Registra/Glossario,
+// ma qui colora le zone in base a quante volte sono state allenate invece di
+// gestire selezione/aggiunta esercizio. Funzione separata da mpBuildFigure per
+// non rischiare di toccare quella (usata in tre punti diversi dell'app).
+// ============================================================
+let HM_BUILT = false;
+let hmUid = 0;
+function hmBucketColor(v){
+  if(!v || v<=0) return '#dde0e6';
+  if(v===1) return '#ffb59c';
+  if(v===2) return '#ff7a45';
+  return '#e8280a';
+}
+function hmSelectZone(slug, conteggio){
+  document.querySelectorAll('#homeHeatmapCard .heatmap-zone-g').forEach(g=>{
+    g.classList.toggle('selected', g.dataset.slug===slug);
+  });
+  const label = ZONE_LABEL[slug] || slug;
+  const n = conteggio[slug] || 0;
+  const info = document.getElementById('homeHeatmapInfo');
+  if(!info) return;
+  info.innerHTML = n<=0
+    ? `<b>${escapeAttr(label)}</b> — non ancora allenato questa settimana`
+    : `<b>${escapeAttr(label)}</b> — allenato ${n} ${n===1?'volta':'volte'} questa settimana`;
+}
+function hmBuildFigure(svg, parts, outline, conteggio){
+  svg.innerHTML = "";
+  svg.appendChild(mpEl("path",{d:outline, class:"mp-skin"}));
+  const defs = mpEl("defs"); svg.appendChild(defs);
+  const donna = sonoDonna();
+  parts.forEach(p=>{
+    if(!p.paths || !p.paths.length) return;
+    if(p.slug==="chest" && !donna){
+      CHEST_BANDS.forEach(([slug,y0,y1])=>{
+        const cid = "hmclip-"+slug+"-"+(++hmUid);
+        const cp = mpEl("clipPath",{id:cid});
+        cp.appendChild(mpEl("rect",{x:"0", y:String(y0), width:"1448", height:String(y1-y0)}));
+        defs.appendChild(cp);
+        const g = mpEl("g",{class:"heatmap-zone-g", "data-slug":slug, tabindex:"0", role:"button",
+                            "aria-label":ZONE_LABEL[slug], "clip-path":"url(#"+cid+")",
+                            style:"--hm-fill:"+hmBucketColor(conteggio[slug])});
+        p.paths.forEach(d=>g.appendChild(mpEl("path",{d})));
+        svg.appendChild(g);
+      });
+      return;
+    }
+    const known = !!ZONE_LABEL[p.slug];
+    const g = known
+      ? mpEl("g",{class:"heatmap-zone-g", "data-slug":p.slug, tabindex:"0", role:"button",
+                  "aria-label":ZONE_LABEL[p.slug], style:"--hm-fill:"+hmBucketColor(conteggio[p.slug])})
+      : mpEl("g",{class:"mp-skin"});
+    p.paths.forEach(d=>g.appendChild(mpEl("path",{d})));
+    svg.appendChild(g);
+  });
+  svg.appendChild(mpEl("path",{d:outline, class:"mp-outline"}));
+}
+function hmRefresh(){
+  const svgF = document.getElementById('homeHeatmapFront');
+  const svgB = document.getElementById('homeHeatmapBack');
+  if(!svgF || !svgB) return;
+  const donna = sonoDonna();
+  const dati = donna ? GEO_DONNA : GEO;
+  if(donna){
+    svgF.setAttribute('viewBox', dati.viewBoxFront.join(' '));
+    svgB.setAttribute('viewBox', dati.viewBoxBack.join(' '));
+  } else {
+    svgF.setAttribute('viewBox', '0 0 724 1448');
+    svgB.setAttribute('viewBox', '724 0 724 1448');
+  }
+  const prof = activeProfile();
+  const conteggio = heatmapSettimana(prof || {});
+  hmBuildFigure(svgF, dati.front, dati.outlineFront, conteggio);
+  hmBuildFigure(svgB, dati.back, dati.outlineBack, conteggio);
+  document.querySelectorAll('#homeHeatmapCard .heatmap-zone-g').forEach(g=>{
+    g.addEventListener('click', ()=>hmSelectZone(g.dataset.slug, conteggio));
+    g.addEventListener('keydown', e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); hmSelectZone(g.dataset.slug, conteggio); } });
+  });
+  const info = document.getElementById('homeHeatmapInfo');
+  if(info) info.textContent = 'Tocca una zona per i dettagli';
+  document.querySelectorAll('#homeHeatmapCard .heatmap-zone-g').forEach(g=>g.classList.remove('selected'));
+  HM_BUILT = true;
+}
+document.querySelectorAll('.heatmap-viewtoggle button[data-hmview]').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.heatmap-viewtoggle button[data-hmview]').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    const front = btn.dataset.hmview === 'front';
+    document.getElementById('homeHeatmapFront').classList.toggle('show', front);
+    document.getElementById('homeHeatmapBack').classList.toggle('show', !front);
+  });
+});
 
 function mpBuildAll(){
   if(MP_BUILT) return;
@@ -2850,6 +3003,7 @@ function iniziaSupabase(){
 // ---------- schermate ----------
 function mostraCloudGate(quale){
   document.documentElement.classList.remove('avvio');
+  document.body.classList.remove('app-pronta');
   document.getElementById('lockScreen').style.display = 'none';
   document.getElementById('profileGate').style.display = 'none';
   document.getElementById('appRoot').style.display = 'none';
@@ -2910,6 +3064,43 @@ function streakSettimane(prof, programma){
     if(tutteFatte) streak++; else break;
   }
   return streak;
+}
+
+// zone anatomiche coinvolte da un esercizio: prima gli esercizi personali (le zone scelte
+// in fase di creazione), poi la libreria di base (EX_LIB[].slugs). Serve per la heatmap
+// muscolare della home: è volutamente diversa da getExerciseMuscles(), che invece torna
+// il gruppo generico (es. "Petto") usato per il grafico volume — qui servono gli slug fini
+// (chest-alto, quadriceps...) per colorare la figura corpo.js/corpo-donna.js.
+function slugsEsercizio(nome){
+  const n = (nome||'').trim().toLowerCase();
+  if(!n) return [];
+  const lp = activeProfile();
+  if(lp && lp.customExercises && lp.customExercises[n] && lp.customExercises[n].muscles){
+    return lp.customExercises[n].muscles;
+  }
+  const info = (typeof libFind==='function') ? libFind(n) : null;
+  return (info && info.slugs) ? info.slugs : [];
+}
+
+// quante volte ogni zona è stata allenata questa settimana (lunedì-oggi), contando
+// una volta per ogni esercizio registrato che coinvolge quella zona. Stessa settimana
+// (lunedì-domenica) usata da obiettivoSettimanale/streakSettimane, per coerenza.
+function heatmapSettimana(prof){
+  const conteggio = {};
+  if(!prof || !prof.logs) return conteggio;
+  const oggi = new Date();
+  const lunedi = new Date(oggi);
+  lunedi.setDate(oggi.getDate() - ((oggi.getDay()+6)%7));
+  lunedi.setHours(0,0,0,0);
+  prof.logs.forEach(log=>{
+    if(log.status !== 'registrato') return;
+    const d = new Date(log.date+'T00:00:00');
+    if(d < lunedi || d > oggi) return;
+    (log.exercises||[]).forEach(ex=>{
+      slugsEsercizio(ex.name).forEach(slug=>{ conteggio[slug] = (conteggio[slug]||0) + 1; });
+    });
+  });
+  return conteggio;
 }
 
 async function aggiornaCampanellaHome(){
@@ -3009,7 +3200,8 @@ function mostraHome(){
   document.getElementById('settingsPanel').style.display = 'none';
   document.getElementById('accountPanel').style.display = 'none';
   document.getElementById('areaPT').style.display = 'none';
-  document.body.classList.remove('impostazioni-aperte', 'area-pt');
+  document.body.classList.remove('impostazioni-aperte', 'area-pt', 'account-aperto');
+  document.body.classList.add('app-pronta');
   const p = (typeof activeProfile === 'function') ? activeProfile() : null;
   document.getElementById('homeSaluto').textContent = p && p.name ? `Bentornato, ${p.name}!` : 'Bentornato!';
   try{
@@ -3027,9 +3219,96 @@ function mostraHome(){
     const ring = document.getElementById('homeStreakRing');
     ring.style.strokeDasharray = `${CIRC}`;
     ring.style.strokeDashoffset = `${CIRC * (1 - quota)}`;
+    aggiornaHomeCta(p, programma);
   }catch(e){ console.error(e); }
+  hmRefresh();
   aggiornaCampanellaHome();
   document.getElementById('homeScreen').style.display = 'block';
+  aggiornaNavGlobale('home');
+}
+
+// Card "Allenamento di oggi": mostra il giorno previsto per oggi dalla scheda attiva,
+// o lo stato "già fatto"/"nessuna scheda" a seconda dei casi. Riusa WEEKDAYS/isoDaData
+// già esistenti, stessa logica di riferimento di obiettivoSettimanale.
+function aggiornaHomeCta(prof, programma){
+  const eyebrow = document.getElementById('homeCtaEyebrow');
+  const title = document.getElementById('homeCtaTitle');
+  const meta = document.getElementById('homeCtaMeta');
+  const btn = document.getElementById('homeCtaBtn');
+  const card = document.getElementById('homeCtaCard');
+  if(!eyebrow || !title || !meta || !btn || !card) return;
+  card.classList.remove('home-cta-done');
+  btn.dataset.azione = 'registra';
+  if(!programma || !programma.days || programma.days.length===0){
+    eyebrow.textContent = 'NESSUNA SCHEDA ATTIVA';
+    title.textContent = 'Crea la tua prima scheda';
+    meta.textContent = '';
+    btn.textContent = 'Vai a Scheda';
+    btn.dataset.azione = 'scheda';
+    return;
+  }
+  const oggi = new Date();
+  const wd = WEEKDAYS[oggi.getDay()];
+  const giornoOggi = programma.days.find(dy=>dy.weekday===wd);
+  const iso = isoDaData(oggi);
+  const giaFatto = (prof.logs||[]).find(l=>l.date===iso && l.programId===programma.id && l.status==='registrato');
+  if(!giornoOggi){
+    eyebrow.textContent = 'OGGI';
+    title.textContent = 'Giorno di riposo';
+    meta.textContent = 'Nessun allenamento previsto per oggi';
+    btn.textContent = 'Registra comunque un allenamento';
+    return;
+  }
+  if(giaFatto){
+    card.classList.add('home-cta-done');
+    eyebrow.textContent = 'FATTO OGGI ✓';
+    title.textContent = giornoOggi.name || 'Allenamento completato';
+    meta.textContent = (giaFatto.exercises||[]).length + ' esercizi registrati';
+    btn.textContent = 'Rivedi allenamento';
+    return;
+  }
+  eyebrow.textContent = 'ALLENAMENTO DI OGGI';
+  title.textContent = giornoOggi.name || 'Allenamento';
+  const nomiEsercizi = (giornoOggi.exercises||[]).length;
+  meta.textContent = nomiEsercizi>0 ? `${nomiEsercizi} esercizi` : '';
+  btn.textContent = 'Inizia allenamento';
+}
+
+// ============================================================
+// NAVIGAZIONE GLOBALE — barra persistente a 5 voci (Scheda, Dieta, Home,
+// Account, Glossario). Riusa senza modificarle le funzioni già esistenti
+// (mostraHome, apriAccountPanel, il click sui vecchi .tab-btn dentro
+// appRoot) invece di reimplementare la logica di cambio schermata.
+// ============================================================
+function showAppRoot(){
+  document.getElementById('homeScreen').style.display = 'none';
+  document.getElementById('accountPanel').style.display = 'none';
+  document.getElementById('appRoot').style.display = 'block';
+}
+function vaiA(tab){
+  if(tab === 'home'){ mostraHome(); return; }
+  if(tab === 'account'){ apriAccountPanel(); return; }
+  showAppRoot();
+  const legacyBtn = document.querySelector('#navTabsLegacy .tab-btn[data-tab="'+tab+'"]');
+  if(legacyBtn) legacyBtn.click();
+}
+// Apre Registra direttamente (usato dalla CTA in Home e dal giorno di oggi in Scheda).
+// Concettualmente "Registra" fa parte del flusso Scheda: nella nav nuova resta
+// evidenziato "Scheda" anche mentre si registra un allenamento.
+function apriRegistra(){
+  showAppRoot();
+  const legacyBtn = document.querySelector('#navTabsLegacy .tab-btn[data-tab="log"]');
+  if(legacyBtn) legacyBtn.click();
+  aggiornaNavGlobale('program');
+}
+function aggiornaNavGlobale(attivo){
+  // 'log' e 'history' non hanno una voce propria nella nav nuova: nestano
+  // concettualmente sotto Scheda, quindi evidenzio comunque "Scheda".
+  const mappa = { log:'program', history:'program' };
+  const finale = mappa[attivo] || attivo;
+  document.querySelectorAll('#navTabsGlobale button[data-go]').forEach(b=>{
+    b.classList.toggle('active', b.dataset.go === finale);
+  });
 }
 
 function apriImpostazioni(provenienza){
@@ -3075,8 +3354,9 @@ function chiudiImpostazioni(){
 function apriAccountPanel(){
   document.getElementById('homeScreen').style.display = 'none';
   document.getElementById('accountPanel').style.display = 'block';
-  document.body.classList.add('impostazioni-aperte');
+  document.body.classList.add('account-aperto');
   renderAmministrazione();
+  aggiornaNavGlobale('account');
   const lp = loggedInProfile();
   if(!lp) return;
   document.getElementById('accountNameInput').value = lp.name;
@@ -3090,17 +3370,18 @@ function apriAccountPanel(){
 }
 function chiudiAccountPanel(){
   document.getElementById('accountPanel').style.display = 'none';
-  document.body.classList.remove('impostazioni-aperte');
+  document.body.classList.remove('account-aperto');
   mostraHome();
 }
 
-document.getElementById('homeAllenatiBtn').addEventListener('click', ()=>{
-  document.getElementById('homeScreen').style.display = 'none';
-  document.getElementById('appRoot').style.display = 'block';
-  renderAll();
+document.getElementById('homeCtaBtn').addEventListener('click', ()=>{
+  const btn = document.getElementById('homeCtaBtn');
+  if(btn.dataset.azione === 'scheda'){ vaiA('program'); } else { apriRegistra(); }
 });
-document.getElementById('homeAccountBtn').addEventListener('click', apriAccountPanel);
+document.getElementById('homeAllenatiBtn').addEventListener('click', ()=>vaiA('program'));
+document.getElementById('homeMioPTBtn').addEventListener('click', ()=>vaiA('program'));
 document.getElementById('homePTBtn').addEventListener('click', apriAreaPT);
+document.getElementById('homeSettingsBtn').addEventListener('click', ()=>apriImpostazioni('home'));
 document.getElementById('homeEsciBtn').addEventListener('click', async ()=>{
   customConfirm("Uscire dall'app? Dovrai rifare l'accesso.", async ()=>{
     if(modalitaOnline() && sb){
@@ -5153,6 +5434,7 @@ let pendingProfileId = null;
 
 function renderProfileGate(){
   document.documentElement.classList.remove('avvio');
+  document.body.classList.remove('app-pronta');
   showGateSelectView();
   const list = document.getElementById('profileList');
   list.innerHTML = "";
@@ -5342,8 +5624,16 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     if(btn.dataset.tab==='program'){ renderProgramView(); renderNewProgramForm();
       if(typeof renderMioPT === 'function' && modalitaOnline()) renderMioPT(); }
     if(btn.dataset.tab==='glossario') renderGlossario();
+    aggiornaNavGlobale(btn.dataset.tab);
   });
 });
+
+// nav visibile: Scheda/Dieta/Glossario mostrano appRoot e cliccano "per conto loro"
+// il tab corrispondente nella nav storica; Home e Account riusano le funzioni esistenti.
+document.querySelectorAll('#navTabsGlobale button[data-go]').forEach(btn=>{
+  btn.addEventListener('click', ()=>vaiA(btn.dataset.go));
+});
+
 
 document.querySelectorAll('.seg-btn[data-seg]').forEach(btn=>{
   btn.addEventListener('click', ()=>{
@@ -5390,10 +5680,23 @@ document.querySelectorAll('.seg-btn[data-seg2]').forEach(btn=>{
   });
 });
 
+// Toggle Scheda/Storico in cima alla Scheda: lo Storico è lo stesso contenuto che
+// prima viveva nel tab dedicato (Volume/Allenamenti/Misure), solo spostato qui dentro.
+document.querySelectorAll('.seg-btn[data-segprog]').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.seg-btn[data-segprog]').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    const mostraStorico = btn.dataset.segprog === 'storico';
+    document.getElementById('programSchedaBlock').style.display = mostraStorico ? 'none' : 'block';
+    document.getElementById('programStoricoBlock').style.display = mostraStorico ? 'block' : 'none';
+    if(mostraStorico){ renderHistory(); renderVolume(); renderMeasurements(); }
+  });
+});
+
+
 function updateTabVisibility(){
   document.getElementById('tabBtnLog').style.display = 'flex';
   document.getElementById('tabBtnDiet').style.display = 'flex';
-  document.getElementById('tabBtnHistory').style.display = 'flex';
   document.getElementById('tabBtnProgram').style.display = 'flex';
   document.getElementById('tabBtnGloss').style.display = 'flex';
 }
@@ -6788,24 +7091,29 @@ function renderSchedaView(){
   document.getElementById('programViewHiddenCard').style.display = 'none';
 
   const p = activeProgram();
+  const oggiWd = WEEKDAYS[new Date().getDay()];
   const wrap = document.getElementById('programView');
-  wrap.innerHTML = p.days.map(d=>`
-    <div class="day-editor">
+  wrap.innerHTML = p.days.map(d=>{
+    const eOggi = d.weekday === oggiWd;
+    return `
+    <div class="day-editor"${eOggi ? ' style="border:1.5px solid var(--accent);"' : ''}>
       <div class="day-editor-head">
         <div style="display:flex; align-items:center; gap:10px;">
           <div class="letter">${d.key}</div>
           <div class="day-name-block">
             <div class="dname">${d.name}</div>
-            <div class="hint">${d.weekday}</div>
+            <div class="hint">${d.weekday}${eOggi ? ' · oggi' : ''}</div>
           </div>
         </div>
+        ${eOggi ? `<button type="button" class="btn" style="margin-top:0; padding:8px 14px;" onclick="apriRegistra()">Registra</button>` : ''}
       </div>
       ${d.exercises.map(ex=>{
         const vi = getExerciseVideoInfo(ex.name);
         return `<div class="hint">• ${ex.name} — ${ex.sets}×${ex.reps}${etichettaTecnica(ex,d)} <a href="${escapeAttr(vi.url)}" data-ex-name="${escapeAttr(ex.name)}" class="video-link">▶</a></div>
           ${ex.note ? `<div class="exercise-note" style="margin:2px 0 6px 14px;">📌 ${escapeAttr(ex.note)}</div>` : ''}`;
       }).join('')}
-    </div>`).join('');
+    </div>`;
+  }).join('');
 }
 function renderDietPlanView(){
   document.getElementById('dietViewCard').style.display = 'block';
