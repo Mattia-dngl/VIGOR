@@ -1166,6 +1166,41 @@ const EMAIL_AMMINISTRATORE = "dangelomattia2002@gmail.com";
 const PASSWORD_INGRESSO_INIZIALE = "ALLENATIOra26";
 const OLD_STORAGE_KEY = "gymTrackerPersonaleState_v0";
 const MUSCLE_GROUPS = ["Petto","Schiena","Spalle","Bicipiti","Tricipiti","Quadricipiti","Femorali","Glutei","Polpacci","Core/Addome"];
+// Zone fini della mappa muscolare (stesse di corpo.js/ZONE_LABEL più sotto): usate per
+// taggare gli esercizi (di base e personali) con la stessa precisione della figura anatomica,
+// invece dei 10 gruppi generici qui sopra (quelli restano solo per il grafico Volume, più
+// leggibile con poche categorie larghe).
+const MUSCLE_ZONES_FINE = ["chest-alto","chest-medio","chest-basso","upper-back","lower-back","trapezius",
+  "deltoids","biceps","forearm","triceps","abs","obliques","neck",
+  "quadriceps","adductors","hamstring","gluteal","calves","tibialis"];
+// stessa tassonomia di ZONE_GROUP più sotto, duplicata qui per evitare dipendenze d'ordine
+// fra le due costanti (entrambe const a livello di script, valutate in ordine di riga)
+const ZONE_TO_MUSCLE_GROUP = {
+  "chest-alto":"Petto","chest-medio":"Petto","chest-basso":"Petto","chest":"Petto",
+  "upper-back":"Schiena","lower-back":"Schiena","trapezius":"Schiena",
+  "deltoids":"Spalle","biceps":"Bicipiti","forearm":"Bicipiti","triceps":"Tricipiti",
+  "abs":"Core/Addome","obliques":"Core/Addome","neck":"Core/Addome",
+  "quadriceps":"Quadricipiti","adductors":"Quadricipiti","hamstring":"Femorali",
+  "gluteal":"Glutei","calves":"Polpacci","tibialis":"Polpacci"
+};
+function etichettaZonaFine(slug){
+  const mappa = {"chest-alto":"Petto alto","chest-medio":"Petto medio","chest-basso":"Petto basso",
+    "upper-back":"Dorsali","lower-back":"Lombari","trapezius":"Trapezio","deltoids":"Deltoidi",
+    "biceps":"Bicipiti","forearm":"Avambracci","triceps":"Tricipiti","abs":"Addominali",
+    "obliques":"Obliqui","neck":"Collo","quadriceps":"Quadricipiti","adductors":"Adduttori",
+    "hamstring":"Femorali","gluteal":"Glutei","calves":"Polpacci","tibialis":"Tibiale ant."};
+  return mappa[slug] || slug;
+}
+// Un esercizio può avere muscoli "vecchio formato" (nomi generici tipo "Petto", salvati
+// prima di questo aggiornamento) o "nuovo formato" (zone fini tipo "chest-medio"). Le due
+// funzioni sotto normalizzano l'uno o l'altro a seconda di chi lo deve usare.
+function zoneFiniValide(lista){ return (lista||[]).filter(m=>MUSCLE_ZONES_FINE.includes(m)); }
+function eFormatoFine(lista){ return (lista||[]).length>0 && (lista||[]).every(m=>MUSCLE_ZONES_FINE.includes(m)); }
+function gruppiDaMuscoli(lista){
+  if(!lista || lista.length===0) return [];
+  if(eFormatoFine(lista)) return [...new Set(lista.map(z=>ZONE_TO_MUSCLE_GROUP[z]).filter(Boolean))];
+  return lista.filter(m=>MUSCLE_GROUPS.includes(m));   // già in formato vecchio (gruppi generici)
+}
 const VOLUME_THRESHOLDS = { low: 8, high: 20 }; // <8 basso, 8-20 ottimale, >20 alto
 
 // Esercizi comuni da palestra -> gruppi muscolari coinvolti (checked automaticamente alla selezione,
@@ -2019,7 +2054,7 @@ function apriCreaEsercizio(nomeIniziale, callback){
   creaEsMuscoliScelti = [];
   document.getElementById('creaEsNome').value = nomeIniziale || '';
   const wrap = document.getElementById('creaEsMuscoli');
-  wrap.innerHTML = MUSCLE_GROUPS.map(m=>`<div class="muscle-chip" data-m="${m}">${m}</div>`).join('');
+  wrap.innerHTML = MUSCLE_ZONES_FINE.map(m=>`<div class="muscle-chip" data-m="${m}">${etichettaZonaFine(m)}</div>`).join('');
   wrap.querySelectorAll('.muscle-chip').forEach(chip=>{
     chip.addEventListener('click', ()=>{
       const m = chip.dataset.m;
@@ -3083,8 +3118,17 @@ function slugsEsercizio(nome){
   const n = (nome||'').trim().toLowerCase();
   if(!n) return [];
   const lp = activeProfile();
+  // esercizio personale: uso le zone fini se già in quel formato; se è un esercizio
+  // vecchio (salvato prima di questo aggiornamento, gruppi generici tipo "Petto") non
+  // posso risalire alla zona precisa, quindi lo lascio fuori dalla mappa finché non
+  // viene ri-taggato dalle Impostazioni (ora modificabile)
   if(lp && lp.customExercises && lp.customExercises[n] && lp.customExercises[n].muscles){
-    return lp.customExercises[n].muscles;
+    return zoneFiniValide(lp.customExercises[n].muscles);
+  }
+  // un admin può aver corretto le zone di un esercizio di base dalle Impostazioni
+  if(state.baseExerciseOverrides && state.baseExerciseOverrides[n]){
+    const fini = zoneFiniValide(state.baseExerciseOverrides[n]);
+    if(fini.length) return fini;
   }
   const info = (typeof libFind==='function') ? libFind(n) : null;
   return (info && info.slugs) ? info.slugs : [];
@@ -6909,8 +6953,11 @@ function getExerciseMuscles(name){
   const n = (name||'').trim().toLowerCase();
   if(!n) return null;
   const lp = activeProfile();
-  if(lp && lp.customExercises && lp.customExercises[n]) return lp.customExercises[n].muscles;
-  if(state.baseExerciseOverrides && state.baseExerciseOverrides[n]) return state.baseExerciseOverrides[n];
+  // sia gli esercizi personali che gli override admin possono ora essere salvati come zone
+  // fini (chest-medio, triceps...): per chi si aspetta i gruppi generici (grafico Volume)
+  // li converto qui; per chi vuole le zone fini (mappa muscolare) uso slugsEsercizio() sotto.
+  if(lp && lp.customExercises && lp.customExercises[n]) return gruppiDaMuscoli(lp.customExercises[n].muscles);
+  if(state.baseExerciseOverrides && state.baseExerciseOverrides[n]) return gruppiDaMuscoli(state.baseExerciseOverrides[n]);
   if(EXERCISE_MUSCLE_MAP[n]) return EXERCISE_MUSCLE_MAP[n];
   const _lib = (typeof libFind==='function') ? libFind(n) : null;
   if(_lib) return [_lib.g];
@@ -7815,7 +7862,7 @@ function riempiTendinaTipi(){
 
 function renderCustomExMuscleChips(){
   const wrap = document.getElementById('customExMuscles');
-  wrap.innerHTML = MUSCLE_GROUPS.map(m=>`<div class="muscle-chip" data-m="${m}">${m}</div>`).join('');
+  wrap.innerHTML = MUSCLE_ZONES_FINE.map(m=>`<div class="muscle-chip" data-m="${m}">${etichettaZonaFine(m)}</div>`).join('');
   wrap.querySelectorAll('.muscle-chip').forEach(chip=>{
     chip.addEventListener('click', ()=>{
       const m = chip.dataset.m;
@@ -7837,10 +7884,14 @@ function renderCustomExList(){
   wrap.innerHTML = entries.map(([name, data])=>{
     const muscles = data.muscles || [];
     const video = data.video || '';
+    const fine = eFormatoFine(muscles);
+    const etichette = fine ? muscles.map(etichettaZonaFine).join(', ') : muscles.join(', ');
     return `<div class="exercise-edit-row" style="align-items:flex-start;">
       <div style="flex:1;">
         <div style="font-family:var(--font-display); font-size:13.5px;">${toTitleCase(name)}</div>
-        <div class="hint">${muscles.join(', ')}</div>
+        <div class="hint">${etichette || 'Nessun muscolo indicato'}</div>
+        <button type="button" class="mio-ex-modifica-muscoli" data-name="${escapeAttr(name)}">✏️ Modifica muscoli</button>
+        <div class="muscle-chip-group mio-ex-muscoli-editor" data-name="${escapeAttr(name)}" style="display:none; margin-top:6px;"></div>
         <select class="mio-ex-tipo" data-name="${escapeAttr(name)}" style="margin-top:6px; padding:7px 8px; font-size:11.5px;">${opzioniTipo(tipoMisura(name))}</select>
         ${video ? `<a href="${escapeAttr(video)}" data-ex-name="${escapeAttr(name)}" class="video-link">▶ Video</a>`
                 : (canVideo ? `<button type="button" class="add-video-btn" data-name="${escapeAttr(name)}">+ Aggiungi link video</button>` : '')}
@@ -7856,6 +7907,41 @@ function renderCustomExList(){
       toast("Modo di registrazione aggiornato ✓");
     }
   }));
+  // "Modifica muscoli": apre sotto lo stesso esercizio un selettore a zone fini
+  // (come la mappa del corpo). Se l'esercizio aveva ancora i vecchi gruppi generici
+  // (creato prima di questo aggiornamento), parte vuoto: la prima modifica lo
+  // porta al nuovo formato.
+  wrap.querySelectorAll('.mio-ex-modifica-muscoli').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const name = btn.dataset.name;
+      const editor = wrap.querySelector(`.mio-ex-muscoli-editor[data-name="${CSS.escape(name)}"]`);
+      if(!editor) return;
+      const aperto = editor.style.display !== 'none';
+      if(aperto){ editor.style.display = 'none'; return; }
+      const attuali = eFormatoFine(lp.customExercises[name].muscles) ? lp.customExercises[name].muscles.slice() : [];
+      editor.innerHTML = MUSCLE_ZONES_FINE.map(m=>`<div class="muscle-chip mini ${attuali.includes(m)?'selected':''}"
+        data-mioexmuscle="${escapeAttr(name)}" data-m="${m}">${etichettaZonaFine(m)}</div>`).join('');
+      editor.style.display = 'flex';
+      editor.querySelectorAll('[data-mioexmuscle]').forEach(chip=>chip.addEventListener('click', ()=>{
+        const lp2 = activeProfile();
+        const ex = lp2.customExercises[name];
+        if(!ex) return;
+        const base = eFormatoFine(ex.muscles) ? ex.muscles : [];
+        const m = chip.dataset.m;
+        const nuovi = base.includes(m) ? base.filter(x=>x!==m) : base.concat([m]);
+        if(nuovi.length===0){ toast("Serve almeno una zona muscolare."); return; }
+        ex.muscles = nuovi;
+        save();
+        chip.classList.toggle('selected');
+        wrap.querySelector(`.exercise-edit-row .hint`); // no-op di sicurezza, l'etichetta si aggiorna al prossimo render
+        renderCustomExList();
+        setTimeout(()=>{
+          const riapri = wrap.querySelector(`.mio-ex-modifica-muscoli[data-name="${CSS.escape(name)}"]`);
+          if(riapri) riapri.click();
+        }, 0);
+      }));
+    });
+  });
   wrap.querySelectorAll('.remove-x').forEach(btn=>{
     btn.addEventListener('click', ()=>{
       delete activeProfile().customExercises[btn.dataset.name];
@@ -7903,16 +7989,18 @@ function renderBaseExerciseList(){
           ${gruppi[g].map(name=>{
             const lib = libFind(name);
             const isOverridden = !!(state.baseExerciseOverrides && state.baseExerciseOverrides[name]);
-            const current = isOverridden ? state.baseExerciseOverrides[name]
-                          : (EXERCISE_MUSCLE_MAP[name] || getExerciseMuscles(name) || []);
+            // parto sempre dalle zone già curate in esercizi.js (fini, es. chest-medio):
+            // così l'admin corregge solo le eccezioni invece di ritaggare 165 esercizi da zero
+            const current = isOverridden ? zoneFiniValide(state.baseExerciseOverrides[name])
+                          : ((lib && lib.slugs) ? lib.slugs.slice() : []);
             return `<div class="base-ex-row">
               <div class="base-ex-head">
                 <span class="base-ex-name">${(lib||{}).n || toTitleCase(name)}</span>
                 ${isOverridden ? '<span class="badge-attesa">modificato</span>' : ''}
               </div>
               <div class="base-ex-muscles">
-                ${MUSCLE_GROUPS.map(m=>`<span class="muscle-chip mini ${current.includes(m)?'selected':''}"
-                   data-basemuscle="${escapeAttr(name)}" data-m="${m}">${m}</span>`).join('')}
+                ${MUSCLE_ZONES_FINE.map(m=>`<span class="muscle-chip mini ${current.includes(m)?'selected':''}"
+                   data-basemuscle="${escapeAttr(name)}" data-m="${m}">${etichettaZonaFine(m)}</span>`).join('')}
               </div>
               <div class="base-ex-riga2">
                 <select class="base-ex-tipo" data-name="${escapeAttr(name)}">${opzioniTipo(tipoMisura(name))}</select>
@@ -7928,10 +8016,12 @@ function renderBaseExerciseList(){
   wrap.querySelectorAll('[data-basemuscle]').forEach(chip=>chip.addEventListener('click', ()=>{
     const name = chip.dataset.basemuscle, m = chip.dataset.m;
     if(!state.baseExerciseOverrides) state.baseExerciseOverrides = {};
+    const lib = libFind(name);
     const attuali = state.baseExerciseOverrides[name]
-      || (EXERCISE_MUSCLE_MAP[name] || getExerciseMuscles(name) || []).slice();
+      ? zoneFiniValide(state.baseExerciseOverrides[name])
+      : ((lib && lib.slugs) ? lib.slugs.slice() : []);
     const nuovi = attuali.includes(m) ? attuali.filter(x=>x!==m) : attuali.concat([m]);
-    if(nuovi.length === 0){ toast("Serve almeno un gruppo muscolare."); return; }
+    if(nuovi.length === 0){ toast("Serve almeno una zona muscolare."); return; }
     state.baseExerciseOverrides[name] = nuovi;
     save();
     chip.classList.toggle('selected');
