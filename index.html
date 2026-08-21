@@ -642,11 +642,19 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
     </div>
 
     <button class="btn block" id="freeAddExBtn" style="display:none;">Scegli un esercizio dal corpo</button>
-    <button type="button" class="free-add-link" id="freeAddExManualeBtn2" style="display:none;">oppure aggiungi dall'elenco</button>
-    <button class="btn ghost block" id="freeDelExBtn" style="display:none;">Togli l'esercizio che stai vedendo</button>
+    <div class="free-actions-row">
+      <button type="button" class="free-chip-btn aggiungi" id="freeAddExManualeBtn2" style="display:none;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6.5h11M9 12h11M9 17.5h11"/><path d="M4 6.5h.01M4 12h.01M4 17.5h.01"/></svg>
+        Aggiungi dall'elenco
+      </button>
+      <button class="free-chip-btn rimuovi" id="freeDelExBtn" style="display:none;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2m-9 0 1 12a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1l1-12"/></svg>
+        Togli esercizio
+      </button>
+    </div>
     <div class="free-hint" id="freeEmptyHint" style="display:none;">Scegli un muscolo sulla figura per iniziare.</div>
 
-    <div class="card" id="exerciseFormCard" style="display:none;">
+  <div class="card" id="exerciseFormCard" style="display:none; margin-top:12px;">
       <div class="ex-carousel-head">
         <h3 id="exerciseFormTitle">Esercizi</h3>
         <span class="ex-carousel-counter" id="exCarouselCounter"></span>

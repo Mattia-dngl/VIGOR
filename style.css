@@ -289,14 +289,28 @@
   .chat-empty{font-size:12px; color:var(--text-faint); text-align:center; padding:14px 0;}
 
   /* ============================================================
-     REGISTRA — versione più compatta: meno aria, badge più leggeri.
-     Non tocca la logica del carosello/dropset, solo le misure visive.
+     REGISTRA — versione compatta ma respirata: sezioni separate con
+     margini chiari, non "tutto attaccato".
      ============================================================ */
-  .exercise-block{padding:14px !important;}
-  .ultima-volta{padding:6px 10px !important; border-radius:10px !important;}
-  .superset-badge{padding:6px 10px !important; border-radius:10px !important;}
-  .set-row{margin-bottom:4px !important;}
+  .exercise-block{padding:16px !important;}
+  .ultima-volta{padding:8px 11px !important; border-radius:10px !important; margin-bottom:2px;}
+  .superset-badge{padding:8px 11px !important; border-radius:10px !important; margin-bottom:8px;}
+  .set-row{margin-bottom:6px !important;}
   .ex-carousel-counter{background:var(--surface2); padding:3px 9px; border-radius:999px; font-weight:700;}
+
+  /* fila di azioni sopra il carosello (allenamento libero): pulsante
+     principale pieno + due chip secondarie ben distinte, non testo nudo */
+  .free-actions-row{display:flex; gap:8px; margin-top:10px;}
+  .free-actions-row:empty{margin:0;}
+  .free-chip-btn{flex:1; display:flex; align-items:center; justify-content:center; gap:6px;
+    background:var(--surface); border:1.5px solid var(--border); color:var(--text);
+    font-family:var(--font-display); font-weight:700; font-size:11.5px;
+    padding:11px 8px; border-radius:13px; cursor:pointer; box-shadow:var(--shadow-sm,0 1px 3px rgba(0,0,0,.05));}
+  .free-chip-btn svg{width:14px; height:14px; flex:0 0 auto;}
+  .free-chip-btn:active{transform:scale(.97);}
+  .free-chip-btn.aggiungi:active{background:var(--accent-soft); border-color:var(--accent); color:var(--accent);}
+  .free-chip-btn.rimuovi{color:var(--accent);}
+  .free-chip-btn.rimuovi:active{background:var(--accent-soft); border-color:var(--accent);}
 
   /* Impostazioni e Account compatti: meno aria fra le sezioni, testi descrittivi più piccoli */
   #settingsPanel .card, #accountPanel .card{padding:14px 15px; margin-bottom:9px;}
@@ -735,8 +749,9 @@
     font-size:12px; color:var(--text-dim);}
   .dropset-toggle-row{display:flex; align-items:center; justify-content:space-between;
     margin-top:8px; font-size:12.5px; font-family:var(--font-display); color:var(--text-dim);}
-  .tecnica-row{margin-top:10px; font-size:11px; font-family:var(--font-display); color:var(--text-dim);}
-  .seg-toggle-tecnica{margin-top:6px; margin-bottom:0; padding:0; background:none;
+  .tecnica-row{margin-top:14px; padding-top:12px; border-top:1px dashed var(--border);
+    font-size:10.5px; font-weight:700; letter-spacing:.04em; text-transform:uppercase; color:var(--text-faint);}
+  .seg-toggle-tecnica{margin-top:8px; margin-bottom:14px; padding:0; background:none;
     display:flex; flex-wrap:wrap; gap:6px;}
   .seg-toggle-tecnica .seg-btn{flex:1 1 calc(50% - 6px); font-size:11.5px; padding:9px 6px;
     background:var(--surface2); border:1.5px solid var(--border); border-radius:10px;
@@ -934,10 +949,8 @@
   .gloss-name{font-family:var(--font-display); font-size:14px;}
   .gloss-desc{font-size:12.5px; color:var(--text-dim); line-height:1.5; margin-top:4px;}
   .gloss-tags{display:flex; flex-wrap:wrap; gap:5px; margin-top:8px;}
-  .free-hint{font-size:12px; color:var(--text-faint); text-align:center; padding:8px 8px 4px;}
-  .free-add-link{display:block; width:100%; background:none; border:none; color:var(--accent);
-    font-family:var(--font-display); font-weight:700; font-size:12.5px; text-align:center;
-    padding:10px 0 4px; margin-top:2px; cursor:pointer;}
+  .free-hint{font-size:12px; color:var(--text-faint); text-align:center; padding:8px 8px 4px; margin-bottom:6px;}
+  #freeAddExBtn{margin-top:12px;}
   .mp-viewtoggle{display:none; grid-column:1/-1; gap:4px; background:var(--surface); padding:4px;
     border-radius:12px; border:1px solid var(--border);}
   .mp-viewtoggle button{flex:1; border:none; background:none; padding:8px; border-radius:9px;
