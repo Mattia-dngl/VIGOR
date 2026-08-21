@@ -797,10 +797,11 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
       </div>
     </div>
 
+    <div id="programEditBlockAnchor"></div>
     <div id="programEditBlock" style="display:none;">
       <div class="card">
         <div class="card-head-row">
-          <h3>Il personal trainer ti ha aggiornato la scheda?</h3>
+          <h3 id="programEditTitolo">Il personal trainer ti ha aggiornato la scheda?</h3>
           <button class="btn danger" id="clearFormBtn">Pulisci</button>
         </div>
         <p class="hint"><b>Aggiorna scheda</b> modifica quella attuale, senza crearne una nuova (utile per piccole correzioni). <b>Salva come nuova versione</b> archivia quella attuale (resta consultabile) e la sostituisce con questa — usalo quando cambia davvero l'allenamento. In entrambi i casi la dieta impostata e lo storico allenamenti passati non vengono mai toccati. "Pulisci" invece svuota i campi qui sotto per ripartire da zero.</p>
@@ -4074,7 +4075,8 @@ function apriAreaPT(){
   document.body.classList.add('area-pt');
   renderAreaPT();
 }
-function chiudiAreaPT(){
+async function chiudiAreaPT(){
+  await chiudiEditorSchedaInlinePT();
   document.getElementById('areaPT').style.display = 'none';
   document.body.classList.remove('area-pt');
   _clienteAperto = null;
@@ -4082,7 +4084,8 @@ function chiudiAreaPT(){
 }
 document.getElementById('ptTornaHome').addEventListener('click', chiudiAreaPT);
 document.getElementById('bannerPTTorna').addEventListener('click', tornaDaModificaPT);
-document.getElementById('ptChiudiDettaglio').addEventListener('click', ()=>{
+document.getElementById('ptChiudiDettaglio').addEventListener('click', async ()=>{
+  await chiudiEditorSchedaInlinePT();
   document.getElementById('ptDettaglio').style.display = 'none';
   document.getElementById('ptElenco').style.display = 'block';
   window.scrollTo(0,0);
@@ -4181,7 +4184,8 @@ async function apriCliente(clienteId){
   renderDettaglioPT('riepilogo');
 }
 
-document.querySelectorAll('.pt-tab').forEach(t=>t.addEventListener('click', ()=>{
+document.querySelectorAll('.pt-tab').forEach(t=>t.addEventListener('click', async ()=>{
+  await chiudiEditorSchedaInlinePT();
   document.querySelectorAll('.pt-tab').forEach(x=>x.classList.toggle('active', x===t));
   renderDettaglioPT(t.dataset.pttab);
 }));
@@ -4238,7 +4242,7 @@ function renderDettaglioPT(sezione){
     box.innerHTML = `
       <div class="card">
         <h3>Scheda${puo ? '' : ' (sola lettura)'}</h3>
-        ${puo ? '<p class="hint">Puoi modificarla: le modifiche arrivano subito sul suo telefono.</p>'
+        ${puo ? '<p class="hint">Modifica direttamente qui sotto: le modifiche arrivano subito sul suo telefono.</p>'
               : '<p class="hint">Per modificarla serve che la persona ti dia il permesso dalla sua scheda.</p>'}
         ${!prog ? '<div class="empty">Nessuna scheda impostata.</div>' : `
           <div class="pt-scheda-ro"><b>${prog.name}</b> <span class="hint">dal ${formatDate(prog.createdAt)}</span></div>
@@ -4248,9 +4252,9 @@ function renderDettaglioPT(sezione){
               ${(g.exercises||[]).map(e=>`<div class="hint" style="margin-top:4px;">${e.name} — ${e.sets}×${e.reps}${etichettaTecnica(e,g)}</div>${e.note?`<div class="exercise-note" style="margin:2px 0 4px 10px;">📌 ${escapeAttr(e.note)}</div>`:''}`).join('')}
             </div>`).join('')}
         `}
-        ${puo ? '<button class="btn block" id="ptModificaScheda" style="margin-top:12px;">Modifica la scheda</button>' : ''}
-      </div>`;
-    if(puo) document.getElementById('ptModificaScheda').addEventListener('click', ()=>modificaComePT('scheda'));
+      </div>
+      ${puo ? '<div id="ptSchedaEditorSlot"></div>' : ''}`;
+    if(puo) mostraEditorSchedaInlinePT();
     return;
   }
 
@@ -4299,6 +4303,58 @@ function propagaEserciziPersonalizzatiPT(giorni){
       }
     });
   });
+}
+
+// ---------- editor scheda del cliente, DIRETTAMENTE nella sua scheda (non in una
+// schermata a parte): sposto il vero editor (stesso identico markup e stessa
+// logica di quando lo fai per te — editingDays, dropset, superset, i due tasti
+// Aggiorna/Salva come nuova versione) dentro il pannello del cliente, invece di
+// duplicarne il codice. Quando esci da questa scheda, torna al suo posto.
+function mostraEditorSchedaInlinePT(){
+  if(!_clienteAperto) return;
+  const p = _clienteAperto.riga;
+  const buffer = JSON.parse(JSON.stringify(p.dati || {}));
+  buffer.id = p.id;
+  buffer.name = nomeDi(p);
+  buffer.approvato = true;
+  if(!buffer.programs || !buffer.programs.length) buffer.programs = [blankProgram()];
+  if(!buffer.activeProgramId) buffer.activeProgramId = buffer.programs[buffer.programs.length-1].id;
+  if(!buffer.customExercises) buffer.customExercises = {};
+  Object.keys(buffer.customExercises).forEach(name=>{
+    if(Array.isArray(buffer.customExercises[name])) buffer.customExercises[name] = {muscles: buffer.customExercises[name], video:''};
+  });
+  if(!buffer.measurements) buffer.measurements = [];
+  if(!buffer.mealLogs) buffer.mealLogs = [];
+
+  _clienteBuffer = buffer;
+  _clienteIdInModifica = p.id;
+  _modificaPTCosa = 'scheda';
+  modalitaPT = true;
+  document.body.classList.add('modifica-pt');   // riusa le stesse regole che nascondono backup/ripristina
+
+  const editor = document.getElementById('programEditBlock');
+  const slot = document.getElementById('ptSchedaEditorSlot');
+  if(editor && slot && editor.parentElement !== slot) slot.appendChild(editor);
+  if(editor) editor.style.display = 'block';
+  renderNewProgramForm();   // popola editingDays con la scheda attuale del cliente
+}
+// Riporta l'editor al suo posto originale (dentro Scheda, per quando lo usi tu)
+// e salva subito eventuali modifiche in sospeso prima di uscire dalla pagina
+// del cliente — così non si perde nulla passando ad un altro tab.
+async function chiudiEditorSchedaInlinePT(){
+  if(!modalitaPT || _modificaPTCosa !== 'scheda') return;
+  clearTimeout(_ptSalvataggioTimer);
+  await salvaModifichePT();
+  if(_clienteAperto) _clienteAperto.riga.dati = _clienteBuffer;
+  const editor = document.getElementById('programEditBlock');
+  const anchor = document.getElementById('programEditBlockAnchor');
+  if(editor && anchor) anchor.parentElement.insertBefore(editor, anchor.nextSibling);
+  if(editor) editor.style.display = 'none';
+  document.body.classList.remove('modifica-pt-inline');
+  modalitaPT = false;
+  _clienteBuffer = null;
+  _clienteIdInModifica = null;
+  _modificaPTCosa = null;
 }
 
 function modificaComePT(cosa){
@@ -7299,6 +7355,12 @@ function renderSchedaEditForm(){
   const p = activeProgram();
   editingDays = JSON.parse(JSON.stringify(p.days));
   document.getElementById('newProgramName').value = "";
+  const titolo = document.getElementById('programEditTitolo');
+  if(titolo){
+    titolo.textContent = (modalitaPT && _modificaPTCosa==='scheda' && _clienteAperto)
+      ? `Scheda di ${nomeDi(_clienteAperto.riga)}`
+      : "Il personal trainer ti ha aggiornato la scheda?";
+  }
   renderDayEditors();
   renderArchiveList();
   renderCustomExList();
