@@ -4,7 +4,7 @@
 // Quando pubblichi una modifica, alza il numero di VERSIONE qui sotto:
 // l'app se ne accorge da sola e propone di aggiornarsi.
 // ============================================================
-const VERSIONE = "vigor-v62";
+const VERSIONE = "vigor-v63";
 
 const DA_TENERE = [
   "./",
@@ -136,7 +136,28 @@ self.addEventListener("fetch", evento => {
     return;
   }
 
-  // tutto il resto (icone, file di contorno): prima la copia salvata, è più veloce
+  // file di codice dell'app (CSS/JS): stessa logica di index.html, rete prima.
+  // Sono proprio i file che possono cambiare a ogni aggiornamento — se restassero
+  // "cache prima" rischierebbero di restare indietro rispetto all'HTML nuovo,
+  // che invece si aggiorna sempre subito (è già successo: HTML nuovo + CSS
+  // vecchio insieme rompe la grafica). Icone e immagini restano cache-prima
+  // qui sotto, perché quelle davvero non cambiano quasi mai.
+  if (/\.(css|js)$/.test(url.pathname)) {
+    evento.respondWith(
+      fetch(richiesta)
+        .then(risposta => {
+          if (risposta && risposta.ok) {
+            const copia = risposta.clone();
+            caches.open(VERSIONE).then(c => c.put(richiesta, copia)).catch(() => {});
+          }
+          return risposta;
+        })
+        .catch(() => caches.match(richiesta))
+    );
+    return;
+  }
+
+  // tutto il resto (icone, immagini): prima la copia salvata, è più veloce
   evento.respondWith(
     caches.match(richiesta).then(salvata => {
       if (salvata) return salvata;
