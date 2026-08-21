@@ -234,6 +234,18 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
   <div class="settings-inner home-inner">
     <div class="home-topbar">
       <div class="home-logo">VIG<span class="home-logo-accent">OR</span></div>
+      <button type="button" class="home-bell" id="homeBellBtn" title="Notifiche">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path d="M12 4a5 5 0 0 0-5 5v3.5c0 .8-.3 1.6-.9 2.2L5 16h14l-1.1-1.3c-.6-.6-.9-1.4-.9-2.2V9a5 5 0 0 0-5-5Z" stroke-width="1.7" stroke-linejoin="round"/><path d="M9.5 19a2.5 2.5 0 0 0 5 0" stroke-width="1.7" stroke-linecap="round"/></svg>
+        <span class="home-bell-dot" id="homeBellDot" style="display:none;"></span>
+      </button>
+    </div>
+
+    <div id="notificheOverlay">
+      <div class="msg-head">
+        <button type="button" class="msg-back" id="notifChiudiBtn" aria-label="Chiudi">←</button>
+        <div class="msg-head-nome">Notifiche</div>
+      </div>
+      <div class="msg-corpo" id="notifCorpo"></div>
     </div>
 
     <div class="home-hero-row">
@@ -2900,19 +2912,97 @@ function streakSettimane(prof, programma){
   return streak;
 }
 
-function aggiornaCampanellaHome(){
+async function aggiornaCampanellaHome(){
   const dot = document.getElementById('homeBellDot');
   if(!dot) return;
   try{
-    // il pallino compare solo se c'è davvero qualcosa da guardare: richieste PT in
-    // sospeso (per chi è PT) o account in attesa di approvazione (per l'amministratore)
+    // il pallino compare se c'è qualcosa da guardare: richieste PT in sospeso
+    // (per chi è PT), account da approvare (per l'amministratore), o messaggi
+    // non ancora letti in una qualsiasi delle tue conversazioni
     const richiestePT = (typeof _rapporti !== 'undefined' && sonoPT())
       ? _rapporti.filter(r => r.pt_id === (utenteOnline||{}).id && r.stato === 'in_attesa').length : 0;
     const approvazioni = (sonoAmministratore() && window._profiliAdmin)
       ? window._profiliAdmin.filter(x=>!x.approvato).length : 0;
-    dot.style.display = (richiestePT + approvazioni) > 0 ? 'block' : 'none';
+    let nonLetti = 0;
+    const idRapporti = idRapportiRilevanti();
+    if(sb && utenteOnline && idRapporti.length>0){
+      const { count } = await sb.from('messaggi').select('id', {count:'exact', head:true})
+        .in('rapporto_id', idRapporti).eq('letto', false).neq('mittente_id', utenteOnline.id);
+      nonLetti = count || 0;
+    }
+    dot.style.display = (richiestePT + approvazioni + nonLetti) > 0 ? 'block' : 'none';
   }catch(e){ console.error(e); }
 }
+// gli id dei rapporti PT-cliente che mi riguardano attivamente: per chi è PT,
+// tutti i clienti attivi; per chi è cliente, il proprio (se ce l'ha)
+function idRapportiRilevanti(){
+  if(typeof _rapporti === 'undefined') return [];
+  const mieiComePT = _rapporti.filter(r=>r.pt_id===(utenteOnline||{}).id && r.stato==='attivo').map(r=>r.id);
+  const mioComeCliente = mioRapportoAttivo();
+  return mioComeCliente ? [...mieiComePT, mioComeCliente.id] : mieiComePT;
+}
+
+async function apriNotifiche(){
+  document.getElementById('notificheOverlay').classList.add('show');
+  document.getElementById('notifCorpo').innerHTML = '<p class="hint" style="text-align:center; margin-top:20px;">Carico…</p>';
+  await renderNotifiche();
+}
+function chiudiNotifiche(){
+  document.getElementById('notificheOverlay').classList.remove('show');
+}
+async function renderNotifiche(){
+  const box = document.getElementById('notifCorpo');
+  const voci = [];
+
+  // richieste PT in sospeso (lato PT)
+  if(sonoPT()){
+    const richieste = _rapporti.filter(r=>r.pt_id===utenteOnline.id && r.stato==='in_attesa');
+    for(const r of richieste){
+      const p = await leggiProfilo(r.cliente_id);
+      voci.push({ icona:'🤝', titolo:`${nomeDi(p)} vuole essere seguito da te`, sotto:'Richiesta Personal Trainer',
+        onTap: ()=>{ chiudiNotifiche(); apriAreaPT(); } });
+    }
+  }
+  // account da approvare (lato amministratore)
+  if(sonoAmministratore() && window._profiliAdmin){
+    window._profiliAdmin.filter(x=>!x.approvato).forEach(p=>{
+      voci.push({ icona:'✓', titolo:`${nomeDi(p)} in attesa di approvazione`, sotto:'Nuovo account',
+        onTap: ()=>{ chiudiNotifiche(); apriImpostazioni('home'); document.getElementById('cardAmministrazione')?.scrollIntoView({behavior:'smooth'}); } });
+    });
+  }
+  // messaggi non letti, uno per conversazione (il più recente)
+  const idRapporti = idRapportiRilevanti();
+  if(sb && utenteOnline && idRapporti.length>0){
+    const { data } = await sb.from('messaggi').select('*').in('rapporto_id', idRapporti)
+      .eq('letto', false).neq('mittente_id', utenteOnline.id).order('creato_il', {ascending:false});
+    const perRapporto = {};
+    (data||[]).forEach(m=>{ if(!perRapporto[m.rapporto_id]) perRapporto[m.rapporto_id] = m; });
+    for(const rapportoId of Object.keys(perRapporto)){
+      const m = perRapporto[rapportoId];
+      const r = _rapporti.find(x=>x.id===rapportoId);
+      if(!r) continue;
+      const altroId = r.pt_id===utenteOnline.id ? r.cliente_id : r.pt_id;
+      const p = await leggiProfilo(altroId);
+      voci.push({ icona:'💬', titolo:`${nomeDi(p)}`, sotto: m.tipo==='testo' ? m.testo : m.testo,
+        onTap: ()=>{ chiudiNotifiche(); apriMessaggi(rapportoId, altroId, nomeDi(p)); } });
+    }
+  }
+
+  if(voci.length===0){
+    box.innerHTML = `<p class="hint" style="text-align:center; margin-top:20px;">Nessuna notifica al momento.</p>`;
+    return;
+  }
+  box.innerHTML = voci.map((v,i)=>`
+    <div class="notif-riga" data-i="${i}">
+      <div class="notif-icona">${v.icona}</div>
+      <div class="notif-corpo"><div class="notif-titolo">${escapeAttr(v.titolo)}</div><div class="notif-sotto">${escapeAttr(v.sotto)}</div></div>
+    </div>`).join('');
+  box.querySelectorAll('.notif-riga').forEach(el=>{
+    el.addEventListener('click', ()=>voci[parseInt(el.dataset.i)].onTap());
+  });
+}
+document.getElementById('homeBellBtn').addEventListener('click', apriNotifiche);
+document.getElementById('notifChiudiBtn').addEventListener('click', chiudiNotifiche);
 
 function mostraHome(){
   document.getElementById('appRoot').style.display = 'none';
