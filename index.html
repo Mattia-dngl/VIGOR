@@ -736,7 +736,7 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
     <div id="dietPlanEditBlock" style="display:none;">
       <div class="card">
         <div class="card-head-row">
-          <h3>Il personal trainer ti ha aggiornato la dieta?</h3>
+          <h3 id="dietEditTitolo">Il personal trainer ti ha aggiornato la dieta?</h3>
           <button class="btn danger" id="clearDietFormBtn">Pulisci</button>
         </div>
         <p class="hint">Aggiornando il piano, quello attuale viene archiviato (resta consultabile) e da qui in poi si usano i nuovi dati — la scheda di allenamento non viene toccata. Il diario di quello che mangi davvero, qui sopra, non viene mai toccato. "Pulisci" svuota i campi qui sotto per ripartire da zero invece di modificare quello attuale.</p>
@@ -762,6 +762,7 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
 
       <p class="hint" style="margin-top:14px;">Lo storico completo (scheda + dieta insieme, versione per versione) resta in Scheda → Modifica → "Schede archiviate".</p>
     </div>
+    <div id="dietPlanEditBlockAnchor"></div>
   </section>
 
   <!-- ===================== STORICO (+ VOLUME) ===================== -->
@@ -3485,6 +3486,17 @@ async function avvioOnline(){
 }
 
 async function dopoAccessoOnline(){
+  // Ripristino difensivo: se una sessione precedente fosse rimasta bloccata
+  // mentre modificavo la scheda/dieta di un cliente (chiusura imprevista,
+  // ricarica pagina...), qui riparto sempre pulito — mai in "modalità PT"
+  // appena entro nell'app.
+  modalitaPT = false;
+  _clienteBuffer = null;
+  _clienteIdInModifica = null;
+  _modificaPTCosa = null;
+  _clienteAperto = null;
+  document.body.classList.remove('modifica-pt', 'account-aperto', 'area-pt', 'impostazioni-aperte');
+
   mostraStatoSync('sincronizzo', 'carico i dati…');
   const { data, error } = await sb.from('profili').select('*').eq('id', utenteOnline.id).maybeSingle();
   if(error){ mostraErroreAccesso(error.message); return; }
@@ -4077,6 +4089,7 @@ function apriAreaPT(){
 }
 async function chiudiAreaPT(){
   await chiudiEditorSchedaInlinePT();
+  await chiudiEditorDietaInlinePT();
   document.getElementById('areaPT').style.display = 'none';
   document.body.classList.remove('area-pt');
   _clienteAperto = null;
@@ -4086,6 +4099,7 @@ document.getElementById('ptTornaHome').addEventListener('click', chiudiAreaPT);
 document.getElementById('bannerPTTorna').addEventListener('click', tornaDaModificaPT);
 document.getElementById('ptChiudiDettaglio').addEventListener('click', async ()=>{
   await chiudiEditorSchedaInlinePT();
+  await chiudiEditorDietaInlinePT();
   document.getElementById('ptDettaglio').style.display = 'none';
   document.getElementById('ptElenco').style.display = 'block';
   window.scrollTo(0,0);
@@ -4186,6 +4200,7 @@ async function apriCliente(clienteId){
 
 document.querySelectorAll('.pt-tab').forEach(t=>t.addEventListener('click', async ()=>{
   await chiudiEditorSchedaInlinePT();
+  await chiudiEditorDietaInlinePT();
   document.querySelectorAll('.pt-tab').forEach(x=>x.classList.toggle('active', x===t));
   renderDettaglioPT(t.dataset.pttab);
 }));
@@ -4264,15 +4279,16 @@ function renderDettaglioPT(sezione){
     box.innerHTML = `
       <div class="card">
         <h3>Dieta${puo ? '' : ' (sola lettura)'}</h3>
-        ${puo ? '' : '<p class="hint">Per modificarla serve che la persona ti dia il permesso.</p>'}
+        ${puo ? '<p class="hint">Modifica direttamente qui sotto: le modifiche arrivano subito sul suo telefono.</p>'
+              : '<p class="hint">Per modificarla serve che la persona ti dia il permesso.</p>'}
         ${dieta.length === 0 ? '<div class="empty">Nessun piano alimentare impostato.</div>'
           : dieta.map(g=>`<div class="pt-scheda-ro"><b>${g.day || g.giorno || ''}</b>
               <div class="hint">Colazione: ${g.colazione||'-'}</div>
               <div class="hint">Pranzo: ${g.pranzo||'-'}</div>
               <div class="hint">Cena: ${g.cena||'-'}</div></div>`).join('')}
-        ${puo ? '<button class="btn block" id="ptModificaDieta" style="margin-top:12px;">Modifica la dieta</button>' : ''}
-      </div>`;
-    if(puo) document.getElementById('ptModificaDieta').addEventListener('click', ()=>modificaComePT('dieta'));
+      </div>
+      ${puo ? '<div id="ptDietaEditorSlot"></div>' : ''}`;
+    if(puo) mostraEditorDietaInlinePT();
   }
 }
 
@@ -4350,7 +4366,54 @@ async function chiudiEditorSchedaInlinePT(){
   const anchor = document.getElementById('programEditBlockAnchor');
   if(editor && anchor) anchor.parentElement.insertBefore(editor, anchor.nextSibling);
   if(editor) editor.style.display = 'none';
-  document.body.classList.remove('modifica-pt-inline');
+  document.body.classList.remove('modifica-pt');
+  modalitaPT = false;
+  _clienteBuffer = null;
+  _clienteIdInModifica = null;
+  _modificaPTCosa = null;
+}
+
+// Stesso meccanismo di mostraEditorSchedaInlinePT/chiudiEditorSchedaInlinePT,
+// ma per la dieta: sposto dietPlanEditBlock dentro la pagina del cliente invece
+// di duplicarne markup e logica.
+function mostraEditorDietaInlinePT(){
+  if(!_clienteAperto) return;
+  const p = _clienteAperto.riga;
+  const buffer = JSON.parse(JSON.stringify(p.dati || {}));
+  buffer.id = p.id;
+  buffer.name = nomeDi(p);
+  buffer.approvato = true;
+  if(!buffer.programs || !buffer.programs.length) buffer.programs = [blankProgram()];
+  if(!buffer.activeProgramId) buffer.activeProgramId = buffer.programs[buffer.programs.length-1].id;
+  if(!buffer.customExercises) buffer.customExercises = {};
+  Object.keys(buffer.customExercises).forEach(name=>{
+    if(Array.isArray(buffer.customExercises[name])) buffer.customExercises[name] = {muscles: buffer.customExercises[name], video:''};
+  });
+  if(!buffer.measurements) buffer.measurements = [];
+  if(!buffer.mealLogs) buffer.mealLogs = [];
+
+  _clienteBuffer = buffer;
+  _clienteIdInModifica = p.id;
+  _modificaPTCosa = 'dieta';
+  modalitaPT = true;
+  document.body.classList.add('modifica-pt');
+
+  const editor = document.getElementById('dietPlanEditBlock');
+  const slot = document.getElementById('ptDietaEditorSlot');
+  if(editor && slot && editor.parentElement !== slot) slot.appendChild(editor);
+  if(editor) editor.style.display = 'block';
+  renderDietEditForm();
+}
+async function chiudiEditorDietaInlinePT(){
+  if(!modalitaPT || _modificaPTCosa !== 'dieta') return;
+  clearTimeout(_ptSalvataggioTimer);
+  await salvaModifichePT();
+  if(_clienteAperto) _clienteAperto.riga.dati = _clienteBuffer;
+  const editor = document.getElementById('dietPlanEditBlock');
+  const anchor = document.getElementById('dietPlanEditBlockAnchor');
+  if(editor && anchor) anchor.parentElement.insertBefore(editor, anchor);
+  if(editor) editor.style.display = 'none';
+  document.body.classList.remove('modifica-pt');
   modalitaPT = false;
   _clienteBuffer = null;
   _clienteIdInModifica = null;
@@ -4394,6 +4457,15 @@ function modificaComePT(cosa){
 // salva subito la scheda/dieta del cliente sul SUO account online — mai sul mio telefono
 async function salvaModifichePT(){
   if(!modalitaPT || !_clienteBuffer || !_clienteIdInModifica) return true;
+  // Rete di sicurezza: qualunque cosa causi un id sbagliato a monte, questo
+  // salvataggio non deve MAI poter scrivere sul profilo del PT stesso invece
+  // che su quello del cliente — meglio un salvataggio fallito con un avviso
+  // che una scheda che finisce sull'account sbagliato.
+  if(!utenteOnline || _clienteIdInModifica === utenteOnline.id){
+    console.error('Blocco di sicurezza: salvaModifichePT stava per scrivere sul profilo del PT stesso.', {_clienteIdInModifica, utenteOnline});
+    toast("Errore di sicurezza: salvataggio bloccato. Riprova, e se persiste dimmelo.");
+    return false;
+  }
   if(!sb){ toast("Serve la connessione per salvare sul suo account."); return false; }
   const { error } = await sb.from('profili')
     .update({ dati: _clienteBuffer, aggiornato_il: new Date().toISOString() })
@@ -6231,11 +6303,6 @@ function updateExerciseCarouselUI(i){
   document.getElementById('exPrevBtn').disabled = (i<=0);
   document.getElementById('exNextBtn').disabled = (i>=total-1);
   document.getElementById('exNextBtn').textContent = (i>=total-1) ? 'Ultimo esercizio' : 'Successivo →';
-  // il riquadro deve avere l'altezza dell'esercizio che si vede ora, non del più alto
-  // fra tutti (stanno tutti nella stessa riga scorrevole): senza questo, un esercizio
-  // corto (es. senza dropset) restava con lo spazio vuoto di uno più lungo accanto.
-  const blocco = list.children[i];
-  if(blocco) list.style.height = blocco.offsetHeight + 'px';
 }
 function updateExerciseDotsProgress(){
   if(selectedDayKey===null || selectedDayKey==="SKIP") return;
@@ -7370,6 +7437,12 @@ function renderDietEditForm(){
   const p = activeProgram();
   editingDietInfo = JSON.parse(JSON.stringify(p.dietInfo || defaultDietInfo()));
   editingDiet = (p.diet && typeof p.diet === 'object') ? JSON.parse(JSON.stringify(p.diet)) : defaultDietDays();
+  const titolo = document.getElementById('dietEditTitolo');
+  if(titolo){
+    titolo.textContent = (modalitaPT && _modificaPTCosa==='dieta' && _clienteAperto)
+      ? `Dieta di ${nomeDi(_clienteAperto.riga)}`
+      : "Il personal trainer ti ha aggiornato la dieta?";
+  }
   renderDietInfoEditors();
   renderDietDayEditors();
   applyDietEditFormVisibility();

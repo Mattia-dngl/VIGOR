@@ -267,26 +267,6 @@
      ============================================================ */
   #programStoricoBlock{display:none;}
 
-  /* ============================================================
-     "Il mio PT" — toggle Programma/Messaggi + chat compatta
-     ============================================================ */
-  .ptmsg-toggle{display:none; margin-top:10px;}
-  .ptmsg-toggle.show{display:flex;}
-  #ptMessaggiBlock{display:none;}
-  .chat-thread{display:flex; flex-direction:column; gap:8px; padding:6px 2px; max-height:340px; overflow-y:auto;}
-  .chat-bubble{max-width:80%; padding:9px 13px; border-radius:15px; font-size:12.5px; line-height:1.4; word-break:break-word;}
-  .chat-bubble.loro{background:var(--surface2); color:var(--text); align-self:flex-start; border-bottom-left-radius:5px;}
-  .chat-bubble.io{background:var(--grad-accent, var(--accent)); color:#fff; align-self:flex-end; border-bottom-right-radius:5px;}
-  .chat-time{font-size:9px; color:var(--text-faint); margin-top:1px;}
-  .chat-time.io{align-self:flex-end;}
-  .chat-time.loro{align-self:flex-start;}
-  .chat-input-row{display:flex; gap:8px; margin-top:12px;}
-  .chat-input-row input{flex:1; min-width:0; padding:11px 14px; border-radius:999px; border:1px solid var(--border);
-    background:var(--surface2); font-family:var(--font-display); font-size:12.5px; color:var(--text);}
-  .chat-send-btn{width:40px; height:40px; border-radius:50%; background:var(--accent); color:#fff; border:none;
-    display:flex; align-items:center; justify-content:center; cursor:pointer; flex:0 0 auto;}
-  .chat-send-btn svg{width:16px; height:16px;}
-  .chat-empty{font-size:12px; color:var(--text-faint); text-align:center; padding:14px 0;}
 
   /* ============================================================
      REGISTRA — versione compatta ma respirata: sezioni separate con
@@ -695,7 +675,7 @@
   .ex-dot.done.current{background:var(--ok); border-color:var(--ok); color:#fff;}
   .ex-carousel-track{
     display:flex; align-items:flex-start; overflow-x:auto; scroll-snap-type:x mandatory; scroll-behavior:smooth;
-    gap:0; margin:0 -2px; -webkit-overflow-scrolling:touch; transition:height .2s ease; overflow-y:hidden;
+    gap:0; margin:0 -2px; -webkit-overflow-scrolling:touch;
   }
   .ex-carousel-track::-webkit-scrollbar{display:none;}
   .exercise-block{
