@@ -235,7 +235,7 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
     <div class="home-topbar">
       <div class="home-logo">VIG<span class="home-logo-accent">OR</span></div>
       <button type="button" class="home-bell" id="homeBellBtn" title="Notifiche">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path d="M12 4a5 5 0 0 0-5 5v3.5c0 .8-.3 1.6-.9 2.2L5 16h14l-1.1-1.3c-.6-.6-.9-1.4-.9-2.2V9a5 5 0 0 0-5-5Z" stroke-width="1.7" stroke-linejoin="round"/><path d="M9.5 19a2.5 2.5 0 0 0 5 0" stroke-width="1.7" stroke-linecap="round"/></svg>
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2.5a1 1 0 0 1 1 1v.63A6.5 6.5 0 0 1 18.5 10.5v3.02c0 .84.33 1.65.93 2.24L20.4 16.7c.8.8.23 2.17-.9 2.17H4.5c-1.13 0-1.7-1.37-.9-2.17l.97-.94c.6-.59.93-1.4.93-2.24V10.5a6.5 6.5 0 0 1 5.5-6.37V3.5a1 1 0 0 1 1-1Z"/><path d="M9.5 19.2a2.7 2.7 0 0 0 5 0 .5.5 0 0 0-.47-.7H9.97a.5.5 0 0 0-.47.7Z"/></svg>
         <span class="home-bell-dot" id="homeBellDot" style="display:none;"></span>
       </button>
     </div>
@@ -3011,7 +3011,7 @@ function mostraHome(){
   document.getElementById('areaPT').style.display = 'none';
   document.body.classList.remove('impostazioni-aperte', 'area-pt');
   const p = (typeof activeProfile === 'function') ? activeProfile() : null;
-  document.getElementById('homeSaluto').textContent = p && p.name ? `Bentornato, ${p.name}! 💪` : 'Bentornato!';
+  document.getElementById('homeSaluto').textContent = p && p.name ? `Bentornato, ${p.name}!` : 'Bentornato!';
   try{
     const programma = p && p.programs ? p.programs.find(x=>x.id===p.activeProgramId) : null;
     const {fatti, totali} = obiettivoSettimanale(p||{}, programma);
