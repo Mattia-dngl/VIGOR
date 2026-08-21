@@ -758,6 +758,10 @@
     color:var(--text); font-weight:700;}
   .seg-toggle-tecnica .seg-btn.active{background:var(--accent); border-color:var(--accent);
     color:#fff; box-shadow:0 2px 6px rgba(255,90,46,.3);}
+  .tecnica-extra-row{display:flex; gap:14px; margin:6px 2px 12px;}
+  .tecnica-extra-btn{background:none; border:none; color:var(--accent); font-size:11px;
+    font-family:var(--font-display); font-weight:700; cursor:pointer; padding:2px 0;}
+  .tecnica-extra-btn.rimuovi{color:var(--text-faint);}
   .dropset-box{margin-top:8px; padding:10px 12px; background:var(--surface2);
     border-radius:10px; border:1px solid var(--border);}
   .dropset-stage{display:flex; gap:10px; padding:6px 0; position:relative;}

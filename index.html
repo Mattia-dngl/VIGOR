@@ -5975,7 +5975,12 @@ function buildExerciseForm(day){
         <button type="button" class="seg-btn ${ex.dropset && ex.dropset.tipo==='dropset'?'active':''}" data-libidx="${i}" data-tecnica="dropset">Dropset</button>
         <button type="button" class="seg-btn ${ex.dropset && ex.dropset.tipo==='restpause'?'active':''}" data-libidx="${i}" data-tecnica="restpause">Rest-pause</button>
         <button type="button" class="seg-btn ${ex.supersetCon!=null?'active':''}" data-libidx="${i}" data-tecnica="superset">Superset</button>
-      </div>` : '';
+      </div>
+      ${ex.dropset && ex.dropset.drops ? `
+      <div class="tecnica-extra-row">
+        <button type="button" class="tecnica-extra-btn" data-libidx="${i}" data-azione="aggiungi">+ Aggiungi ${ex.dropset.tipo==='restpause'?'rest-pause':'drop'}</button>
+        ${ex.dropset.drops.length>1 ? `<button type="button" class="tecnica-extra-btn rimuovi" data-libidx="${i}" data-azione="rimuovi">− Rimuovi ultimo</button>` : ''}
+      </div>` : ''}` : '';
     block.innerHTML = `<div class="exercise-name">${ex.name}<span class="target">(target: ${ex.sets}×${ex.reps})</span>
         <a href="${escapeAttr(videoInfo.url)}" data-ex-name="${escapeAttr(ex.name)}" class="video-link" style="margin-left:8px;">▶ Video</a></div>
       ${supersetBadge}
@@ -6023,6 +6028,22 @@ function buildExerciseForm(day){
           else toast("Aggiungi prima un altro esercizio per creare un superset.");
         }
         rebuildFreeForm();   // ricostruisce mantenendo le serie già digitate sugli altri esercizi
+      });
+    });
+    // + Aggiungi drop/rest-pause: aumenta le tappe di OGNI round (stesso meccanismo
+    // di "Modifica scheda"). − Rimuovi ultimo fa l'inverso, restando sempre almeno a 1.
+    list.querySelectorAll('.tecnica-extra-btn').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        const i = parseInt(btn.dataset.libidx);
+        const ex = FREE_DAY.exercises[i];
+        if(!ex || !ex.dropset || !ex.dropset.drops) return;
+        const tipo = ex.dropset.tipo;
+        if(btn.dataset.azione === 'aggiungi'){
+          ex.dropset.drops.push({ reps: tipo==='restpause'?'6':'8', riduzione: tipo==='restpause'?0:25 });
+        } else if(ex.dropset.drops.length>1){
+          ex.dropset.drops.pop();
+        }
+        rebuildFreeForm();
       });
     });
   }
