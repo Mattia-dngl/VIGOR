@@ -76,8 +76,8 @@ const EX_LIB = [
   {n:"Affondi", tipo:"passi", g:"Quadricipiti", slugs:["quadriceps","gluteal"], d:"Passo avanti con discesa del ginocchio. Lavoro su una gamba e sull'equilibrio.", v:"https://www.muscleandstrength.com/exercises/dumbbell-lunge.html"},
   {n:"Hack squat", g:"Quadricipiti", slugs:["quadriceps"], d:"Squat guidato alla macchina, schiena appoggiata. Enfasi sul quadricipite."},
   {n:"Squat bulgaro", tipo:"passi", g:"Quadricipiti", slugs:["quadriceps","gluteal"], d:"Piede posteriore su rialzo. Molto intenso su quadricipite e gluteo.", v:"https://www.muscleandstrength.com/exercises/one-leg-barbell-squat.html"},
-  {n:"Squat a presa larga", g:"Quadricipiti", slugs:["adductors","gluteal"], d:"Piedi larghi e punte aperte: coinvolge molto gli adduttori."},
-  {n:"Affondi laterali", tipo:"passi", g:"Quadricipiti", slugs:["adductors","gluteal"], d:"Passo di lato con discesa su una gamba. Allunga e carica l'adduttore."},
+  {n:"Squat a presa larga", g:"Quadricipiti", slugs:["quadriceps","adductors","gluteal"], d:"Piedi larghi e punte aperte: coinvolge molto gli adduttori."},
+  {n:"Affondi laterali", tipo:"passi", g:"Quadricipiti", slugs:["quadriceps","adductors","gluteal"], d:"Passo di lato con discesa su una gamba. Allunga e carica l'adduttore."},
   {n:"Adductor machine", g:"Quadricipiti", slugs:["adductors"], d:"Chiusura delle gambe alla macchina. Isolamento diretto degli adduttori."},
   {n:"Copenhagen plank", tipo:"tempo", g:"Quadricipiti", slugs:["adductors","abs"], d:"Plank laterale con gamba in appoggio alto. Adduttori in isometria."},
 
@@ -161,12 +161,12 @@ const EX_LIB = [
   {n:"Affondo inverso al cavo", tipo:"passi", g:"Quadricipiti", slugs:["quadriceps","gluteal"], d:"Affondo indietro con cavo basso davanti. Il cavo aiuta a restare in equilibrio."},
   {n:"Sissy squat", tipo:"corpo", g:"Quadricipiti", slugs:["quadriceps"], d:"Ginocchia avanti e busto indietro. Isolamento estremo del quadricipite, da introdurre piano."},
   {n:"Adduzioni ai cavi", g:"Quadricipiti", slugs:["adductors"], d:"Gamba che si porta verso il centro al cavo basso. Isola l'adduttore in piedi."},
-  {n:"Stacco sumo", g:"Quadricipiti", slugs:["adductors","gluteal","quadriceps"], d:"Stacco a gambe larghe. Coinvolge molto adduttori e glutei."},
+  {n:"Stacco sumo", g:"Quadricipiti", slugs:["adductors","gluteal","quadriceps","lower-back"], d:"Stacco a gambe larghe. Coinvolge molto adduttori e glutei."},
 
   // FEMORALI
-  {n:"Stacco rumeno ai cavi", g:"Femorali", slugs:["hamstring","gluteal"], d:"Stacco rumeno al cavo basso: tensione costante anche in cima al movimento."},
+  {n:"Stacco rumeno ai cavi", g:"Femorali", slugs:["hamstring","gluteal","lower-back"], d:"Stacco rumeno al cavo basso: tensione costante anche in cima al movimento."},
   {n:"Leg curl al cavo", g:"Femorali", slugs:["hamstring"], d:"Cavigliera al cavo basso, tallone che va al gluteo. Alternativa alla macchina."},
-  {n:"Stacco a gamba singola", tipo:"passi", g:"Femorali", slugs:["hamstring","gluteal"], d:"Stacco su una gamba sola. Femorale, gluteo ed equilibrio insieme."},
+  {n:"Stacco a gamba singola", tipo:"passi", g:"Femorali", slugs:["hamstring","gluteal","lower-back"], d:"Stacco su una gamba sola. Femorale, gluteo ed equilibrio insieme."},
   {n:"Slider leg curl", tipo:"corpo", g:"Femorali", slugs:["hamstring","gluteal"], d:"Talloni che scivolano su un panno da supino. Femorali a corpo libero, molto intenso."},
 
   // GLUTEI
@@ -195,7 +195,7 @@ const EX_LIB = [
   {n:"Trazioni presa larga", tipo:"corpo", g:"Schiena", slugs:["upper-back"], d:"Trazione con presa più larga delle spalle. Enfasi sull'ampiezza del dorsale.", v:"https://www.muscleandstrength.com/exercises/wide-grip-pull-up.html"},
   {n:"Trazioni con presa a triangolo", tipo:"corpo", g:"Schiena", slugs:["upper-back","biceps"], d:"Trazione a presa neutra e stretta: più escursione e meno stress sulle spalle.", v:"https://www.muscleandstrength.com/exercises/v-bar-pull-up.html"},
   {n:"Lat machine presa stretta", g:"Schiena", slugs:["upper-back","biceps"], d:"Lat machine con presa stretta: lavora la parte bassa del dorsale.", v:"https://www.muscleandstrength.com/exercises/close-grip-pull-down.html"},
-  {n:"Lat machine con triangolo", g:"Schiena", slugs:["upper-back"], d:"Lat machine con maniglia a V, presa neutra. Comoda per chi ha spalle sensibili.", v:"https://www.muscleandstrength.com/exercises/v-bar-pull-down"},
+  {n:"Lat machine con triangolo", g:"Schiena", slugs:["upper-back","biceps"], d:"Lat machine con maniglia a V, presa neutra. Comoda per chi ha spalle sensibili.", v:"https://www.muscleandstrength.com/exercises/v-bar-pull-down"},
   {n:"Alzate laterali da seduto", g:"Spalle", slugs:["deltoids"], d:"Alzata laterale seduto: elimina lo slancio delle gambe e isola il deltoide.", v:"https://www.muscleandstrength.com/exercises/seated-dumbbell-lateral-raise.html"},
   {n:"Alzata laterale al cavo a un braccio", tipo:"passi", g:"Spalle", slugs:["deltoids"], d:"Un braccio alla volta al cavo basso, passando davanti al corpo. Tensione costante.", v:"https://www.muscleandstrength.com/exercises/one-arm-cable-lateral-raise.html"},
   {n:"Alzate laterali parziali", g:"Spalle", slugs:["deltoids"], d:"Alzate a mezza escursione, di solito in fondo alla serie per prolungare lo sforzo.", v:"https://www.muscleandstrength.com/exercises/lateral-raise-partials"},
@@ -203,8 +203,8 @@ const EX_LIB = [
   {n:"Panca Scott con bilanciere EZ", g:"Bicipiti", slugs:["biceps"], d:"Panca Scott con impugnatura angolata: più gentile sui polsi.", v:"https://www.muscleandstrength.com/exercises/ez-bar-preacher-curl.html"},
   {n:"Curl a martello su panca Scott", g:"Bicipiti", slugs:["biceps","forearm"], d:"Presa neutra sul leggio: isola brachiale e avambraccio senza slancio.", v:"https://www.muscleandstrength.com/exercises/dumbbell-hammer-preacher-curl.html"},
   {n:"Curl con hammer bar su panca Scott", g:"Bicipiti", slugs:["biceps","forearm"], d:"Come il curl a martello ma con barra a presa neutra: carichi più alti.", v:"https://www.muscleandstrength.com/exercises/hammer-bar-preacher-curl.html"},
-  {n:"Stacco a gambe tese", g:"Femorali", slugs:["hamstring","lower-back"], d:"Discesa a gambe quasi rigide: allunga molto il femorale. Richiede buon controllo della schiena.", v:"https://www.muscleandstrength.com/exercises/stiff-leg-deadlift-aka-romanian-deadlift.html"},
-  {n:"Stacco a gambe tese con manubri", g:"Femorali", slugs:["hamstring","gluteal"], d:"Versione con manubri: più libertà di traiettoria e facile da caricare in progressione.", v:"https://www.muscleandstrength.com/exercises/dumbbell-stiff-leg-deadlift.html"},
+  {n:"Stacco a gambe tese", g:"Femorali", slugs:["hamstring","gluteal","lower-back"], d:"Discesa a gambe quasi rigide: allunga molto il femorale. Richiede buon controllo della schiena.", v:"https://www.muscleandstrength.com/exercises/stiff-leg-deadlift-aka-romanian-deadlift.html"},
+  {n:"Stacco a gambe tese con manubri", g:"Femorali", slugs:["hamstring","gluteal","lower-back"], d:"Versione con manubri: più libertà di traiettoria e facile da caricare in progressione.", v:"https://www.muscleandstrength.com/exercises/dumbbell-stiff-leg-deadlift.html"},
   {n:"Squat bulgaro con manubri", tipo:"passi", g:"Quadricipiti", slugs:["quadriceps","gluteal"], d:"Piede posteriore su panca, manubri ai lati. Più semplice da equilibrare del bilanciere.", v:"https://www.muscleandstrength.com/exercises/one-leg-dumbbell-squat-aka-bulgarian-squat.html"},
   {n:"Split squat con manubri", tipo:"passi", g:"Quadricipiti", slugs:["quadriceps","gluteal"], d:"Passo fisso, si scende e si risale sul posto. Ottimo per imparare prima degli affondi.", v:"https://www.muscleandstrength.com/exercises/dumbbell-split-squat"},
   {n:"Affondi con bilanciere", tipo:"passi", g:"Quadricipiti", slugs:["quadriceps","gluteal"], d:"Affondo con bilanciere sulle spalle: permette carichi più alti dei manubri.", v:"https://www.muscleandstrength.com/exercises/barbell-lunge.html"},
