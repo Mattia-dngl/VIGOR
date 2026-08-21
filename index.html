@@ -5284,6 +5284,7 @@ let FREE_DAY = { key:"LIBERO", name:"Allenamento libero", weekday:null, exercise
 
 function rebuildFreeForm(){
   const snap = JSON.parse(JSON.stringify(currentSetInputs || {}));
+  const indicePrima = currentExerciseIndex();   // dove mi trovavo prima di ricostruire il carosello
   buildExerciseForm(FREE_DAY);
   // ripristina i valori gia' digitati, cosi' aggiungere un esercizio non cancella il lavoro fatto
   Object.keys(snap).forEach(name=>{
@@ -5299,6 +5300,15 @@ function rebuildFreeForm(){
       });
     });
   });
+  // buildExerciseForm riparte sempre dal primo esercizio: lo riporto dov'ero,
+  // senza animazione (altrimenti si vede lo scatto a sinistra e poi il rientro)
+  const list = document.getElementById('exerciseFormList');
+  const target = list.children[indicePrima];
+  if(target){
+    list.scrollLeft = target.offsetLeft;
+    updateExerciseCarouselUI(indicePrima);
+    allineaNomiEsercizi(indicePrima);
+  }
   updateExerciseDotsProgress();
 }
 
@@ -6121,6 +6131,11 @@ function updateExerciseCarouselUI(i){
   document.getElementById('exPrevBtn').disabled = (i<=0);
   document.getElementById('exNextBtn').disabled = (i>=total-1);
   document.getElementById('exNextBtn').textContent = (i>=total-1) ? 'Ultimo esercizio' : 'Successivo →';
+  // il riquadro deve avere l'altezza dell'esercizio che si vede ora, non del più alto
+  // fra tutti (stanno tutti nella stessa riga scorrevole): senza questo, un esercizio
+  // corto (es. senza dropset) restava con lo spazio vuoto di uno più lungo accanto.
+  const blocco = list.children[i];
+  if(blocco) list.style.height = blocco.offsetHeight + 'px';
 }
 function updateExerciseDotsProgress(){
   if(selectedDayKey===null || selectedDayKey==="SKIP") return;
