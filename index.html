@@ -775,13 +775,13 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
       <div id="statoMioPT" style="margin-top:10px;"></div>
     </div>
 
-    <div class="seg-toggle">
+    <div class="seg-toggle" id="progSchedaStoricoToggle">
       <button class="seg-btn active" data-segprog="scheda">Scheda</button>
       <button class="seg-btn" data-segprog="storico">Storico</button>
     </div>
 
     <div id="programSchedaBlock">
-    <div class="seg-toggle">
+    <div class="seg-toggle" id="progVedModToggle">
       <button class="seg-btn active" data-seg="view">Vedi</button>
       <button class="seg-btn" data-seg="edit">Modifica / Aggiorna</button>
     </div>
@@ -828,7 +828,7 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
         <div class="details-body" id="archiveList"><div class="empty">Nessuna scheda precedente.</div></div>
       </details>
 
-      <details class="card details-card">
+      <details class="card details-card" id="backupDatiDetails">
         <summary>Backup dati</summary>
         <div class="details-body">
           <p class="hint">Tutti i dati (profili, schede, diete, storico) sono salvati solo su questo dispositivo/browser. Esporta un backup ogni tanto per non perderli, o per trasferirli su un altro dispositivo.</p>
@@ -836,7 +836,7 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
         </div>
       </details>
 
-      <details class="card details-card">
+      <details class="card details-card" id="ripristinaBackupDetails">
         <summary>Ripristina backup</summary>
         <div class="details-body">
           <p class="hint">Attenzione: importando un backup, tutti i profili e i dati attuali su questo dispositivo verranno sostituiti.</p>

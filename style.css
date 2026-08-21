@@ -1256,6 +1256,18 @@
      l'unica uscita è "Torna all'area PT" nel banner in alto. */
   body.modifica-pt nav.tabs{ display:none !important; }
   body.modifica-pt .header-btns{ display:none !important; }
+  /* Il PT che crea/modifica la scheda di un cliente vede solo l'editor: niente
+     card "Il mio PT" del cliente, niente Storico, niente toggle Vedi (si parte
+     già in modifica), niente backup/ripristina (sono dati di QUESTO telefono,
+     non del cliente). Restano i giorni di allenamento, i due tasti Aggiorna/
+     Salva come nuova versione, e le schede archiviate come riferimento. */
+  body.modifica-pt #cardMioPT,
+  body.modifica-pt #progSchedaStoricoToggle,
+  body.modifica-pt #programStoricoBlock,
+  body.modifica-pt #progVedModToggle,
+  body.modifica-pt #programViewBlock,
+  body.modifica-pt #backupDatiDetails,
+  body.modifica-pt #ripristinaBackupDetails{ display:none !important; }
 
 @keyframes giraAvvio{to{transform:rotate(360deg)}}
   .gruppo-ex{border:1px solid var(--border); border-radius:10px; margin-bottom:8px; overflow:hidden;}
