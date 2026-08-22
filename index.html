@@ -1905,6 +1905,39 @@ function save(){
 // mentre lo sto seguendo come PT. loggedInProfile() è invece sempre e solo
 // il mio, così la mia identità (nome, account, impostazioni) non cambia mai.
 function activeProfile(){ return modalitaPT ? _clienteBuffer : loggedInProfile(); }
+
+// ============================================================
+// NOTIFICHE INCROCIATE PT ↔ CLIENTE su scheda/dieta
+// Non c'è una tabella "notifiche": come per messaggi/richieste, la notifica è
+// calcolata al volo confrontando "quando è stata modificata" con "quando l'ha
+// vista l'altra parte" — tutto dentro il blob "dati" del profilo, senza toccare
+// il database. tipo è 'scheda' o 'dieta'.
+function segnaModifica(prof, tipo){
+  if(!prof) return;
+  prof[tipo + 'ModificataIl'] = new Date().toISOString();
+  prof[tipo + 'ModificataDa'] = modalitaPT ? 'pt' : 'cliente';
+}
+// Lato cliente: marca come vista la scheda/dieta sua. Va chiamata SOLO in
+// contesto cliente (mai mentre modalitaPT è attivo, altrimenti il click
+// automatico che PT fa dopo aver salvato marcherebbe "vista" prima ancora
+// che il cliente l'abbia aperta davvero).
+function segnaVistaCliente(tipo){
+  if(modalitaPT) return;
+  const lp = loggedInProfile();
+  if(!lp) return;
+  lp[tipo + 'VistaClienteIl'] = new Date().toISOString();
+  save();
+}
+// Lato PT: marca come vista la scheda/dieta del cliente aperto. Scrittura diretta
+// e leggera su Supabase (non passa dal salvataggio pesante di salvaModifichePT,
+// che serve solo quando il PT ha davvero modificato qualcosa).
+async function segnaVistaPT(tipo){
+  if(!_clienteAperto || !sb) return;
+  const d = _clienteAperto.riga.dati || {};
+  d[tipo + 'VistaPtIl'] = new Date().toISOString();
+  _clienteAperto.riga.dati = d;
+  await sb.from('profili').update({dati: d}).eq('id', _clienteAperto.riga.id);
+}
 function loggedInProfile(){ return state.profiles.find(p=>p.id===activeProfileId); }
 function isManager(){ return false; } // nessun ruolo owner/staff nella versione personale
 function isOwnerNotActing(){ return false; }
@@ -3427,8 +3460,8 @@ async function aggiornaCampanellaHome(){
   if(!dot) return;
   try{
     // il pallino compare se c'è qualcosa da guardare: richieste PT in sospeso
-    // (per chi è PT), account da approvare (per l'amministratore), o messaggi
-    // non ancora letti in una qualsiasi delle tue conversazioni
+    // (per chi è PT), account da approvare (per l'amministratore), messaggi
+    // non ancora letti, o modifiche a scheda/dieta non ancora viste
     const richiestePT = (typeof _rapporti !== 'undefined' && sonoPT())
       ? _rapporti.filter(r => r.pt_id === (utenteOnline||{}).id && r.stato === 'in_attesa').length : 0;
     const approvazioni = (sonoAmministratore() && window._profiliAdmin)
@@ -3440,7 +3473,25 @@ async function aggiornaCampanellaHome(){
         .in('rapporto_id', idRapporti).eq('letto', false).neq('mittente_id', utenteOnline.id);
       nonLetti = count || 0;
     }
-    dot.style.display = (richiestePT + approvazioni + nonLetti) > 0 ? 'block' : 'none';
+    let modifichePendenti = 0;
+    const mioAttivo = (typeof mioRapportoAttivo === 'function') ? mioRapportoAttivo() : null;
+    if(mioAttivo){
+      const lp = loggedInProfile();
+      if(lp){
+        if(lp.schedaModificataDa==='pt' && (!lp.schedaVistaClienteIl || lp.schedaModificataIl > lp.schedaVistaClienteIl)) modifichePendenti++;
+        if(lp.dietaModificataDa==='pt' && (!lp.dietaVistaClienteIl || lp.dietaModificataIl > lp.dietaVistaClienteIl)) modifichePendenti++;
+      }
+    }
+    if(sonoPT()){
+      const miClienti = _rapporti.filter(r=>r.pt_id===utenteOnline.id && r.stato==='attivo');
+      for(const r of miClienti){
+        const p = await leggiProfilo(r.cliente_id);
+        const d = (p && p.dati) || {};
+        if(d.schedaModificataDa==='cliente' && (!d.schedaVistaPtIl || d.schedaModificataIl > d.schedaVistaPtIl)) modifichePendenti++;
+        if(d.dietaModificataDa==='cliente' && (!d.dietaVistaPtIl || d.dietaModificataIl > d.dietaVistaPtIl)) modifichePendenti++;
+      }
+    }
+    dot.style.display = (richiestePT + approvazioni + nonLetti + modifichePendenti) > 0 ? 'block' : 'none';
   }catch(e){ console.error(e); }
 }
 // gli id dei rapporti PT-cliente che mi riguardano attivamente: per chi è PT,
@@ -3495,6 +3546,39 @@ async function renderNotifiche(){
       const p = await leggiProfilo(altroId);
       voci.push({ icona:'💬', titolo:`${nomeDi(p)}`, sotto: m.tipo==='testo' ? m.testo : m.testo,
         onTap: ()=>{ chiudiNotifiche(); apriMessaggi(rapportoId, altroId, nomeDi(p)); } });
+    }
+  }
+
+  // il mio PT ha aggiornato la mia scheda o la mia dieta (lato cliente)
+  const mioAttivo = (typeof mioRapportoAttivo === 'function') ? mioRapportoAttivo() : null;
+  if(mioAttivo){
+    const lp = loggedInProfile();
+    if(lp){
+      const pt = await leggiProfilo(mioAttivo.pt_id);
+      if(lp.schedaModificataDa === 'pt' && (!lp.schedaVistaClienteIl || lp.schedaModificataIl > lp.schedaVistaClienteIl)){
+        voci.push({ icona:'📋', titolo:`${nomeDi(pt)} ha aggiornato la tua scheda`, sotto:'Tocca per vederla',
+          onTap: ()=>{ chiudiNotifiche(); vaiA('program'); } });
+      }
+      if(lp.dietaModificataDa === 'pt' && (!lp.dietaVistaClienteIl || lp.dietaModificataIl > lp.dietaVistaClienteIl)){
+        voci.push({ icona:'🥗', titolo:`${nomeDi(pt)} ha aggiornato la tua dieta`, sotto:'Tocca per vederla',
+          onTap: ()=>{ chiudiNotifiche(); vaiA('diet'); } });
+      }
+    }
+  }
+  // un cliente che seguo ha modificato da sé la sua scheda o la sua dieta (lato PT)
+  if(sonoPT()){
+    const miClienti = _rapporti.filter(r=>r.pt_id===utenteOnline.id && r.stato==='attivo');
+    for(const r of miClienti){
+      const p = await leggiProfilo(r.cliente_id);
+      const d = (p && p.dati) || {};
+      if(d.schedaModificataDa === 'cliente' && (!d.schedaVistaPtIl || d.schedaModificataIl > d.schedaVistaPtIl)){
+        voci.push({ icona:'📋', titolo:`${nomeDi(p)} ha modificato la sua scheda`, sotto:'Tocca per vederla',
+          onTap: async ()=>{ chiudiNotifiche(); await apriCliente(r.cliente_id); document.querySelector('.pt-tab[data-pttab="scheda"]')?.click(); } });
+      }
+      if(d.dietaModificataDa === 'cliente' && (!d.dietaVistaPtIl || d.dietaModificataIl > d.dietaVistaPtIl)){
+        voci.push({ icona:'🥗', titolo:`${nomeDi(p)} ha modificato la sua dieta`, sotto:'Tocca per vederla',
+          onTap: async ()=>{ chiudiNotifiche(); await apriCliente(r.cliente_id); document.querySelector('.pt-tab[data-pttab="dieta"]')?.click(); } });
+      }
     }
   }
 
@@ -4638,25 +4722,41 @@ function renderDettaglioPT(sezione){
       </div>
       ${puo ? '<div id="ptSchedaEditorSlot"></div>' : ''}`;
     if(puo) mostraEditorSchedaInlinePT();
+    segnaVistaPT('scheda');
     return;
   }
 
   if(sezione === 'dieta'){
     const puo = r.puo_dieta;
-    const dieta = prog ? (prog.diet || []) : [];
+    const dieta = prog ? prog.diet : null;
+    let righeGiorni;
+    if(!dieta || typeof dieta === 'string'){
+      righeGiorni = dieta ? `<div class="pt-scheda-ro" style="white-space:pre-wrap;">${escapeAttr(dieta)}</div>` : '';
+    } else {
+      righeGiorni = WD_ORDER.map(wd=>{
+        const day = dieta[wd];
+        if(!day) return '';
+        if(day.libera){
+          return `<div class="pt-scheda-ro"><b>${wd}</b> <span class="hint">giorno libero / sgarro</span>
+              ${day.testo ? `<div class="hint" style="margin-top:4px;">${day.testo}</div>` : ''}</div>`;
+        }
+        return `<div class="pt-scheda-ro"><b>${wd}</b>
+            <div class="hint">Colazione: ${day.colazione||'-'}</div>
+            <div class="hint">Pranzo: ${day.pranzo||'-'}</div>
+            <div class="hint">Spuntino: ${day.spuntino||'-'}</div>
+            <div class="hint">Cena: ${day.cena||'-'}</div></div>`;
+      }).join('');
+    }
     box.innerHTML = `
       <div class="card">
         <h3>Dieta${puo ? '' : ' (sola lettura)'}</h3>
         ${puo ? '<p class="hint">Modifica direttamente qui sotto: le modifiche arrivano subito sul suo telefono.</p>'
               : '<p class="hint">Per modificarla serve che la persona ti dia il permesso.</p>'}
-        ${dieta.length === 0 ? '<div class="empty">Nessun piano alimentare impostato.</div>'
-          : dieta.map(g=>`<div class="pt-scheda-ro"><b>${g.day || g.giorno || ''}</b>
-              <div class="hint">Colazione: ${g.colazione||'-'}</div>
-              <div class="hint">Pranzo: ${g.pranzo||'-'}</div>
-              <div class="hint">Cena: ${g.cena||'-'}</div></div>`).join('')}
+        ${righeGiorni ? righeGiorni : '<div class="empty">Nessun piano alimentare impostato.</div>'}
       </div>
       ${puo ? '<div id="ptDietaEditorSlot"></div>' : ''}`;
     if(puo) mostraEditorDietaInlinePT();
+    segnaVistaPT('dieta');
   }
 }
 
@@ -6199,9 +6299,9 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     document.getElementById('view-'+btn.dataset.tab).classList.add('active');
     if(btn.dataset.tab==='log' && !_bozzaPronta) ripristinaBozza();
     aggiornaVisibilitaTimer();
-    if(btn.dataset.tab==='diet'){ renderMealDiary(); renderDietPlanView(); renderDietEditForm(); }
+    if(btn.dataset.tab==='diet'){ renderMealDiary(); renderDietPlanView(); renderDietEditForm(); segnaVistaCliente('dieta'); }
     if(btn.dataset.tab==='history'){ renderHistory(); renderVolume(); renderMeasurements(); }
-    if(btn.dataset.tab==='program'){ renderProgramView(); renderNewProgramForm();
+    if(btn.dataset.tab==='program'){ renderProgramView(); renderNewProgramForm(); segnaVistaCliente('scheda');
       if(typeof renderMioPT === 'function' && modalitaOnline()) renderMioPT(); }
     if(btn.dataset.tab==='glossario') renderGlossario();
     aggiornaNavGlobale(btn.dataset.tab);
@@ -8476,6 +8576,7 @@ document.getElementById('updateProgramBtn').addEventListener('click', ()=>{
   const current = activeProgram();
   current.days = editingDays;
   propagaEserciziPersonalizzatiPT(editingDays);
+  segnaModifica(activeProfile(), 'scheda');
   save();
   toast("Scheda aggiornata ✓");
   renderHeader(); renderDayChoices(); renderNewProgramForm(); renderProgramView();
@@ -8498,6 +8599,7 @@ document.getElementById('saveNewProgramBtn').addEventListener('click', ()=>{
   prof.programs.push(newProgram);
   prof.activeProgramId = newProgram.id;
   propagaEserciziPersonalizzatiPT(editingDays);
+  segnaModifica(prof, 'scheda');
   save();
   toast("Scheda attivata ✓");
   renderHeader(); renderDayChoices(); renderNewProgramForm(); renderProgramView();
@@ -8517,6 +8619,7 @@ document.getElementById('saveDietBtn').addEventListener('click', ()=>{
   };
   prof.programs.push(newProgram);
   prof.activeProgramId = newProgram.id;
+  segnaModifica(prof, 'dieta');
   save();
   toast("Dieta aggiornata ✓");
   renderHeader(); renderDayChoices(); renderDietEditForm(); renderDietPlanView(); renderArchiveList();
