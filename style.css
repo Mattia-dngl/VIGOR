@@ -770,8 +770,8 @@
   .exercise-edit-row input, .exercise-edit-row select{flex:1; min-width:0;}
   .exercise-edit-row input.small{flex:0 0 54px;}
   .remove-x{background:none; border:none; color:var(--text-faint); font-size:17px; cursor:pointer; padding:0 4px;}
-  .day-editor{background:var(--surface2); border:1px solid var(--border); border-radius:10px; padding:10px; margin-bottom:9px;}
-  .day-editor-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;}
+  .day-editor{background:var(--surface); box-shadow:var(--shadow-sm); border:none; border-radius:var(--r-md); padding:14px 15px; margin-bottom:10px;}
+  .day-editor-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;}
   .day-editor-head .letter{width:23px; height:23px; min-width:23px; border-radius:5px; background:var(--accent); color:#fff;
     display:flex; align-items:center; justify-content:center; text-align:center; line-height:1;
     font-family:var(--font-display); font-size:12px; padding:0;}
