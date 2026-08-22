@@ -213,9 +213,12 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
   <div id="ptDettaglio" style="display:none;">
     <header class="pt-top">
       <div class="top-row">
-        <div>
-          <h1 id="ptClienteNome">Cliente</h1>
-          <p class="pt-sub" id="ptClienteMail"></p>
+        <div class="pt-top-id">
+          <div class="pt-avatar pt-avatar-lg" id="ptClienteAvatar">—</div>
+          <div>
+            <h1 id="ptClienteNome">Cliente</h1>
+            <p class="pt-sub" id="ptClienteMail"></p>
+          </div>
         </div>
         <button class="btn secondary" id="ptChiudiDettaglio" style="margin-top:0;">← Elenco</button>
       </div>
@@ -346,7 +349,11 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
     <div class="acct-header">
       <div class="halo halo-accent" style="width:150px; height:150px; top:-20px; left:50%; transform:translateX(-50%);"></div>
       <div class="acct-avatar-wrap">
-        <div class="acct-avatar" id="acctAvatarInitials">—</div>
+        <div class="acct-avatar" id="acctAvatarCircle"><span id="acctAvatarInitials">—</span></div>
+        <label class="acct-avatar-edit" for="acctAvatarFile" title="Cambia foto">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+        </label>
+        <input type="file" id="acctAvatarFile" accept="image/*" style="display:none;">
       </div>
       <div class="acct-name" id="acctHeaderName">—</div>
       <div class="acct-email" id="acctHeaderEmail">—</div>
@@ -1639,7 +1646,7 @@ function newProfile(name, email, password, approvato){
   return { id: uid(), name: name.trim(), email: (email||'').trim().toLowerCase(), createdAt,
     approvato: !!approvato, richiestoIl: new Date().toISOString(),
     passwordHash: simpleHash(password), sesso: null,
-    programs:[blankProgram()], activeProgramId:null, logs:[], measurements:[], mealLogs:[], customExercises:{}, customFoods:{} };
+    programs:[blankProgram()], activeProgramId:null, logs:[], measurements:[], mealLogs:[], customExercises:{}, customFoods:{}, avatarUrl:null };
 }
 
 // ============================================================
@@ -3487,15 +3494,76 @@ function apriAccountPanel(){
     b.classList.toggle('active', b.dataset.val === lp.sesso);
   });
 
-  const iniziali = (lp.name || "?").trim().split(/\s+/).map(p=>p[0]).filter(Boolean).slice(0,2).join('').toUpperCase();
-  document.getElementById('acctAvatarInitials').textContent = iniziali || "?";
+  document.getElementById('acctAvatarInitials').textContent = inizialiNome(lp.name);
   document.getElementById('acctHeaderName').textContent = lp.name || "Senza nome";
   document.getElementById('acctHeaderEmail').textContent = lp.email || "email non impostata";
+  aggiornaAvatarHeader(lp);
   const badge = document.getElementById('acctHeaderBadge');
   if(sonoAmministratore()){ badge.textContent = "Amministratore"; badge.classList.add('show'); }
   else if(sonoPT()){ badge.textContent = "Personal Trainer"; badge.classList.add('show'); }
   else { badge.classList.remove('show'); }
 }
+
+// Icona chat riusata al posto dell'emoji 💬 nei bottoni "Messaggi", per restare
+// coerenti con lo stile a icone SVG del resto dell'app.
+const ICONA_CHAT_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:14px; height:14px; vertical-align:-2px; margin-right:4px;" aria-hidden="true"><path d="M21 11.5a8.4 8.4 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.7a8.4 8.4 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.4 8.4 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5Z"/></svg>';
+
+// Iniziali (max 2 lettere) da un nome — usate per l'avatar quando non c'è una foto.
+function inizialiNome(nome){
+  const pulite = (nome || "?").trim().split(/\s+/).map(p=>p[0]).filter(Boolean).slice(0,2).join('').toUpperCase();
+  return pulite || "?";
+}
+// Markup da mettere DENTRO un contenitore già con classe .acct-avatar o .pt-avatar:
+// foto se c'è, altrimenti iniziali colorate.
+function avatarContentHtml(nome, avatarUrl){
+  return avatarUrl ? `<img src="${avatarUrl}" alt="">` : inizialiNome(nome);
+}
+// Aggiorna l'avatar grande nell'header di Account, passando da iniziali a foto e viceversa.
+function aggiornaAvatarHeader(prof){
+  const circle = document.getElementById('acctAvatarCircle');
+  const initialsEl = document.getElementById('acctAvatarInitials');
+  let img = circle.querySelector('img');
+  if(prof.avatarUrl){
+    if(!img){ img = document.createElement('img'); img.alt = ''; circle.insertBefore(img, initialsEl); }
+    img.src = prof.avatarUrl;
+    img.style.display = 'block';
+    initialsEl.style.display = 'none';
+  } else {
+    if(img) img.style.display = 'none';
+    initialsEl.style.display = '';
+  }
+}
+// Foto profilo: ridimensiono e comprimo lato telefono (max 240x240, jpeg) e la salvo
+// direttamente nel profilo, come già facciamo per gli alimenti/esercizi personalizzati.
+// Niente spazio di archiviazione online da configurare: funziona subito.
+document.getElementById('acctAvatarFile').addEventListener('change', function(e){
+  const file = e.target.files && e.target.files[0];
+  e.target.value = "";
+  if(!file) return;
+  if(!file.type || !file.type.startsWith('image/')){ toast("Scegli un file immagine."); return; }
+  const reader = new FileReader();
+  reader.onload = function(ev){
+    const img = new Image();
+    img.onload = function(){
+      const lato = 240;
+      const canvas = document.createElement('canvas');
+      canvas.width = lato; canvas.height = lato;
+      const ctx = canvas.getContext('2d');
+      const scala = Math.max(lato / img.width, lato / img.height);
+      const w = img.width * scala, h = img.height * scala;
+      ctx.drawImage(img, (lato - w) / 2, (lato - h) / 2, w, h);
+      const prof = loggedInProfile();
+      if(!prof) return;
+      prof.avatarUrl = canvas.toDataURL('image/jpeg', 0.72);
+      save();
+      aggiornaAvatarHeader(prof);
+      toast("Foto profilo aggiornata ✓");
+    };
+    img.onerror = function(){ toast("Non riesco a leggere questa immagine."); };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+});
 function chiudiAccountPanel(){
   document.getElementById('accountPanel').style.display = 'none';
   document.body.classList.remove('account-aperto');
@@ -4041,13 +4109,14 @@ async function renderMioPT(){
     const pt = await leggiProfilo(attivo.pt_id);
     box.innerHTML = `
       <div class="pt-riga">
+        <div class="pt-avatar">${avatarContentHtml(nomeDi(pt), (pt.dati||{}).avatarUrl)}</div>
         <div class="info">
           <div class="nome">${nomeDi(pt)}<span class="pt-badge">ti segue</span></div>
           <div class="meta">dal ${formatDate((attivo.accettato_il||'').slice(0,10))}</div>
         </div>
         <div class="azioni"><button class="pericolo" id="chiudiRapportoBtn">Termina</button></div>
       </div>
-      <button class="btn secondary block" id="apriMessaggiClienteBtn" style="margin-top:10px;">💬 Messaggi</button>
+      <button class="btn secondary block" id="apriMessaggiClienteBtn" style="margin-top:10px;">${ICONA_CHAT_SVG} Messaggi</button>
       <p class="hint" style="margin:12px 0 6px;">Cosa può fare ${nomeDi(pt)}. Vede sempre scheda, dieta, storico e progressi; qui decidi se può anche modificarli.</p>
       <div class="permesso-riga">
         <span>Può modificare la mia scheda</span>
@@ -4201,6 +4270,7 @@ async function renderAreaPT(){
     boxR.innerHTML = richieste.map((r,i)=>{
       const p = profili[i] || {};
       return `<div class="pt-riga">
+        <div class="pt-avatar">${avatarContentHtml(nomeDi(p), (p.dati||{}).avatarUrl)}</div>
         <div class="info"><div class="nome">${nomeDi(p)}</div>
           <div class="meta">${p.email||''} · richiesta del ${formatDate((r.richiesto_il||'').slice(0,10))}</div></div>
         <div class="azioni">
@@ -4236,6 +4306,7 @@ async function renderAreaPT(){
     const ultimo = (d.logs||[]).filter(l=>l.status==='registrato').map(l=>l.date).sort().pop();
     const permessi = [r.puo_scheda ? 'scheda' : null, r.puo_dieta ? 'dieta' : null].filter(Boolean);
     return `<div class="pt-riga">
+      <div class="pt-avatar">${avatarContentHtml(nomeDi(p), d.avatarUrl)}</div>
       <div class="info">
         <div class="nome">${nomeDi(p)}</div>
         <div class="meta">${allen} allenamenti${ultimo ? ' · ultimo il ' + formatDate(ultimo) : ''}
@@ -4265,6 +4336,7 @@ async function apriCliente(clienteId){
   _clienteAperto = { riga: p, rapporto };
   document.getElementById('ptClienteNome').textContent = nomeDi(p);
   document.getElementById('ptClienteMail').textContent = p.email || '';
+  document.getElementById('ptClienteAvatar').innerHTML = avatarContentHtml(nomeDi(p), (p.dati||{}).avatarUrl);
   document.getElementById('ptElenco').style.display = 'none';
   document.getElementById('ptDettaglio').style.display = 'block';
   window.scrollTo(0,0);
@@ -4306,7 +4378,7 @@ function renderDettaglioPT(sezione){
         <p class="hint">I permessi li decide la persona che segui, dalla sua scheda.</p>
         <div class="dato-riga"><span>Modificare la scheda</span><b class="${r.puo_scheda?'ok':'warn'}">${r.puo_scheda?'sì':'no'}</b></div>
         <div class="dato-riga"><span>Modificare la dieta</span><b class="${r.puo_dieta?'ok':'warn'}">${r.puo_dieta?'sì':'no'}</b></div>
-        <button class="btn secondary block" id="apriMessaggiPTBtn" style="margin-top:10px;">💬 Messaggi</button>
+        <button class="btn secondary block" id="apriMessaggiPTBtn" style="margin-top:10px;">${ICONA_CHAT_SVG} Messaggi</button>
       </div>`;
     document.getElementById('apriMessaggiPTBtn').addEventListener('click', ()=>apriMessaggi(r.id, _clienteAperto.riga.id, nomeDi(_clienteAperto.riga)));
     return;

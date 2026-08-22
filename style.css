@@ -1227,7 +1227,7 @@
     font-size:11px; line-height:1; padding:3px 9px; border-radius:10px; cursor:pointer;
     font-family:var(--font-display);}
   .mp-video-gestisci:hover{background:var(--accent); border-color:var(--accent); color:#fff;}
-  .banner-pt{position:sticky; top:0; z-index:90; background:var(--navy,#1a2033); color:#fff;
+  .banner-pt{position:sticky; top:0; z-index:90; background:#151719; color:#fff;
     padding:9px 12px; display:flex; align-items:center; justify-content:space-between; gap:10px;
     font-family:var(--font-display); font-size:12px; letter-spacing:.02em;}
   .banner-pt .btn{margin-top:0; padding:7px 12px; font-size:11px; background:var(--accent); border:none;}
@@ -1274,24 +1274,32 @@
   /* ---------- area Personal Trainer ---------- */
   #areaPT{position:fixed; inset:0; background:var(--bg); z-index:120; overflow-y:auto;
     padding-bottom:calc(30px + env(safe-area-inset-bottom, 0px));}
-  .pt-top{background:var(--navy,#1a2033); color:#fff; padding:18px 16px 14px;}
+  .pt-top{background:#151719; color:#fff; padding:20px 16px 16px; border-radius:0 0 var(--r-lg) var(--r-lg);}
   .pt-top .top-row{display:flex; justify-content:space-between; align-items:flex-start; gap:12px;}
-  .pt-top h1{font-size:19px; text-transform:uppercase; margin:0; color:#fff;}
-  .pt-sub{margin:4px 0 0; font-size:12.5px; color:rgba(255,255,255,.75);}
+  .pt-top-id{display:flex; align-items:center; gap:12px;}
+  .pt-top h1{font-size:18px; margin:0; color:#fff; font-family:var(--font-display); font-weight:800;}
+  .pt-sub{margin:3px 0 0; font-size:12px; color:rgba(255,255,255,.68);}
   .pt-top .btn.secondary{background:rgba(255,255,255,.14); border-color:rgba(255,255,255,.25); color:#fff;}
   .pt-corpo{padding:16px;}
-  .pt-tabs{display:flex; gap:4px; margin-top:14px; overflow-x:auto;}
-  .pt-tab{flex:1 1 auto; white-space:nowrap; background:rgba(255,255,255,.10); border:none; color:rgba(255,255,255,.75);
-    font-family:var(--font-display); font-size:11.5px; letter-spacing:.03em; padding:9px 12px;
-    border-radius:9px; cursor:pointer;}
-  .pt-tab.active{background:var(--accent); color:#fff;}
-  .pt-riga{display:flex; align-items:center; gap:10px; padding:12px 0;
+  .pt-tabs{display:flex; gap:4px; margin-top:16px; overflow-x:auto;}
+  .pt-tab{flex:1 1 auto; white-space:nowrap; background:rgba(255,255,255,.10); border:none; color:rgba(255,255,255,.68);
+    font-family:var(--font-display); font-weight:700; font-size:11.5px; letter-spacing:.02em; padding:9px 12px;
+    border-radius:var(--r-pill); cursor:pointer;}
+  .pt-tab.active{background:var(--grad-accent); color:#fff; box-shadow:var(--shadow-accent);}
+
+  .pt-avatar{width:40px; height:40px; border-radius:50%; flex:0 0 auto; background:var(--grad-accent); color:#fff;
+    display:flex; align-items:center; justify-content:center; font-family:var(--font-display); font-weight:800;
+    font-size:14px; overflow:hidden;}
+  .pt-avatar img{width:100%; height:100%; object-fit:cover;}
+  .pt-avatar-lg{width:46px; height:46px; font-size:15px;}
+
+  .pt-riga{display:flex; align-items:center; gap:11px; padding:12px 0;
     border-bottom:1px solid var(--border); flex-wrap:wrap;}
   .pt-riga:last-child{border-bottom:none;}
   .pt-riga .info{flex:1; min-width:150px;}
   .pt-riga .nome{font-family:var(--font-display); font-size:14px;}
   .pt-riga .meta{font-size:11.5px; color:var(--text-faint); margin-top:2px;}
-  .pt-riga .azioni{display:flex; gap:6px; flex-wrap:wrap;}
+  .pt-riga .azioni{display:flex; gap:6px; flex-wrap:wrap; width:100%; margin-left:51px;}
   .pt-riga .azioni button{font-size:11px; padding:7px 12px; border-radius:9px; margin-top:0;
     font-family:var(--font-display); cursor:pointer; background:var(--surface2);
     border:1px solid var(--border); color:var(--text-dim);}
@@ -1327,7 +1335,12 @@
   .acct-avatar-wrap{position:relative; width:78px; height:78px; margin:0 auto 11px;}
   .acct-avatar{position:relative; z-index:1; width:78px; height:78px; border-radius:50%; background:var(--grad-accent);
     display:flex; align-items:center; justify-content:center; color:#fff; font-family:var(--font-display);
-    font-weight:800; font-size:24px; box-shadow:var(--shadow-accent);}
+    font-weight:800; font-size:24px; box-shadow:var(--shadow-accent); overflow:hidden;}
+  .acct-avatar img{width:100%; height:100%; object-fit:cover; display:block;}
+  .acct-avatar-edit{position:absolute; z-index:2; right:-2px; bottom:-2px; width:27px; height:27px; border-radius:50%;
+    background:var(--surface); border:2px solid var(--bg); display:flex; align-items:center; justify-content:center;
+    box-shadow:var(--shadow-sm); color:var(--text-dim); cursor:pointer;}
+  .acct-avatar-edit svg{width:12px; height:12px;}
   .acct-name{font-family:var(--font-display); font-size:17px; font-weight:800; position:relative;}
   .acct-email{font-size:11.5px; color:var(--text-faint); margin-top:2px; position:relative;}
   .acct-badge{display:none; align-items:center; gap:4px; background:var(--accent-soft); color:#c8380f;
