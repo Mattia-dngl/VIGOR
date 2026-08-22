@@ -717,7 +717,7 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
       </div>
       <label>Alimento</label>
       <input type="text" id="mealFoodInput" placeholder="Scrivi cosa hai mangiato (suggerimenti disponibili)...">
-      <p class="hint" style="margin-top:4px;">Puoi scrivere qualsiasi cosa: se coincide con un alimento noto calcolo le calorie, altrimenti resta comunque registrato.</p>      <div class="row">
+      <p class="hint" style="margin-top:4px;">Puoi scrivere qualsiasi cosa: se coincide con un alimento noto calcolo le calorie, altrimenti ti chiedo di inserirle a mano (una volta sola: poi lo ricordo).</p>      <div class="row">
         <div>
           <label>Grammi</label>
           <input type="number" id="mealGramsInput" placeholder="es. 150">
@@ -725,6 +725,34 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
         <div style="display:flex; align-items:flex-end;">
           <button class="btn block" id="addMealBtn">+ Aggiungi</button>
         </div>
+      </div>
+
+      <div id="customFoodPrompt" style="display:none; margin-top:12px; padding:14px 15px; border-radius:var(--r-md); background:var(--diet-soft, #e3f4f7);">
+        <h4 class="sotto-titolo" style="margin-top:0; color:var(--diet);">Nuovo alimento: <span id="customFoodNome"></span></h4>
+        <p class="hint">Non è nel database. Inserisci i valori per 100g — li ricorderò per le prossime volte che lo scrivi.</p>
+        <div class="row">
+          <div>
+            <label>Kcal (per 100g)</label>
+            <input type="number" id="customFoodKcal" placeholder="es. 250">
+          </div>
+          <div>
+            <label>Proteine (g)</label>
+            <input type="number" id="customFoodP" placeholder="es. 10">
+          </div>
+        </div>
+        <div class="row">
+          <div>
+            <label>Carboidrati (g)</label>
+            <input type="number" id="customFoodC" placeholder="es. 30">
+          </div>
+          <div>
+            <label>Grassi (g)</label>
+            <input type="number" id="customFoodF" placeholder="es. 8">
+          </div>
+        </div>
+        <button class="btn diet-btn block" id="saveCustomFoodBtn" style="margin-top:10px;">Salva e aggiungi</button>
+        <button class="btn secondary block" id="skipCustomFoodBtn" style="margin-top:8px;">Aggiungi senza dati nutrizionali</button>
+        <div id="cancelCustomFoodBtn" style="text-align:center; margin-top:10px; color:var(--text-faint); cursor:pointer; font-size:11.5px; text-decoration:underline;">Annulla</div>
       </div>
     </div>
 
@@ -1509,7 +1537,9 @@ function exerciseSourceNames(){
   return [...new Set([...Object.keys(EXERCISE_MUSCLE_MAP), ...personal])];
 }
 function foodSourceNames(){
-  return Object.keys(FOOD_DATABASE);
+  const lp = loggedInProfile();
+  const personal = lp ? Object.keys(lp.customFoods||{}) : [];
+  return [...new Set([...Object.keys(FOOD_DATABASE), ...personal])];
 }
 
 // ============================================================
@@ -1609,7 +1639,7 @@ function newProfile(name, email, password, approvato){
   return { id: uid(), name: name.trim(), email: (email||'').trim().toLowerCase(), createdAt,
     approvato: !!approvato, richiestoIl: new Date().toISOString(),
     passwordHash: simpleHash(password), sesso: null,
-    programs:[blankProgram()], activeProgramId:null, logs:[], measurements:[], mealLogs:[], customExercises:{} };
+    programs:[blankProgram()], activeProgramId:null, logs:[], measurements:[], mealLogs:[], customExercises:{}, customFoods:{} };
 }
 
 // ============================================================
@@ -1653,6 +1683,7 @@ function load(){
     if(!p.passwordHash) p.passwordHash = simpleHash("1234");
     if(!p.measurements) p.measurements = [];
     if(!p.mealLogs) p.mealLogs = [];
+    if(!p.customFoods) p.customFoods = {};
     if(!p.customExercises) p.customExercises = {};
     Object.keys(p.customExercises).forEach(name=>{
       if(Array.isArray(p.customExercises[name])){
@@ -4384,6 +4415,7 @@ function mostraEditorSchedaInlinePT(){
   });
   if(!buffer.measurements) buffer.measurements = [];
   if(!buffer.mealLogs) buffer.mealLogs = [];
+  if(!buffer.customFoods) buffer.customFoods = {};
 
   _clienteBuffer = buffer;
   _clienteIdInModifica = p.id;
@@ -4434,6 +4466,7 @@ function mostraEditorDietaInlinePT(){
   });
   if(!buffer.measurements) buffer.measurements = [];
   if(!buffer.mealLogs) buffer.mealLogs = [];
+  if(!buffer.customFoods) buffer.customFoods = {};
 
   _clienteBuffer = buffer;
   _clienteIdInModifica = p.id;
@@ -4479,6 +4512,7 @@ function modificaComePT(cosa){
   });
   if(!buffer.measurements) buffer.measurements = [];
   if(!buffer.mealLogs) buffer.mealLogs = [];
+  if(!buffer.customFoods) buffer.customFoods = {};
 
   _clienteBuffer = buffer;
   _clienteIdInModifica = p.id;
@@ -6753,25 +6787,86 @@ document.querySelectorAll('#mealTypeChips .chip').forEach(chip=>{
   });
 });
 
-document.getElementById('addMealBtn').addEventListener('click', ()=>{
+let pendingMealItem = null;
+
+function chiudiPromptAlimentoPersonalizzato(){
+  pendingMealItem = null;
+  document.getElementById('customFoodPrompt').style.display = 'none';
+  ['customFoodKcal','customFoodP','customFoodC','customFoodF'].forEach(id=>{
+    document.getElementById(id).value = '';
+  });
+}
+
+function completaAggiuntaPasto(){
   const prof = activeProfile();
+  const { date, item } = pendingMealItem;
+  let day = prof.mealLogs.find(m=>m.date===date);
+  if(!day){ day = {date, items:[]}; prof.mealLogs.push(day); }
+  day.items.push(item);
+  save();
+  document.getElementById('mealFoodInput').value = "";
+  document.getElementById('mealGramsInput').value = "";
+  renderMealDiary();
+}
+
+document.getElementById('addMealBtn').addEventListener('click', ()=>{
   const date = document.getElementById('mealDate').value || new Date().toISOString().slice(0,10);
   const foodInput = document.getElementById('mealFoodInput');
   const food = foodInput.value.trim().toLowerCase();
   const grams = parseFloat(document.getElementById('mealGramsInput').value);
   if(!food){ toast("Scrivi cosa hai mangiato."); return; }
   if(!grams || grams<=0){ toast("Inserisci i grammi (anche una stima va bene)."); return; }
-  let day = prof.mealLogs.find(m=>m.date===date);
-  if(!day){ day = {date, items:[]}; prof.mealLogs.push(day); }
-  day.items.push({food, grams, meal:selectedMealType});
-  save();
-  foodInput.value = "";
-  document.getElementById('mealGramsInput').value = "";
-  renderMealDiary();
-  toast(FOOD_DATABASE[food] ? "Alimento aggiunto ✓" : "Aggiunto (calorie non disponibili per questo alimento) ✓");
+
+  const item = {food, grams, meal:selectedMealType};
+  if(datiAlimento(food)){
+    pendingMealItem = {date, item};
+    completaAggiuntaPasto();
+    toast("Alimento aggiunto ✓");
+    return;
+  }
+  // Alimento non riconosciuto: chiedo i valori nutrizionali invece di registrarlo alla cieca.
+  pendingMealItem = {date, item};
+  document.getElementById('customFoodNome').textContent = toTitleCase(food);
+  document.getElementById('customFoodPrompt').style.display = 'block';
+  document.getElementById('customFoodPrompt').scrollIntoView({behavior:'smooth', block:'nearest'});
+  document.getElementById('customFoodKcal').focus();
 });
 
+document.getElementById('saveCustomFoodBtn').addEventListener('click', ()=>{
+  if(!pendingMealItem) return;
+  const kcal = parseFloat(document.getElementById('customFoodKcal').value);
+  if(!kcal || kcal<=0){ toast("Inserisci almeno le kcal per 100g."); return; }
+  const p = parseFloat(document.getElementById('customFoodP').value) || 0;
+  const c = parseFloat(document.getElementById('customFoodC').value) || 0;
+  const f = parseFloat(document.getElementById('customFoodF').value) || 0;
+  const prof = activeProfile();
+  if(!prof.customFoods) prof.customFoods = {};
+  prof.customFoods[pendingMealItem.item.food] = {kcal, p, c, f};
+  save();
+  completaAggiuntaPasto();
+  chiudiPromptAlimentoPersonalizzato();
+  toast("Alimento salvato: lo riconoscerò anche la prossima volta ✓");
+});
+
+document.getElementById('skipCustomFoodBtn').addEventListener('click', ()=>{
+  if(!pendingMealItem) return;
+  completaAggiuntaPasto();
+  chiudiPromptAlimentoPersonalizzato();
+  toast("Aggiunto (calorie non disponibili per questo alimento) ✓");
+});
+
+document.getElementById('cancelCustomFoodBtn').addEventListener('click', chiudiPromptAlimentoPersonalizzato);
+
 const MEAL_LABELS = {colazione:'Colazione', pranzo:'Pranzo', spuntino:'Spuntino', cena:'Cena'};
+
+// Cerca prima nel database globale, poi tra gli alimenti che l'utente ha inserito
+// a mano in passato (salvati sul suo profilo, come già avviene per gli esercizi personali).
+function datiAlimento(food){
+  if(FOOD_DATABASE[food]) return FOOD_DATABASE[food];
+  const prof = activeProfile();
+  if(prof && prof.customFoods && prof.customFoods[food]) return prof.customFoods[food];
+  return null;
+}
 
 function renderTodayDietPlan(){
   const box = document.getElementById('todayDietPlan');
@@ -6816,14 +6911,14 @@ function renderMealDiary(){
       const mealItems = items.map((it,idx)=>({...it, idx})).filter(it=>(it.meal||'colazione')===mealKey);
       if(mealItems.length===0) return;
       const mealKcal = mealItems.reduce((sum,it)=>{
-        const f = FOOD_DATABASE[it.food];
+        const f = datiAlimento(it.food);
         return sum + (f ? f.kcal*it.grams/100 : 0);
       }, 0);
       const mealTagColor = {colazione:'#f0b429', pranzo:'var(--accent)', spuntino:'#8b5cf6', cena:'var(--diet)'}[mealKey] || 'var(--text-faint)';
       html += `<div class="meal-log-group">
         <div class="meal-log-head">${MEAL_LABELS[mealKey]}<span>${Math.round(mealKcal)} kcal</span></div>
         ${mealItems.map(it=>{
-          const f = FOOD_DATABASE[it.food];
+          const f = datiAlimento(it.food);
           const kcalText = f ? `${Math.round(f.kcal * it.grams/100)} kcal` : 'kcal non disponibili';
           return `<div class="meal-log-row">
             <span class="meal-log-tag" style="background:${mealTagColor};"></span>
@@ -6846,9 +6941,9 @@ function renderMealDiary(){
     });
   }
 
-  const hasUnknown = items.some(it=>!FOOD_DATABASE[it.food]);
+  const hasUnknown = items.some(it=>!datiAlimento(it.food));
   const totals = items.reduce((acc,it)=>{
-    const f = FOOD_DATABASE[it.food];
+    const f = datiAlimento(it.food);
     if(!f) return acc;
     const factor = it.grams/100;
     acc.kcal += f.kcal*factor; acc.p += f.p*factor; acc.c += f.c*factor; acc.f += f.f*factor;
