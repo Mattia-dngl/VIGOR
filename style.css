@@ -1388,6 +1388,12 @@
   .macro-center{position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center;}
   .macro-kcal{font-family:var(--font-display); font-weight:800; font-size:17px; color:var(--text); line-height:1;}
   .macro-kcal-label{font-size:8.5px; color:var(--text-faint); text-transform:uppercase; letter-spacing:.05em; margin-top:3px; text-align:center;}
+
+  .fabbisogno-num{font-family:var(--font-display); font-weight:800; font-size:30px; color:var(--text);
+    line-height:1.15; position:relative; z-index:1;}
+  .fabbisogno-num span{font-size:13px; font-weight:700; color:var(--text-faint); margin-left:2px;}
+  #fabbisognoBody{position:relative; z-index:1;}
+  #fabbisognoBody .seg-toggle{margin-top:2px;}
   .macro-side{flex:1; min-width:0;}
   .macro-row{display:flex; align-items:center; gap:8px; margin-bottom:8px;}
   .macro-row:last-child{margin-bottom:0;}

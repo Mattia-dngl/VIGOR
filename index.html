@@ -363,16 +363,35 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
     <details class="card details-card acct-row" style="margin-top:0;" open>
       <summary>
         <div class="acct-row-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4.5 5-7 8-7s6.5 2.5 8 7"/></svg></div>
-        <div class="acct-row-body"><div class="acct-row-title">Dati generali</div><div class="acct-row-sub">Sesso e figura anatomica</div></div>
+        <div class="acct-row-body"><div class="acct-row-title">Dati generali</div><div class="acct-row-sub">Sesso, corporatura e attività fisica</div></div>
         <div class="acct-row-chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></div>
       </summary>
       <div class="details-body">
-        <p class="hint">Usati per la scheda e per mostrarti la figura giusta nel Glossario.</p>
+        <p class="hint">Usati per la scheda, la figura nel Glossario e per calcolare il tuo fabbisogno calorico in Dieta.</p>
         <label>Sesso</label>
         <div class="seg-toggle" id="setSesso">
           <button type="button" class="seg-btn" data-val="uomo">Uomo</button>
           <button type="button" class="seg-btn" data-val="donna">Donna</button>
         </div>
+        <div class="row" style="margin-top:14px;">
+          <div>
+            <label>Età</label>
+            <input type="number" id="setEta" placeholder="es. 28" min="10" max="100">
+          </div>
+          <div>
+            <label>Altezza (cm)</label>
+            <input type="number" id="setAltezza" placeholder="es. 178" min="100" max="230">
+          </div>
+        </div>
+        <p class="hint" style="margin-top:12px;">Il peso lo prendo automaticamente dall'ultima misurazione che registri in Scheda → Storico → Misure — non serve scriverlo qui.</p>
+        <label style="margin-top:2px;">Livello di attività fisica</label>
+        <select id="setLivelloAttivita">
+          <option value="sedentario">Sedentario — lavoro da seduto, poco o nessun esercizio</option>
+          <option value="leggero">Leggero — esercizio 1-3 giorni a settimana</option>
+          <option value="moderato">Moderato — esercizio 3-5 giorni a settimana</option>
+          <option value="intenso">Intenso — esercizio 6-7 giorni a settimana</option>
+          <option value="molto_intenso">Molto intenso — esercizio quotidiano + lavoro fisico</option>
+        </select>
       </div>
     </details>
 
@@ -706,6 +725,11 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
 
   <!-- ===================== DIETA (DIARIO ALIMENTARE) ===================== -->
   <section class="view" id="view-diet">
+    <div class="card">
+      <div class="halo halo-diet" style="width:140px; height:140px; top:-40px; right:-40px;"></div>
+      <h3 class="diet">Il tuo fabbisogno calorico</h3>
+      <div id="fabbisognoBody"></div>
+    </div>
     <div class="card card-diet">
       <h3 class="diet">Oggi dovresti mangiare</h3>
       <p class="hint">Dalla tua scheda alimentare — è una linea guida, non un obbligo: scrivi qui sotto quello che mangi davvero.</p>
@@ -1810,7 +1834,8 @@ function newProfile(name, email, password, approvato){
   return { id: uid(), name: name.trim(), email: (email||'').trim().toLowerCase(), createdAt,
     approvato: !!approvato, richiestoIl: new Date().toISOString(),
     passwordHash: simpleHash(password), sesso: null,
-    programs:[blankProgram()], activeProgramId:null, logs:[], measurements:[], mealLogs:[], customExercises:{}, customFoods:{}, avatarUrl:null };
+    programs:[blankProgram()], activeProgramId:null, logs:[], measurements:[], mealLogs:[], customExercises:{}, customFoods:{}, avatarUrl:null,
+    altezza:null, eta:null, livelloAttivita:'moderato', obiettivoCalorico:'mantenimento' };
 }
 
 // ============================================================
@@ -1855,6 +1880,10 @@ function load(){
     if(!p.measurements) p.measurements = [];
     if(!p.mealLogs) p.mealLogs = [];
     if(!p.customFoods) p.customFoods = {};
+    if(p.altezza === undefined) p.altezza = null;
+    if(p.eta === undefined) p.eta = null;
+    if(!p.livelloAttivita) p.livelloAttivita = 'moderato';
+    if(!p.obiettivoCalorico) p.obiettivoCalorico = 'mantenimento';
     if(!p.customExercises) p.customExercises = {};
     Object.keys(p.customExercises).forEach(name=>{
       if(Array.isArray(p.customExercises[name])){
@@ -3657,6 +3686,9 @@ function apriAccountPanel(){
   document.querySelectorAll('#setSesso .seg-btn').forEach(b=>{
     b.classList.toggle('active', b.dataset.val === lp.sesso);
   });
+  document.getElementById('setEta').value = lp.eta || '';
+  document.getElementById('setAltezza').value = lp.altezza || '';
+  document.getElementById('setLivelloAttivita').value = lp.livelloAttivita || 'moderato';
 
   document.getElementById('acctAvatarInitials').textContent = inizialiNome(lp.name);
   document.getElementById('acctHeaderName').textContent = lp.name || "Senza nome";
@@ -6089,6 +6121,25 @@ document.querySelectorAll('#setSesso .seg-btn').forEach(btn=>{
   });
 });
 
+['setEta','setAltezza'].forEach(id=>{
+  document.getElementById(id).addEventListener('change', function(){
+    const lp = loggedInProfile();
+    if(!lp) return;
+    const v = parseFloat(this.value);
+    if(id === 'setEta') lp.eta = (v && v>0) ? v : null;
+    else lp.altezza = (v && v>0) ? v : null;
+    save();
+    if(typeof modalitaOnline === 'function' && modalitaOnline()) inviaOnline();
+  });
+});
+document.getElementById('setLivelloAttivita').addEventListener('change', function(){
+  const lp = loggedInProfile();
+  if(!lp) return;
+  lp.livelloAttivita = this.value;
+  save();
+  if(typeof modalitaOnline === 'function' && modalitaOnline()) inviaOnline();
+});
+
 document.getElementById('settingsBtn').addEventListener('click', ()=>apriImpostazioni('app'));
 document.getElementById('homeBtn').addEventListener('click', mostraHome);
 document.getElementById('autoSkipToggle').addEventListener('change', (e)=>{
@@ -7130,9 +7181,108 @@ function datiAlimento(food){
   return null;
 }
 
+// ============================================================
+// FABBISOGNO CALORICO — calcolato, non scritto a mano.
+// Formula di Mifflin-St Jeor per il metabolismo basale (BMR): è quella che le
+// linee guida indicano come più accurata tra quelle utilizzabili senza esami
+// (più precisa della vecchia Harris-Benedict). Il BMR viene poi moltiplicato
+// per il livello di attività (fattore PAL) per ottenere il fabbisogno totale (TDEE).
+// ============================================================
+const LIVELLI_ATTIVITA = {
+  sedentario:    {label:'Sedentario',     mult:1.2},
+  leggero:       {label:'Leggero',        mult:1.375},
+  moderato:      {label:'Moderato',       mult:1.55},
+  intenso:       {label:'Intenso',        mult:1.725},
+  molto_intenso: {label:'Molto intenso',  mult:1.9}
+};
+const OBIETTIVI_CALORICI = {
+  mantenimento: {label:'Mantieni',        mult:1,    nota:'per mantenere il peso attuale'},
+  deficit:      {label:'Dimagrisci',      mult:0.8,  nota:'deficit del 20%, un ritmo sostenibile'},
+  surplus:      {label:'Aumenta massa',   mult:1.15, nota:'surplus del 15%, per crescere senza accumulare troppo grasso'}
+};
+
+// Ultimo peso registrato in Storico → Misure (niente da scrivere due volte).
+function ultimoPesoRegistrato(prof){
+  const pesate = (prof.measurements || []).filter(m => m.weight != null && m.weight > 0)
+    .sort((a,b)=>a.date.localeCompare(b.date));
+  return pesate.length ? pesate[pesate.length-1] : null;
+}
+
+// Ritorna null se mancano dati; altrimenti l'oggetto con BMR, TDEE e il dettaglio usato.
+function calcolaFabbisogno(prof){
+  if(!prof) return null;
+  const sesso = prof.sesso;
+  const eta = parseFloat(prof.eta);
+  const altezza = parseFloat(prof.altezza);
+  const pesata = ultimoPesoRegistrato(prof);
+  const mancanti = [];
+  if(sesso !== 'uomo' && sesso !== 'donna') mancanti.push('sesso');
+  if(!eta || eta <= 0) mancanti.push('età');
+  if(!altezza || altezza <= 0) mancanti.push('altezza');
+  if(!pesata) mancanti.push('peso (registra una misurazione in Storico)');
+  if(mancanti.length) return {mancanti};
+
+  let bmr = 10*pesata.weight + 6.25*altezza - 5*eta;
+  bmr += (sesso === 'uomo') ? 5 : -161;
+  bmr = Math.round(bmr);
+
+  const liv = LIVELLI_ATTIVITA[prof.livelloAttivita] ? prof.livelloAttivita : 'moderato';
+  const tdee = Math.round(bmr * LIVELLI_ATTIVITA[liv].mult);
+
+  const obiettivo = OBIETTIVI_CALORICI[prof.obiettivoCalorico] ? prof.obiettivoCalorico : 'mantenimento';
+  const risultato = Math.round(tdee * OBIETTIVI_CALORICI[obiettivo].mult);
+
+  return {mancanti:[], bmr, tdee, risultato, liv, obiettivo, peso:pesata.weight, dataPeso:pesata.date, altezza, eta, sesso};
+}
+
+function renderFabbisognoCalorico(){
+  const box = document.getElementById('fabbisognoBody');
+  if(!box) return;
+  const prof = activeProfile();
+  const r = calcolaFabbisogno(prof);
+
+  if(!r || r.mancanti.length){
+    box.innerHTML = `
+      <p class="hint" style="margin-top:0;">Per calcolarlo mi mancano: <b>${(r ? r.mancanti : ['sesso','età','altezza','peso']).join(', ')}</b>.</p>
+      <button class="btn diet-btn block" id="vaiCompletaDatiBtn" type="button">Completa in Account</button>
+    `;
+    document.getElementById('vaiCompletaDatiBtn').addEventListener('click', ()=>{
+      apriAccountPanel();
+      setTimeout(()=>{ document.getElementById('setEta')?.scrollIntoView({behavior:'smooth', block:'center'}); }, 150);
+    });
+    return;
+  }
+
+  const obiettivoBtns = Object.keys(OBIETTIVI_CALORICI).map(k=>
+    `<button type="button" class="seg-btn${k===r.obiettivo?' active':''}" data-obiettivo="${k}">${OBIETTIVI_CALORICI[k].label}</button>`
+  ).join('');
+
+  box.innerHTML = `
+    <div class="fabbisogno-num">${r.risultato.toLocaleString('it-IT')} <span>kcal / giorno</span></div>
+    <div class="hint" style="margin:2px 0 12px;">${OBIETTIVI_CALORICI[r.obiettivo].nota}</div>
+    <div class="seg-toggle" id="obiettivoCaloricoToggle">${obiettivoBtns}</div>
+    <p class="hint" style="margin-top:12px; margin-bottom:0;">
+      Metabolismo basale ${r.bmr} kcal · attività "${LIVELLI_ATTIVITA[r.liv].label.toLowerCase()}" ×${LIVELLI_ATTIVITA[r.liv].mult} →
+      mantenimento ${r.tdee} kcal. Calcolato su ${r.peso} kg (misurazione del ${formatDate(r.dataPeso)}), ${r.altezza} cm, ${r.eta} anni.
+      Stima con la formula di Mifflin-St Jeor: è indicativa, non sostituisce il parere di un nutrizionista.
+    </p>
+  `;
+  box.querySelectorAll('#obiettivoCaloricoToggle .seg-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const p = activeProfile();
+      p.obiettivoCalorico = btn.dataset.obiettivo;
+      save();
+      renderFabbisognoCalorico();
+    });
+  });
+}
+
 function renderTodayDietPlan(){
   const box = document.getElementById('todayDietPlan');
   if(!box) return;
+  // Aggancio qui il fabbisogno calorico solo perché questa funzione parte già
+  // ogni volta che si apre la schermata Dieta (renderMealDiary la chiama per prima).
+  renderFabbisognoCalorico();
   const prof = activeProfile();
   const p = activeProgram();
   const wd = WEEKDAYS[new Date().getDay()];
