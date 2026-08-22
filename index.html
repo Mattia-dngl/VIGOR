@@ -343,8 +343,22 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
       <button class="switch-user" id="closeAccountBtn">✕ Chiudi</button>
     </div>
 
-    <details class="card details-card" style="margin-top:16px;" open>
-      <summary>Dati generali</summary>
+    <div class="acct-header">
+      <div class="halo halo-accent" style="width:150px; height:150px; top:-20px; left:50%; transform:translateX(-50%);"></div>
+      <div class="acct-avatar-wrap">
+        <div class="acct-avatar" id="acctAvatarInitials">—</div>
+      </div>
+      <div class="acct-name" id="acctHeaderName">—</div>
+      <div class="acct-email" id="acctHeaderEmail">—</div>
+      <div class="acct-badge" id="acctHeaderBadge"></div>
+    </div>
+
+    <details class="card details-card acct-row" style="margin-top:0;" open>
+      <summary>
+        <div class="acct-row-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4.5 5-7 8-7s6.5 2.5 8 7"/></svg></div>
+        <div class="acct-row-body"><div class="acct-row-title">Dati generali</div><div class="acct-row-sub">Sesso e figura anatomica</div></div>
+        <div class="acct-row-chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></div>
+      </summary>
       <div class="details-body">
         <p class="hint">Usati per la scheda e per mostrarti la figura giusta nel Glossario.</p>
         <label>Sesso</label>
@@ -355,8 +369,12 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
       </div>
     </details>
 
-    <details class="card details-card" style="margin-top:10px;">
-      <summary>Nome e password</summary>
+    <details class="card details-card acct-row" style="margin-top:10px;">
+      <summary>
+        <div class="acct-row-icon dark"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></div>
+        <div class="acct-row-body"><div class="acct-row-title">Nome e password</div><div class="acct-row-sub">Modifica il profilo con cui accedi</div></div>
+        <div class="acct-row-chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></div>
+      </summary>
       <div class="details-body">
         <p class="hint">Modifica nome e password del profilo con cui hai fatto accesso.</p>
         <div class="dato-riga"><span>Email dell'account</span><b id="accountEmailMostrata">—</b></div>
@@ -375,8 +393,12 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
       </div>
     </details>
 
-    <details class="card details-card" id="cardAmministrazione" style="margin-top:10px; display:none; border-left:3px solid var(--accent);">
-      <summary>Gestione dell'app</summary>
+    <details class="card details-card acct-row" id="cardAmministrazione" style="margin-top:10px; display:none;">
+      <summary>
+        <div class="acct-row-icon admin"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2 4 5v6c0 5 3.4 8.9 8 11 4.6-2.1 8-6 8-11V5l-8-3Z"/></svg></div>
+        <div class="acct-row-body"><div class="acct-row-title">Gestione dell'app</div><div class="acct-row-sub">Richieste, PT, profili attivi</div></div>
+        <div class="acct-row-chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></div>
+      </summary>
       <div class="details-body">
         <p class="hint">Sezione riservata al tuo account. Qui decidi chi entra e rimetti in piedi gli account di chi resta fuori.</p>
 
@@ -688,10 +710,10 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
       <input type="date" id="mealDate">
       <label>Pasto</label>
       <div class="chip-group" id="mealTypeChips">
-        <div class="chip selected" data-meal="colazione">Colazione</div>
-        <div class="chip" data-meal="pranzo">Pranzo</div>
-        <div class="chip" data-meal="spuntino">Spuntino</div>
-        <div class="chip" data-meal="cena">Cena</div>
+        <div class="chip selected" data-meal="colazione"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M3 8h13a4 4 0 0 1 0 8H3z"/><path d="M16 10h2a2 2 0 0 1 0 4h-2"/><path d="M6 3v3M9 3v3M12 3v3"/></svg>Colazione</div>
+        <div class="chip" data-meal="pranzo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 3"/></svg>Pranzo</div>
+        <div class="chip" data-meal="spuntino"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3c-4 3-6 6-6 10a6 6 0 0 0 12 0c0-4-2-7-6-10Z"/></svg>Spuntino</div>
+        <div class="chip" data-meal="cena"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a6 6 0 0 0 0 12 6 6 0 0 0 6-6c0 4-3 8-8 8a8 8 0 1 1 2-15z"/></svg>Cena</div>
       </div>
       <label>Alimento</label>
       <input type="text" id="mealFoodInput" placeholder="Scrivi cosa hai mangiato (suggerimenti disponibili)...">
@@ -707,8 +729,20 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
     </div>
 
     <div class="card">
-      <h3>Totali di oggi</h3>
-      <div id="mealTotals"></div>
+      <div class="halo halo-diet" style="width:130px; height:130px; top:-40px; right:-40px;"></div>
+      <h3 class="diet">Totali di oggi</h3>
+      <div class="macro-ring-row">
+        <div class="macro-ring-wrap">
+          <svg viewBox="0 0 104 104">
+            <circle cx="52" cy="52" r="45" class="macro-track"/>
+            <circle cx="52" cy="52" r="45" class="macro-seg macro-seg-p" id="macroSegP"/>
+            <circle cx="52" cy="52" r="45" class="macro-seg macro-seg-c" id="macroSegC"/>
+            <circle cx="52" cy="52" r="45" class="macro-seg macro-seg-f" id="macroSegF"/>
+          </svg>
+          <div class="macro-center"><div class="macro-kcal" id="macroKcalNum">0</div><div class="macro-kcal-label">kcal oggi</div></div>
+        </div>
+        <div class="macro-side" id="mealTotals"></div>
+      </div>
     </div>
 
     <div class="card">
@@ -3421,6 +3455,15 @@ function apriAccountPanel(){
   document.querySelectorAll('#setSesso .seg-btn').forEach(b=>{
     b.classList.toggle('active', b.dataset.val === lp.sesso);
   });
+
+  const iniziali = (lp.name || "?").trim().split(/\s+/).map(p=>p[0]).filter(Boolean).slice(0,2).join('').toUpperCase();
+  document.getElementById('acctAvatarInitials').textContent = iniziali || "?";
+  document.getElementById('acctHeaderName').textContent = lp.name || "Senza nome";
+  document.getElementById('acctHeaderEmail').textContent = lp.email || "email non impostata";
+  const badge = document.getElementById('acctHeaderBadge');
+  if(sonoAmministratore()){ badge.textContent = "Amministratore"; badge.classList.add('show'); }
+  else if(sonoPT()){ badge.textContent = "Personal Trainer"; badge.classList.add('show'); }
+  else { badge.classList.remove('show'); }
 }
 function chiudiAccountPanel(){
   document.getElementById('accountPanel').style.display = 'none';
@@ -6776,15 +6819,17 @@ function renderMealDiary(){
         const f = FOOD_DATABASE[it.food];
         return sum + (f ? f.kcal*it.grams/100 : 0);
       }, 0);
-      html += `<div class="meal-group">
-        <div class="meal-group-head">${MEAL_LABELS[mealKey]}<span class="hint">${Math.round(mealKcal)} kcal</span></div>
+      const mealTagColor = {colazione:'#f0b429', pranzo:'var(--accent)', spuntino:'#8b5cf6', cena:'var(--diet)'}[mealKey] || 'var(--text-faint)';
+      html += `<div class="meal-log-group">
+        <div class="meal-log-head">${MEAL_LABELS[mealKey]}<span>${Math.round(mealKcal)} kcal</span></div>
         ${mealItems.map(it=>{
           const f = FOOD_DATABASE[it.food];
           const kcalText = f ? `${Math.round(f.kcal * it.grams/100)} kcal` : 'kcal non disponibili';
-          return `<div class="exercise-edit-row">
-            <div style="flex:1;">
-              <div style="font-family:var(--font-display); font-size:13px;">${toTitleCase(it.food)}</div>
-              <div class="hint">${it.grams} g · ${kcalText}</div>
+          return `<div class="meal-log-row">
+            <span class="meal-log-tag" style="background:${mealTagColor};"></span>
+            <div class="meal-log-body">
+              <div class="meal-log-name">${toTitleCase(it.food)}</div>
+              <div class="meal-log-sub">${it.grams} g · ${kcalText}</div>
             </div>
             <button type="button" class="remove-x" data-idx="${it.idx}">×</button>
           </div>`;
@@ -6811,12 +6856,35 @@ function renderMealDiary(){
   }, {kcal:0,p:0,c:0,f:0});
 
   document.getElementById('mealTotals').innerHTML = `
-    <div class="volume-row-head"><span class="mname">Calorie</span><span class="mcount">${Math.round(totals.kcal)} kcal</span></div>
-    <div class="volume-row-head"><span class="mname">Proteine</span><span class="mcount">${Math.round(totals.p)} g</span></div>
-    <div class="volume-row-head"><span class="mname">Carboidrati</span><span class="mcount">${Math.round(totals.c)} g</span></div>
-    <div class="volume-row-head"><span class="mname">Grassi</span><span class="mcount">${Math.round(totals.f)} g</span></div>
+    <div class="macro-row"><span class="macro-dot" style="background:var(--diet);"></span><span class="macro-row-label">Proteine</span><span class="macro-row-val">${Math.round(totals.p)} g</span></div>
+    <div class="macro-row"><span class="macro-dot" style="background:var(--accent);"></span><span class="macro-row-label">Carboidrati</span><span class="macro-row-val">${Math.round(totals.c)} g</span></div>
+    <div class="macro-row"><span class="macro-dot" style="background:#f0b429;"></span><span class="macro-row-label">Grassi</span><span class="macro-row-val">${Math.round(totals.f)} g</span></div>
     ${hasUnknown ? '<div class="hint" style="margin-top:8px;">Alcuni alimenti scritti liberamente non hanno dati nutrizionali: i totali potrebbero essere incompleti.</div>' : ''}
   `;
+  aggiornaAnelloMacro(totals);
+}
+
+// Anello "Totali di oggi": non abbiamo un obiettivo calorico numerico (il PT lo scrive
+// come testo libero in dietInfo.calorie), quindi l'anello mostra la COMPOSIZIONE dei
+// macro di oggi (proteine/carbo/grassi in proporzione alle kcal), non un progresso verso un target.
+function aggiornaAnelloMacro(totals){
+  const segP = document.getElementById('macroSegP');
+  const segC = document.getElementById('macroSegC');
+  const segF = document.getElementById('macroSegF');
+  const numEl = document.getElementById('macroKcalNum');
+  if(!segP || !segC || !segF || !numEl) return;
+  numEl.textContent = Math.round(totals.kcal);
+  const r = 45, C = 2*Math.PI*r;
+  const kcalP = totals.p*4, kcalC = totals.c*4, kcalF = totals.f*9;
+  const somma = kcalP + kcalC + kcalF;
+  if(somma <= 0){
+    [segP,segC,segF].forEach(el=>{ el.style.strokeDasharray = `0 ${C}`; el.style.strokeDashoffset = '0'; });
+    return;
+  }
+  const lenP = C*kcalP/somma, lenC = C*kcalC/somma, lenF = C*kcalF/somma;
+  segP.style.strokeDasharray = `${lenP} ${C-lenP}`; segP.style.strokeDashoffset = '0';
+  segC.style.strokeDasharray = `${lenC} ${C-lenC}`; segC.style.strokeDashoffset = `${-lenP}`;
+  segF.style.strokeDasharray = `${lenF} ${C-lenF}`; segF.style.strokeDashoffset = `${-(lenP+lenC)}`;
 }
 document.getElementById('mealDate').addEventListener('change', renderMealDiary);
 

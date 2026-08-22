@@ -1312,3 +1312,83 @@
   .interruttore input:checked + span{background:var(--ok);}
   .interruttore input:checked + span::before{transform:translateX(18px);}
   .pt-scheda-ro{background:var(--surface2); border-radius:10px; padding:12px 14px; margin-bottom:8px;}
+
+  /* ============================================================
+     ACCOUNT — header con avatar + righe a icona (v77)
+     Scoping: .acct-row è una classe nuova aggiunta solo alle 3 details
+     reali di #accountPanel; il component .details-card condiviso con
+     Impostazioni/Dieta resta invariato ovunque non porti questa classe.
+     ============================================================ */
+  .halo{position:absolute; border-radius:50%; filter:blur(38px); opacity:.5; pointer-events:none; z-index:0;}
+  .halo-accent{background:radial-gradient(circle, var(--accent) 0%, transparent 70%);}
+  .halo-diet{background:radial-gradient(circle, #16b4d6 0%, transparent 70%);}
+
+  .acct-header{position:relative; padding:22px 10px 18px; text-align:center; margin-bottom:14px; overflow:visible;}
+  .acct-avatar-wrap{position:relative; width:78px; height:78px; margin:0 auto 11px;}
+  .acct-avatar{position:relative; z-index:1; width:78px; height:78px; border-radius:50%; background:var(--grad-accent);
+    display:flex; align-items:center; justify-content:center; color:#fff; font-family:var(--font-display);
+    font-weight:800; font-size:24px; box-shadow:var(--shadow-accent);}
+  .acct-name{font-family:var(--font-display); font-size:17px; font-weight:800; position:relative;}
+  .acct-email{font-size:11.5px; color:var(--text-faint); margin-top:2px; position:relative;}
+  .acct-badge{display:none; align-items:center; gap:4px; background:var(--accent-soft); color:#c8380f;
+    font-family:var(--font-display); font-weight:700; font-size:9.5px; padding:4px 10px; border-radius:var(--r-pill);
+    margin-top:8px; letter-spacing:.02em; position:relative;}
+  .acct-badge.show{display:inline-flex;}
+
+  details.acct-row{background:var(--surface); border-radius:var(--r-lg); box-shadow:var(--shadow-sm);
+    margin-bottom:9px; overflow:hidden; padding:0; border-left:none;}
+  details.acct-row summary{list-style:none; display:flex; align-items:center; gap:12px; padding:14px 15px; cursor:pointer;}
+  details.acct-row summary::-webkit-details-marker{display:none;}
+  details.acct-row summary::marker{display:none; content:"";}
+  .acct-row-icon{width:36px; height:36px; border-radius:11px; flex:0 0 auto; display:flex; align-items:center;
+    justify-content:center; background:var(--grad-accent);}
+  .acct-row-icon svg{width:17px; height:17px; color:#fff;}
+  .acct-row-icon.dark{background:linear-gradient(155deg,#6b7280,#454a52);}
+  .acct-row-icon.diet{background:var(--grad-diet, linear-gradient(155deg,#14a3bd,var(--diet)));}
+  .acct-row-icon.admin{background:#151719;}
+  .acct-row-body{flex:1; min-width:0;}
+  .acct-row-title{font-family:var(--font-display); font-weight:700; font-size:13px;}
+  .acct-row-sub{font-size:10.5px; color:var(--text-dim); margin-top:1px;}
+  .acct-row-chev{color:var(--text-faint); transition:transform .2s; flex:0 0 auto;}
+  .acct-row-chev svg{width:15px; height:15px;}
+  details.acct-row[open] .acct-row-chev{transform:rotate(180deg);}
+  details.acct-row[open] summary{border-bottom:1px solid var(--border);}
+  details.acct-row .details-body{padding:14px 15px 16px;}
+
+  /* ============================================================
+     DIETA — chip pasto con icona, anello macro, righe diario colorate (v77)
+     Scoping: selettori con #mealTypeChips / #mealList evitano di toccare
+     .chip e le altre liste che riusano lo stesso component altrove.
+     ============================================================ */
+  #mealTypeChips .chip{display:inline-flex; align-items:center; gap:6px;}
+  #mealTypeChips .chip svg{width:14px; height:14px; flex:0 0 auto;}
+
+  .macro-ring-row{display:flex; align-items:center; gap:16px; position:relative; z-index:1;}
+  .macro-ring-wrap{position:relative; width:98px; height:98px; flex:0 0 auto;}
+  .macro-ring-wrap svg{width:100%; height:100%; transform:rotate(-90deg);}
+  .macro-ring-wrap circle{fill:none; stroke-width:9;}
+  .macro-track{stroke:var(--diet-soft, #e3f4f7);}
+  .macro-seg{stroke-linecap:round; transition:stroke-dasharray .8s cubic-bezier(.4,0,.2,1), stroke-dashoffset .8s cubic-bezier(.4,0,.2,1);}
+  .macro-seg-p{stroke:var(--diet);}
+  .macro-seg-c{stroke:var(--accent);}
+  .macro-seg-f{stroke:#f0b429;}
+  .macro-center{position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center;}
+  .macro-kcal{font-family:var(--font-display); font-weight:800; font-size:17px; color:var(--text); line-height:1;}
+  .macro-kcal-label{font-size:8.5px; color:var(--text-faint); text-transform:uppercase; letter-spacing:.05em; margin-top:3px; text-align:center;}
+  .macro-side{flex:1; min-width:0;}
+  .macro-row{display:flex; align-items:center; gap:8px; margin-bottom:8px;}
+  .macro-row:last-child{margin-bottom:0;}
+  .macro-dot{width:9px; height:9px; border-radius:50%; flex:0 0 auto;}
+  .macro-row-label{font-size:11.5px; color:var(--text-dim); flex:1;}
+  .macro-row-val{font-family:var(--font-display); font-weight:800; font-size:12px; color:var(--text);}
+
+  .meal-log-group{margin-bottom:4px;}
+  .meal-log-head{display:flex; justify-content:space-between; align-items:center; padding:8px 2px 4px;
+    font-family:var(--font-display); font-weight:700; font-size:11.5px; color:var(--text-dim); text-transform:uppercase; letter-spacing:.03em;}
+  .meal-log-row{display:flex; align-items:center; gap:11px; padding:10px 0; border-bottom:1px solid var(--border);}
+  .meal-log-row:last-child{border-bottom:none;}
+  .meal-log-tag{width:7px; height:32px; border-radius:5px; flex:0 0 auto;}
+  .meal-log-body{flex:1; min-width:0;}
+  .meal-log-name{font-family:var(--font-display); font-weight:700; font-size:12.5px;}
+  .meal-log-sub{font-size:11px; color:var(--text-dim); margin-top:1px;}
+  .meal-log-row .remove-x{flex:0 0 auto;}
