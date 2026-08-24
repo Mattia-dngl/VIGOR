@@ -2947,7 +2947,13 @@ function riportaUltimaVolta(nomeEsercizio){
       if(s[f] === undefined || s[f] === '') return;
       currentSetInputs[nomeEsercizio][i][f] = s[f];
       const inp = document.querySelector(`.exercise-block input[data-ex="${CSS.escape(nomeEsercizio)}"][data-idx="${i}"][data-field="${f}"]`);
-      if(inp) inp.value = mostraValoreCampo(nomeEsercizio, f, s[f]);
+      if(inp){
+        inp.value = mostraValoreCampo(nomeEsercizio, f, s[f]);
+        // se questa riga è la serie principale di un dropset, "riporta" deve far
+        // ripartire anche il ricalcolo automatico di peso/ripetizioni dei drop
+        // (vedi buildDropsetRound), non solo riempire il valore.
+        inp.dispatchEvent(new Event('input', {bubbles:true}));
+      }
     });
   });
   updateExerciseDotsProgress();
@@ -6822,7 +6828,7 @@ function buildExerciseForm(day){
     list.appendChild(block);
     if(ex.dropset && ex.dropset.drops && ex.dropset.drops.length){
       _dropsetPerEsercizio[ex.name] = ex.dropset;
-      for(let k=0;k<ex.sets;k++) buildDropsetRound(ex.name, k+1, ex.dropset);
+      for(let k=0;k<ex.sets;k++) buildDropsetRound(ex.name, k+1, ex.dropset, ex.reps);
     } else {
       for(let k=0;k<ex.sets;k++) addSetRow(ex.name);
     }
@@ -6939,10 +6945,36 @@ function goToExercise(i){
   const target = list.children[i];
   if(target) target.scrollIntoView({behavior:'smooth', inline:'start', block:'nearest'});
 }
+// Il carosello è un'unica riga flex più larga della pagina (un .exercise-block
+// per esercizio, affiancati, si scorre in orizzontale): senza altezza fissata
+// a mano, un contenitore flex si alza quanto il figlio più alto — così un
+// esercizio semplice (5 serie) restava alto quanto il dropset con più tappe,
+// lasciando un vuoto enorme sotto. Qui si tiene l'altezza del carosello
+// agganciata SOLO all'esercizio che si sta guardando in quel momento: un
+// ResizeObserver la ricalcola da solo ogni volta che quel blocco cambia
+// contenuto (aggiungi/togli una serie, cambi tecnica…), senza dover
+// intercettare ogni singolo punto del codice che potrebbe farlo cambiare.
+let _carouselHeightObserver = null;
+function sincronizzaAltezzaCarosello(list, blocco){
+  if(!list || !blocco) return;
+  list.style.height = blocco.scrollHeight + 'px';
+}
+function osservaAltezzaEsercizioCorrente(i){
+  const list = document.getElementById('exerciseFormList');
+  if(!list) return;
+  if(_carouselHeightObserver){ _carouselHeightObserver.disconnect(); _carouselHeightObserver = null; }
+  const blocco = list.children[i];
+  if(!blocco){ list.style.height = ''; return; }
+  sincronizzaAltezzaCarosello(list, blocco);
+  if(typeof ResizeObserver !== 'undefined'){
+    _carouselHeightObserver = new ResizeObserver(()=> sincronizzaAltezzaCarosello(list, blocco));
+    _carouselHeightObserver.observe(blocco);
+  }
+}
 function updateExerciseCarouselUI(i){
   const list = document.getElementById('exerciseFormList');
   const total = list.children.length;
-  if(total===0){ document.getElementById('exCarouselCounter').textContent = ""; return; }
+  if(total===0){ document.getElementById('exCarouselCounter').textContent = ""; list.style.height = ''; return; }
   document.getElementById('exCarouselCounter').textContent = `${i+1} / ${total}`;
   document.querySelectorAll('.ex-dot').forEach(dot=>{
     dot.classList.toggle('current', Number(dot.dataset.exIndex)===i);
@@ -6951,6 +6983,7 @@ function updateExerciseCarouselUI(i){
   document.getElementById('exPrevBtn').disabled = (i<=0);
   document.getElementById('exNextBtn').disabled = (i>=total-1);
   document.getElementById('exNextBtn').textContent = (i>=total-1) ? 'Ultimo esercizio' : 'Successivo →';
+  osservaAltezzaEsercizioCorrente(i);
 }
 function updateExerciseDotsProgress(){
   if(selectedDayKey===null || selectedDayKey==="SKIP") return;
@@ -7013,21 +7046,51 @@ function addSetRow(exName){
   });
 }
 
+// Ripartisce le ripetizioni "rimaste da fare" (target dell'esercizio meno
+// quelle già fatte nella serie principale) tra le tappe successive del
+// dropset, in numeri interi e decrescenti: ad ogni passo la tappa prende
+// 2/(tappe rimaste+1) di quello che resta, così l'ultima tappa si prende
+// sempre il resto. Con target 20 e serie principale 10: 2 drop → 6,4;
+// 3 drop → 5,3,2 — sempre numeri "puliti", mai zero.
+// Se il target non è leggibile (scheda senza reps numeriche, o la serie
+// principale è già oltre il target) si ripartiscono le ripetizioni della
+// serie principale stessa, per avere comunque una progressione sensata.
+function calcolaRipartizioneRipetizioni(target, mainReps, tappe){
+  if(tappe <= 0) return [];
+  let restanti = (Number.isFinite(target) && target > mainReps) ? (target - mainReps) : mainReps;
+  if(!Number.isFinite(restanti) || restanti < tappe) restanti = tappe;   // mai zero ripetizioni in una tappa
+  const risultato = [];
+  let daFare = tappe;
+  while(daFare > 0){
+    const parte = daFare === 1 ? restanti : Math.max(1, Math.floor(restanti * 2 / (daFare + 1)));
+    risultato.push(parte);
+    restanti -= parte;
+    daFare--;
+  }
+  return risultato;
+}
+
 // Costruisce un "round" di dropset durante l'allenamento: la serie principale
 // (un normale set-row, dove inserisci il peso vero che hai sollevato) seguita
 // da una riga per ogni drop. Il peso di ogni drop si ricalcola da solo,
 // ridotto della percentuale impostata rispetto al peso della tappa precedente
-// (che sia la principale o il drop prima di lui): basta mettere il peso della
-// serie principale, il resto segue in automatico. Le ripetizioni restano
-// modificabili, precompilate con quelle previste in scheda.
-function buildDropsetRound(exName, numeroRound, dropset){
+// (che sia la principale o il drop prima di lui) e arrotondato ai 5 kg più
+// vicini — così i dischi restano quelli che hai davvero in palestra. Le
+// ripetizioni dei drop si ricalcolano anche loro da sole, in base a quante ne
+// scrivi nella serie principale (vedi calcolaRipartizioneRipetizioni sopra):
+// basta compilare la serie principale, il resto segue in automatico mentre
+// resta comunque modificabile a mano se vuoi correggerlo.
+function buildDropsetRound(exName, numeroRound, dropset, targetReps){
   const container = document.querySelector(`.sets-container[data-ex="${CSS.escape(exName)}"]`);
+  const target = parseInt(targetReps, 10);
 
   addSetRow(exName);
   let rigaPrec = container.lastElementChild;
   rigaPrec.classList.add('drop-row', 'drop-row-main');
   etichettaRiga(rigaPrec, `Serie ${numeroRound} · Principale`);
   let kgPrec = rigaPrec.querySelector('[data-field="kg"]');
+  const repsPrincipale = rigaPrec.querySelector('[data-field="reps"]');
+  const righeDrop = [];   // {repsInput, idx} di ogni tappa, per il ricalcolo ripetizioni qui sotto
 
   (dropset.drops||[]).forEach((drop, dj)=>{
     addSetRow(exName);
@@ -7038,10 +7101,7 @@ function buildDropsetRound(exName, numeroRound, dropset){
     const idx = currentSetInputs[exName].length - 1;
 
     const repsInput = riga.querySelector('[data-field="reps"]');
-    if(repsInput && drop.reps){
-      repsInput.value = drop.reps;
-      currentSetInputs[exName][idx].reps = drop.reps;
-    }
+    if(repsInput) righeDrop.push({repsInput, idx});
 
     const kgInput = riga.querySelector('[data-field="kg"]');
     const kgSorgente = kgPrec;   // fisso qui il riferimento: ogni drop deve restare legato alla
@@ -7052,7 +7112,7 @@ function buildDropsetRound(exName, numeroRound, dropset){
       const ricalcola = ()=>{
         const base = parseFloat(kgSorgente.value);
         if(isNaN(base)) return;
-        const calcolato = Math.round(base * (1 - (drop.riduzione||0)/100) * 4) / 4;   // arrotondo ai 0,25 kg
+        const calcolato = Math.round(base * (1 - (drop.riduzione||0)/100) / 5) * 5;   // arrotondo ai 5 kg
         kgInput.value = calcolato;
         currentSetInputs[exName][idx].kg = calcolato;
         kgInput.dispatchEvent(new Event('input', {bubbles:true}));   // così il calcolo scende anche ai drop successivi
@@ -7063,6 +7123,21 @@ function buildDropsetRound(exName, numeroRound, dropset){
       kgPrec = kgInput;   // il prossimo drop parte dal peso di questo
     }
   });
+
+  if(repsPrincipale && righeDrop.length){
+    const ricalcolaRipetizioni = ()=>{
+      const mainReps = parseInt(repsPrincipale.value, 10);
+      if(!Number.isFinite(mainReps) || mainReps <= 0) return;   // niente ancora scritto: lascio le tappe come sono
+      const parti = calcolaRipartizioneRipetizioni(target, mainReps, righeDrop.length);
+      righeDrop.forEach((r, i)=>{
+        r.repsInput.value = parti[i];
+        currentSetInputs[exName][r.idx].reps = String(parti[i]);
+      });
+      salvaBozza();
+    };
+    repsPrincipale.addEventListener('input', ricalcolaRipetizioni);
+    ricalcolaRipetizioni();
+  }
 }
 function etichettaRiga(riga, testo){
   const num = riga.querySelector('.set-num');
@@ -8418,7 +8493,7 @@ function dropsetEditorHtml(di, ei, ex){
                 : `<select class="dropset-riduzione" data-di="${di}" data-ei="${ei}" data-dj="${dj}">
                      ${opzioniRiduzione.map(p=>`<option value="${p}" ${d.riduzione===p?'selected':''}>-${p}%</option>`).join('')}
                    </select>`}
-              <button type="button" class="remove-x dropset-remove" data-di="${di}" data-ei="${ei}" data-dj="${dj}">×</button>
+              <button type="button" class="dropset-remove" data-di="${di}" data-ei="${ei}" data-dj="${dj}">×</button>
             </div>
           </div>
         </div>`).join('')}
