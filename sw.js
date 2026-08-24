@@ -9,16 +9,16 @@ const VERSIONE = "vigor-v84";
 const DA_TENERE = [
   "./",
   "./index.html",
-  "./style.css",
-  "./corpo.js",
-  "./corpo-donna.js",
-  "./esercizi.js",
+  "./css/style.css",
+  "./js/corpo.js",
+  "./js/corpo-donna.js",
+  "./js/esercizi.js",
   "./manifest.webmanifest",
-  "./icon-192.png",
-  "./icon-512.png",
-  "./icon-maskable-512.png",
-  "./apple-touch-icon.png",
-  "./favicon-32.png"
+  "./assets/icons/icon-192.png",
+  "./assets/icons/icon-512.png",
+  "./assets/icons/icon-maskable-512.png",
+  "./assets/icons/apple-touch-icon.png",
+  "./assets/icons/favicon-32.png"
 ];
 
 // librerie e caratteri presi da internet: li conservo al primo avvio con rete,
@@ -67,8 +67,8 @@ self.addEventListener("push", evento => {
   evento.waitUntil(
     self.registration.showNotification(dati.title, {
       body: dati.body,
-      icon: "./icon-192.png",
-      badge: "./icon-192.png",
+      icon: "./assets/icons/icon-192.png",
+      badge: "./assets/icons/icon-192.png",
       tag: "fitpro-promemoria",
       renotify: true
     })
