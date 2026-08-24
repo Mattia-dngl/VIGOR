@@ -1,0 +1,18 @@
+{
+  "name": "vigor-main",
+  "version": "1.0.0",
+  "description": "VIGOR — app per palestre e personal trainer.",
+  "main": "sw.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "node --test test/*.test.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "jsdom": "^30.0.1"
+  }
+}

@@ -196,6 +196,12 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
   </header>
 
   <div class="pt-corpo">
+    <div class="card" id="ptOggiCard">
+      <h3>Cose da guardare oggi <span id="ptContaOggi"></span></h3>
+      <p class="hint">Un colpo d'occhio su chi ha bisogno di attenzione: fermi da un po', piani scaduti, richieste in sospeso.</p>
+      <div id="ptOggi" style="margin-top:10px;"></div>
+    </div>
+
     <div class="card" id="ptRichiesteCard">
       <h3>Richieste ricevute <span id="ptContaRichieste"></span></h3>
       <p class="hint">Persone che hanno chiesto di essere seguite da te.</p>
@@ -375,14 +381,15 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
         </div>
         <div class="row" style="margin-top:14px;">
           <div>
-            <label>Età</label>
-            <input type="number" id="setEta" placeholder="es. 28" min="10" max="100">
+            <label>Data di nascita</label>
+            <input type="date" id="setDataNascita">
           </div>
           <div>
             <label>Altezza (cm)</label>
             <input type="number" id="setAltezza" placeholder="es. 178" min="100" max="230">
           </div>
         </div>
+        <p class="hint" style="margin-top:8px;">Età: <b id="setEtaCalcolata">—</b> <span id="setEtaLegacyNota"></span></p>
         <p class="hint" style="margin-top:12px;">Il peso lo prendo automaticamente dall'ultima misurazione che registri in Scheda → Storico → Misure — non serve scriverlo qui.</p>
         <label style="margin-top:2px;">Livello di attività fisica</label>
         <select id="setLivelloAttivita">
@@ -601,6 +608,9 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
         <button type="button" class="seg-btn" data-val="uomo">Uomo</button>
         <button type="button" class="seg-btn" data-val="donna">Donna</button>
       </div>
+
+      <label>Data di nascita</label>
+      <input type="date" id="onbDataNascita">
 
       <label>Peso attuale (kg)</label>
       <input type="text" id="onbPeso" placeholder="Es. 75" inputmode="decimal">
@@ -901,6 +911,9 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
         <p class="hint"><b>Aggiorna scheda</b> modifica quella attuale, senza crearne una nuova (utile per piccole correzioni). <b>Salva come nuova versione</b> archivia quella attuale (resta consultabile) e la sostituisce con questa — usalo quando cambia davvero l'allenamento. In entrambi i casi la dieta impostata e lo storico allenamenti passati non vengono mai toccati. "Pulisci" invece svuota i campi qui sotto per ripartire da zero.</p>
         <label>Nome/etichetta scheda <span class="hint" style="font-weight:400;">(solo per "Salva come nuova versione")</span></label>
         <input type="text" id="newProgramName" placeholder="Es. Scheda Settembre 2026">
+        <label style="margin-top:14px;">Scadenza <span class="hint" style="font-weight:400;">(facoltativa — può impostarla sia il PT sia tu)</span></label>
+        <input type="date" id="newProgramScadenza">
+        <p class="hint" style="margin-top:6px;">Se la imposti, verrà segnalata come "piano scaduto" una volta passata la data — utile per ricordarsi di rinnovarla.</p>
       </div>
 
       <div class="card" id="workoutEditCard">
@@ -1795,7 +1808,7 @@ function defaultDietDays(){
 function defaultProgram(){
   const today = new Date().toISOString().slice(0,10);
   return {
-    id: uid(), name:"Scheda iniziale", createdAt: today, archivedAt:null,
+    id: uid(), name:"Scheda iniziale", createdAt: today, archivedAt:null, scadenza:null,
     days: defaultWorkoutDays(),
     dietInfo: defaultDietInfo(),
     diet: defaultDietDays()
@@ -1809,7 +1822,7 @@ function blankDietDays(){
 function blankProgram(){
   const today = new Date().toISOString().slice(0,10);
   return {
-    id: uid(), name:"La mia scheda", createdAt: today, archivedAt:null,
+    id: uid(), name:"La mia scheda", createdAt: today, archivedAt:null, scadenza:null,
     days: [],
     dietInfo: {peso:"",altezza:"",attivita:"",calorie:"",macro:"",esclusi:"",noteIntolleranza:""},
     diet: blankDietDays()
@@ -1835,7 +1848,7 @@ function newProfile(name, email, password, approvato){
     approvato: !!approvato, richiestoIl: new Date().toISOString(),
     passwordHash: simpleHash(password), sesso: null,
     programs:[blankProgram()], activeProgramId:null, logs:[], measurements:[], mealLogs:[], customExercises:{}, customFoods:{}, avatarUrl:null,
-    altezza:null, eta:null, livelloAttivita:'moderato', obiettivoCalorico:'mantenimento' };
+    altezza:null, dataNascita:null, eta:null, livelloAttivita:'moderato', obiettivoCalorico:'mantenimento' };
 }
 
 // ============================================================
@@ -1882,6 +1895,7 @@ function load(){
     if(!p.customFoods) p.customFoods = {};
     if(p.altezza === undefined) p.altezza = null;
     if(p.eta === undefined) p.eta = null;
+    if(p.dataNascita === undefined) p.dataNascita = null;
     if(!p.livelloAttivita) p.livelloAttivita = 'moderato';
     if(!p.obiettivoCalorico) p.obiettivoCalorico = 'mantenimento';
     if(!p.customExercises) p.customExercises = {};
@@ -2212,6 +2226,7 @@ function controllaOnboarding(){
   if(!gate || !p) return;
   if(!p.sesso && !_onboardingMostrata){
     _onboardingMostrata = true;
+    document.getElementById('onbDataNascita').value = p.dataNascita || '';
     const prog = activeProgram();
     if(prog && prog.dietInfo){
       document.getElementById('onbPeso').value = prog.dietInfo.peso || '';
@@ -2244,6 +2259,16 @@ document.getElementById('onbContinua').addEventListener('click', ()=>{
   const sesso = sessoBtn ? sessoBtn.dataset.val : null;
   if(!sesso){ toast("Scegli uomo o donna per continuare."); return; }
   salvaSesso(sesso);
+
+  const dataNascita = document.getElementById('onbDataNascita').value;
+  if(dataNascita){
+    const p = activeProfile();
+    if(p){
+      p.dataNascita = dataNascita;
+      save();
+      if(typeof modalitaOnline === 'function' && modalitaOnline()) inviaOnline();
+    }
+  }
 
   const peso = document.getElementById('onbPeso').value.trim();
   const altezza = document.getElementById('onbAltezza').value.trim();
@@ -3343,6 +3368,51 @@ function iniziaSupabase(){
   }catch(e){ console.error('Supabase non raggiungibile:', e); return false; }
 }
 
+// ============================================================
+// VISIBILITÀ ERRORI IN PRODUZIONE
+// Prima, se un utente vero incontrava un errore JS, nessuno lo sapeva finché
+// non lo scriveva lui stesso. Qui catturiamo tutto quello che sfugge ai
+// try/catch sparsi nel codice (window.onerror ed eventuali Promise rifiutate
+// senza .catch) e lo mandiamo sulla tabella error_logs — sola scrittura per
+// chi usa l'app, leggibile solo da chi ha accesso al progetto Supabase.
+// Attivo solo quando l'app lavora online: chi la usa senza Supabase
+// configurato (vedi js/config.js) resta com'era, nessun log da nessuna parte.
+// ============================================================
+const _erroriGiaSegnalati = new Set();   // evita di reinviare lo stesso errore decine di volte di fila
+let _erroriSegnalatiSessione = 0;
+const MAX_ERRORI_PER_SESSIONE = 25;      // tetto di sicurezza: mai spammare la tabella
+
+function segnalaErroreClient(tipo, messaggio, stack, extra){
+  try{
+    if(!sb) return;      // sb è impostato solo da iniziaSupabase(), quindi solo quando l'app lavora online
+    if(_erroriSegnalatiSessione >= MAX_ERRORI_PER_SESSIONE) return;
+    const chiave = tipo + '|' + String(messaggio).slice(0,300) + '|' + String(stack||'').slice(0,200);
+    if(_erroriGiaSegnalati.has(chiave)) return;
+    _erroriGiaSegnalati.add(chiave);
+    _erroriSegnalatiSessione++;
+    // .catch(()=>{}) è essenziale: se l'insert stesso fallisse (rete assente,
+    // tabella non raggiungibile) la Promise rifiutata finirebbe altrimenti
+    // dentro il nostro stesso listener "unhandledrejection" qui sotto,
+    // creando un log-dell'errore-di-log all'infinito.
+    sb.from('error_logs').insert({
+      tipo, messaggio: String(messaggio).slice(0,2000), stack: stack ? String(stack).slice(0,4000) : null,
+      url: (typeof location !== 'undefined' ? location.href : null),
+      user_agent: (typeof navigator !== 'undefined' ? navigator.userAgent : null),
+      profilo_id: (rigaOnline && rigaOnline.id) || null,
+      contesto: extra || null
+    }).then(()=>{}, ()=>{});
+  }catch(e){ /* il logging degli errori non deve mai generare altri errori */ }
+}
+window.addEventListener('error', (e)=>{
+  segnalaErroreClient('errore', e.message || 'Errore sconosciuto', e.error && e.error.stack, {
+    file: e.filename || null, riga: e.lineno || null, colonna: e.colno || null
+  });
+});
+window.addEventListener('unhandledrejection', (e)=>{
+  const r = e.reason;
+  segnalaErroreClient('promise-rifiutata', (r && r.message) || String(r), r && r.stack, null);
+});
+
 // ---------- schermate ----------
 function mostraCloudGate(quale){
   document.documentElement.classList.remove('avvio');
@@ -3770,9 +3840,10 @@ function apriAccountPanel(){
   document.querySelectorAll('#setSesso .seg-btn').forEach(b=>{
     b.classList.toggle('active', b.dataset.val === lp.sesso);
   });
-  document.getElementById('setEta').value = lp.eta || '';
+  document.getElementById('setDataNascita').value = lp.dataNascita || '';
   document.getElementById('setAltezza').value = lp.altezza || '';
   document.getElementById('setLivelloAttivita').value = lp.livelloAttivita || 'moderato';
+  renderEtaCalcolata();
 
   document.getElementById('acctAvatarInitials').textContent = inizialiNome(lp.name);
   document.getElementById('acctHeaderName').textContent = lp.name || "Senza nome";
@@ -4538,6 +4609,40 @@ document.getElementById('ptChiudiDettaglio').addEventListener('click', async ()=
   }
 });
 
+// Quanti giorni interi sono passati da una data ISO (yyyy-mm-dd) ad oggi.
+// Ritorna null se la data manca o non è valida — così chi chiama può distinguere
+// "non lo so" da "zero giorni fa".
+function giorniDaOggi(iso){
+  if(!iso) return null;
+  const d = new Date(iso + 'T00:00:00');
+  if(isNaN(d.getTime())) return null;
+  const oggi = new Date(new Date().toISOString().slice(0,10) + 'T00:00:00');
+  return Math.round((oggi - d) / 86400000);
+}
+// Soglia oltre la quale un cliente fermo finisce nella vista d'insieme del PT.
+const SOGLIA_INATTIVITA_PT_GIORNI = 7;
+
+// Riassume, per un cliente seguito, i segnali utili al PT: da quanti giorni non
+// si allena e se la scheda attiva ha una scadenza (impostata da PT o cliente,
+// vedi #newProgramScadenza) già passata. Usata sia dalla vista d'insieme sia,
+// potenzialmente, da altri punti che vorranno gli stessi calcoli in futuro.
+function segnaliPT(p){
+  const d = (p && p.dati) || {};
+  const logsFatti = (d.logs || []).filter(l => l.status === 'registrato');
+  const ultimo = logsFatti.map(l => l.date).sort().pop() || null;
+  const giorniFermo = giorniDaOggi(ultimo);
+  const prog = (d.programs || []).find(pr => pr.id === d.activeProgramId) || (d.programs || [])[0] || null;
+  const giorniScadenza = prog && prog.scadenza ? giorniDaOggi(prog.scadenza) : null;
+  return {
+    allenamenti: logsFatti.length,
+    ultimo,
+    giorniFermo,                                   // null = non si è mai allenato
+    fermoDaTroppo: giorniFermo === null || giorniFermo >= SOGLIA_INATTIVITA_PT_GIORNI,
+    scheda: prog,
+    scadenzaPassata: giorniScadenza !== null && giorniScadenza > 0
+  };
+}
+
 async function renderAreaPT(){
   await caricaRapporti();
   const miei = _rapporti.filter(r => r.pt_id === utenteOnline.id);
@@ -4548,6 +4653,42 @@ async function renderAreaPT(){
     attivi.length === 0 ? "Nessuna persona seguita"
     : attivi.length === 1 ? "1 persona seguita" : `${attivi.length} persone seguite`;
   document.getElementById('ptContaRichieste').textContent = richieste.length ? `(${richieste.length})` : '';
+
+  // persone seguite — caricate una volta sola e riusate sia dalla vista d'insieme
+  // ("cose da guardare oggi") sia dall'elenco clienti qui sotto.
+  const profiliAttivi = attivi.length ? await Promise.all(attivi.map(r=>leggiProfilo(r.cliente_id))) : [];
+
+  // ---- vista d'insieme: "cose da guardare oggi" ----
+  const boxOggi = document.getElementById('ptOggi');
+  const fermi = [];
+  const scaduti = [];
+  attivi.forEach((r,i)=>{
+    const p = profiliAttivi[i];
+    if(!p) return;
+    const s = segnaliPT(p);
+    if(s.fermoDaTroppo) fermi.push({r, p, s});
+    if(s.scadenzaPassata) scaduti.push({r, p, s});
+  });
+  const totaleOggi = richieste.length + fermi.length + scaduti.length;
+  document.getElementById('ptContaOggi').textContent = totaleOggi ? `(${totaleOggi})` : '';
+  if(totaleOggi === 0){
+    boxOggi.innerHTML = '<div class="empty" style="padding:12px 0;">Tutto in ordine: nessuna richiesta in sospeso, nessuno fermo da troppo e nessun piano scaduto ✓</div>';
+  } else {
+    const rigaCliente = (voce, meta, azione)=>`<div class="pt-riga">
+        <div class="pt-avatar">${avatarContentHtml(nomeDi(voce.p), (voce.p.dati||{}).avatarUrl)}</div>
+        <div class="info"><div class="nome">${nomeDi(voce.p)}</div>
+          <div class="meta"><b class="warn">${meta}</b></div></div>
+        <div class="azioni"><button class="ok" data-apri-oggi="${voce.r.cliente_id}">${azione}</button></div>
+      </div>`;
+    boxOggi.innerHTML =
+      (richieste.length ? `<div class="hint" style="margin:0 0 4px;">Richieste in sospeso</div>` : '') +
+      (richieste.length ? `<div class="pt-riga"><div class="info"><div class="meta">${richieste.length===1?'1 richiesta da accettare o rifiutare':`${richieste.length} richieste da accettare o rifiutare`} — vedi sotto</div></div></div>` : '') +
+      (fermi.length ? `<div class="hint" style="margin:14px 0 4px;">Fermi da ${SOGLIA_INATTIVITA_PT_GIORNI}+ giorni</div>` : '') +
+      fermi.map(v=>rigaCliente(v, v.s.giorniFermo===null ? 'non si è ancora allenato' : `fermo da ${v.s.giorniFermo} giorni`, 'Apri')).join('') +
+      (scaduti.length ? `<div class="hint" style="margin:14px 0 4px;">Piano scaduto</div>` : '') +
+      scaduti.map(v=>rigaCliente(v, `scheda "${v.s.scheda.name}" scaduta il ${formatDate(v.s.scheda.scadenza)}`, 'Apri')).join('');
+    boxOggi.querySelectorAll('[data-apri-oggi]').forEach(b=>b.addEventListener('click', ()=>apriCliente(b.dataset.apriOggi)));
+  }
 
   // richieste ricevute
   const boxR = document.getElementById('ptRichieste');
@@ -4586,7 +4727,7 @@ async function renderAreaPT(){
     boxC.innerHTML = '<div class="empty" style="padding:12px 0;">Non segui ancora nessuno. Le richieste che ricevi compaiono qui sopra.</div>';
     return;
   }
-  const profili = await Promise.all(attivi.map(r=>leggiProfilo(r.cliente_id)));
+  const profili = profiliAttivi;
   boxC.innerHTML = attivi.map((r,i)=>{
     const p = profili[i] || {};
     const d = p.dati || {};
@@ -4712,7 +4853,7 @@ function renderDettaglioPT(sezione){
         ${puo ? '<p class="hint">Modifica direttamente qui sotto: le modifiche arrivano subito sul suo telefono.</p>'
               : '<p class="hint">Per modificarla serve che la persona ti dia il permesso dalla sua scheda.</p>'}
         ${!prog ? '<div class="empty">Nessuna scheda impostata.</div>' : `
-          <div class="pt-scheda-ro"><b>${prog.name}</b> <span class="hint">dal ${formatDate(prog.createdAt)}</span></div>
+          <div class="pt-scheda-ro"><b>${prog.name}</b> <span class="hint">dal ${formatDate(prog.createdAt)}${prog.scadenza ? ' · scadenza ' + formatDate(prog.scadenza) + (giorniDaOggi(prog.scadenza) > 0 ? ' (scaduta)' : '') : ''}</span></div>
           ${(prog.days||[]).map(g=>`
             <div class="pt-scheda-ro">
               <b>${g.key} · ${g.name}</b> <span class="hint">${g.weekday || 'senza giorno fisso'}</span>
@@ -6221,17 +6362,34 @@ document.querySelectorAll('#setSesso .seg-btn').forEach(btn=>{
   });
 });
 
-['setEta','setAltezza'].forEach(id=>{
-  document.getElementById(id).addEventListener('change', function(){
-    const lp = loggedInProfile();
-    if(!lp) return;
-    const v = parseFloat(this.value);
-    if(id === 'setEta') lp.eta = (v && v>0) ? v : null;
-    else lp.altezza = (v && v>0) ? v : null;
-    save();
-    if(typeof modalitaOnline === 'function' && modalitaOnline()) inviaOnline();
-  });
+document.getElementById('setAltezza').addEventListener('change', function(){
+  const lp = loggedInProfile();
+  if(!lp) return;
+  const v = parseFloat(this.value);
+  lp.altezza = (v && v>0) ? v : null;
+  save();
+  if(typeof modalitaOnline === 'function' && modalitaOnline()) inviaOnline();
 });
+// L'età non si scrive più a mano: si imposta solo la data di nascita e l'età si
+// ricava da calcolaEta(). Così resta sempre corretta senza doverla aggiornare
+// manualmente ogni compleanno.
+document.getElementById('setDataNascita').addEventListener('change', function(){
+  const lp = loggedInProfile();
+  if(!lp) return;
+  lp.dataNascita = this.value || null;
+  save();
+  if(typeof modalitaOnline === 'function' && modalitaOnline()) inviaOnline();
+  renderEtaCalcolata();
+});
+function renderEtaCalcolata(){
+  const lp = loggedInProfile();
+  const el = document.getElementById('setEtaCalcolata');
+  const nota = document.getElementById('setEtaLegacyNota');
+  if(!el || !lp) return;
+  const eta = etaProfilo(lp);
+  el.textContent = eta ? `${eta} anni` : '—';
+  nota.textContent = (!lp.dataNascita && lp.eta) ? '(valore inserito in passato — imposta la data di nascita per calcolarla da sola)' : '';
+}
 document.getElementById('setLivelloAttivita').addEventListener('change', function(){
   const lp = loggedInProfile();
   if(!lp) return;
@@ -7308,16 +7466,41 @@ function ultimoPesoRegistrato(prof){
   return pesate.length ? pesate[pesate.length-1] : null;
 }
 
+// Età calcolata dalla data di nascita (yyyy-mm-dd), non scritta a mano: conta gli
+// anni compiuti, quindi tiene conto di mese/giorno e non solo dell'anno. Ritorna
+// null se la data manca o non è valida.
+function calcolaEta(dataNascitaIso){
+  if(!dataNascitaIso) return null;
+  const nascita = new Date(dataNascitaIso + 'T00:00:00');
+  if(isNaN(nascita.getTime())) return null;
+  const oggi = new Date();
+  let eta = oggi.getFullYear() - nascita.getFullYear();
+  const mese = oggi.getMonth() - nascita.getMonth();
+  if(mese < 0 || (mese === 0 && oggi.getDate() < nascita.getDate())) eta--;
+  return eta >= 0 ? eta : null;
+}
+// Età da usare nei calcoli: preferisce la data di nascita (fonte di verità, non
+// modificabile a mano); se il profilo non ce l'ha ancora ma ha un vecchio valore
+// "età" scritto a mano prima che esistesse la data di nascita, usa quello come
+// ripiego finché non viene impostata la data.
+function etaProfilo(prof){
+  if(!prof) return null;
+  const daData = calcolaEta(prof.dataNascita);
+  if(daData !== null) return daData;
+  const legacy = parseFloat(prof.eta);
+  return (legacy && legacy > 0) ? legacy : null;
+}
+
 // Ritorna null se mancano dati; altrimenti l'oggetto con BMR, TDEE e il dettaglio usato.
 function calcolaFabbisogno(prof){
   if(!prof) return null;
   const sesso = prof.sesso;
-  const eta = parseFloat(prof.eta);
+  const eta = etaProfilo(prof);
   const altezza = parseFloat(prof.altezza);
   const pesata = ultimoPesoRegistrato(prof);
   const mancanti = [];
   if(sesso !== 'uomo' && sesso !== 'donna') mancanti.push('sesso');
-  if(!eta || eta <= 0) mancanti.push('età');
+  if(!eta || eta <= 0) mancanti.push('data di nascita');
   if(!altezza || altezza <= 0) mancanti.push('altezza');
   if(!pesata) mancanti.push('peso (registra una misurazione in Storico)');
   if(mancanti.length) return {mancanti};
@@ -7348,7 +7531,7 @@ function renderFabbisognoCalorico(){
     `;
     document.getElementById('vaiCompletaDatiBtn').addEventListener('click', ()=>{
       apriAccountPanel();
-      setTimeout(()=>{ document.getElementById('setEta')?.scrollIntoView({behavior:'smooth', block:'center'}); }, 150);
+      setTimeout(()=>{ document.getElementById('setDataNascita')?.scrollIntoView({behavior:'smooth', block:'center'}); }, 150);
     });
     return;
   }
@@ -8097,6 +8280,7 @@ function renderSchedaEditForm(){
   const p = activeProgram();
   editingDays = JSON.parse(JSON.stringify(p.days));
   document.getElementById('newProgramName').value = "";
+  document.getElementById('newProgramScadenza').value = p.scadenza || "";
   const titolo = document.getElementById('programEditTitolo');
   if(titolo){
     titolo.textContent = (modalitaPT && _modificaPTCosa==='scheda' && _clienteAperto)
@@ -8575,6 +8759,7 @@ document.getElementById('updateProgramBtn').addEventListener('click', ()=>{
   if(editingDays.length===0){ toast("Aggiungi almeno un giorno di allenamento."); return; }
   const current = activeProgram();
   current.days = editingDays;
+  current.scadenza = document.getElementById('newProgramScadenza').value || null;
   propagaEserciziPersonalizzatiPT(editingDays);
   segnaModifica(activeProfile(), 'scheda');
   save();
@@ -8594,6 +8779,7 @@ document.getElementById('saveNewProgramBtn').addEventListener('click', ()=>{
 
   const newProgram = {
     id: uid(), name, createdAt: today, archivedAt: null,
+    scadenza: document.getElementById('newProgramScadenza').value || null,
     days: editingDays, dietInfo: current.dietInfo, diet: current.diet
   };
   prof.programs.push(newProgram);
@@ -8614,7 +8800,7 @@ document.getElementById('saveDietBtn').addEventListener('click', ()=>{
   current.archivedAt = today;
 
   const newProgram = {
-    id: uid(), name: current.name, createdAt: today, archivedAt: null,
+    id: uid(), name: current.name, createdAt: today, archivedAt: null, scadenza: current.scadenza || null,
     days: current.days, dietInfo: editingDietInfo, diet: editingDiet
   };
   prof.programs.push(newProgram);
