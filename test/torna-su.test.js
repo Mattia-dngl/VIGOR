@@ -76,15 +76,15 @@ test('menu in basso: toccare una scheda DIVERSA da quella attiva naviga normalme
   const r = await run(window, `
     const profilo = { id:'io', name:'Io', email:'io@test.it', logs:[], measurements:[], customExercises:{}, customFoods:{} };
     state.profiles = [profilo]; activeProfileId = 'io';
-    mostraHome(); // stato noto: Home attiva, "Glossario" non attiva
+    mostraHome(); // stato noto: Home attiva, "Storico" non attiva
     let chiamate = [];
     window.scrollTo = (opz) => chiamate.push(opz);
-    const btnGlossario = document.querySelector('#navTabsGlobale button[data-go="glossario"]');
-    btnGlossario.click();
+    const btnStorico = document.querySelector('#navTabsGlobale button[data-go="storico"]');
+    btnStorico.click();
     return {
       chiamate,
       schedaVisibile: document.getElementById('appRoot').style.display !== 'none',
-      schedaAttivaOra: btnGlossario.classList.contains('active')
+      schedaAttivaOra: btnStorico.classList.contains('active')
     };
   `);
   assert.equal(r.chiamate.length, 0, 'passando a una scheda diversa non deve scattare lo scorrimento automatico');

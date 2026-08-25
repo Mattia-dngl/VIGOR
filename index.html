@@ -81,7 +81,7 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
     <div id="cloudAccedi">
       <h1>Accedi</h1>
       <div class="sub">Con lo stesso account entri da qualsiasi telefono e ritrovi i tuoi allenamenti.</div>
-      <div class="info-banner" id="confermaEmailBanner" style="display:none; margin:12px 0;">
+      <div class="info-banner esito-positivo" id="confermaEmailBanner" style="display:none; margin:12px 0;">
         <span>Account creato! Vai nella tua email (<b id="confermaEmailIndirizzo"></b>) e tocca il link di conferma — poi torna qui e accedi.</span>
       </div>
       <label>Email</label>
@@ -119,6 +119,17 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
       <div class="sub" id="cloudAttesaTxt"></div>
       <button class="btn block" id="cloudRicontrolla" style="margin-top:16px;">Ricontrolla</button>
       <button class="btn secondary block" id="cloudEsci">Esci</button>
+    </div>
+
+    <div id="cloudRecovery" style="display:none;">
+      <h1>Imposta una nuova password</h1>
+      <div class="sub">Sei arrivato qui dal link che ti abbiamo mandato via email. Scegli la nuova password per il tuo account.</div>
+      <label>Nuova password</label>
+      <input type="password" id="recoveryPw1" placeholder="Almeno 8 caratteri" autocomplete="new-password">
+      <label>Conferma la nuova password</label>
+      <input type="password" id="recoveryPw2" placeholder="Ripeti la password" autocomplete="new-password">
+      <div class="hint" id="recoveryErr" style="color:var(--accent); display:none; margin-top:6px;"></div>
+      <button class="btn block" id="recoveryBtn" style="margin-top:14px;">Salva la nuova password</button>
     </div>
   </div>
 </div>
@@ -178,7 +189,7 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
       <input type="password" id="recuperoPw2" placeholder="Ripeti la password" autocomplete="new-password">
       <div class="hint" id="recuperoErr" style="color:var(--accent); display:none; margin-top:6px;"></div>
       <button class="btn block" id="recuperoBtn" style="margin-top:12px;">Reimposta la password</button>
-      <div class="hint" style="margin-top:10px;">Non hai il codice? I dati restano nel telefono ma senza password non è possibile entrare in questo profilo. L'unica via è eliminarlo dall'elenco e ripartire da un backup.</div>
+      <div class="hint" style="margin-top:10px;">Non hai il codice? Senza non è possibile entrare in questo profilo. L'unica via è eliminarlo dall'elenco e ricominciare da zero.</div>
     </div>
   </div>
 </div>
@@ -262,8 +273,10 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
           <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2.5a1 1 0 0 1 1 1v.63A6.5 6.5 0 0 1 18.5 10.5v3.02c0 .84.33 1.65.93 2.24L20.4 16.7c.8.8.23 2.17-.9 2.17H4.5c-1.13 0-1.7-1.37-.9-2.17l.97-.94c.6-.59.93-1.4.93-2.24V10.5a6.5 6.5 0 0 1 5.5-6.37V3.5a1 1 0 0 1 1-1Z"/><path d="M9.5 19.2a2.7 2.7 0 0 0 5 0 .5.5 0 0 0-.47-.7H9.97a.5.5 0 0 0-.47.7Z"/></svg>
           <span class="home-bell-dot" id="homeBellDot" style="display:none;"></span>
         </button>
-        <button type="button" class="home-settings-btn" id="homeSettingsBtn" title="Impostazioni">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 13a7.97 7.97 0 0 0 0-2l2.1-1.6-2-3.4-2.5 1a8 8 0 0 0-1.7-1L14.9 3h-4l-.4 2.9a8 8 0 0 0-1.7 1l-2.5-1-2 3.4L6.4 11a7.97 7.97 0 0 0 0 2l-2.1 1.6 2 3.4 2.5-1a8 8 0 0 0 1.7 1L10.9 21h4l.4-2.9a8 8 0 0 0 1.7-1l2.5 1 2-3.4L19.4 13Z"/></svg>
+        <!-- Prima qui c'era l'ingranaggio delle Impostazioni: ora è l'avatar,
+             tocca per aprire Account (che include anche Impostazioni). -->
+        <button type="button" class="home-avatar-btn" id="homeAvatarBtn" title="Account">
+          <span id="homeAvatarInitials">—</span>
         </button>
       </div>
     </div>
@@ -279,11 +292,23 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
     <div class="home-hero-row">
       <div class="home-head">
         <h1 class="home-greeting" id="homeSaluto">Bentornato!</h1>
-        <div class="home-tagline">Ogni piccolo sforzo ti porta più vicino al meglio di te.</div>
+        <div class="home-tagline" id="homeDataOggi">Ogni piccolo sforzo ti porta più vicino al meglio di te.</div>
       </div>
       <div class="home-hero">
         <img src="assets/images/home-hero.png" class="home-hero-photo" alt="">
       </div>
+    </div>
+
+    <!-- Striscia dei giorni della settimana, oggi in evidenza -->
+    <div class="home-daystrip" id="homeDayStrip"></div>
+
+    <!-- Allenamento di oggi: sostituisce la vecchia card "Allenati", apre direttamente Registra -->
+    <div class="home-cta-card" id="homeCtaCard">
+      <div class="home-cta-eyebrow" id="homeCtaEyebrow">ALLENAMENTO DI OGGI</div>
+      <div class="home-cta-title" id="homeCtaTitle">—</div>
+      <div class="home-cta-meta" id="homeCtaMeta"></div>
+      <button type="button" class="home-cta-btn" id="homeCtaBtn">Inizia allenamento</button>
+      <div class="home-cta-link" id="homeAllenatiBtn">Vedi la scheda completa</div>
     </div>
 
     <!-- Mappa muscolare della settimana: stesso disegno anatomico usato in Scheda/Registra/Glossario -->
@@ -309,15 +334,6 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
         <div class="heatmap-legend-item"><span class="heatmap-legend-dot" style="background:#ff7a3d"></span>Moderato</div>
         <div class="heatmap-legend-item"><span class="heatmap-legend-dot" style="background:#ff4b2b"></span>Intenso</div>
       </div>
-    </div>
-
-    <!-- Allenamento di oggi: sostituisce la vecchia card "Allenati", apre direttamente Registra -->
-    <div class="home-cta-card" id="homeCtaCard">
-      <div class="home-cta-eyebrow" id="homeCtaEyebrow">ALLENAMENTO DI OGGI</div>
-      <div class="home-cta-title" id="homeCtaTitle">—</div>
-      <div class="home-cta-meta" id="homeCtaMeta"></div>
-      <button type="button" class="home-cta-btn" id="homeCtaBtn">Inizia allenamento</button>
-      <div class="home-cta-link" id="homeAllenatiBtn">Vedi la scheda completa</div>
     </div>
 
     <div class="home-goal-card">
@@ -392,6 +408,25 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
           </div>
         </div>
       </details>
+    </div>
+
+    <!-- Scheda attiva: nome del programma in corso, con un tasto per aprirlo -->
+    <button type="button" class="home-scheda-card" id="homeSchedaAttivaCard">
+      <div class="home-scheda-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" aria-hidden="true"><rect x="5" y="3.5" width="14" height="17" rx="2.5"/><path d="M9 8.5h6M9 12h6M9 15.5h4" stroke-linecap="round"/></svg></div>
+      <div class="home-scheda-testo">
+        <div class="home-scheda-eyebrow">SCHEDA ATTIVA</div>
+        <div class="home-scheda-nome" id="homeSchedaAttivaNome">—</div>
+      </div>
+      <span class="home-scheda-vedi">Vedi <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg></span>
+    </button>
+
+    <!-- Dieta di oggi: kcal rispetto al fabbisogno (quando calcolabile) + macro consumati -->
+    <div class="card" id="homeDietaOggiCard">
+      <div class="card-head-row">
+        <h3 class="diet" style="margin:0;">Dieta di oggi</h3>
+        <span class="hint" id="homeDietaOggiKcal"></span>
+      </div>
+      <div id="homeDietaOggiBody"></div>
     </div>
 
     <button type="button" class="home-pt-card" id="homePTBtn" style="display:none;">
@@ -486,6 +521,42 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
       </div>
     </details>
 
+    <button type="button" class="acct-row-link" id="acctVaiImpostazioni">
+      <div class="acct-row-icon dark"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg></div>
+      <div class="acct-row-body"><div class="acct-row-title">Impostazioni</div><div class="acct-row-sub">Timer, promemoria, esercizi personali</div></div>
+      <div class="acct-row-chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg></div>
+    </button>
+
+    <button type="button" class="acct-row-link" id="acctVaiGlossario">
+      <div class="acct-row-icon diet"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7" stroke-linejoin="round" aria-hidden="true"><path d="M12 6.3c-1.7-1.2-3.8-1.8-6-1.8-.7 0-1.3.6-1.3 1.3v11c0 .7.6 1.2 1.3 1 1.8-.6 3.6-.2 4.9.7.6.4 1.4.4 2 0 1.3-.9 3.1-1.3 4.9-.7.7.2 1.3-.3 1.3-1v-11c0-.7-.6-1.3-1.3-1.3-2.2 0-4.3.6-6 1.8Z"/><path d="M12 6.3v12.7"/></svg></div>
+      <div class="acct-row-body"><div class="acct-row-title">Glossario</div><div class="acct-row-sub">Tutti gli esercizi, spiegati</div></div>
+      <div class="acct-row-chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg></div>
+    </button>
+
+    <button type="button" class="acct-row-link" id="acctVaiMessaggi">
+      <div class="acct-row-icon chat"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a8.4 8.4 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.7a8.4 8.4 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.4 8.4 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5Z"/></svg></div>
+      <div class="acct-row-body"><div class="acct-row-title">Messaggi</div><div class="acct-row-sub">La chat col tuo PT o coi tuoi clienti</div></div>
+      <div class="acct-row-chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg></div>
+    </button>
+
+    <button type="button" class="acct-row-link" id="acctVaiNotifiche">
+      <div class="acct-row-icon notif"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div>
+      <div class="acct-row-body"><div class="acct-row-title">Notifiche</div><div class="acct-row-sub">Promemoria di allenamento sul telefono</div></div>
+      <div class="acct-row-chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg></div>
+    </button>
+
+    <button type="button" class="acct-row-link" id="acctVaiPrivacy">
+      <div class="acct-row-icon privacy"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2 4 5v6c0 5 3.4 8.9 8 11 4.6-2.1 8-6 8-11V5l-8-3Z"/></svg></div>
+      <div class="acct-row-body"><div class="acct-row-title">Privacy e Sicurezza</div><div class="acct-row-sub">Password dell'account, elimina account</div></div>
+      <div class="acct-row-chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg></div>
+    </button>
+
+    <button type="button" class="acct-row-link" id="acctVaiAssistenza">
+      <div class="acct-row-icon help"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.8.4-1 .7-1 1.7"/><path d="M12 17.5h.01"/></svg></div>
+      <div class="acct-row-body"><div class="acct-row-title">Assistenza</div><div class="acct-row-sub">Un problema o un suggerimento?</div></div>
+      <div class="acct-row-chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg></div>
+    </button>
+
     <details class="card details-card acct-row" id="cardAmministrazione" style="margin-top:10px; display:none;">
       <summary>
         <div class="acct-row-icon admin"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2 4 5v6c0 5 3.4 8.9 8 11 4.6-2.1 8-6 8-11V5l-8-3Z"/></svg></div>
@@ -539,6 +610,54 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
   </div>
 </div>
 
+<div id="privacySicurezzaPanel" style="display:none;">
+  <div class="settings-inner">
+    <div class="settings-head">
+      <h1>Privacy e Sicurezza</h1>
+      <button class="switch-user" id="closePrivacyBtn">✕ Chiudi</button>
+    </div>
+
+    <div class="card" style="margin-top:16px;">
+      <h3>Password dell'account</h3>
+      <p class="hint">Ti mandiamo un'email all'indirizzo con cui sei registrato (<b id="privacyEmailMostrata">—</b>): apri il link e scegli lì la nuova password.</p>
+      <button class="btn block" id="privacyCambiaPwBtn" style="margin-top:10px;">Inviami l'email per cambiarla</button>
+      <div class="hint" id="privacyPwEsito" style="margin-top:10px; display:none;"></div>
+    </div>
+
+    <div class="card" style="margin-top:12px; border:1px solid var(--accent);">
+      <h3 style="color:var(--accent);">Elimina il mio account</h3>
+      <p class="hint">Cancella per sempre il tuo account, la scheda, la dieta, lo storico allenamenti e le conversazioni. Non si torna indietro.</p>
+      <button class="btn danger block" id="privacyEliminaBtn" style="margin-top:10px;">Elimina il mio account</button>
+    </div>
+  </div>
+</div>
+
+<div id="assistenzaPanel" style="display:none;">
+  <div class="settings-inner">
+    <div class="settings-head">
+      <h1>Assistenza</h1>
+      <button class="switch-user" id="closeAssistenzaBtn">✕ Chiudi</button>
+    </div>
+    <div class="card" style="margin-top:16px;">
+      <h3>Hai un problema o un suggerimento?</h3>
+      <p class="hint">Scrivi direttamente a chi gestisce VIGOR: rispondiamo via email.</p>
+      <a class="btn block" id="assistenzaMailtoBtn" href="mailto:dangelomattia2002@gmail.com" style="margin-top:10px; text-decoration:none; text-align:center; display:block;">Scrivi un'email</a>
+    </div>
+  </div>
+</div>
+
+<div class="mp-overlay" id="sceltaConversazioneOverlay">
+  <div class="mp-modal" style="max-width:420px;">
+    <div class="mp-head">
+      <h3>Con chi vuoi parlare?</h3>
+      <button class="mp-close" id="sceltaConversazioneChiudi" type="button" aria-label="Chiudi">&#10005;</button>
+    </div>
+    <div style="padding:14px 16px; overflow-y:auto;">
+      <div id="elencoConversazioni"></div>
+    </div>
+  </div>
+</div>
+
 <div id="settingsPanel" style="display:none;">
   <div class="settings-inner">
     <div class="settings-head">
@@ -570,16 +689,10 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
     <details class="card details-card" style="margin-top:10px;">
       <summary>Sicurezza dei dati</summary>
       <div class="details-body">
-        <p class="hint">Gli allenamenti stanno solo in questo telefono. Qui vedi se sono protetti e quando hai fatto l'ultimo backup.</p>
+        <p class="hint">Gli allenamenti stanno solo in questo telefono. Qui vedi se sono protetti dalla cancellazione automatica del browser.</p>
         <div class="dato-riga"><span>Protezione dalla cancellazione</span><b id="statoPersistenza">—</b></div>
         <div class="dato-riga"><span>Spazio occupato</span><b id="statoSpazio">—</b></div>
-        <div class="dato-riga"><span>Ultimo backup</span><b id="statoBackup">—</b></div>
-        <p class="hint" id="avvisoBackup" style="display:none; color:var(--warn); margin-top:10px;"></p>
 
-        <button class="btn block" id="backupOraBtn" style="margin-top:12px;">Salva una copia dei miei dati</button>
-        <label class="btn secondary block" for="ripristinaMioFile" style="text-align:center; cursor:pointer;">Ricarica una copia salvata</label>
-        <input type="file" id="ripristinaMioFile" accept="application/json,.json" style="display:none;">
-        <p class="hint" style="margin-top:8px;">La copia contiene scheda, allenamenti, dieta, misure e impostazioni. Ricaricandola sostituisci i dati attuali con quelli del file.</p>
         <button class="btn secondary block" id="proteggiBtn" style="display:none;">Attiva la protezione</button>
         <details class="details-card" style="margin-top:12px; border:none; padding:0;">
           <summary>Codice di recupero del profilo</summary>
@@ -659,7 +772,7 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
     </details>
 
     <div class="card" id="noExPermCard" style="display:none;">
-      <p class="hint">Il tuo personal trainer non ti ha dato il permesso di modificare la scheda: da qui puoi comunque gestire timer, backup e le altre impostazioni.</p>
+      <p class="hint">Il tuo personal trainer non ti ha dato il permesso di modificare la scheda: da qui puoi comunque gestire timer e le altre impostazioni.</p>
     </div>
   </div>
 </div>
@@ -975,7 +1088,9 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
       <div id="statoMioPT" style="margin-top:10px;"></div>
     </div>
 
-    <div class="seg-toggle" id="progSchedaStoricoToggle">
+    <!-- Storico ha ora una voce a sé nella nav in basso (apriStorico()/vaiA('program')
+         mostrano il blocco giusto direttamente): questo toggle interno non serve più. -->
+    <div class="seg-toggle" id="progSchedaStoricoToggle" style="display:none;">
       <button class="seg-btn active" data-segprog="scheda">Scheda</button>
       <button class="seg-btn" data-segprog="storico">Storico</button>
     </div>
@@ -1032,28 +1147,13 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
         <div class="details-body" id="archiveList"><div class="empty">Nessuna scheda precedente.</div></div>
       </details>
 
-      <details class="card details-card" id="backupDatiDetails">
-        <summary>Backup dati</summary>
-        <div class="details-body">
-          <p class="hint">Tutti i dati (profili, schede, diete, storico) sono salvati solo su questo dispositivo/browser. Esporta un backup ogni tanto per non perderli, o per trasferirli su un altro dispositivo.</p>
-          <button class="btn block" id="exportBtn">Esporta backup (.json)</button>
-        </div>
-      </details>
-
-      <details class="card details-card" id="ripristinaBackupDetails">
-        <summary>Ripristina backup</summary>
-        <div class="details-body">
-          <p class="hint">Attenzione: importando un backup, tutti i profili e i dati attuali su questo dispositivo verranno sostituiti.</p>
-          <input type="file" id="importFile" accept="application/json">
-        </div>
-      </details>
     </div>
     </div>
 
     <div id="programStoricoBlock" style="display:none;">
     <div class="seg-toggle">
-      <button class="seg-btn active" data-seg2="volume">Volume</button>
-      <button class="seg-btn" data-seg2="allenamenti">Allenamenti</button>
+      <button class="seg-btn active" data-seg2="allenamenti">Allenamenti</button>
+      <button class="seg-btn" data-seg2="volume">Volume</button>
       <button class="seg-btn" data-seg2="misure">Misure</button>
     </div>
 
@@ -1101,7 +1201,7 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
       </details>
     </div>
 
-    <div id="historyVolumeBlock">
+    <div id="historyVolumeBlock" style="display:none;">
       <div class="card">
         <div class="card-head-row">
           <h3>Volume &amp; Trend</h3>
@@ -1135,8 +1235,8 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
       </div>
     </div>
 
-    <div id="historyLogsBlock" style="display:none;">
-      <div class="card">
+    <div id="historyLogsBlock">
+      <div class="card cal-card-nuovo">
         <div class="cal-head">
           <h3 id="calTitolo">—</h3>
           <div class="cal-nav">
@@ -1144,18 +1244,15 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
             <button type="button" class="cal-nav-btn" id="calNextBtn" aria-label="mese successivo">›</button>
           </div>
         </div>
-        <div class="cal-summary">
-          <div class="cal-stat done"><b id="calFatti">0</b><span>fatti</span></div>
-          <div class="cal-stat skip"><b id="calSaltati">0</b><span>saltati</span></div>
-        </div>
         <div class="weekdays"><span>L</span><span>M</span><span>M</span><span>G</span><span>V</span><span>S</span><span>D</span></div>
-        <div class="cal-days" id="calGiorni"></div>
-        <div class="legend">
-          <span class="sw"><span class="dot" style="background:var(--ok)"></span>Fatto</span>
-          <span class="sw"><span class="dot" style="background:#fff;border:1.5px solid var(--warn)"></span>Saltato</span>
-          <span class="sw"><span class="dot" style="border:1.5px solid var(--accent)"></span>Oggi</span>
-        </div>
-        <div id="calDettaglio" style="margin-top:14px;"></div>
+        <div class="cal-days-nuovo" id="calGiorni"></div>
+      </div>
+
+      <div id="calDettaglio"></div>
+
+      <div class="card storico-riepilogo-card">
+        <h3 id="riepilogoTitolo">Riepilogo</h3>
+        <div class="riepilogo-grid" id="riepilogoGrid"></div>
       </div>
 
       <details class="card details-card" open>
@@ -1229,9 +1326,11 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
 </div>
 </div>
 
-<!-- Nav visibile, persistente su tutte le schermate (Home/Scheda/Dieta/Account/Glossario).
+<!-- Nav visibile, persistente su tutte le schermate (Scheda/Dieta/Dashboard/Storico).
      Riusa lo stile .tabs/.tab-btn/.tab-fab esistente; la logica clicca "per conto suo"
-     i bottoni della nav storica qui sopra (rimasta come motore interno, solo nascosta). -->
+     i bottoni della nav storica qui sopra (rimasta come motore interno, solo nascosta).
+     Account e Glossario non hanno più una voce fissa qui: si aprono dall'avatar in
+     alto a destra nella Dashboard (Account, che a sua volta elenca anche Glossario). -->
 <nav class="tabs" id="navTabsGlobale">
   <button type="button" data-go="program">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><rect x="5" y="3.5" width="14" height="17" rx="2.5" stroke-width="1.8"/><path d="M9 8.5h6M9 12h6M9 15.5h4" stroke-linecap="round" stroke-width="1.8"/></svg>
@@ -1241,17 +1340,20 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path d="M7 3v8a2 2 0 0 0 4 0V3M9 11v10M17 3c-1.5 1.5-2 3.5-2 5.5 0 1.7.8 2.5 2 2.5V3zM17 11v10" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/></svg>
     <span class="tab-label">Dieta</span>
   </button>
-  <button type="button" class="tab-btn-main active" data-go="home">
-    <span class="tab-fab"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 3.2 3 11h2.4v9h5.1v-6h3v6h5.1v-9H21z"/></svg></span>
-    <span class="tab-label">Home</span>
+  <!-- Bottone centrale rialzato: prima portava in Home, ora è il "+" che apre
+       Registra direttamente da qualunque schermata (come chiesto) — Dashboard
+       diventa una voce normale della nav, qui sotto. -->
+  <button type="button" class="tab-btn-main" id="fabRegistraBtn">
+    <span class="tab-fab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></span>
+    <span class="tab-label">Registra</span>
   </button>
-  <button type="button" data-go="account">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><circle cx="12" cy="8.2" r="3.4" stroke-width="1.8"/><path d="M5 19c1.2-4 4-6 7-6s5.8 2 7 6" stroke-linecap="round" stroke-width="1.8"/></svg>
-    <span class="tab-label">Account</span>
+  <button type="button" class="active" data-go="home">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path d="M12 3.2 3 11h2.4v9h5.1v-6h3v6h5.1v-9H21z" stroke-width="1.8" stroke-linejoin="round"/></svg>
+    <span class="tab-label">Dashboard</span>
   </button>
-  <button type="button" data-go="glossario">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path d="M12 6.3c-1.7-1.2-3.8-1.8-6-1.8-.7 0-1.3.6-1.3 1.3v11c0 .7.6 1.2 1.3 1 1.8-.6 3.6-.2 4.9.7.6.4 1.4.4 2 0 1.3-.9 3.1-1.3 4.9-.7.7.2 1.3-.3 1.3-1v-11c0-.7-.6-1.3-1.3-1.3-2.2 0-4.3.6-6 1.8Z" stroke-linejoin="round" stroke-width="1.7"/><path d="M12 6.3v12.7" stroke-width="1.7"/></svg>
-    <span class="tab-label">Glossario</span>
+  <button type="button" data-go="storico">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7" stroke-linecap="round" stroke-width="1.8"/><path d="M3 4v5h5" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/><path d="M12 8v5l3.5 2" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/></svg>
+    <span class="tab-label">Storico</span>
   </button>
 </nav>
 
@@ -1369,6 +1471,18 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
 // ============================================================
 const WEEKDAYS = ["Domenica","Lunedì","Martedì","Mercoledì","Giovedì","Venerdì","Sabato"];
 const WD_ORDER = ["Lunedì","Martedì","Mercoledì","Giovedì","Venerdì","Sabato","Domenica"];
+// Categoria del giorno di scheda (Storico, 15° giro): puramente descrittiva, scelta
+// da chi compila la scheda in fase di editor — non cambia nessun calcolo esistente,
+// serve solo a mostrare l'etichetta colorata nella card del giorno in Storico.
+// I giorni creati PRIMA di questa modifica non hanno "categoria" (undefined): si
+// mostrano con l'etichetta generica "Allenamento", mai una categoria indovinata.
+const CATEGORIE_ALLENAMENTO = {
+  forza:     { label: "Forza",     classe: "cat-forza" },
+  cardio:    { label: "Cardio",    classe: "cat-cardio" },
+  mobilita:  { label: "Mobilità",  classe: "cat-mobilita" },
+  misto:     { label: "Misto",     classe: "cat-misto" }
+};
+const NOMI_MESI = ["Gennaio","Febbraio","Marzo","Aprile","Maggio","Giugno","Luglio","Agosto","Settembre","Ottobre","Novembre","Dicembre"];
 const STORAGE_KEY = "gymTrackerPersonaleState_v1";
 // unico account che può gestire l'app: password d'ingresso, profili, reimpostazioni
 const EMAIL_AMMINISTRATORE = "dangelomattia2002@gmail.com";
@@ -2425,30 +2539,55 @@ document.getElementById('onbContinua').addEventListener('click', ()=>{
   if(!sesso){ toast("Scegli uomo o donna per continuare."); return; }
   salvaSesso(sesso);
 
+  const p = activeProfile();
   const dataNascita = document.getElementById('onbDataNascita').value;
-  if(dataNascita){
-    const p = activeProfile();
-    if(p){
-      p.dataNascita = dataNascita;
-      save();
-      if(typeof modalitaOnline === 'function' && modalitaOnline()) inviaOnline();
-    }
-  }
+  if(dataNascita && p) p.dataNascita = dataNascita;
 
   const peso = document.getElementById('onbPeso').value.trim();
   const altezza = document.getElementById('onbAltezza').value.trim();
   const attivita = document.getElementById('onbAttivita').value.trim();
+
+  if(p){
+    // L'altezza va scritta anche nel profilo (Account → Dati fisici): è da lì,
+    // non dalla scheda alimentare qui sotto, che il fabbisogno calorico la
+    // legge — altrimenti restava chiesta di nuovo in Account e "mancante"
+    // nel calcolo del fabbisogno anche subito dopo averla inserita qui.
+    // Segnalato il 25/08/2026.
+    const altezzaNum = parseFloat(altezza);
+    if(altezzaNum && altezzaNum > 0) p.altezza = altezzaNum;
+
+    // Il peso va registrato anche come misurazione in Storico → Misure: è da
+    // lì, non dalla scheda alimentare, che il fabbisogno calorico prende il
+    // peso — così compare anche nel grafico dello storico, invece di restare
+    // invisibile dentro la sola scheda alimentare.
+    const pesoNum = parseFloat(peso);
+    if(pesoNum && pesoNum > 0){
+      const oggi = new Date().toISOString().slice(0,10);
+      const precedente = p.measurements.find(m=>m.date===oggi);
+      p.measurements = p.measurements.filter(m=>m.date!==oggi);
+      p.measurements.push({
+        date: oggi, weight: pesoNum,
+        waist: precedente ? precedente.waist : null,
+        extra: (precedente && precedente.extra) || {}
+      });
+      p.measurements.sort((a,b)=>a.date.localeCompare(b.date));
+    }
+  }
+
   const prog = activeProgram();
   if(prog){
     if(!prog.dietInfo) prog.dietInfo = defaultDietInfo();
     if(peso) prog.dietInfo.peso = peso;
     if(altezza) prog.dietInfo.altezza = altezza;
     if(attivita) prog.dietInfo.attivita = attivita;
-    save();
-    if(typeof modalitaOnline === 'function' && modalitaOnline()) inviaOnline();
   }
+
+  save();
+  if(typeof modalitaOnline === 'function' && modalitaOnline()) inviaOnline();
+
   document.getElementById('onboardingGate').style.display = 'none';
   renderHeader();
+  renderMeasurements();
 });
 document.getElementById('onbSalta').addEventListener('click', ()=>{
   document.getElementById('onboardingGate').style.display = 'none';
@@ -3570,6 +3709,7 @@ let utenteOnline = null;       // account con cui sono entrato
 let rigaOnline = null;         // la mia riga nella tabella profili
 let _salvataggioInCorso = null;
 let _daSincronizzare = false;
+let _recuperoPasswordAttivo = false; // true tra il link "password dimenticata" nell'email e il salvataggio della nuova password
 
 // configurato = l'app deve lavorare online, anche se la libreria non è ancora arrivata
 function configurataOnline(){ return !!(SUPABASE_URL && SUPABASE_CHIAVE); }
@@ -3646,6 +3786,13 @@ function iniziaSupabase(){
     sb = supabase.createClient(SUPABASE_URL, SUPABASE_CHIAVE, {
       auth: { persistSession: true, autoRefreshToken: true }
     });
+    // Il link "password dimenticata" riporta qui con un token di tipo "recovery":
+    // supabase-js lo intercetta da solo e apre una sessione temporanea, ma senza
+    // questo listener non c'era NESSUN modo di accorgersene — l'app trattava quel
+    // link come un login normale e la password vecchia non veniva mai sostituita.
+    sb.auth.onAuthStateChange((evento)=>{
+      if(evento === 'PASSWORD_RECOVERY') _recuperoPasswordAttivo = true;
+    });
     return true;
   }catch(e){ console.error('Supabase non raggiungibile:', e); return false; }
 }
@@ -3709,6 +3856,7 @@ function mostraCloudGate(quale){
   document.getElementById('cloudRegistra').style.display   = quale === 'registra'    ? 'block':'none';
   document.getElementById('cloudAttesa').style.display     = quale === 'attesa'      ? 'block':'none';
   document.getElementById('cloudCaricamento').style.display= quale === 'caricamento' ? 'block':'none';
+  document.getElementById('cloudRecovery').style.display   = quale === 'recovery'    ? 'block':'none';
   if(quale !== 'accedi') document.getElementById('confermaEmailBanner').style.display = 'none';
 }
 function nascondiCloudGate(){ document.getElementById('cloudGate').style.display = 'none'; }
@@ -4120,6 +4268,23 @@ function mostraHome(){
   const p = (typeof activeProfile === 'function') ? activeProfile() : null;
   document.getElementById('homeSaluto').textContent = p && p.name ? `Bentornato, ${p.name}!` : 'Bentornato!';
   try{
+    const oggiTxt = new Date().toLocaleDateString('it-IT', {weekday:'long', day:'numeric', month:'long'});
+    document.getElementById('homeDataOggi').textContent = oggiTxt.charAt(0).toUpperCase() + oggiTxt.slice(1);
+  }catch(e){ console.error(e); }
+  try{
+    document.getElementById('homeAvatarInitials').textContent = inizialiNome(p && p.name);
+    const btn = document.getElementById('homeAvatarBtn');
+    const initialsEl = document.getElementById('homeAvatarInitials');
+    let img = btn.querySelector('img');
+    if(p && p.avatarUrl){
+      if(!img){ img = document.createElement('img'); img.alt = ''; btn.insertBefore(img, initialsEl); }
+      img.src = p.avatarUrl; img.style.display = 'block'; initialsEl.style.display = 'none';
+    } else {
+      if(img) img.style.display = 'none';
+      initialsEl.style.display = '';
+    }
+  }catch(e){ console.error(e); }
+  try{
     const programma = p && p.programs ? p.programs.find(x=>x.id===p.activeProgramId) : null;
     const {fatti, totali} = obiettivoSettimanale(p||{}, programma);
     document.getElementById('homeGoalFatti').textContent = fatti;
@@ -4136,11 +4301,85 @@ function mostraHome(){
     ring.style.strokeDashoffset = `${CIRC * (1 - quota)}`;
     renderObiettivi(p||{}, programma);
     aggiornaHomeCta(p, programma);
+    renderHomeDayStrip(p, programma);
+    renderHomeSchedaAttiva(programma);
+    renderHomeDietaOggi(p);
   }catch(e){ console.error(e); }
   hmRefresh();
   aggiornaCampanellaHome();
   document.getElementById('homeScreen').style.display = 'block';
   aggiornaNavGlobale('home');
+}
+
+// Striscia Lun-Dom della settimana in corso, oggi in evidenza.
+function renderHomeDayStrip(prof, programma){
+  const box = document.getElementById('homeDayStrip');
+  if(!box) return;
+  const oggi = new Date();
+  const lunedi = new Date(oggi);
+  lunedi.setDate(oggi.getDate() - ((oggi.getDay()+6)%7));
+  const oggiKey = oggi.toISOString().slice(0,10);
+  let html = '';
+  for(let i=0;i<7;i++){
+    const d = new Date(lunedi); d.setDate(lunedi.getDate()+i);
+    const key = d.toISOString().slice(0,10);
+    const isOggi = key === oggiKey;
+    const wd = WEEKDAYS[d.getDay()];
+    html += `<div class="home-day-cell${isOggi?' oggi':''}">
+      <div class="dow">${wd.slice(0,3).toUpperCase()}</div>
+      <div class="num">${d.getDate()}</div>
+    </div>`;
+  }
+  box.innerHTML = html;
+}
+
+// Card "Scheda attiva": nome del programma in corso.
+function renderHomeSchedaAttiva(programma){
+  const card = document.getElementById('homeSchedaAttivaCard');
+  const nomeEl = document.getElementById('homeSchedaAttivaNome');
+  if(!card || !nomeEl) return;
+  if(!programma){
+    card.style.display = 'none';
+    return;
+  }
+  card.style.display = 'flex';
+  nomeEl.textContent = programma.name || 'La mia scheda';
+}
+
+// Card "Dieta di oggi": macro consumati oggi (dal diario alimentare) + kcal
+// rispetto al fabbisogno calcolato in Account, quando è calcolabile.
+function renderHomeDietaOggi(prof){
+  const kcalEl = document.getElementById('homeDietaOggiKcal');
+  const body = document.getElementById('homeDietaOggiBody');
+  if(!body || !prof) return;
+  const oggi = new Date().toISOString().slice(0,10);
+  const giorno = (prof.mealLogs||[]).find(m=>m.date===oggi);
+  const items = giorno ? giorno.items : [];
+  const totals = items.reduce((acc,it)=>{
+    const f = (typeof datiAlimento === 'function') ? datiAlimento(it.food) : null;
+    if(!f) return acc;
+    const factor = it.grams/100;
+    acc.kcal += f.kcal*factor; acc.p += f.p*factor; acc.c += f.c*factor; acc.f += f.f*factor;
+    return acc;
+  }, {kcal:0,p:0,c:0,f:0});
+
+  const fabbisogno = (typeof calcolaFabbisogno === 'function') ? calcolaFabbisogno(prof) : null;
+  let barraHtml = '';
+  if(fabbisogno && !fabbisogno.mancanti.length){
+    const pct = Math.min(100, Math.round(totals.kcal / fabbisogno.risultato * 100));
+    kcalEl.textContent = `${Math.round(totals.kcal)} / ${fabbisogno.risultato} kcal`;
+    barraHtml = `<div class="home-dieta-kcal-row">
+      <div class="home-dieta-kcal-bar"><div class="home-dieta-kcal-fill" style="width:${pct}%"></div></div>
+    </div>`;
+  } else {
+    kcalEl.textContent = `${Math.round(totals.kcal)} kcal`;
+  }
+
+  body.innerHTML = barraHtml + `
+    <div class="macro-row"><span class="macro-dot" style="background:var(--diet);"></span><span class="macro-row-label">Proteine</span><span class="macro-row-val">${Math.round(totals.p)} g</span></div>
+    <div class="macro-row"><span class="macro-dot" style="background:var(--accent);"></span><span class="macro-row-label">Carboidrati</span><span class="macro-row-val">${Math.round(totals.c)} g</span></div>
+    <div class="macro-row"><span class="macro-dot" style="background:#f0b429;"></span><span class="macro-row-label">Grassi</span><span class="macro-row-val">${Math.round(totals.f)} g</span></div>
+  `;
 }
 
 // Card "Allenamento di oggi": mostra il giorno previsto per oggi dalla scheda attiva,
@@ -4204,9 +4443,19 @@ function showAppRoot(){
 function vaiA(tab){
   if(tab === 'home'){ mostraHome(); return; }
   if(tab === 'account'){ apriAccountPanel(); return; }
+  if(tab === 'storico'){ apriStorico(); return; }
   showAppRoot();
   const legacyBtn = document.querySelector('#navTabsLegacy .tab-btn[data-tab="'+tab+'"]');
   if(legacyBtn) legacyBtn.click();
+  if(tab === 'program'){
+    // Storico ha ora una voce a sé nella nav: arrivando su Scheda mi assicuro
+    // che si apra sempre sulla scheda vera, non sull'ultimo stato dello Storico
+    // lasciato da una visita precedente.
+    document.getElementById('programSchedaBlock').style.display = 'block';
+    document.getElementById('programStoricoBlock').style.display = 'none';
+    document.querySelectorAll('.seg-btn[data-segprog]').forEach(b=>
+      b.classList.toggle('active', b.dataset.segprog === 'scheda'));
+  }
 }
 // Apre Registra direttamente (usato dalla CTA in Home e dal giorno di oggi in Scheda).
 // Concettualmente "Registra" fa parte del flusso Scheda: nella nav nuova resta
@@ -4217,10 +4466,24 @@ function apriRegistra(){
   if(legacyBtn) legacyBtn.click();
   aggiornaNavGlobale('program');
 }
+// Storico: stesso contenuto che vive dentro Scheda (programStoricoBlock), ma ora
+// raggiungibile direttamente dalla nav come voce a sé — non serve più passare da
+// Scheda e toccare il toggle interno per arrivarci.
+function apriStorico(){
+  showAppRoot();
+  const legacyBtn = document.querySelector('#navTabsLegacy .tab-btn[data-tab="program"]');
+  if(legacyBtn) legacyBtn.click();
+  document.getElementById('programSchedaBlock').style.display = 'none';
+  document.getElementById('programStoricoBlock').style.display = 'block';
+  document.querySelectorAll('.seg-btn[data-segprog]').forEach(b=>
+    b.classList.toggle('active', b.dataset.segprog === 'storico'));
+  try{ renderHistory(); renderVolume(); renderMeasurements(); renderCalendarioStorico(); }catch(e){ console.error(e); }
+  aggiornaNavGlobale('storico');
+}
 function aggiornaNavGlobale(attivo){
-  // 'log' e 'history' non hanno una voce propria nella nav nuova: nestano
-  // concettualmente sotto Scheda, quindi evidenzio comunque "Scheda".
-  const mappa = { log:'program', history:'program' };
+  // 'log' non ha una voce propria nella nav nuova: nesta concettualmente sotto
+  // Scheda, quindi evidenzio comunque "Scheda".
+  const mappa = { log:'program' };
   const finale = mappa[attivo] || attivo;
   document.querySelectorAll('#navTabsGlobale button[data-go]').forEach(b=>{
     b.classList.toggle('active', b.dataset.go === finale);
@@ -4231,6 +4494,8 @@ function apriImpostazioni(provenienza){
   _impostazioniProvenienza = provenienza;
   document.getElementById('homeScreen').style.display = 'none';
   document.getElementById('appRoot').style.display = 'none';
+  document.getElementById('accountPanel').style.display = 'none';
+  document.body.classList.remove('account-aperto');
   document.getElementById('settingsPanel').style.display = 'block';
   document.body.classList.add('impostazioni-aperte');
   aggiornaStatoDati();
@@ -4262,6 +4527,8 @@ function chiudiImpostazioni(){
   document.body.classList.remove('impostazioni-aperte');
   if(_impostazioniProvenienza === 'app'){
     document.getElementById('appRoot').style.display = 'block';
+  } else if(_impostazioniProvenienza === 'account'){
+    apriAccountPanel();
   } else {
     mostraHome();
   }
@@ -4296,6 +4563,12 @@ function apriAccountPanel(){
   if(sonoAmministratore()){ badge.textContent = "Amministratore"; badge.classList.add('show'); }
   else if(sonoPT()){ badge.textContent = "Personal Trainer"; badge.classList.add('show'); }
   else { badge.classList.remove('show'); }
+
+  // Messaggi e Privacy e Sicurezza hanno senso solo con un account online:
+  // in locale non c'è un server con cui parlare né una password da resettare via email.
+  const online = !!utenteOnline;
+  document.getElementById('acctVaiMessaggi').style.display = online ? 'flex' : 'none';
+  document.getElementById('acctVaiPrivacy').style.display = online ? 'flex' : 'none';
 }
 
 // Icona chat riusata al posto dell'emoji 💬 nei bottoni "Messaggi", per restare
@@ -4370,7 +4643,8 @@ document.getElementById('homeCtaBtn').addEventListener('click', ()=>{
 });
 document.getElementById('homeAllenatiBtn').addEventListener('click', ()=>vaiA('program'));
 document.getElementById('homePTBtn').addEventListener('click', apriAreaPT);
-document.getElementById('homeSettingsBtn').addEventListener('click', ()=>apriImpostazioni('home'));
+document.getElementById('homeAvatarBtn').addEventListener('click', apriAccountPanel);
+document.getElementById('homeSchedaAttivaCard').addEventListener('click', ()=>vaiA('program'));
 document.getElementById('homeEsciBtn').addEventListener('click', async ()=>{
   customConfirm("Uscire dall'app? Dovrai rifare l'accesso.", async ()=>{
     // il bottone vive dentro Account: lo richiudo sempre anch'esso, altrimenti
@@ -4394,6 +4668,119 @@ document.getElementById('homeEsciBtn').addEventListener('click', async ()=>{
 });
 document.getElementById('closeAccountBtn').addEventListener('click', chiudiAccountPanel);
 
+// ---------- righe di navigazione in Account (Impostazioni/Glossario/Messaggi/Notifiche/Privacy/Assistenza) ----------
+document.getElementById('acctVaiImpostazioni').addEventListener('click', ()=>apriImpostazioni('account'));
+document.getElementById('acctVaiNotifiche').addEventListener('click', ()=>{
+  apriImpostazioni('account');
+  const card = document.getElementById('promemoriaCard');
+  if(card && card.style.display !== 'none'){
+    card.open = true;
+    card.scrollIntoView({behavior:'smooth', block:'start'});
+  }
+});
+document.getElementById('acctVaiGlossario').addEventListener('click', ()=>{
+  document.getElementById('accountPanel').style.display = 'none';
+  document.body.classList.remove('account-aperto');
+  vaiA('glossario');
+});
+
+async function apriMessaggiGenerico(){
+  if(!utenteOnline){ toast("Disponibile solo con un account online."); return; }
+  const mie = (_rapporti||[]).filter(r => r.stato === 'attivo');
+  if(mie.length === 0){
+    toast("Nessuna conversazione: serve un Personal Trainer che ti segue, o un cliente che segui.");
+    return;
+  }
+  const altriIds = mie.map(r => r.cliente_id === utenteOnline.id ? r.pt_id : r.cliente_id);
+  const { data, error } = await sb.from('profili').select('id,nome,nome_pubblico,email').in('id', altriIds);
+  if(error){ toast("Non riesco ad aprire i messaggi: " + error.message); return; }
+  const persone = mie.map(r=>{
+    const altroId = r.cliente_id === utenteOnline.id ? r.pt_id : r.cliente_id;
+    return { rapportoId: r.id, altroId, profilo: (data||[]).find(p=>p.id===altroId) };
+  }).filter(x=>x.profilo);
+
+  if(persone.length === 1){
+    const p = persone[0];
+    apriMessaggi(p.rapportoId, p.altroId, nomeDi(p.profilo));
+    return;
+  }
+  const box = document.getElementById('elencoConversazioni');
+  box.innerHTML = persone.map(p=>`
+    <div class="pt-riga">
+      <div class="info"><div class="nome">${nomeDi(p.profilo)}</div><div class="meta">${p.profilo.email||''}</div></div>
+      <div class="azioni"><button class="ok" data-vai="${p.rapportoId}">Apri</button></div>
+    </div>`).join('');
+  box.querySelectorAll('[data-vai]').forEach(b=>b.addEventListener('click', ()=>{
+    const p = persone.find(x=>x.rapportoId === b.dataset.vai);
+    document.getElementById('sceltaConversazioneOverlay').classList.remove('show');
+    apriMessaggi(p.rapportoId, p.altroId, nomeDi(p.profilo));
+  }));
+  document.getElementById('sceltaConversazioneOverlay').classList.add('show');
+}
+document.getElementById('acctVaiMessaggi').addEventListener('click', apriMessaggiGenerico);
+document.getElementById('sceltaConversazioneChiudi').addEventListener('click', ()=>
+  document.getElementById('sceltaConversazioneOverlay').classList.remove('show'));
+document.getElementById('sceltaConversazioneOverlay').addEventListener('click', e=>{
+  if(e.target.id === 'sceltaConversazioneOverlay') e.currentTarget.classList.remove('show');
+});
+
+// ---------- Privacy e Sicurezza (solo account online: password vera + eliminazione account) ----------
+function apriPrivacySicurezza(){
+  document.getElementById('accountPanel').style.display = 'none';
+  document.body.classList.remove('account-aperto');
+  document.getElementById('privacySicurezzaPanel').style.display = 'block';
+  document.getElementById('privacyEmailMostrata').textContent = (utenteOnline && utenteOnline.email) || (loggedInProfile()||{}).email || '—';
+  document.getElementById('privacyPwEsito').style.display = 'none';
+}
+function chiudiPrivacySicurezza(){
+  document.getElementById('privacySicurezzaPanel').style.display = 'none';
+  apriAccountPanel();
+}
+document.getElementById('acctVaiPrivacy').addEventListener('click', apriPrivacySicurezza);
+document.getElementById('closePrivacyBtn').addEventListener('click', chiudiPrivacySicurezza);
+
+document.getElementById('privacyCambiaPwBtn').addEventListener('click', async ()=>{
+  const el = document.getElementById('privacyPwEsito');
+  if(!utenteOnline || !sb){ el.style.color='var(--accent)'; el.textContent="Disponibile solo con un account online."; el.style.display='block'; return; }
+  const { error } = await sb.auth.resetPasswordForEmail(utenteOnline.email, { redirectTo: location.origin + location.pathname });
+  el.style.color = error ? 'var(--accent)' : 'var(--ok)';
+  el.textContent = error ? traduciErrore(error.message) : "Email inviata ✓ apri il link che ti abbiamo mandato per scegliere la nuova password.";
+  el.style.display = 'block';
+});
+
+document.getElementById('privacyEliminaBtn').addEventListener('click', ()=>{
+  if(!utenteOnline || !sb){ toast("Disponibile solo con un account online."); return; }
+  customConfirm(
+    "Eliminare per sempre il tuo account? Scheda, dieta, storico allenamenti e conversazioni verranno cancellati e non si torna indietro.",
+    async ()=>{
+      toast("Elimino il tuo account…");
+      try{
+        const { data, error } = await sb.functions.invoke('elimina-account');
+        if(error || (data && data.error)){
+          toast("Non riuscito: " + (error ? error.message : data.error));
+          return;
+        }
+        await sb.auth.signOut();
+        location.reload();
+      }catch(e){
+        console.error(e);
+        toast("Non riuscito: " + (e.message || 'errore imprevisto'));
+      }
+    });
+});
+
+// ---------- Assistenza ----------
+function apriAssistenza(){
+  document.getElementById('accountPanel').style.display = 'none';
+  document.body.classList.remove('account-aperto');
+  document.getElementById('assistenzaPanel').style.display = 'block';
+}
+document.getElementById('acctVaiAssistenza').addEventListener('click', apriAssistenza);
+document.getElementById('closeAssistenzaBtn').addEventListener('click', ()=>{
+  document.getElementById('assistenzaPanel').style.display = 'none';
+  apriAccountPanel();
+});
+
 // ---------- ingresso ----------
 async function avvioOnline(){
   if(!iniziaSupabase()){
@@ -4402,11 +4789,22 @@ async function avvioOnline(){
     return false;
   }
   mostraStatoSync('sincronizzo', 'controllo…');
-  // tornando dal link di conferma l'indirizzo contiene dei parametri: dopo averli
-  // usati li tolgo, così un aggiornamento della pagina non manda in errore
+  // tornando dal link di conferma email o dal link "password dimenticata" l'indirizzo
+  // contiene dei parametri: dopo averli usati (supabase-js li legge da solo) li tolgo,
+  // così un aggiornamento della pagina non manda in errore. Il link di recovery ha
+  // sempre "type=recovery" nell'hash: lo controllo SUBITO, prima di aspettare
+  // l'evento onAuthStateChange (che a volte arriva dopo che ho già tolto i parametri).
+  const eraLinkDiRecupero = location.hash.includes('type=recovery');
+  if(eraLinkDiRecupero) _recuperoPasswordAttivo = true;
   if(location.hash.includes('access_token') || location.search.includes('code=')){
     await new Promise(r=>setTimeout(r, 400));
     history.replaceState(null, '', location.origin + location.pathname);
+  }
+  if(_recuperoPasswordAttivo){
+    // Non porto MAI direttamente dentro l'app con una sessione di recupero:
+    // prima va scelta la nuova password.
+    mostraCloudGate('recovery');
+    return true;
   }
   try{
     const { data } = await sb.auth.getSession();
@@ -4437,59 +4835,87 @@ async function dopoAccessoOnline(){
   document.body.classList.remove('modifica-pt', 'account-aperto', 'area-pt', 'impostazioni-aperte');
 
   mostraStatoSync('sincronizzo', 'carico i dati…');
-  const { data, error } = await sb.from('profili').select('*').eq('id', utenteOnline.id).maybeSingle();
-  if(error){ mostraErroreAccesso(error.message); return; }
+  try{
+    // Timeout di sicurezza: se il server non risponde entro 15 secondi mi
+    // arrendo e mostro un errore con cui si può riprovare, invece di lasciare
+    // la persona a guardare l'indicatore girare all'infinito senza nessuna
+    // via d'uscita — bug segnalato il 25/08/2026 testando il blocco di un
+    // account: se questa chiamata falliva (o restava appesa) mentre si era
+    // ancora sulla schermata "Connessione…" (es. dopo il ricaricamento
+    // automatico di un account appena bloccato), l'errore veniva sì mostrato,
+    // ma sotto al campo email della schermata di login — che però non era
+    // quella visibile in quel momento, quindi restava invisibile e la
+    // persona vedeva "Connessione…" per sempre.
+    let _timeoutId;
+    const risposta = await Promise.race([
+      sb.from('profili').select('*').eq('id', utenteOnline.id).maybeSingle(),
+      new Promise((_, rifiuta) => { _timeoutId = setTimeout(()=>rifiuta(new Error('Tempo scaduto: il server non risponde. Controlla la connessione e riprova.')), 15000); })
+    ]);
+    clearTimeout(_timeoutId);
+    const { data, error } = risposta;
+    if(error) throw error;
 
-  if(!data){
-    // prima volta su questo account: creo la riga (parte non approvata)
-    const nuova = {
-      id: utenteOnline.id,
-      email: utenteOnline.email,
-      nome: (utenteOnline.user_metadata && utenteOnline.user_metadata.nome) || utenteOnline.email.split('@')[0],
-      approvato: (utenteOnline.email || '').toLowerCase() === EMAIL_AMMINISTRATORE,
-      dati: profiloVuotoPerCloud()
-    };
-    const res = await sb.from('profili').insert(nuova).select().maybeSingle();
-    rigaOnline = res.data || nuova;
-  } else {
-    rigaOnline = data;
-  }
+    if(!data){
+      // prima volta su questo account: creo la riga (parte non approvata)
+      const nuova = {
+        id: utenteOnline.id,
+        email: utenteOnline.email,
+        nome: (utenteOnline.user_metadata && utenteOnline.user_metadata.nome) || utenteOnline.email.split('@')[0],
+        approvato: (utenteOnline.email || '').toLowerCase() === EMAIL_AMMINISTRATORE,
+        dati: profiloVuotoPerCloud()
+      };
+      const res = await sb.from('profili').insert(nuova).select().maybeSingle();
+      if(res.error) throw res.error;
+      rigaOnline = res.data || nuova;
+    } else {
+      rigaOnline = data;
+    }
 
-  if(!rigaOnline.approvato){
-    if(rigaOnline.bloccato){
-      mostraAccountBloccatoOverlay({ testoAzione:'Esci', suAzione: async ()=>{
-        if(_canaleMioProfilo){ sb.removeChannel(_canaleMioProfilo); _canaleMioProfilo = null; }
-        await sb.auth.signOut();
-        utenteOnline = null; rigaOnline = null;
-        mostraCloudGate('accedi');
-      }});
-      mostraStatoSync('offline', 'bloccato');
+    if(!rigaOnline.approvato){
+      if(rigaOnline.bloccato){
+        mostraAccountBloccatoOverlay({ testoAzione:'Esci', suAzione: async ()=>{
+          if(_canaleMioProfilo){ sb.removeChannel(_canaleMioProfilo); _canaleMioProfilo = null; }
+          await sb.auth.signOut();
+          utenteOnline = null; rigaOnline = null;
+          mostraCloudGate('accedi');
+        }});
+        mostraStatoSync('offline', 'bloccato');
+        return;
+      }
+      document.getElementById('cloudAttesaTxt').textContent =
+        `L'account ${rigaOnline.email} è stato creato, ma chi gestisce l'app deve ancora approvarlo. Appena lo fa, entri con questa stessa password.`;
+      mostraCloudGate('attesa');
+      mostraStatoSync('offline', 'in attesa');
       return;
     }
-    document.getElementById('cloudAttesaTxt').textContent =
-      `L'account ${rigaOnline.email} è stato creato, ma chi gestisce l'app deve ancora approvarlo. Appena lo fa, entri con questa stessa password.`;
-    mostraCloudGate('attesa');
-    mostraStatoSync('offline', 'in attesa');
-    return;
-  }
 
-  // porto i dati online dentro il motore locale dell'app
-  applicaDatiOnline();
-  // la card per l'area riservata compare solo a chi è Personal Trainer
-  document.getElementById('homePTBtn').style.display = sonoPT() ? 'flex' : 'none';
-  caricaRapporti().then(()=>{ renderMioPT(); aggiornaCampanellaHome(); }).catch(()=>{});
-  ascoltaMioProfilo();
-  document.documentElement.classList.remove('avvio');
-  nascondiCloudGate();
-  controllaSaltati(true);
-  renderAll();
-  _timerDurata = impostazioniTimer().durata;
-  renderScorciatoieTimer();
-  _bozzaPronta = false;
-  if(ripristinaBozza()) toast("Ripresa la registrazione lasciata a metà");
-  _bozzaPronta = true;
-  mostraStatoSync('ok', 'sincronizzato');
-  mostraHome();
+    // porto i dati online dentro il motore locale dell'app
+    applicaDatiOnline();
+    // la card per l'area riservata compare solo a chi è Personal Trainer
+    document.getElementById('homePTBtn').style.display = sonoPT() ? 'flex' : 'none';
+    caricaRapporti().then(()=>{ renderMioPT(); aggiornaCampanellaHome(); }).catch(()=>{});
+    ascoltaMioProfilo();
+    document.documentElement.classList.remove('avvio');
+    nascondiCloudGate();
+    controllaSaltati(true);
+    renderAll();
+    _timerDurata = impostazioniTimer().durata;
+    renderScorciatoieTimer();
+    _bozzaPronta = false;
+    if(ripristinaBozza()) toast("Ripresa la registrazione lasciata a metà");
+    _bozzaPronta = true;
+    mostraStatoSync('ok', 'sincronizzato');
+    mostraHome();
+  }catch(e){
+    // Qualunque errore qui (rete, timeout, server) non deve lasciare la
+    // persona bloccata a guardare l'indicatore girare per sempre: torna
+    // sempre alla schermata di login, dove l'errore È visibile, con la
+    // possibilità di riprovare.
+    console.error(e);
+    mostraStatoSync('offline', 'senza rete');
+    mostraCloudGate('accedi');
+    mostraErroreAccesso((e && e.message) || 'Qualcosa non ha funzionato. Riprova.');
+  }
 }
 
 function profiloVuotoPerCloud(){
@@ -4610,127 +5036,32 @@ document.getElementById('cloudRecuperoBtn').addEventListener('click', async ()=>
 });
 
 document.getElementById('cloudRicontrolla').addEventListener('click', dopoAccessoOnline);
+
+document.getElementById('recoveryBtn').addEventListener('click', async ()=>{
+  const pw1 = document.getElementById('recoveryPw1').value;
+  const pw2 = document.getElementById('recoveryPw2').value;
+  const err = document.getElementById('recoveryErr');
+  err.style.display = 'none';
+  if(pw1.length < 8){ err.textContent = "La password deve avere almeno 8 caratteri."; err.style.display='block'; return; }
+  if(pw1 !== pw2){ err.textContent = "Le due password non coincidono."; err.style.display='block'; return; }
+  const { error } = await sb.auth.updateUser({ password: pw1 });
+  if(error){ err.textContent = traduciErrore(error.message); err.style.display='block'; return; }
+  _recuperoPasswordAttivo = false;
+  await sb.auth.signOut();
+  document.getElementById('recoveryPw1').value = '';
+  document.getElementById('recoveryPw2').value = '';
+  mostraCloudGate('accedi');
+  const el = document.getElementById('cloudErr');
+  el.style.color = 'var(--ok)';
+  el.textContent = "Password aggiornata ✓ ora accedi con la nuova password.";
+  el.style.display = 'block';
+});
 document.getElementById('cloudRiprova').addEventListener('click', ()=>location.reload());
 document.getElementById('cloudEsci').addEventListener('click', async ()=>{
   if(_canaleMioProfilo){ sb.removeChannel(_canaleMioProfilo); _canaleMioProfilo = null; }
   await sb.auth.signOut();
   utenteOnline = null; rigaOnline = null;
   mostraCloudGate('accedi');
-});
-
-
-// ============================================================
-// COPIA DEI PROPRI DATI E RIPRISTINO
-// Se il file arriva da una versione diversa dell'app, si carica quello che
-// è ancora valido e si dice chiaramente cosa è stato lasciato fuori.
-// ============================================================
-const PARTI_RIPRISTINO = [
-  { chiave:"programs",        nome:"schede",              lista:true },
-  { chiave:"logs",            nome:"allenamenti",         lista:true },
-  { chiave:"measurements",    nome:"misurazioni",         lista:true },
-  { chiave:"mealLogs",        nome:"diario alimentare",   lista:true },
-  { chiave:"customExercises", nome:"esercizi personali",  lista:false },
-  { chiave:"timer",           nome:"impostazioni timer",  lista:false }
-];
-
-function ripristinaDaCopia(pacchetto){
-  const prof = loggedInProfile();
-  if(!prof){ toast("Nessun profilo aperto."); return; }
-  const origine = pacchetto.profilo || pacchetto;    // accetta sia il formato nuovo sia il vecchio
-  if(!origine || typeof origine !== 'object'){
-    mostraEsitoRipristino([], ["Il file non contiene dati riconoscibili."], false);
-    return;
-  }
-
-  const caricate = [], scartate = [];
-
-  PARTI_RIPRISTINO.forEach(parte=>{
-    const valore = origine[parte.chiave];
-    if(valore === undefined || valore === null){
-      scartate.push(`${parte.nome}: non presenti nel file`);
-      return;
-    }
-    if(parte.lista){
-      if(!Array.isArray(valore)){ scartate.push(`${parte.nome}: formato non valido`); return; }
-      // tengo solo le voci che l'app di oggi sa leggere
-      const buone = valore.filter(v=>v && typeof v === 'object');
-      prof[parte.chiave] = buone;
-      caricate.push(`${buone.length} ${parte.nome}`);
-      if(buone.length < valore.length){
-        scartate.push(`${valore.length - buone.length} ${parte.nome} illeggibili`);
-      }
-    } else {
-      if(typeof valore !== 'object'){ scartate.push(`${parte.nome}: formato non valido`); return; }
-      prof[parte.chiave] = valore;
-      caricate.push(parte.nome);
-    }
-  });
-
-  // la scheda attiva deve esistere davvero, altrimenti l'app resta senza programma
-  if(Array.isArray(prof.programs) && prof.programs.length){
-    const attiva = prof.programs.find(p=>p.id === origine.activeProgramId);
-    prof.activeProgramId = attiva ? attiva.id : prof.programs[0].id;
-  } else {
-    prof.programs = [blankProgram()];
-    prof.activeProgramId = prof.programs[0].id;
-    scartate.push("nessuna scheda valida: ne è stata creata una vuota");
-  }
-
-  // i link video viaggiano col file ma non devono sovrascrivere quelli già presenti
-  if(pacchetto.videoEsercizi && typeof pacchetto.videoEsercizi === 'object'){
-    state.baseExerciseVideos = Object.assign({}, pacchetto.videoEsercizi, state.baseExerciseVideos || {});
-    caricate.push("link video");
-  }
-
-  prof.bozzaLog = null;      // una registrazione a metà del vecchio file non ha più senso
-  save();
-  mostraEsitoRipristino(caricate, scartate, true);
-}
-
-function mostraEsitoRipristino(caricate, scartate, riuscito){
-  const box = document.createElement('div');
-  box.className = 'custom-confirm-overlay';
-  box.innerHTML = `
-    <div class="custom-confirm-box">
-      <h3 style="font-size:16px; margin:0 0 10px;">${riuscito ? 'Dati ricaricati' : 'Non riuscito'}</h3>
-      ${caricate.length ? `<p style="margin:0 0 10px;"><b>Caricato:</b><br>${caricate.join('<br>')}</p>` : ''}
-      ${scartate.length ? `<p style="margin:0 0 10px; color:var(--warn);"><b>Lasciato fuori:</b><br>${scartate.join('<br>')}</p>` : ''}
-      ${riuscito ? '<p class="hint" style="margin:0 0 14px;">Torno alla schermata Registra per ripartire puliti.</p>' : ''}
-      <div class="custom-confirm-actions">
-        <button class="btn" id="esitoOk">${riuscito ? 'Vai a Registra' : 'Chiudi'}</button>
-      </div>
-    </div>`;
-  document.body.appendChild(box);
-  document.getElementById('esitoOk').addEventListener('click', ()=>{
-    box.remove();
-    if(!riuscito) return;
-    document.getElementById('settingsPanel').style.display = 'none';
-    document.body.classList.remove('impostazioni-aperte');
-    document.getElementById('appRoot').style.display = 'block';
-    _bozzaPronta = false;
-    renderAll();
-    const tabRegistra = document.querySelector('.tab-btn[data-tab="log"]');
-    if(tabRegistra) tabRegistra.click();
-    _bozzaPronta = true;
-    toast("Dati ricaricati ✓");
-  });
-}
-
-document.getElementById('ripristinaMioFile').addEventListener('change', (e)=>{
-  const file = e.target.files[0];
-  if(!file) return;
-  const reader = new FileReader();
-  reader.onload = (ev)=>{
-    let dati = null;
-    try{ dati = JSON.parse(ev.target.result); }
-    catch(err){ mostraEsitoRipristino([], ["Il file non è leggibile: " + err.message], false); e.target.value=''; return; }
-    const quante = ((dati.profilo || dati).logs || []).length;
-    customConfirm(
-      `Ricaricare questa copia? I dati attuali di questo profilo verranno sostituiti da quelli del file (${quante} allenamenti).`,
-      ()=>ripristinaDaCopia(dati));
-    e.target.value = '';
-  };
-  reader.readAsText(file);
 });
 
 
@@ -5580,11 +5911,8 @@ async function tornaDaModificaPT(){
 // ============================================================
 // SICUREZZA DEI DATI
 // I dati stanno solo in questo telefono: chiediamo al sistema di non
-// cancellarli, teniamo traccia dei backup e diamo una via di rientro
-// se la password viene dimenticata.
+// cancellarli e diamo una via di rientro se la password viene dimenticata.
 // ============================================================
-const GIORNI_PROMEMORIA_BACKUP = 21;
-
 async function chiediProtezioneDati(){
   try{
     if(!navigator.storage || !navigator.storage.persist) return null;
@@ -5606,41 +5934,9 @@ async function spazioUsato(){
   }catch(e){ return null; }
 }
 
-function giorniDaUltimoBackup(){
-  if(!state.ultimoBackup) return null;
-  const d = (Date.now() - new Date(state.ultimoBackup).getTime()) / 86400000;
-  return Math.floor(d);
-}
-function scaricaBackup(){
-  const mio = loggedInProfile();
-  const contenuto = mio
-    ? { tipo:"fitpro-profilo", versione:2, esportatoIl:new Date().toISOString(),
-        profilo: JSON.parse(JSON.stringify(mio)),
-        videoEsercizi: JSON.parse(JSON.stringify(state.baseExerciseVideos || {})) }
-    : state;
-  const blob = new Blob([JSON.stringify(contenuto, null, 2)], {type:'application/json'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  const chi = (loggedInProfile()||{}).name || 'dati';
-  a.download = `${((window.BRAND_CONFIG&&window.BRAND_CONFIG.nome)||'vigor').toLowerCase()}-${chi.toLowerCase().replace(/[^a-z0-9]+/g,'-')}-${new Date().toISOString().slice(0,10)}.json`;
-  a.click();
-  setTimeout(()=>URL.revokeObjectURL(url), 1000);
-  state.ultimoBackup = new Date().toISOString();
-  save();
-  aggiornaStatoDati();
-  mostraAvvisoBackup();
-  toast("Backup scaricato ✓ mettilo su iCloud o Drive");
-}
-
-// L'avviso del backup vive nelle Impostazioni, non nella schermata di allenamento:
-// mentre ti alleni non devi avere richiami che non c'entrano.
-function mostraAvvisoBackup(){ /* spostato in Impostazioni */ }
-
 async function aggiornaStatoDati(){
   const p = document.getElementById('statoPersistenza');
   const s = document.getElementById('statoSpazio');
-  const b = document.getElementById('statoBackup');
   if(!p) return;
 
   const protetto = await statoProtezione();
@@ -5651,24 +5947,6 @@ async function aggiornaStatoDati(){
 
   const uso = await spazioUsato();
   s.textContent = uso ? pesoLeggibile(uso) : "non disponibile";
-
-  const g = giorniDaUltimoBackup();
-  if(g === null){ b.textContent = "mai fatto"; b.className = "warn"; }
-  else if(g === 0){ b.textContent = "oggi"; b.className = "ok"; }
-  else { b.textContent = g === 1 ? "ieri" : `${g} giorni fa`; b.className = (g >= GIORNI_PROMEMORIA_BACKUP) ? "warn" : ""; }
-
-  const avviso = document.getElementById('avvisoBackup');
-  const prof = activeProfile();
-  const allenamenti = prof ? (prof.logs||[]).filter(l=>l.status==='registrato').length : 0;
-  if(g === null && allenamenti >= 3){
-    avviso.textContent = `Hai ${allenamenti} allenamenti e non hai mai fatto un backup: se perdi il telefono spariscono.`;
-    avviso.style.display = 'block';
-  } else if(g !== null && g >= GIORNI_PROMEMORIA_BACKUP){
-    avviso.textContent = `Sono passati ${g} giorni dall'ultimo backup.`;
-    avviso.style.display = 'block';
-  } else {
-    avviso.style.display = 'none';
-  }
 }
 
 
@@ -5748,10 +6026,9 @@ function generaCodice(){
 }
 function normalizzaCodice(s){ return (s||"").toUpperCase().replace(/[^A-Z0-9]/g,""); }
 
-document.getElementById('backupOraBtn').addEventListener('click', scaricaBackup);
 document.getElementById('proteggiBtn').addEventListener('click', async ()=>{
   const esito = await chiediProtezioneDati();
-  toast(esito ? "Protezione attivata ✓" : "Il browser non l'ha concessa: fai backup più spesso");
+  toast(esito ? "Protezione attivata ✓" : "Il browser non l'ha concessa.");
   aggiornaStatoDati();
 });
 document.getElementById('nuovoCodiceBtn').addEventListener('click', ()=>{
@@ -6188,7 +6465,8 @@ function salvaBozza(){
     liberi: selectedDayKey==="LIBERO" ? FREE_DAY.exercises.map(e=>({name:e.name, sets:e.sets, reps:e.reps, muscles:e.muscles})) : null,
     serie: JSON.parse(JSON.stringify(currentSetInputs)),
     note: note,
-    quando: new Date().toISOString()
+    quando: new Date().toISOString(),
+    iniziatoAlle: _logIniziatoAlle
   };
   save();
 }
@@ -6199,6 +6477,7 @@ function pulisciBozza(silenzioso){
   currentSetInputs = {};
   FREE_DAY.exercises = [];
   selectedDayKey = null;
+  _logIniziatoAlle = null;
   document.getElementById('logNotes').value = "";
   document.getElementById('bozzaBanner').style.display = 'none';
   document.getElementById('exerciseFormCard').style.display = 'none';
@@ -6235,6 +6514,11 @@ function ripristinaBozza(){
   } else {
     selectDay(b.dayKey);
   }
+  // selectDay (sopra) fa già ripartire il cronometro da "adesso": qui lo
+  // rimpiazzo con l'orario vero di inizio, salvato nella bozza — altrimenti
+  // ogni volta che riapri l'app durante un allenamento in corso la durata
+  // registrata alla fine ripartirebbe da zero.
+  _logIniziatoAlle = b.iniziatoAlle || _logIniziatoAlle;
 
   // rimetto i valori digitati, aggiungendo le serie extra create al momento
   Object.keys(b.serie||{}).forEach(nome=>{
@@ -6933,6 +7217,8 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
 
 // nav visibile: Scheda/Dieta/Glossario mostrano appRoot e cliccano "per conto loro"
 // il tab corrispondente nella nav storica; Home e Account riusano le funzioni esistenti.
+document.getElementById('fabRegistraBtn').addEventListener('click', apriRegistra);
+
 document.querySelectorAll('#navTabsGlobale button[data-go]').forEach(btn=>{
   btn.addEventListener('click', ()=>{
     // Ritoccare la scheda su cui si è già (Dieta/Scheda diventano lunghe nel
@@ -7016,7 +7302,7 @@ document.querySelectorAll('.seg-btn[data-segprog]').forEach(btn=>{
     const mostraStorico = btn.dataset.segprog === 'storico';
     document.getElementById('programSchedaBlock').style.display = mostraStorico ? 'none' : 'block';
     document.getElementById('programStoricoBlock').style.display = mostraStorico ? 'block' : 'none';
-    if(mostraStorico){ renderHistory(); renderVolume(); renderMeasurements(); }
+    if(mostraStorico){ renderHistory(); renderVolume(); renderMeasurements(); renderCalendarioStorico(); }
   });
 });
 
@@ -7124,6 +7410,13 @@ const logDateInput = document.getElementById('logDate');
 logDateInput.addEventListener('change', ()=>{ renderDayChoices(); renderHeader(); });
 
 let selectedDayKey = null;
+// Durata dell'allenamento (Storico, 15° giro): quando scegli un giorno vero (non
+// "Saltato") parte un cronometro in background. Persistito dentro bozzaLog
+// (vedi salvaBozza/ripristinaBozza) così sopravvive a un cambio schermata o
+// a un riavvio dell'app prima di salvare. Gli allenamenti registrati PRIMA di
+// questa modifica non hanno mai avuto un cronometro: per quelli log.durataMinuti
+// resta assente, non viene stimato/inventato.
+let _logIniziatoAlle = null;
 let currentSetInputs = {};
 let _dropsetPerEsercizio = {};   // nome esercizio -> { drops:[...] }, solo per la sessione di registrazione in corso
 
@@ -7205,8 +7498,11 @@ function selectDay(key){
       _p.bozzaLog = null; save();
     }
   }
+  const cambiaGiorno = key !== selectedDayKey;
   selectedDayKey = key;
   document.querySelectorAll('#dayChoiceChips .chip').forEach(c=>c.classList.toggle('selected', c.dataset.key===key));
+  if(key === "SKIP"){ _logIniziatoAlle = null; }
+  else if(cambiaGiorno){ _logIniziatoAlle = new Date().toISOString(); }
 
   const p = activeProgram();
   const iso = logDateInput.value;
@@ -7725,10 +8021,14 @@ document.getElementById('saveLogBtn').addEventListener('click', ()=>{
     }
   });
 
+  if(log.status === 'registrato' && _logIniziatoAlle){
+    log.durataMinuti = Math.max(1, Math.round((Date.now() - new Date(_logIniziatoAlle).getTime()) / 60000));
+  }
   prof.bozzaLog = null;
   FREE_DAY.exercises = [];
   currentSetInputs = {};
   selectedDayKey = null;
+  _logIniziatoAlle = null;
   save();
   toast("Allenamento salvato ✓");
   if(nuoviRecord.length > 0){
@@ -8483,6 +8783,7 @@ function renderHistory(){
           }
           prof.logs = prof.logs.filter(l=>l.id!==log.id);
           save(); renderHistory(); renderHeader(); renderVolume();
+          if(document.getElementById('calGiorni')) renderCalendarioStorico();
         });
       });
       list.appendChild(item);
@@ -8492,85 +8793,169 @@ function renderHistory(){
 }
 
 // ============================================================
-// CALENDARIO ALLENAMENTI (Storico → Allenamenti)
+// CALENDARIO ALLENAMENTI (Storico → Allenamenti) — ridisegnato 25/08/2026
+// dal mockup: calendario a puntini (nessun colore per giorno di riposo/
+// saltato, solo un puntino su chi ha DAVVERO un allenamento registrato),
+// dettaglio del giorno scelto come card a sé, riepilogo del mese con 4
+// numeri reali (nessuno dei quattro è indovinato/stimato, vedi funzioni
+// sotto — dove un dato non esiste ancora, per scelta non si inventa).
 // ============================================================
 let _calMese = new Date();
 _calMese.setDate(1);
+
+// Volume di UN log, in kg totali sollevati (Σ reps×kg su ogni serie con
+// entrambi i valori — le serie a tempo, senza kg, non contribuiscono).
+function volumeKgLog(log){
+  let tot = 0;
+  (log.exercises||[]).forEach(ex=>{
+    (ex.sets||[]).forEach(s=>{
+      const reps = parseFloat(s.reps), kg = parseFloat(s.kg);
+      if(reps>0 && kg>0) tot += reps*kg;
+    });
+  });
+  return tot;
+}
+// Categoria del giorno di scheda a cui appartiene questo log (vedi editor
+// scheda → CATEGORIE_ALLENAMENTO): null se il giorno non ne ha una, se era
+// un allenamento libero, o se la scheda di allora non esiste più.
+function categoriaDelLog(prof, log){
+  if(!log || !log.dayKey || log.dayKey==='LIBERO') return null;
+  const programma = (prof.programs||[]).find(pr=>pr.id===log.programId);
+  const giorno = programma && programma.days ? programma.days.find(d=>d.key===log.dayKey) : null;
+  return (giorno && giorno.categoria && CATEGORIE_ALLENAMENTO[giorno.categoria]) || null;
+}
+// "12h 45min" / "45 min" — mai mostrata se non c'è nessun log con una durata
+// tracciata nel periodo (vedi renderRiepilogoMensile).
+function formattaDurata(minutiTotali){
+  const h = Math.floor(minutiTotali/60), m = minutiTotali%60;
+  return h>0 ? `${h}h ${m}min` : `${m} min`;
+}
+// Streak di giorni CONSECUTIVI con un allenamento registrato, solo dentro il
+// mese mostrato (non guarda oltre inizio/fine mese: coerente con "Riepilogo
+// <mese>" — è una lettura del calendario che hai davanti, non di tutta la
+// storia).
+function migliorStreakMese(prof, anno, mese){
+  const giorniNelMese = new Date(anno, mese+1, 0).getDate();
+  let migliore = 0, corrente = 0;
+  for(let g=1; g<=giorniNelMese; g++){
+    const iso = isoDaData(new Date(anno, mese, g));
+    const fatto = (prof.logs||[]).some(l=>l.date===iso && l.status==='registrato');
+    corrente = fatto ? corrente+1 : 0;
+    if(corrente>migliore) migliore = corrente;
+  }
+  return migliore;
+}
+
+function renderRiepilogoMensile(){
+  const grid = document.getElementById('riepilogoGrid');
+  if(!grid) return;
+  const prof = activeProfile();
+  const anno = _calMese.getFullYear(), mese = _calMese.getMonth();
+  document.getElementById('riepilogoTitolo').textContent = `Riepilogo ${NOMI_MESI[mese]} ${anno}`;
+
+  const primoIso = isoDaData(new Date(anno, mese, 1));
+  const ultimoIso = isoDaData(new Date(anno, mese+1, 0));
+  const logsDelMese = (prof.logs||[]).filter(l=> l.status==='registrato' && l.date>=primoIso && l.date<=ultimoIso);
+
+  const sessioni = logsDelMese.length;
+  const conDurata = logsDelMese.filter(l=>l.durataMinuti);
+  const minutiTotali = conDurata.reduce((tot,l)=>tot+l.durataMinuti, 0);
+  const volumeTotale = Math.round(logsDelMese.reduce((tot,l)=>tot+volumeKgLog(l), 0));
+  const streak = migliorStreakMese(prof, anno, mese);
+
+  const riga = (label, valoreHtml) => `<div class="riepilogo-stat"><span class="riepilogo-label">${label}</span><span class="riepilogo-val">${valoreHtml}</span></div>`;
+  grid.innerHTML =
+    riga('ALLENAMENTI TOTALI', `<b>${sessioni}</b> ${sessioni===1?'sessione':'sessioni'}`) +
+    riga('TEMPO SPESO', conDurata.length ? `<b>${formattaDurata(minutiTotali)}</b>` : '<span class="riepilogo-vuoto">non ancora tracciato</span>') +
+    riga('VOLUME TOTALE', `<b>${volumeTotale.toLocaleString('it-IT')}</b> kg`) +
+    riga('MIGLIOR STREAK', `<b>${streak}</b> ${streak===1?'giorno':'giorni'}`);
+}
 
 function renderCalendarioStorico(){
   const cont = document.getElementById('calGiorni');
   if(!cont) return;
   const prof = activeProfile();
-  const p = activeProgram();
   const anno = _calMese.getFullYear(), mese = _calMese.getMonth();
-  const NOMI_MESI = ["Gennaio","Febbraio","Marzo","Aprile","Maggio","Giugno","Luglio","Agosto","Settembre","Ottobre","Novembre","Dicembre"];
   document.getElementById('calTitolo').textContent = `${NOMI_MESI[mese]} ${anno}`;
 
-  const ultimoDelMese = new Date(anno, mese+1, 0);
-  const giorniNelMese = ultimoDelMese.getDate();
+  const giorniNelMese = new Date(anno, mese+1, 0).getDate();
   const offset = (new Date(anno, mese, 1).getDay() + 6) % 7;   // lunedì come primo giorno
   const oggiIso = isoDaData(new Date());
 
   let html = '';
-  for(let i=0;i<offset;i++) html += `<div class="cal-day empty"></div>`;
+  for(let i=0;i<offset;i++) html += `<div class="cal-day-nuovo vuoto"></div>`;
 
-  let fatti = 0, saltati = 0;
   for(let g=1; g<=giorniNelMese; g++){
-    const d = new Date(anno, mese, g);
-    const iso = isoDaData(d);
-    const wd = WEEKDAYS[d.getDay()];
-    const previsto = p && p.days ? p.days.find(x=>x.weekday===wd) : null;
-    const log = prof && prof.logs ? prof.logs.find(l=>l.date===iso && (!p || l.programId===p.id)) : null;
-    let cls = 'cal-day';
-    if(log && log.status==='registrato'){ cls += ' done'; fatti++; }
-    else if(log && log.status==='saltato'){ cls += ' skipped'; saltati++; }
-    else if(!previsto){ cls += ' rest'; }
-    if(iso===oggiIso) cls += ' today';
-    html += `<div class="${cls}" data-iso="${iso}">${g}</div>`;
+    const iso = isoDaData(new Date(anno, mese, g));
+    const fatto = (prof && prof.logs || []).some(l=>l.date===iso && l.status==='registrato');
+    let cls = 'cal-day-nuovo';
+    if(iso===oggiIso) cls += ' oggi';
+    html += `<div class="${cls}" data-iso="${iso}"><span class="num">${g}</span>${fatto ? '<span class="puntino"></span>' : ''}</div>`;
   }
   cont.innerHTML = html;
-  document.getElementById('calFatti').textContent = fatti;
-  document.getElementById('calSaltati').textContent = saltati;
 
-  cont.querySelectorAll('.cal-day:not(.empty)').forEach(el=>{
+  cont.querySelectorAll('.cal-day-nuovo:not(.vuoto)').forEach(el=>{
     el.addEventListener('click', ()=>{
-      cont.querySelectorAll('.cal-day.selected').forEach(x=>x.classList.remove('selected'));
-      el.classList.add('selected');
+      cont.querySelectorAll('.cal-day-nuovo.selezionato').forEach(x=>x.classList.remove('selezionato'));
+      el.classList.add('selezionato');
       mostraDettaglioGiornoCalendario(el.dataset.iso);
     });
   });
 
-  const oggiEl = cont.querySelector(`.cal-day[data-iso="${oggiIso}"]`);
-  if(oggiEl){ oggiEl.classList.add('selected'); mostraDettaglioGiornoCalendario(oggiIso); }
+  // di default seleziono oggi se è nel mese mostrato, altrimenti il primo
+  // giorno del mese (così il dettaglio non resta mai vuoto sfogliando i mesi)
+  const oggiEl = cont.querySelector(`.cal-day-nuovo[data-iso="${oggiIso}"]`);
+  const daSelezionare = oggiEl || cont.querySelector('.cal-day-nuovo:not(.vuoto)');
+  if(daSelezionare){ daSelezionare.classList.add('selezionato'); mostraDettaglioGiornoCalendario(daSelezionare.dataset.iso); }
   else document.getElementById('calDettaglio').innerHTML = '';
+
+  renderRiepilogoMensile();
 }
 
 function mostraDettaglioGiornoCalendario(iso){
   const prof = activeProfile();
-  const p = activeProgram();
   const box = document.getElementById('calDettaglio');
-  const log = prof && prof.logs ? prof.logs.find(l=>l.date===iso && (!p || l.programId===p.id)) : null;
+  const d = new Date(iso+'T00:00:00');
+  const titolo = `${WEEKDAYS[d.getDay()]} ${d.getDate()} ${NOMI_MESI[d.getMonth()]}`;
+  const log = prof && prof.logs ? prof.logs.find(l=>l.date===iso) : null;
+
   if(!log){
-    box.innerHTML = `<div class="cal-detail"><p class="hint" style="margin:0;">Nessun allenamento registrato per il ${formatDate(iso)}.</p></div>`;
+    box.innerHTML = `<h3 class="storico-giorno-titolo">${titolo}</h3>
+      <div class="card"><p class="hint" style="margin:0;">Nessun allenamento registrato per questo giorno.</p></div>`;
     return;
   }
   if(log.status==='saltato'){
-    box.innerHTML = `<div class="cal-detail"><p class="hint" style="margin:0; color:var(--warn);">Segnato come saltato — ${formatDate(iso)}.</p></div>`;
+    box.innerHTML = `<h3 class="storico-giorno-titolo">${titolo}</h3>
+      <div class="card"><p class="hint" style="margin:0; color:var(--warn);">Segnato come saltato.</p></div>`;
     return;
   }
+
+  const categoria = categoriaDelLog(prof, log);
+  const daSchedaPT = (typeof mioRapportoAttivo === 'function') && !!mioRapportoAttivo();
+  const tagsHtml = (categoria || daSchedaPT) ? `<div class="workout-tags">
+      ${categoria ? `<span class="workout-tag ${categoria.classe}">${categoria.label.toUpperCase()}</span>` : ''}
+      ${daSchedaPT ? `<span class="workout-tag-pt">Da scheda PT</span>` : ''}
+    </div>` : '';
+
+  const kgTotali = Math.round(volumeKgLog(log));
+  const stats = [`<span class="workout-stat">${log.exercises.length} ${log.exercises.length===1?'esercizio':'esercizi'}</span>`];
+  if(log.durataMinuti) stats.unshift(`<span class="workout-stat">${log.durataMinuti} min</span>`);
+  if(kgTotali>0) stats.push(`<span class="workout-stat">${kgTotali.toLocaleString('it-IT')} kg totali</span>`);
+
   const esercizi = (log.exercises||[]).map(ex=>
     `<div class="cal-detail-ex"><span>${escapeAttr(ex.name)}</span><span class="n">${escapeAttr(descriviSerie(ex.sets, ex.name))}</span></div>`
   ).join('') || '<p class="hint" style="margin:4px 0 0;">Nessun esercizio registrato.</p>';
-  box.innerHTML = `<div class="cal-detail">
-    <div class="cal-detail-head">
-      <div class="cal-detail-letter">${escapeAttr(log.dayKey || '•')}</div>
-      <div>
-        <div class="cal-detail-title">${escapeAttr(log.dayName || 'Allenamento')}</div>
-        <div class="cal-detail-sub">${formatDate(iso)}</div>
-      </div>
-    </div>
-    ${esercizi}
-  </div>`;
+
+  box.innerHTML = `<h3 class="storico-giorno-titolo">${titolo}</h3>
+    <div class="card workout-day-card">
+      ${tagsHtml}
+      <div class="workout-title">${escapeAttr(log.dayName || 'Allenamento')}</div>
+      <div class="workout-stats-row">${stats.join('')}</div>
+      <details class="workout-dettagli">
+        <summary>Vedi dettagli workout</summary>
+        <div class="workout-dettagli-body">${esercizi}</div>
+      </details>
+    </div>`;
 }
 document.getElementById('calPrevBtn').addEventListener('click', ()=>{
   _calMese.setMonth(_calMese.getMonth()-1);
@@ -9132,6 +9517,12 @@ function renderDayEditors(){
       <select class="dweekday" data-di="${di}">
         ${WD_ORDER.filter(w=>w!=="Domenica").map(w=>`<option value="${w}" ${w===day.weekday?'selected':''}>${w}</option>`).join('')}
       </select>
+      <label>Categoria (facoltativa)</label>
+      <select class="dcategoria" data-di="${di}">
+        <option value="" ${!day.categoria?'selected':''}>Nessuna</option>
+        ${Object.keys(CATEGORIE_ALLENAMENTO).map(k=>`<option value="${k}" ${day.categoria===k?'selected':''}>${CATEGORIE_ALLENAMENTO[k].label}</option>`).join('')}
+      </select>
+      <p class="hint" style="margin-top:2px;">Compare come etichetta sulla card del giorno in Storico.</p>
       <label>Esercizi</label>
       <div class="ex-list" data-di="${di}"></div>
       <div style="display:flex; gap:6px; flex-wrap:wrap; margin-top:6px;">
@@ -9144,6 +9535,7 @@ function renderDayEditors(){
   });
   wrap.querySelectorAll('.dname').forEach(inp=>inp.addEventListener('input', e=>{ editingDays[e.target.dataset.di].name = e.target.value; }));
   wrap.querySelectorAll('.dweekday').forEach(sel=>sel.addEventListener('change', e=>{ editingDays[e.target.dataset.di].weekday = e.target.value; }));
+  wrap.querySelectorAll('.dcategoria').forEach(sel=>sel.addEventListener('change', e=>{ editingDays[e.target.dataset.di].categoria = e.target.value || null; }));
   wrap.querySelectorAll('[data-action="remove-day"]').forEach(btn=>btn.addEventListener('click', e=>{
     customConfirm("Rimuovere questo giorno dalla nuova scheda?", ()=>{ editingDays.splice(e.target.dataset.di,1); renderDayEditors(); });
   }));
@@ -9440,7 +9832,7 @@ document.getElementById('addDayBtn').addEventListener('click', ()=>{
   const letters = "ABCDEFGH";
   let nextKey = "A";
   for(const l of letters){ if(!usedKeys.includes(l)){ nextKey=l; break; } }
-  editingDays.push({key:nextKey, name:"Nuovo giorno", weekday:"Lunedì", exercises:[]});
+  editingDays.push({key:nextKey, name:"Nuovo giorno", weekday:"Lunedì", categoria:null, exercises:[]});
   renderDayEditors();
 });
 
@@ -9966,32 +10358,6 @@ document.getElementById('addCustomExBtn').addEventListener('click', ()=>{
   toast(`"${name}" aggiunto ai tuoi esercizi ✓`);
 });
 
-
-// ============================================================
-// BACKUP
-// ============================================================
-document.getElementById('exportBtn').addEventListener('click', scaricaBackup);
-document.getElementById('importFile').addEventListener('change', (e)=>{
-  const file = e.target.files[0];
-  if(!file) return;
-  const reader = new FileReader();
-  reader.onload = (ev)=>{
-    try{
-      const data = JSON.parse(ev.target.result);
-      if(!data.profiles){ throw new Error("formato non valido"); }
-      customConfirm("Questo sostituirà tutti i profili e i dati attuali su questo dispositivo. Continuare?", ()=>{
-        state = data;
-        save();
-        toast("Backup ripristinato ✓");
-        document.getElementById('appRoot').style.display='none';
-        document.getElementById('profileGate').style.display='flex';
-        renderProfileGate();
-      });
-    }catch(err){ toast("File non valido: " + err.message); }
-    e.target.value = "";
-  };
-  reader.readAsText(file);
-});
 
 // ============================================================
 // INIT

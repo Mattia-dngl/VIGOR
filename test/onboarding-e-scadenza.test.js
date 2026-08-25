@@ -53,6 +53,71 @@ test('onboarding: senza scegliere sesso non si passa oltre (data di nascita da s
   window.close();
 });
 
+test('onboarding: peso e altezza finiscono anche in Account e Storico → Misure, non solo nella scheda alimentare', async () => {
+  // Feedback del 25/08/2026: i dati inseriti al primo accesso (peso, altezza)
+  // finivano SOLO dentro prog.dietInfo (un campo testuale mostrato nella
+  // scheda alimentare) — un campo che il calcolo del fabbisogno calorico
+  // NON legge affatto: quello legge prof.altezza (Account) e l'ultima
+  // misurazione di peso in Storico. Risultato: subito dopo l'onboarding,
+  // "Fabbisogno calorico" diceva ancora "mancano altezza, peso" nonostante
+  // la persona li avesse appena scritti.
+  const { window } = await loadApp();
+  const r = await run(window, `
+    const profilo = ${JSON.stringify(profiloVuoto())};
+    state.profiles = [profilo];
+    activeProfileId = 'io';
+
+    document.querySelector('#onbSesso .seg-btn[data-val="donna"]').click();
+    document.getElementById('onbDataNascita').value = '1994-05-20';
+    document.getElementById('onbPeso').value = '62.5';
+    document.getElementById('onbAltezza').value = '167';
+    document.getElementById('onbAttivita').value = 'Palestra 3 volte a settimana';
+    document.getElementById('onbContinua').click();
+
+    const p = state.profiles.find(x=>x.id==='io');
+    const oggi = new Date().toISOString().slice(0,10);
+    const misurazioneOggi = p.measurements.find(m => m.date === oggi);
+    const fabbisogno = calcolaFabbisogno(p);
+    return {
+      altezzaProfilo: p.altezza,
+      pesoInStorico: misurazioneOggi ? misurazioneOggi.weight : null,
+      dietInfoPeso: p.programs.find(x=>x.id==='p1').dietInfo.peso,
+      dietInfoAltezza: p.programs.find(x=>x.id==='p1').dietInfo.altezza,
+      fabbisognoMancanti: fabbisogno.mancanti,
+    };
+  `);
+  assert.equal(r.altezzaProfilo, 167, 'l\'altezza deve finire anche nel profilo (Account)');
+  assert.equal(r.pesoInStorico, 62.5, 'il peso deve finire anche come misurazione in Storico');
+  assert.equal(r.dietInfoPeso, '62.5', 'resta comunque visibile nella scheda alimentare, come prima');
+  assert.equal(r.dietInfoAltezza, '167');
+  assert.deepEqual(r.fabbisognoMancanti, [], 'col sesso, la data di nascita, il peso e l\'altezza appena inseriti il fabbisogno calorico deve poter essere calcolato subito, senza tornare in Account');
+  window.close();
+});
+
+test('onboarding: se in Storico esiste già una misurazione per oggi (es. la vita), il peso si aggiunge senza cancellarla', async () => {
+  const { window } = await loadApp();
+  const r = await run(window, `
+    const profilo = ${JSON.stringify(profiloVuoto())};
+    const oggi = new Date().toISOString().slice(0,10);
+    profilo.measurements = [{ date: oggi, weight: null, waist: 80, extra: { "Braccio": 35 } }];
+    state.profiles = [profilo];
+    activeProfileId = 'io';
+
+    document.querySelector('#onbSesso .seg-btn[data-val="uomo"]').click();
+    document.getElementById('onbPeso').value = '80';
+    document.getElementById('onbContinua').click();
+
+    const p = state.profiles.find(x=>x.id==='io');
+    const m = p.measurements.find(x => x.date === oggi);
+    return { peso: m.weight, vita: m.waist, extra: m.extra, numeroMisurazioni: p.measurements.length };
+  `);
+  assert.equal(r.peso, 80);
+  assert.equal(r.vita, 80, 'la vita già registrata oggi non deve sparire');
+  assert.deepEqual(r.extra, { "Braccio": 35 }, 'anche le misure con etichetta già presenti per oggi restano');
+  assert.equal(r.numeroMisurazioni, 1, 'si aggiorna la stessa misurazione del giorno, non se ne crea una seconda');
+  window.close();
+});
+
 test('account: cambiare la data di nascita aggiorna subito l\'età mostrata (sola lettura)', async () => {
   const { window } = await loadApp();
   const r = await run(window, `
