@@ -193,3 +193,22 @@ test('CSS: ogni riquadro esercizio è position:absolute (nessun blocco non attiv
   const regolaBlocco = css.match(/\.exercise-block\{[^}]*position:absolute[^}]*\}/);
   assert.ok(regolaBlocco, 'la regola principale di .exercise-block (con position:absolute) non è stata trovata in css/style.css');
 });
+
+// Bug segnalato con screenshot: passando da un esercizio con un dropset
+// (molto alto) a uno semplice (poche righe), lo spazio vuoto sotto non si
+// richiudeva più — restava alto quanto il dropset visto prima. Causa: la
+// regola sopra usava "inset:0" (= anche bottom:0), che per un elemento
+// position:absolute con height:auto lo allunga a riempire ESATTAMENTE
+// l'altezza del contenitore invece di lasciarlo alto quanto il proprio
+// contenuto — quindi mostraEsercizio, leggendo scrollHeight del blocco per
+// sapere quanto è alto davvero, leggeva sempre "alto quanto il contenitore
+// in quel momento" e l'altezza restava bloccata sul valore più alto visto
+// fino a lì. Qui si verifica che la regola non torni a fissare "bottom" (né
+// tramite bottom diretto né tramite inset) sul riquadro esercizio.
+test('CSS: il riquadro esercizio non ha un bottom fissato (altrimenti si "allunga" a riempire il contenitore invece di prendere l\'altezza del proprio contenuto)', () => {
+  const css = fs.readFileSync(path.join(__dirname, '..', 'css', 'style.css'), 'utf8');
+  const regolaBlocco = css.match(/\.exercise-block\{[^}]*position:absolute[^}]*\}/);
+  assert.ok(regolaBlocco, 'la regola principale di .exercise-block non è stata trovata in css/style.css');
+  assert.ok(!/\bbottom\s*:/.test(regolaBlocco[0]), 'il riquadro esercizio non deve avere un "bottom" fissato');
+  assert.ok(!/\binset\s*:\s*0\b(?!\s*[a-z])/.test(regolaBlocco[0]), 'il riquadro esercizio non deve usare "inset:0" (equivale ad avere anche bottom:0)');
+});

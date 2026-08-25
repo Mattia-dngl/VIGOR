@@ -688,8 +688,17 @@
     position:relative; overflow:hidden; margin:0 -2px;
     transition: height .26s cubic-bezier(.4,0,.2,1);
   }
+  /* top+left, non inset:0: con anche il bottom fissato (quello che inset:0
+     imposta) un elemento position:absolute con height:auto si "allunga" per
+     riempire esattamente l'altezza del contenitore invece di prendere
+     l'altezza naturale del proprio contenuto — che è proprio quello che deve
+     fare qui: mostraEsercizio legge scrollHeight per sapere quanto è alto
+     DAVVERO il blocco, e con il bottom fissato quella lettura tornava sempre
+     "alto quanto il contenitore in quel momento", restando bloccata
+     sull'esercizio più alto visto fino a lì (bug segnalato: lo spazio vuoto
+     non si richiudeva mai passando a un esercizio corto). */
   .exercise-block{
-    position:absolute; inset:0; width:100%;
+    position:absolute; top:0; left:0; width:100%;
     border-top:none; padding:2px; box-sizing:border-box;
     opacity:0; pointer-events:none; transform:translateX(0);
     transition: transform .26s cubic-bezier(.4,0,.2,1), opacity .2s ease;
