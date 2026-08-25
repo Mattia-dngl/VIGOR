@@ -674,32 +674,33 @@
   /* ---------- CAROSELLO ESERCIZI (Registra): un esercizio alla volta, scorrimento orizzontale ---------- */
   .ex-carousel-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;}
   .ex-carousel-counter{font-family:'Roboto Mono',monospace; font-size:11.5px; color:var(--text-faint); flex:0 0 auto;}
-  .ex-carousel-dots{display:flex; gap:6px; overflow-x:auto; padding:2px 2px 10px; margin-bottom:2px;
-    scrollbar-width:none; -ms-overflow-style:none; scroll-behavior:auto; touch-action:pan-y;}
-  .ex-carousel-dots::-webkit-scrollbar{display:none;}
-  .ex-dot{flex:0 0 auto; padding:5px 11px; border-radius:12px; border:1px solid var(--border); background:var(--surface2);
-    color:var(--text-dim); font-size:11px; font-family:var(--font-display); letter-spacing:0.02em; cursor:pointer; white-space:nowrap;}
-  .ex-dot.current{background:var(--accent); border-color:var(--accent); color:#fff;}
-  .ex-dot.done{border-color:var(--ok); color:var(--ok);}
-  .ex-dot.done.current{background:var(--ok); border-color:var(--ok); color:#fff;}
+  /* Un esercizio alla volta, ognuno nel proprio riquadro indipendente — non più
+     un unico nastro con tutti gli esercizi affiancati che scorre in orizzontale.
+     Ogni `.exercise-block` resta SEMPRE nel DOM (serve a addSetRow/riportaUltimaVolta,
+     che cercano gli input per nome esercizio), ma solo quello attivo è visibile:
+     tutti gli altri sono position:absolute, invisibili e fuori dal flusso — quindi
+     non contribuiscono MAI all'altezza del contenitore. L'altezza si legge una
+     sola volta, per intero, dal blocco di arrivo (mostraEsercizio in index.html),
+     mai a metà fra due blocchi diversi: non c'è più nulla da "indovinare" durante
+     un cambio esercizio, quindi non può più sporgere né sovrapporsi a quello
+     precedente come succedeva con il vecchio scorrimento orizzontale nativo. */
   .ex-carousel-track{
-    /* overflow-y:hidden è la parte importante qui: l'altezza di questo
-       contenitore viene impostata via JS (vedi sincronizzaAltezzaCarosello/
-       DuranteScorrimento in index.html) e durante lo swipe è un valore
-       INTERPOLATO fra l'esercizio che si lascia e quello che si raggiunge —
-       per un istante può essere leggermente più bassa del vero contenuto di
-       un blocco. Senza un blocco esplicito sull'asse verticale, quel poco di
-       contenuto in eccedenza restava visibile fuori dal riquadro e si vedeva
-       come un "fantasma" dell'esercizio precedente sovrapposto a quello
-       nuovo. Tagliandolo qui, quel caso limite al massimo sfiora un filo di
-       contenuto per una frazione di secondo — non lo mostra mai fuori posto. */
-    display:flex; align-items:flex-start; overflow-x:auto; overflow-y:hidden; scroll-snap-type:x mandatory; scroll-behavior:smooth;
-    gap:0; margin:0 -2px; -webkit-overflow-scrolling:touch;
+    position:relative; overflow:hidden; margin:0 -2px;
+    transition: height .26s cubic-bezier(.4,0,.2,1);
   }
-  .ex-carousel-track::-webkit-scrollbar{display:none;}
   .exercise-block{
-    flex:0 0 100%; width:100%; scroll-snap-align:start; scroll-snap-stop:always;
-    border-top:none; padding:2px; box-sizing:border-box; overflow:hidden;
+    position:absolute; inset:0; width:100%;
+    border-top:none; padding:2px; box-sizing:border-box;
+    opacity:0; pointer-events:none; transform:translateX(0);
+    transition: transform .26s cubic-bezier(.4,0,.2,1), opacity .2s ease;
+  }
+  .exercise-block.active{ opacity:1; pointer-events:auto; transform:translateX(0); }
+  .exercise-block.entra-avanti{ transform:translateX(36px); }
+  .exercise-block.entra-indietro{ transform:translateX(-36px); }
+  .exercise-block.esce-avanti{ opacity:0; transform:translateX(-36px); }
+  .exercise-block.esce-indietro{ opacity:0; transform:translateX(36px); }
+  @media (prefers-reduced-motion: reduce){
+    .ex-carousel-track, .exercise-block{ transition:none; }
   }
   .ex-carousel-nav{display:flex; gap:8px; margin-top:12px;}
   .ex-carousel-nav .btn{margin-top:0; flex:1;}

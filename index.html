@@ -717,7 +717,6 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
         <h3 id="exerciseFormTitle">Esercizi</h3>
         <span class="ex-carousel-counter" id="exCarouselCounter"></span>
       </div>
-      <div class="ex-carousel-dots" id="exCarouselDots"></div>
       <div class="ex-carousel-track" id="exerciseFormList"></div>
       <div class="ex-carousel-nav">
         <button type="button" class="btn secondary" id="exPrevBtn">← Precedente</button>
@@ -3003,7 +3002,6 @@ function riportaUltimaVolta(nomeEsercizio){
       }
     });
   });
-  updateExerciseDotsProgress();
   salvaBozza();
   toast("Ripresi i valori della volta scorsa");
 }
@@ -5846,7 +5844,6 @@ function ripristinaBozza(){
     : "Stai riprendendo una registrazione lasciata a metà.";
   document.getElementById('bozzaBanner').style.display = 'block';
 
-  updateExerciseDotsProgress();
   _bozzaPronta = true;
   return true;
 }
@@ -6139,14 +6136,7 @@ function rebuildFreeForm(){
   });
   // buildExerciseForm riparte sempre dal primo esercizio: lo riporto dov'ero,
   // senza animazione (altrimenti si vede lo scatto a sinistra e poi il rientro)
-  const list = document.getElementById('exerciseFormList');
-  const target = list.children[indicePrima];
-  if(target){
-    list.scrollLeft = target.offsetLeft;
-    updateExerciseCarouselUI(indicePrima);
-    allineaNomiEsercizi(indicePrima);
-  }
-  updateExerciseDotsProgress();
+  mostraEsercizio(indicePrima, {animato:false});
 }
 
 function freeAddExercise(ex){
@@ -6826,9 +6816,7 @@ function selectDay(key){
 function buildExerciseForm(day){
   document.getElementById('exerciseFormTitle').textContent = day.key + " · " + day.name;
   const list = document.getElementById('exerciseFormList');
-  const dotsWrap = document.getElementById('exCarouselDots');
   list.innerHTML = "";
-  dotsWrap.innerHTML = "";
   currentSetInputs = {};
   _dropsetPerEsercizio = {};
 
@@ -6879,14 +6867,6 @@ function buildExerciseForm(day){
     } else {
       for(let k=0;k<ex.sets;k++) addSetRow(ex.name);
     }
-
-    const dot = document.createElement('button');
-    dot.type = 'button';
-    dot.className = 'ex-dot' + (i===0 ? ' current' : '');
-    dot.textContent = ex.name;
-    dot.dataset.exIndex = i;
-    dot.addEventListener('click', ()=>{ goToExercise(i); setTimeout(()=>allineaNomiEsercizi(i), 260); });
-    dotsWrap.appendChild(dot);
   });
   if(day.key === 'LIBERO'){
     list.querySelectorAll('.seg-toggle-tecnica .seg-btn[data-libidx]').forEach(btn=>{
@@ -6939,165 +6919,170 @@ function buildExerciseForm(day){
     } else {
       addSetRow(nome);
     }
-    updateExerciseDotsProgress();
   }));
   list.querySelectorAll('[data-riporta]').forEach(btn=>btn.addEventListener('click', ()=>riportaUltimaVolta(btn.dataset.riporta)));
   list.querySelectorAll('.superset-vai').forEach(btn=>btn.addEventListener('click', ()=>{
-    const i = parseInt(btn.dataset.vai);
-    goToExercise(i);
-    setTimeout(()=>allineaNomiEsercizi(i), 260);
+    mostraEsercizio(parseInt(btn.dataset.vai));
   }));
 
-  list.scrollLeft = 0;
-  updateExerciseCarouselUI(0);
+  inizializzaCarosello();
 }
 
 
-// Posizione "frazionaria" dello scorrimento orizzontale del carosello: i è
-// l'esercizio corrente, frazione (0-1) quanto ci si è già spostati verso il
-// successivo. Usata sia per far seguire la striscia dei nomi in modo
-// proporzionale, sia per far seguire l'altezza del carosello allo scorrimento
-// (vedi sincronizzaAltezzaCaroselloDuranteScorrimento più sotto).
-function posizioneFrazionariaCarosello(){
-  const list = document.getElementById('exerciseFormList');
-  if(!list || list.children.length === 0) return {i:0, frazione:0};
-  const larghezza = list.clientWidth || 1;
-  const posizione = list.scrollLeft / larghezza;          // 0, 0.5, 1, 1.5...
-  const i = Math.max(0, Math.min(list.children.length - 1, Math.floor(posizione)));
-  const frazione = Math.max(0, Math.min(1, posizione - i));
-  return {i, frazione};
-}
-
-// La striscia con i nomi segue lo scorrimento degli esercizi in modo proporzionale:
-// scorrendo a metà fra un esercizio e il successivo, anche i nomi sono a metà strada.
-// Così non si perde mai di vista dove ci si trova.
-function allineaNomiEsercizi(indice){
-  const strip = document.getElementById('exCarouselDots');
-  const list = document.getElementById('exerciseFormList');
-  if(!strip || !list || list.children.length === 0) return;
-  const {i, frazione} = posizioneFrazionariaCarosello();
-
-  const attuale = strip.children[i];
-  const dopo = strip.children[i + 1];
-  if(!attuale) return;
-
-  const centro = el => el.offsetLeft + el.offsetWidth / 2;
-  const centroOra = centro(attuale);
-  const centroDopo = dopo ? centro(dopo) : centroOra;
-  const centroInterpolato = centroOra + (centroDopo - centroOra) * frazione;
-
-  const meta = strip.clientWidth / 2;
-  const massimo = strip.scrollWidth - strip.clientWidth;
-  const target = Math.max(0, Math.min(massimo, centroInterpolato - meta));
-  strip.scrollLeft = target;   // senza animazione: deve seguire il dito, non inseguirlo
-}
-
-// ---- navigazione carosello: un esercizio alla volta, avanti/indietro/salto diretto ----
-function currentExerciseIndex(){
-  const list = document.getElementById('exerciseFormList');
-  if(list.children.length===0) return 0;
-  const w = list.clientWidth || 1;
-  return Math.round(list.scrollLeft / w);
-}
-function goToExercise(i){
-  const list = document.getElementById('exerciseFormList');
-  const target = list.children[i];
-  if(target) target.scrollIntoView({behavior:'smooth', inline:'start', block:'nearest'});
-}
-// Il carosello è un'unica riga flex più larga della pagina (un .exercise-block
-// per esercizio, affiancati, si scorre in orizzontale): senza altezza fissata
-// a mano, un contenitore flex si alza quanto il figlio più alto — così un
-// esercizio semplice (5 serie) restava alto quanto il dropset con più tappe,
-// lasciando un vuoto enorme sotto. Qui si tiene l'altezza del carosello
-// agganciata SOLO all'esercizio che si sta guardando in quel momento: un
-// ResizeObserver la ricalcola da solo ogni volta che quel blocco cambia
-// contenuto (aggiungi/togli una serie, cambi tecnica…), senza dover
-// intercettare ogni singolo punto del codice che potrebbe farlo cambiare.
+// ============================================================
+// CAROSELLO ESERCIZI (Registra) — un riquadro indipendente per esercizio.
 //
-// Da sola, però, questa sincronizzazione "scattava" solo a scorrimento finito
-// (dopo il debounce in fondo al file): mentre si scorreva da un esercizio
-// corto a uno più lungo (o viceversa) l'altezza restava quella vecchia per
-// tutta la durata dello swipe, e il contenuto del nuovo esercizio finiva per
-// sporgere e sovrapporsi ai pulsanti Precedente/Successivo sotto — poi, a
-// scorrimento finito, l'altezza scattava di colpo a quella giusta. Per questo
-// sincronizzaAltezzaCaroselloDuranteScorrimento (chiamata ad ogni evento di
-// scroll, non solo a scorrimento finito) tiene l'altezza interpolata in tempo
-// reale fra il blocco che si sta lasciando e quello che si sta raggiungendo,
-// esattamente come già succede per la posizione della striscia dei nomi.
+// Fino a questa versione era un unico nastro flex con TUTTI gli esercizi
+// affiancati, scorso in orizzontale; l'altezza del contenitore veniva
+// indovinata via JS ad ogni frame di scorrimento, interpolando fra il blocco
+// che si lasciava e quello che si raggiungeva (in base a scrollLeft). Quel
+// valore indovinato poteva restare — anche solo per un istante — più basso
+// del vero contenuto del blocco in arrivo: senza un taglio esplicito, quel
+// poco sporgeva fuori dal riquadro e si vedeva come un "fantasma"
+// dell'esercizio precedente sovrapposto a quello nuovo (bug segnalato più
+// volte, l'ultima su Military Press).
+//
+// Qui l'architettura è diversa, non un'altra rincorsa alla precisione del
+// calcolo: ogni `.exercise-block` resta sempre nel DOM (serve a
+// addSetRow/riportaUltimaVolta, che cercano gli input per nome esercizio),
+// ma è position:absolute e invisibile finché non è quello attivo — quindi
+// NESSUN blocco, tranne quello scelto, può mai contribuire all'altezza o
+// sovrapporsi visivamente agli altri. Cambiare esercizio è una decisione
+// netta (avanti di uno, indietro di uno, o un salto diretto), non un
+// trascinamento seguito frame per frame: si legge l'altezza VERA del
+// blocco di arrivo una volta sola (mostraEsercizio), e si lascia che sia la
+// transizione CSS ad animare in modo fluido fra il valore vecchio e quello
+// nuovo — non c'è più nulla da indovinare a metà gesto.
+let _indiceEsercizioAttivo = 0;
 let _carouselHeightObserver = null;
-function sincronizzaAltezzaCarosello(list, blocco){
-  if(!list || !blocco) return;
-  list.style.height = blocco.scrollHeight + 'px';
-}
-function sincronizzaAltezzaCaroselloDuranteScorrimento(){
-  const list = document.getElementById('exerciseFormList');
-  if(!list || list.children.length === 0) return;
-  const {i, frazione} = posizioneFrazionariaCarosello();
-  const blocco = list.children[i];
-  const prossimo = list.children[i+1];
-  if(!blocco) return;
-  const altezza = prossimo
-    ? blocco.scrollHeight + (prossimo.scrollHeight - blocco.scrollHeight) * frazione
-    : blocco.scrollHeight;
-  list.style.height = Math.round(altezza) + 'px';
-}
-function osservaAltezzaEsercizioCorrente(i){
-  const list = document.getElementById('exerciseFormList');
-  if(!list) return;
-  if(_carouselHeightObserver){ _carouselHeightObserver.disconnect(); _carouselHeightObserver = null; }
-  const blocco = list.children[i];
-  if(!blocco){ list.style.height = ''; return; }
-  sincronizzaAltezzaCarosello(list, blocco);
-  if(typeof ResizeObserver !== 'undefined'){
-    _carouselHeightObserver = new ResizeObserver(()=> sincronizzaAltezzaCarosello(list, blocco));
-    _carouselHeightObserver.observe(blocco);
-  }
-}
-function updateExerciseCarouselUI(i){
-  const list = document.getElementById('exerciseFormList');
-  const total = list.children.length;
-  if(total===0){ document.getElementById('exCarouselCounter').textContent = ""; list.style.height = ''; return; }
-  document.getElementById('exCarouselCounter').textContent = `${i+1} / ${total}`;
-  document.querySelectorAll('.ex-dot').forEach(dot=>{
-    dot.classList.toggle('current', Number(dot.dataset.exIndex)===i);
-  });
-  allineaNomiEsercizi(i);
+
+function currentExerciseIndex(){ return _indiceEsercizioAttivo; }
+
+function aggiornaControlliCarosello(i, totale){
+  document.getElementById('exCarouselCounter').textContent = totale ? `${i+1} / ${totale}` : "";
   document.getElementById('exPrevBtn').disabled = (i<=0);
-  document.getElementById('exNextBtn').disabled = (i>=total-1);
-  document.getElementById('exNextBtn').textContent = (i>=total-1) ? 'Ultimo esercizio' : 'Successivo →';
-  osservaAltezzaEsercizioCorrente(i);
+  document.getElementById('exNextBtn').disabled = (i>=totale-1);
+  document.getElementById('exNextBtn').textContent = (i>=totale-1) ? 'Ultimo esercizio' : 'Successivo →';
 }
-function updateExerciseDotsProgress(){
-  if(selectedDayKey===null || selectedDayKey==="SKIP") return;
-  const p = activeProgram();
-  const day = selectedDayKey==="LIBERO" ? FREE_DAY : (p ? p.days.find(d=>d.key===selectedDayKey) : null);
-  if(!day) return;
-  day.exercises.forEach((ex, i)=>{
-    const filled = (currentSetInputs[ex.name]||[]).some(s=>CAMPI_SERIE.some(k=>s[k]));
-    const dot = document.querySelector(`.ex-dot[data-ex-index="${i}"]`);
-    if(dot) dot.classList.toggle('done', filled);
+
+// Tiene l'altezza del contenitore agganciata al blocco attivo anche quando il
+// SUO contenuto cambia senza passare da mostraEsercizio (es. "+ Aggiungi
+// serie", "riporta" che aggiunge righe): un ResizeObserver sul solo blocco
+// attivo, ricollegato ad ogni cambio esercizio — la stessa idea semplice e
+// sicura di prima, qui non più mescolata con l'interpolazione fra due blocchi.
+function osservaAltezzaEsercizioAttivo(blocco){
+  const list = document.getElementById('exerciseFormList');
+  if(_carouselHeightObserver){ _carouselHeightObserver.disconnect(); _carouselHeightObserver = null; }
+  if(!blocco || typeof ResizeObserver === 'undefined') return;
+  _carouselHeightObserver = new ResizeObserver(()=>{
+    if(list.children[_indiceEsercizioAttivo] === blocco) list.style.height = blocco.scrollHeight + 'px';
   });
+  _carouselHeightObserver.observe(blocco);
 }
+
+// Chiamata una sola volta, a form appena costruito: nessuna transizione,
+// il primo esercizio è semplicemente quello che si vede.
+function inizializzaCarosello(){
+  const list = document.getElementById('exerciseFormList');
+  const blocchi = Array.from(list.children);
+  blocchi.forEach(b=>b.classList.remove('active','entra-avanti','entra-indietro','esce-avanti','esce-indietro'));
+  _indiceEsercizioAttivo = 0;
+  if(blocchi.length === 0){
+    list.style.height = '';
+    aggiornaControlliCarosello(0, 0);
+    osservaAltezzaEsercizioAttivo(null);
+    return;
+  }
+  blocchi[0].classList.add('active');
+  list.style.height = blocchi[0].scrollHeight + 'px';
+  aggiornaControlliCarosello(0, blocchi.length);
+  osservaAltezzaEsercizioAttivo(blocchi[0]);
+}
+
+// Cambia l'esercizio mostrato. opzioni.animato=false salta la transizione
+// (usato solo per ripristinare la posizione dopo aver ricostruito l'intero
+// carosello, es. rebuildFreeForm — lì non deve "scorrere", deve solo riapparire
+// dov'era). opzioni.direzione forza avanti/indietro quando non è ovvio dagli indici.
+function mostraEsercizio(i, opzioni){
+  const list = document.getElementById('exerciseFormList');
+  const blocchi = Array.from(list.children);
+  if(blocchi.length === 0) return;
+  i = Math.max(0, Math.min(blocchi.length - 1, i));
+  const animato = !opzioni || opzioni.animato !== false;
+  const precedente = blocchi[_indiceEsercizioAttivo];
+  const nuovo = blocchi[i];
+  const verso = (opzioni && opzioni.direzione) || (i >= _indiceEsercizioAttivo ? 'avanti' : 'indietro');
+  const cambiaBlocco = precedente && nuovo && precedente !== nuovo;
+  _indiceEsercizioAttivo = i;
+  aggiornaControlliCarosello(i, blocchi.length);
+
+  if(!animato || !cambiaBlocco){
+    blocchi.forEach(b=>{
+      b.classList.remove('entra-avanti','entra-indietro','esce-avanti','esce-indietro');
+      b.classList.toggle('active', b===nuovo);
+    });
+    list.style.height = nuovo.scrollHeight + 'px';
+    osservaAltezzaEsercizioAttivo(nuovo);
+    return;
+  }
+
+  // Altezza del blocco di arrivo letta UNA VOLTA sola (non inseguita ad ogni
+  // frame durante un trascinamento): resta la stessa lettura, sia che
+  // l'animazione duri 260ms sia che il browser la salti del tutto
+  // (prefers-reduced-motion) — niente stime a metà gesto da poter sbagliare.
+  list.style.height = nuovo.scrollHeight + 'px';
+  nuovo.classList.add('active', verso === 'avanti' ? 'entra-avanti' : 'entra-indietro');
+  void nuovo.offsetWidth;   // forza il browser a "fissare" la posizione di partenza prima di animarla via
+  precedente.classList.remove('active');
+  precedente.classList.add(verso === 'avanti' ? 'esce-avanti' : 'esce-indietro');
+
+  requestAnimationFrame(()=>{ nuovo.classList.remove('entra-avanti','entra-indietro'); });
+  const ripulisci = ()=>{
+    precedente.classList.remove('esce-avanti','esce-indietro');
+    precedente.removeEventListener('transitionend', ripulisci);
+  };
+  precedente.addEventListener('transitionend', ripulisci);
+  setTimeout(ripulisci, 340);   // rete di sicurezza se transitionend non scatta
+
+  osservaAltezzaEsercizioAttivo(nuovo);
+}
+
 document.getElementById('exPrevBtn').addEventListener('click', ()=>{
-  const i = currentExerciseIndex();
-  if(i>0) goToExercise(i-1);
+  if(_indiceEsercizioAttivo>0) mostraEsercizio(_indiceEsercizioAttivo-1, {direzione:'indietro'});
 });
 document.getElementById('exNextBtn').addEventListener('click', ()=>{
   const list = document.getElementById('exerciseFormList');
-  const i = currentExerciseIndex();
-  if(i<list.children.length-1) goToExercise(i+1);
+  if(_indiceEsercizioAttivo<list.children.length-1) mostraEsercizio(_indiceEsercizioAttivo+1, {direzione:'avanti'});
 });
-let _ticking = false;
-document.getElementById('exerciseFormList').addEventListener('scroll', ()=>{
-  // durante il trascinamento aggiorno solo la striscia (leggero);
-  // il resto quando il movimento si assesta
-  if(!_ticking){
-    _ticking = true;
-    requestAnimationFrame(()=>{ allineaNomiEsercizi(); sincronizzaAltezzaCaroselloDuranteScorrimento(); _ticking = false; });
-  }
-  clearTimeout(window._fineScorrimento);
-  window._fineScorrimento = setTimeout(()=>updateExerciseCarouselUI(currentExerciseIndex()), 90);
-}, {passive:true});
+
+// Swipe col dito: si decide alla fine del gesto (in base a quanto ci si è
+// spostati in orizzontale), non lo si insegue in tempo reale — è proprio
+// questo il cambiamento voluto: prima l'altezza doveva rincorrere una
+// posizione di scorrimento continua, adesso non esiste più uno scorrimento
+// continuo da rincorrere. Ascolto passivo: non interferisce mai con lo
+// scorrimento verticale della pagina.
+(function(){
+  const list = document.getElementById('exerciseFormList');
+  let partenzaX = null, partenzaY = null;
+  list.addEventListener('touchstart', (e)=>{
+    if(e.touches.length !== 1) return;
+    partenzaX = e.touches[0].clientX;
+    partenzaY = e.touches[0].clientY;
+  }, {passive:true});
+  list.addEventListener('touchend', (e)=>{
+    if(partenzaX === null) return;
+    const t = e.changedTouches[0];
+    const dx = t.clientX - partenzaX;
+    const dy = t.clientY - partenzaY;
+    partenzaX = null;
+    // solo un gesto chiaramente orizzontale (altrimenti è uno scroll verticale
+    // della pagina) e oltre una soglia minima, per non scattare per sbaglio
+    if(Math.abs(dx) > 45 && Math.abs(dx) > Math.abs(dy) * 1.5){
+      if(dx < 0 && _indiceEsercizioAttivo < list.children.length-1) mostraEsercizio(_indiceEsercizioAttivo+1, {direzione:'avanti'});
+      else if(dx > 0 && _indiceEsercizioAttivo > 0) mostraEsercizio(_indiceEsercizioAttivo-1, {direzione:'indietro'});
+    }
+  }, {passive:true});
+})();
 
 function addSetRow(exName, tappa){
   const container = document.querySelector(`.sets-container[data-ex="${CSS.escape(exName)}"]`);
@@ -7128,7 +7113,6 @@ function addSetRow(exName, tappa){
   row.querySelectorAll('input').forEach(inp=>{
     inp.addEventListener('input', ()=>{
       currentSetInputs[inp.dataset.ex][inp.dataset.idx][inp.dataset.field] = valoreDaCampo(inp.dataset.ex, inp.dataset.field, inp.value);
-      updateExerciseDotsProgress();
       salvaBozza();
     });
   });
