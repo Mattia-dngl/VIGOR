@@ -1157,6 +1157,10 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
   </button>
 </nav>
 
+<button type="button" class="back-to-top" id="backToTopBtn" aria-label="Torna su">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path d="M12 19V5M6 11l6-6 6 6" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+</button>
+
 <div class="toast" id="toast"></div>
 <div class="cloud-stato" id="cloudStato"><span class="pallino"></span><span id="cloudStatoTxt">sincronizzato</span></div>
 
@@ -6512,8 +6516,32 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
 // nav visibile: Scheda/Dieta/Glossario mostrano appRoot e cliccano "per conto loro"
 // il tab corrispondente nella nav storica; Home e Account riusano le funzioni esistenti.
 document.querySelectorAll('#navTabsGlobale button[data-go]').forEach(btn=>{
-  btn.addEventListener('click', ()=>vaiA(btn.dataset.go));
+  btn.addEventListener('click', ()=>{
+    // Ritoccare la scheda su cui si è già (Dieta/Scheda diventano lunghe nel
+    // tempo, tornare in cima a mano era scomodo): stesso gesto già familiare
+    // su altre app (Instagram/Twitter) — torna in cima invece di ricaricare
+    // la schermata da capo.
+    if(btn.classList.contains('active')){
+      window.scrollTo({top:0, behavior:'smooth'});
+      return;
+    }
+    vaiA(btn.dataset.go);
+  });
 });
+
+// ---------- pulsante "torna su" ----------
+// Compare solo dopo un po' di scorrimento verso il basso: su schermate lunghe
+// (Dieta, Scheda con i loro editor) tornare in cima a mano era scomodo.
+(function(){
+  const btn = document.getElementById('backToTopBtn');
+  if(!btn) return;
+  let visibile = false;
+  window.addEventListener('scroll', ()=>{
+    const mostra = window.scrollY > 400;
+    if(mostra !== visibile){ visibile = mostra; btn.classList.toggle('show', mostra); }
+  }, {passive:true});
+  btn.addEventListener('click', ()=>{ window.scrollTo({top:0, behavior:'smooth'}); });
+})();
 
 
 document.querySelectorAll('.seg-btn[data-seg]').forEach(btn=>{

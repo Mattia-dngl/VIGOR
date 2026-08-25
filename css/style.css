@@ -1196,6 +1196,23 @@
     nav.tabs{left:50%; right:auto; transform:translateX(-50%); width:min(560px, 96vw);
       bottom:16px;}
   }
+  /* ---------- pulsante "torna su" ---------- */
+  /* Compare solo dopo un po' di scorrimento verso il basso (index.html): su
+     schermate lunghe (Dieta, Scheda con i loro editor) risalire a mano era
+     scomodo. A sinistra, non a destra come .timer-apri (bottom:14px;right:14px
+     — il pulsante per riaprire il timer di Registra): sono entrambi fissi in
+     basso e potrebbero comparire insieme, quindi restano su lati opposti. */
+  .back-to-top{
+    position:fixed; left:14px; bottom:calc(100px + env(safe-area-inset-bottom, 0px));
+    z-index:110; width:44px; height:44px; border-radius:50%;
+    background:var(--surface); border:1px solid var(--border); box-shadow:var(--shadow-md);
+    color:var(--text-dim); display:flex; align-items:center; justify-content:center;
+    cursor:pointer; opacity:0; transform:translateY(8px) scale(.9); pointer-events:none;
+    transition:opacity .18s ease, transform .18s ease;
+  }
+  .back-to-top svg{width:19px; height:19px; stroke-width:2.2;}
+  .back-to-top.show{opacity:1; transform:translateY(0) scale(1); pointer-events:auto;}
+  .back-to-top:active{transform:scale(.92);}
   /* quando il browser porta in vista un campo (tocco, tastiera, "riporta"...) deve
      tenere conto della barra fissa, altrimenti l'elemento resta nascosto sotto */
   html{scroll-padding-bottom:calc(150px + env(safe-area-inset-bottom, 0px));
