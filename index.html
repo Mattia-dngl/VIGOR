@@ -290,10 +290,10 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
       </div>
       <div class="heatmap-info" id="homeHeatmapInfo">Tocca una zona per i dettagli</div>
       <div class="heatmap-legend">
-        <div class="heatmap-legend-item"><span class="heatmap-legend-dot" style="background:#dde0e6"></span>Non allenato</div>
-        <div class="heatmap-legend-item"><span class="heatmap-legend-dot" style="background:#ffb59c"></span>Leggero</div>
-        <div class="heatmap-legend-item"><span class="heatmap-legend-dot" style="background:#ff7a45"></span>Moderato</div>
-        <div class="heatmap-legend-item"><span class="heatmap-legend-dot" style="background:#e8280a"></span>Intenso</div>
+        <div class="heatmap-legend-item"><span class="heatmap-legend-dot" style="background:#efeae0"></span>Non allenato</div>
+        <div class="heatmap-legend-item"><span class="heatmap-legend-dot" style="background:#ffcdad"></span>Leggero</div>
+        <div class="heatmap-legend-item"><span class="heatmap-legend-dot" style="background:#ff7a3d"></span>Moderato</div>
+        <div class="heatmap-legend-item"><span class="heatmap-legend-dot" style="background:#ff4b2b"></span>Intenso</div>
       </div>
     </div>
 
@@ -2088,10 +2088,12 @@ function mpBuildFigure(svg, parts, outline){
 let HM_BUILT = false;
 let hmUid = 0;
 function hmBucketColor(v){
-  if(!v || v<=0) return '#dde0e6';
-  if(v===1) return '#ffb59c';
-  if(v===2) return '#ff7a45';
-  return '#e8280a';
+  // Stessa scala a 4 livelli di sempre (0-3 allenamenti nella settimana),
+  // solo intonata alla nuova palette più calda — nessun'altra logica toccata.
+  if(!v || v<=0) return '#efeae0';
+  if(v===1) return '#ffcdad';
+  if(v===2) return '#ff7a3d';
+  return '#ff4b2b';
 }
 function hmSelectZone(slug, conteggio){
   document.querySelectorAll('#homeHeatmapCard .heatmap-zone-g').forEach(g=>{
@@ -2919,8 +2921,8 @@ function ultimaPrestazione(nomeEsercizio, escludiData){
   }
   return null;
 }
-function descriviSerie(serie, nomeEsercizio){
-  return serie.map(s => {
+function descriviSerie(serie, nomeEsercizio, dropset){
+  const descriviUna = s => {
     if(s.km || s.minuti){
       const a = s.km ? s.km + ' km' : '';
       const b = s.minuti ? s.minuti + "'" : '';
@@ -2933,7 +2935,25 @@ function descriviSerie(serie, nomeEsercizio){
     }
     if(s.kg) return `${s.reps||'?'}×${s.kg}`;
     return `${s.reps||'?'}`;
-  }).join(", ");
+  };
+  // Se l'esercizio usa dropset/rest-pause, una lista piatta di valori (es.
+  // "10×45, 6×30, 4×20, 10×45, ...") non fa capire quale fosse la serie
+  // principale e quali le tappe successive di ogni round: la raggruppo (in
+  // base alla tecnica ATTUALE della scheda, la migliore informazione che
+  // abbiamo su come erano strutturati quei round) ed etichetto ogni pezzo,
+  // così "Ultima volta" si legge come si legge la scheda stessa.
+  const tappePerRound = dropset && dropset.drops ? 1 + dropset.drops.length : 0;
+  if(tappePerRound > 1 && serie.length > tappePerRound){
+    const round = [];
+    for(let k=0, idx=0; k<serie.length; k+=tappePerRound, idx++){
+      const gruppo = serie.slice(k, k+tappePerRound);
+      const etichette = gruppo.map((s,j)=> j===0 ? descriviUna(s)
+        : `${dropset.tipo==='restpause'?'rest-pause':'drop'} ${j} ${descriviUna(s)}`);
+      round.push(`Serie ${idx+1}: ${etichette.join(' → ')}`);
+    }
+    return round.join(' | ');
+  }
+  return serie.map(descriviUna).join(", ");
 }
 function riportaUltimaVolta(nomeEsercizio){
   const prec = ultimaPrestazione(nomeEsercizio, document.getElementById('logDate').value);
@@ -6793,7 +6813,7 @@ function buildExerciseForm(day){
     const videoInfo = getExerciseVideoInfo(ex.name);
     const prec = ultimaPrestazione(ex.name, document.getElementById('logDate').value);
     const rigaPrec = prec
-      ? `<div class="ultima-volta">Ultima volta (${formatDate(prec.data)}): <b>${descriviSerie(prec.serie, ex.name)}</b>
+      ? `<div class="ultima-volta">Ultima volta (${formatDate(prec.data)}): <b>${descriviSerie(prec.serie, ex.name, ex.dropset)}</b>
            <button type="button" class="riporta-btn" data-riporta="${escapeAttr(ex.name)}">riporta</button></div>`
       : `<div class="ultima-volta vuota">Prima volta che registri questo esercizio.</div>`;
     const nota = ex.note ? `<div class="exercise-note">📌 ${escapeAttr(ex.note)}</div>` : '';
@@ -6906,6 +6926,21 @@ function buildExerciseForm(day){
 }
 
 
+// Posizione "frazionaria" dello scorrimento orizzontale del carosello: i è
+// l'esercizio corrente, frazione (0-1) quanto ci si è già spostati verso il
+// successivo. Usata sia per far seguire la striscia dei nomi in modo
+// proporzionale, sia per far seguire l'altezza del carosello allo scorrimento
+// (vedi sincronizzaAltezzaCaroselloDuranteScorrimento più sotto).
+function posizioneFrazionariaCarosello(){
+  const list = document.getElementById('exerciseFormList');
+  if(!list || list.children.length === 0) return {i:0, frazione:0};
+  const larghezza = list.clientWidth || 1;
+  const posizione = list.scrollLeft / larghezza;          // 0, 0.5, 1, 1.5...
+  const i = Math.max(0, Math.min(list.children.length - 1, Math.floor(posizione)));
+  const frazione = Math.max(0, Math.min(1, posizione - i));
+  return {i, frazione};
+}
+
 // La striscia con i nomi segue lo scorrimento degli esercizi in modo proporzionale:
 // scorrendo a metà fra un esercizio e il successivo, anche i nomi sono a metà strada.
 // Così non si perde mai di vista dove ci si trova.
@@ -6913,10 +6948,7 @@ function allineaNomiEsercizi(indice){
   const strip = document.getElementById('exCarouselDots');
   const list = document.getElementById('exerciseFormList');
   if(!strip || !list || list.children.length === 0) return;
-  const larghezza = list.clientWidth || 1;
-  const posizione = list.scrollLeft / larghezza;          // 0, 0.5, 1, 1.5...
-  const i = Math.max(0, Math.min(strip.children.length - 1, Math.floor(posizione)));
-  const frazione = posizione - i;
+  const {i, frazione} = posizioneFrazionariaCarosello();
 
   const attuale = strip.children[i];
   const dopo = strip.children[i + 1];
@@ -6954,10 +6986,33 @@ function goToExercise(i){
 // ResizeObserver la ricalcola da solo ogni volta che quel blocco cambia
 // contenuto (aggiungi/togli una serie, cambi tecnica…), senza dover
 // intercettare ogni singolo punto del codice che potrebbe farlo cambiare.
+//
+// Da sola, però, questa sincronizzazione "scattava" solo a scorrimento finito
+// (dopo il debounce in fondo al file): mentre si scorreva da un esercizio
+// corto a uno più lungo (o viceversa) l'altezza restava quella vecchia per
+// tutta la durata dello swipe, e il contenuto del nuovo esercizio finiva per
+// sporgere e sovrapporsi ai pulsanti Precedente/Successivo sotto — poi, a
+// scorrimento finito, l'altezza scattava di colpo a quella giusta. Per questo
+// sincronizzaAltezzaCaroselloDuranteScorrimento (chiamata ad ogni evento di
+// scroll, non solo a scorrimento finito) tiene l'altezza interpolata in tempo
+// reale fra il blocco che si sta lasciando e quello che si sta raggiungendo,
+// esattamente come già succede per la posizione della striscia dei nomi.
 let _carouselHeightObserver = null;
 function sincronizzaAltezzaCarosello(list, blocco){
   if(!list || !blocco) return;
   list.style.height = blocco.scrollHeight + 'px';
+}
+function sincronizzaAltezzaCaroselloDuranteScorrimento(){
+  const list = document.getElementById('exerciseFormList');
+  if(!list || list.children.length === 0) return;
+  const {i, frazione} = posizioneFrazionariaCarosello();
+  const blocco = list.children[i];
+  const prossimo = list.children[i+1];
+  if(!blocco) return;
+  const altezza = prossimo
+    ? blocco.scrollHeight + (prossimo.scrollHeight - blocco.scrollHeight) * frazione
+    : blocco.scrollHeight;
+  list.style.height = Math.round(altezza) + 'px';
 }
 function osservaAltezzaEsercizioCorrente(i){
   const list = document.getElementById('exerciseFormList');
@@ -7011,7 +7066,7 @@ document.getElementById('exerciseFormList').addEventListener('scroll', ()=>{
   // il resto quando il movimento si assesta
   if(!_ticking){
     _ticking = true;
-    requestAnimationFrame(()=>{ allineaNomiEsercizi(); _ticking = false; });
+    requestAnimationFrame(()=>{ allineaNomiEsercizi(); sincronizzaAltezzaCaroselloDuranteScorrimento(); _ticking = false; });
   }
   clearTimeout(window._fineScorrimento);
   window._fineScorrimento = setTimeout(()=>updateExerciseCarouselUI(currentExerciseIndex()), 90);
@@ -7057,8 +7112,17 @@ function addSetRow(exName){
 // serie principale stessa, per avere comunque una progressione sensata.
 function calcolaRipartizioneRipetizioni(target, mainReps, tappe){
   if(tappe <= 0) return [];
-  let restanti = (Number.isFinite(target) && target > mainReps) ? (target - mainReps) : mainReps;
-  if(!Number.isFinite(restanti) || restanti < tappe) restanti = tappe;   // mai zero ripetizioni in una tappa
+  // Se il target è leggibile e la principale non lo ha già superato, alle tappe
+  // successive spetta solo quello che manca per arrivarci: se la principale lo
+  // ha già raggiunto in pieno (es. target 20, principale 20), alle tappe non
+  // resta nulla da fare — 0, perché la serie deve ridare sempre e solo il
+  // target, mai di più. Se il target invece non è leggibile (scheda senza reps
+  // numeriche) o la principale è già oltre il target, si ripartiscono le
+  // ripetizioni della principale stessa, per avere comunque una progressione.
+  const targetRaggiungibile = Number.isFinite(target) && target >= mainReps;
+  let restanti = targetRaggiungibile ? (target - mainReps) : mainReps;
+  if(restanti === 0) return new Array(tappe).fill(0);
+  if(!Number.isFinite(restanti) || restanti < tappe) restanti = tappe;   // mai zero ripetizioni in una tappa (fuori dal caso "target già raggiunto")
   const risultato = [];
   let daFare = tappe;
   while(daFare > 0){
@@ -7127,10 +7191,19 @@ function buildDropsetRound(exName, numeroRound, dropset, targetReps){
   if(repsPrincipale && righeDrop.length){
     const ricalcolaRipetizioni = ()=>{
       const mainReps = parseInt(repsPrincipale.value, 10);
-      if(!Number.isFinite(mainReps) || mainReps <= 0) return;   // niente ancora scritto: lascio le tappe come sono
+      if(!Number.isFinite(mainReps) || mainReps <= 0){
+        // la principale è vuota (o è stata cancellata dopo un calcolo
+        // precedente): non lascio le tappe con ripetizioni "vecchie" e non più valide
+        righeDrop.forEach(r=>{
+          r.repsInput.value = '';
+          currentSetInputs[exName][r.idx].reps = '';
+        });
+        salvaBozza();
+        return;
+      }
       const parti = calcolaRipartizioneRipetizioni(target, mainReps, righeDrop.length);
       righeDrop.forEach((r, i)=>{
-        r.repsInput.value = parti[i];
+        r.repsInput.value = String(parti[i]);
         currentSetInputs[exName][r.idx].reps = String(parti[i]);
       });
       salvaBozza();

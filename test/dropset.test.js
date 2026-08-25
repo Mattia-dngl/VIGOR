@@ -26,6 +26,21 @@ test('calcolaRipartizioneRipetizioni: riproduce gli esempi (target 20, principal
   window.close();
 });
 
+test('calcolaRipartizioneRipetizioni: se la principale raggiunge già il target, alle tappe non resta nulla (0, non un minimo forzato)', async () => {
+  const { window } = await loadApp();
+  const r = await run(window, `
+    return {
+      principaleUgualeTarget: calcolaRipartizioneRipetizioni(20, 20, 2),   // target 20, principale già 20
+      principaleUgualeTargetTreTappe: calcolaRipartizioneRipetizioni(20, 20, 3)
+    };
+  `);
+  // la serie deve sempre ridare il target totale, mai di più: se la principale
+  // lo raggiunge già da sola, i drop restano a 0 (non a un minimo di 1 a testa)
+  assert.deepEqual(r.principaleUgualeTarget, [0, 0]);
+  assert.deepEqual(r.principaleUgualeTargetTreTappe, [0, 0, 0]);
+  window.close();
+});
+
 test('calcolaRipartizioneRipetizioni: non va mai a zero e somma sempre in modo sensato', async () => {
   const { window } = await loadApp();
   const r = await run(window, `
@@ -94,6 +109,65 @@ test('buildDropsetRound: le ripetizioni dei drop seguono quelle scritte nella se
   assert.deepEqual(r.repsPrimaDiScrivere, ['', '']);
   // target 20, principale 10 → 6 e 4 (stesso esempio del calcolo puro)
   assert.deepEqual(r.repsDopo, ['6', '4']);
+  window.close();
+});
+
+test('buildDropsetRound: cancellando le ripetizioni della principale si svuotano anche quelle calcolate dei drop', async () => {
+  const { window } = await loadApp();
+  const r = await run(window, `
+    const profilo = { id:'io', name:'Io', email:'io@test.it', logs:[], measurements:[], customExercises:{}, customFoods:{} };
+    state.profiles = [profilo]; activeProfileId = 'io';
+    buildExerciseForm(${JSON.stringify(giornoConDropset([25, 25]))});   // target esercizio: 20 rip.
+
+    const principale = document.querySelector('.exercise-block .drop-row-main [data-field="reps"]');
+    principale.value = '10';
+    principale.dispatchEvent(new window.Event('input', {bubbles:true}));
+    const repsCalcolati = Array.from(document.querySelectorAll('.exercise-block .drop-row:not(.drop-row-main) [data-field="reps"]')).map(i=>i.value);
+
+    // ora cancello quanto scritto nella principale
+    principale.value = '';
+    principale.dispatchEvent(new window.Event('input', {bubbles:true}));
+    const repsDopoCancellazione = Array.from(document.querySelectorAll('.exercise-block .drop-row:not(.drop-row-main) [data-field="reps"]')).map(i=>i.value);
+
+    return { repsCalcolati, repsDopoCancellazione };
+  `);
+  assert.deepEqual(r.repsCalcolati, ['6', '4']);
+  // niente valori "vecchi" lasciati sui drop: devono svuotarsi insieme alla principale
+  assert.deepEqual(r.repsDopoCancellazione, ['', '']);
+  window.close();
+});
+
+test('buildDropsetRound: se la principale raggiunge il target dell\'esercizio, i drop mostrano 0', async () => {
+  const { window } = await loadApp();
+  const r = await run(window, `
+    const profilo = { id:'io', name:'Io', email:'io@test.it', logs:[], measurements:[], customExercises:{}, customFoods:{} };
+    state.profiles = [profilo]; activeProfileId = 'io';
+    buildExerciseForm(${JSON.stringify(giornoConDropset([25, 25]))});   // target esercizio: 20 rip.
+
+    const principale = document.querySelector('.exercise-block .drop-row-main [data-field="reps"]');
+    principale.value = '20';   // uguale al target
+    principale.dispatchEvent(new window.Event('input', {bubbles:true}));
+    return Array.from(document.querySelectorAll('.exercise-block .drop-row:not(.drop-row-main) [data-field="reps"]')).map(i=>i.value);
+  `);
+  assert.deepEqual(r, ['0', '0']);
+  window.close();
+});
+
+test('descriviSerie: con un dropset, raggruppa "Ultima volta" per round invece di una lista piatta', async () => {
+  const { window } = await loadApp();
+  const r = await run(window, `
+    const serie = [
+      {reps:'10', kg:'45'}, {reps:'6', kg:'30'}, {reps:'4', kg:'20'},
+      {reps:'10', kg:'45'}, {reps:'6', kg:'30'}, {reps:'4', kg:'20'}
+    ];
+    const dropset = { tipo:'dropset', drops:[{riduzione:25},{riduzione:25}] };
+    return {
+      conDropset: descriviSerie(serie, 'Chest Press', dropset),
+      senzaDropset: descriviSerie(serie, 'Chest Press')   // comportamento invariato per gli altri usi (storico, calendario)
+    };
+  `);
+  assert.equal(r.conDropset, 'Serie 1: 10×45 → drop 1 6×30 → drop 2 4×20 | Serie 2: 10×45 → drop 1 6×30 → drop 2 4×20');
+  assert.equal(r.senzaDropset, '10×45, 6×30, 4×20, 10×45, 6×30, 4×20');
   window.close();
 });
 

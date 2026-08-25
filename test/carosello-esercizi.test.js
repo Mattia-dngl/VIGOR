@@ -67,3 +67,45 @@ test('osservaAltezzaEsercizioCorrente: non va in crash se ResizeObserver non esi
   assert.equal(r.ok, true, r.errore);
   window.close();
 });
+
+// Bug segnalato (con screenshot) subito dopo il fix sopra: l'altezza cambiava
+// SOLO a scorrimento finito (dopo il debounce), quindi durante lo swipe da un
+// esercizio corto a uno lungo il contenuto del nuovo esercizio sporgeva e si
+// sovrapponeva ai pulsanti Precedente/Successivo, per poi "scattare" di colpo
+// alla fine. sincronizzaAltezzaCaroselloDuranteScorrimento deve tenere
+// l'altezza interpolata in tempo reale, in base a quanto ci si è già spostati
+// (scrollLeft), non solo all'indice dell'esercizio più vicino.
+test('sincronizzaAltezzaCaroselloDuranteScorrimento: interpola l\'altezza in base allo scorrimento, non scatta di colpo a fine swipe', async () => {
+  const { window } = await loadApp();
+  const r = await run(window, `
+    const profilo = { id:'io', name:'Io', email:'io@test.it', logs:[], measurements:[], customExercises:{}, customFoods:{} };
+    state.profiles = [profilo]; activeProfileId = 'io';
+    buildExerciseForm(${JSON.stringify(giornoConDueEsercizi())});
+
+    const list = document.getElementById('exerciseFormList');
+    Object.defineProperty(list.children[0], 'scrollHeight', { value: 300, configurable:true });
+    Object.defineProperty(list.children[1], 'scrollHeight', { value: 900, configurable:true });
+    Object.defineProperty(list, 'clientWidth', { value: 400, configurable:true });
+
+    list.scrollLeft = 0;                       // fermo sul primo esercizio
+    sincronizzaAltezzaCaroselloDuranteScorrimento();
+    const inizio = list.style.height;
+
+    list.scrollLeft = 200;                     // a metà dello swipe verso il secondo (più alto)
+    sincronizzaAltezzaCaroselloDuranteScorrimento();
+    const metaSwipe = list.style.height;
+
+    list.scrollLeft = 400;                     // arrivato sul secondo esercizio
+    sincronizzaAltezzaCaroselloDuranteScorrimento();
+    const fineSwipe = list.style.height;
+
+    return { inizio, metaSwipe, fineSwipe };
+  `);
+  assert.equal(r.inizio, '300px');
+  // a metà strada l'altezza deve già essere a metà fra le due, non ferma a 300px
+  // (altrimenti il contenuto del secondo esercizio, più alto, sporgerebbe e si
+  // sovrapporrebbe ai pulsanti sotto durante lo swipe) né già scattata a 900px.
+  assert.equal(r.metaSwipe, '600px');
+  assert.equal(r.fineSwipe, '900px');
+  window.close();
+});
