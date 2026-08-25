@@ -35,6 +35,20 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
   </div>
 </div>
 
+<!-- Schermata "account bloccato": copre TUTTO (sopra login, gate, o app già
+     aperta) quando chi gestisce l'app blocca un profilo. Mostrata sia prima di
+     entrare (login online bloccato, password locale di un profilo bloccato)
+     sia mentre si è già dentro l'app (blocco in tempo reale via Supabase) —
+     vedi mostraAccountBloccatoOverlay/nascondiAccountBloccatoOverlay. -->
+<div id="accountBloccatoOverlay" style="display:none;">
+  <div class="blocco-account-cerchio">
+    <div class="blocco-account-icona">✋</div>
+    <h2>Il tuo account è stato momentaneamente bloccato.</h2>
+    <p>Non puoi utilizzare l'app in questo momento.</p>
+    <p>Per ulteriori dettagli e per risolvere, contatta lo STAFF di VIGOR.</p>
+    <button type="button" id="accountBloccatoAzione" class="link-btn" style="display:none; margin-top:6px;"></button>
+  </div>
+</div>
 
 <div id="lockScreen" style="display:none;">
   <div class="lock-inner">
@@ -1960,7 +1974,7 @@ function addDaysIso(iso, days){
 function newProfile(name, email, password, approvato){
   const createdAt = new Date().toISOString().slice(0,10);
   return { id: uid(), name: name.trim(), email: (email||'').trim().toLowerCase(), createdAt,
-    approvato: !!approvato, richiestoIl: new Date().toISOString(),
+    approvato: !!approvato, bloccato:false, richiestoIl: new Date().toISOString(),
     passwordHash: simpleHash(password), sesso: null,
     programs:[blankProgram()], activeProgramId:null, logs:[], measurements:[], mealLogs:[], customExercises:{}, customFoods:{}, avatarUrl:null,
     altezza:null, dataNascita:null, eta:null, livelloAttivita:'moderato', obiettivoCalorico:'mantenimento',
@@ -2005,6 +2019,7 @@ function load(){
   data.profiles.forEach(p=>{
     // chi c'era prima dell'approvazione resta abilitato
     if(p.approvato === undefined) p.approvato = true;
+    if(p.bloccato === undefined) p.bloccato = false;
     if(!p.passwordHash) p.passwordHash = simpleHash("1234");
     if(!p.measurements) p.measurements = [];
     if(!p.mealLogs) p.mealLogs = [];
@@ -3314,7 +3329,7 @@ async function renderAmministrazioneOnline(){
 
   boxAttesa.querySelectorAll('[data-appr]').forEach(b=>b.addEventListener('click', ()=>{
     const p = data.find(x=>x.id===b.dataset.appr);
-    cambia(p.id, { approvato: true }, `${p.nome || p.email} può entrare ✓`);
+    cambia(p.id, { approvato: true, bloccato: false }, `${p.nome || p.email} può entrare ✓`);
   }));
   boxAttesa.querySelectorAll('[data-rifiuta]').forEach(b=>b.addEventListener('click', ()=>{
     const p = data.find(x=>x.id===b.dataset.rifiuta);
@@ -3369,7 +3384,7 @@ async function renderAmministrazioneOnline(){
   wrap.querySelectorAll('[data-sospendi]').forEach(b=>b.addEventListener('click', ()=>{
     const p = data.find(x=>x.id===b.dataset.sospendi);
     customConfirm(`Bloccare l'accesso a ${p.email}?\n\nNon potrà più entrare, ma scheda, allenamenti e dieta restano intatti: puoi riattivarlo quando vuoi dalle richieste in attesa.`, ()=>
-      cambia(p.id, { approvato: false }, `${p.nome || p.email} bloccato`));
+      cambia(p.id, { approvato: false, bloccato: true }, `${p.nome || p.email} bloccato`));
   }));
   wrap.querySelectorAll('[data-canc]').forEach(b=>b.addEventListener('click', ()=>{
     const p = data.find(x=>x.id===b.dataset.canc);
@@ -3433,6 +3448,7 @@ function renderAmministrazione(){
       const prof = state.profiles.find(x=>x.id===b.dataset.appr);
       if(!prof) return;
       prof.approvato = true;
+      prof.bloccato = false;
       save();
       renderAmministrazione();
       toast(`${prof.name} può entrare ✓`);
@@ -3483,6 +3499,7 @@ function renderAmministrazione(){
     if(!prof) return;
     customConfirm(`Sospendere "${prof.name}"? Non potrà più entrare finché non lo riapprovi. I suoi dati restano.`, ()=>{
       prof.approvato = false;
+      prof.bloccato = true;
       save();
       renderAmministrazione();
       toast(`${prof.name} sospeso`);
@@ -3591,6 +3608,36 @@ function mostraStatoSync(stato, testo){
       _statoSyncTimeoutId = null;
     }, 2200);
   }
+}
+
+// ============================================================
+// SCHERMATA "ACCOUNT BLOCCATO"
+// Un unico componente riusato in tutti i punti dove un profilo bloccato da
+// chi gestisce l'app incontra il blocco: login online, password di un
+// profilo locale bloccato, e blocco in tempo reale mentre si è già dentro
+// l'app. `opzioni.testoAzione`/`opzioni.suAzione` sono facoltativi: senza,
+// la schermata non ha alcun pulsante (blocco "duro", usato quando si viene
+// buttati fuori mentre si è già dentro l'app); con, compare un unico link
+// d'uscita/ritorno (usato quando la persona non ha ancora effettuato
+// l'accesso, e le serve comunque un modo per tornare indietro).
+// ============================================================
+function mostraAccountBloccatoOverlay(opzioni){
+  const overlay = document.getElementById('accountBloccatoOverlay');
+  if(!overlay) return;
+  const azione = document.getElementById('accountBloccatoAzione');
+  if(opzioni && opzioni.testoAzione && opzioni.suAzione){
+    azione.textContent = opzioni.testoAzione;
+    azione.style.display = 'inline-block';
+    azione.onclick = ()=>{ nascondiAccountBloccatoOverlay(); opzioni.suAzione(); };
+  } else {
+    azione.style.display = 'none';
+    azione.onclick = null;
+  }
+  overlay.classList.add('show');
+}
+function nascondiAccountBloccatoOverlay(){
+  const overlay = document.getElementById('accountBloccatoOverlay');
+  if(overlay) overlay.classList.remove('show');
 }
 
 function iniziaSupabase(){
@@ -4409,6 +4456,16 @@ async function dopoAccessoOnline(){
   }
 
   if(!rigaOnline.approvato){
+    if(rigaOnline.bloccato){
+      mostraAccountBloccatoOverlay({ testoAzione:'Esci', suAzione: async ()=>{
+        if(_canaleMioProfilo){ sb.removeChannel(_canaleMioProfilo); _canaleMioProfilo = null; }
+        await sb.auth.signOut();
+        utenteOnline = null; rigaOnline = null;
+        mostraCloudGate('accedi');
+      }});
+      mostraStatoSync('offline', 'bloccato');
+      return;
+    }
     document.getElementById('cloudAttesaTxt').textContent =
       `L'account ${rigaOnline.email} è stato creato, ma chi gestisce l'app deve ancora approvarlo. Appena lo fa, entri con questa stessa password.`;
     mostraCloudGate('attesa');
@@ -4805,10 +4862,20 @@ function gestisciMioProfiloAggiornato(nuovaRiga){
 
   rigaOnline = Object.assign({}, rigaOnline, nuovaRiga);
 
-  // bloccato da chi gestisce l'app: fuori subito, senza aspettare un ricaricamento a mano
+  // bloccato da chi gestisce l'app: schermata dedicata subito (non un toast
+  // che sparisce in fretta), poi un ricaricamento di sicurezza — a quel punto
+  // il login online rientra dal ramo qui sopra e mostra la stessa schermata,
+  // stavolta con un "Esci" per poter uscire davvero
   if(eraApprovato && !rigaOnline.approvato){
-    toast("Il tuo accesso è stato bloccato da chi gestisce l'app.");
-    setTimeout(()=>location.reload(), 1400);
+    mostraAccountBloccatoOverlay();
+    setTimeout(()=>location.reload(), 5000);
+    return;
+  }
+  // sbloccato mentre questa scheda era ancora aperta sulla schermata di blocco
+  if(!eraApprovato && rigaOnline.approvato){
+    nascondiAccountBloccatoOverlay();
+    toast("Il tuo accesso è stato ripristinato ✓");
+    setTimeout(()=>location.reload(), 1200);
     return;
   }
 
@@ -6683,6 +6750,13 @@ function trySubmitPassword(){
   if(simpleHash(pw) !== prof.passwordHash){
     err.textContent = "Password errata, riprova.";
     err.style.display='block';
+    return;
+  }
+  if(prof.bloccato){
+    mostraAccountBloccatoOverlay({ testoAzione:'Torna alla lista profili', suAzione: ()=>{
+      pendingProfileId = null;
+      showGateSelectView();
+    }});
     return;
   }
   if(!prof.approvato){
