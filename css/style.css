@@ -1146,7 +1146,7 @@
   #cloudGate.show{display:flex;}
   .cloud-stato{position:fixed; right:12px; bottom:calc(100px + env(safe-area-inset-bottom, 0px));
     z-index:130; background:var(--surface); border:none; box-shadow:var(--shadow-md); border-radius:var(--r-pill);
-    padding:7px 14px; font-size:11.5px; font-weight:600; color:var(--text-dim); display:none; align-items:center; gap:7px;}
+    padding:5px 11px; font-size:10px; font-weight:600; color:var(--text-dim); display:none; align-items:center; gap:6px;}
   .cloud-stato.show{display:flex;}
   .cloud-stato .pallino{width:7px; height:7px; border-radius:50%; background:var(--ok);}
   .cloud-stato.sincronizzo .pallino{background:var(--warn); animation:pulsaTimer 1s infinite;}

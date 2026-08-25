@@ -1472,7 +1472,7 @@ const TIME_BASED_EXERCISES = ["plank", "side plank"];
 const TIPI_MISURA = {
   "peso":     { nome:"Ripetizioni e carico (es. panca, squat)", breve:"rip × kg",  campi:[
                   {chiave:"reps",    etichetta:"rip.", unita:"",    passo:1},
-                  {chiave:"kg",      etichetta:"kg",   unita:"kg",  passo:0.5}] },
+                  {chiave:"kg",      etichetta:"kg",   unita:"kg",  passo:5}] },
   "corpo":    { nome:"Solo ripetizioni, a corpo libero (es. addominali, push-up)", breve:"ripetizioni", campi:[
                   {chiave:"reps",    etichetta:"rip.", unita:"",    passo:1}] },
   "tempo":    { nome:"A tempo, in secondi (es. plank breve)", breve:"secondi", campi:[
@@ -1483,16 +1483,16 @@ const TIPI_MISURA = {
                   {chiave:"seconds", etichetta:"ore", unita:"h", passo:0.25, moltiplicatore:3600}] },
   "tempopeso":{ nome:"A tempo in secondi, con carico (es. plank zavorrato)", breve:"sec × kg", campi:[
                   {chiave:"seconds", etichetta:"secondi", unita:"sec", passo:5},
-                  {chiave:"kg",      etichetta:"kg",   unita:"kg",  passo:0.5}] },
+                  {chiave:"kg",      etichetta:"kg",   unita:"kg",  passo:5}] },
   "tempopeso_min":{ nome:"A tempo in minuti, con carico (es. trasporto pesi)", breve:"min × kg", campi:[
                   {chiave:"seconds", etichetta:"minuti", unita:"min", passo:1, moltiplicatore:60},
-                  {chiave:"kg",      etichetta:"kg",   unita:"kg",  passo:0.5}] },
+                  {chiave:"kg",      etichetta:"kg",   unita:"kg",  passo:5}] },
   "distanza": { nome:"Distanza e durata (es. corsa, bici, cardio)", breve:"km + minuti", campi:[
                   {chiave:"km",      etichetta:"km",   unita:"km",  passo:0.1},
                   {chiave:"minuti",  etichetta:"min",  unita:"min", passo:1}] },
   "passi":    { nome:"Ripetizioni per lato (es. affondi, step up)", breve:"rip. per lato", campi:[
                   {chiave:"reps",    etichetta:"rip. lato", unita:"", passo:1},
-                  {chiave:"kg",      etichetta:"kg",   unita:"kg",  passo:0.5}] }
+                  {chiave:"kg",      etichetta:"kg",   unita:"kg",  passo:5}] }
 };
 const CAMPI_SERIE = ["reps","kg","seconds","km","minuti"];
 
@@ -3571,14 +3571,26 @@ function attendiLibreria(millisecondi){
   });
 }
 
+let _statoSyncTimeoutId = null;
 function mostraStatoSync(stato, testo){
   const el = document.getElementById('cloudStato');
   if(!el) return;
+  if(_statoSyncTimeoutId){ clearTimeout(_statoSyncTimeoutId); _statoSyncTimeoutId = null; }
   if(!modalitaOnline()){ el.classList.remove('show'); return; }
   el.classList.add('show');
   el.classList.toggle('sincronizzo', stato === 'sincronizzo');
   el.classList.toggle('offline', stato === 'offline');
   document.getElementById('cloudStatoTxt').textContent = testo;
+  // "sincronizzato" è solo una conferma: non deve restare lì a coprire i
+  // contenuti per sempre, sparisce da sola dopo un attimo. "offline"/
+  // "sincronizzo" invece restano finché la situazione non cambia davvero,
+  // perché segnalano qualcosa che l'utente potrebbe voler sapere.
+  if(stato === 'ok'){
+    _statoSyncTimeoutId = setTimeout(()=>{
+      el.classList.remove('show');
+      _statoSyncTimeoutId = null;
+    }, 2200);
+  }
 }
 
 function iniziaSupabase(){
@@ -7650,8 +7662,8 @@ document.getElementById('saveLogBtn').addEventListener('click', ()=>{
     // salvato" deve finire di mostrarsi prima che parta quello del record,
     // altrimenti si sovrascriverebbero a vicenda.
     const messaggioRecord = nuoviRecord.length === 1
-      ? `🏆 Nuovo record: ${nuoviRecord[0].nome} ${nuoviRecord[0].valore}${nuoviRecord[0].timeBased ? ' sec' : ' kg'}`
-      : `🏆 ${nuoviRecord.length} nuovi record oggi: ${nuoviRecord.map(r=>r.nome).join(', ')}`;
+      ? `🏆 Nuovo record${nuoviRecord[0].timeBased ? '' : ' stimato'}: ${nuoviRecord[0].nome} ${nuoviRecord[0].valore}${nuoviRecord[0].timeBased ? ' sec' : ' kg'}`
+      : `🏆 ${nuoviRecord.length} nuovi record stimati oggi: ${nuoviRecord.map(r=>r.nome).join(', ')}`;
     setTimeout(()=>toast(messaggioRecord), 2500);
   }
   document.getElementById('bozzaBanner').style.display = 'none';
@@ -8531,7 +8543,7 @@ function renderProgressTable(){
   const record = exName ? recordPersonale(prof, exName) : null;
   if(record){
     recordBox.style.display = 'block';
-    recordBox.innerHTML = `🏆 Record personale: <b>${record.valore}${timeBased ? ' sec' : ' kg'}</b> <span class="hint">— ${formatDate(record.data)}</span>`;
+    recordBox.innerHTML = `🏆 Record personale${timeBased ? '' : ' (stimato)'}: <b>${record.valore}${timeBased ? ' sec' : ' kg'}</b> <span class="hint">— ${formatDate(record.data)}</span>`;
   } else {
     recordBox.style.display = 'none';
     recordBox.innerHTML = '';

@@ -62,6 +62,26 @@ test('Storico: il record personale dell\'esercizio selezionato compare sopra il 
   `);
   assert.equal(r.visibile, true);
   assert.match(r.testo, /99/, 'deve mostrare il valore del record (99 kg stimati)');
+  assert.match(r.testo, /stimato/i, 'deve chiarire che è una stima (formula di Epley), non un peso realmente sollevato');
+  window.close();
+});
+
+test('Storico: per un esercizio a tempo (es. plank) il record NON è etichettato "stimato", perché è un tempo misurato per davvero', async () => {
+  const { window, document } = await loadApp();
+  const r = await run(window, `
+    const profilo = {
+      id:'io', name:'Io', email:'io@test.it', measurements:[], customExercises:{}, customFoods:{},
+      logs: [ { id:'l1', date:'2026-01-01', exercises:[{ name:'Plank', sets:[{seconds:'60'}] }] } ]
+    };
+    state.profiles = [profilo]; activeProfileId = 'io';
+    renderProgressSelect();
+    document.getElementById('progressExerciseSelect').value = 'Plank';
+    renderProgressTable();
+    const box = document.getElementById('recordPersonale');
+    return { testo: box.textContent };
+  `);
+  assert.match(r.testo, /60 sec/);
+  assert.ok(!/stimato/i.test(r.testo), 'il tempo tenuto in plank è misurato davvero, non va etichettato come stima');
   window.close();
 });
 
@@ -110,6 +130,8 @@ test('salvare un allenamento che batte un record vero festeggia con un avviso de
   const esito = await compilaESalva(window, 'Military Press', 5, 45); // epley 40*(1+5/30)=46.7 → 45*(1+5/30)=52.5, batte
   assert.ok(esito.messaggi.some(m => m.includes('🏆') && m.includes('Military Press')),
     'deve comparire un avviso col trofeo per il nuovo record');
+  assert.ok(esito.messaggi.some(m => m.includes('🏆') && /stimato/i.test(m)),
+    'anche l\'avviso al volo deve dire che è un record stimato (Epley), non un peso davvero sollevato');
   window.close();
 });
 
