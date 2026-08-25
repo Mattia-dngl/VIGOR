@@ -521,17 +521,165 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
       </div>
     </details>
 
-    <button type="button" class="acct-row-link" id="acctVaiImpostazioni">
-      <div class="acct-row-icon dark"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg></div>
-      <div class="acct-row-body"><div class="acct-row-title">Impostazioni</div><div class="acct-row-sub">Timer, promemoria, esercizi personali</div></div>
-      <div class="acct-row-chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg></div>
-    </button>
+    <!-- Da qui in giù: erano bottoni che portavano via ad una schermata a sé,
+         ora sono tendine come "Dati generali"/"Nome e password" qui sopra —
+         non ti spostano più da nessuna parte, si gestisce tutto da Account
+         (richiesta esplicita, 25/08 diciassettesimo giro). Fa eccezione
+         "Messaggi": è una chat vera e propria (può avere più conversazioni,
+         serve prima scegliere con chi), non si presta a stare dentro una
+         tendina — resta come schermata dedicata. -->
+    <details class="card details-card acct-row" id="accImpostazioni" style="margin-top:10px;">
+      <summary>
+        <div class="acct-row-icon dark"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg></div>
+        <div class="acct-row-body"><div class="acct-row-title">Impostazioni</div><div class="acct-row-sub">Timer, promemoria, esercizi personali</div></div>
+        <div class="acct-row-chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></div>
+      </summary>
+      <div class="details-body">
+        <details class="card details-card" style="margin-top:0;">
+          <summary>Timer di recupero</summary>
+          <div class="details-body">
+            <p class="hint">Il tempo che parte in automatico premendo "Avvia". I quattro tasti rapidi restano comunque disponibili durante l'allenamento.</p>
+            <label>Durata predefinita (secondi)</label>
+            <input type="number" id="timerDurataInput" min="10" max="900" step="5" inputmode="numeric">
 
-    <button type="button" class="acct-row-link" id="acctVaiGlossario">
-      <div class="acct-row-icon diet"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7" stroke-linejoin="round" aria-hidden="true"><path d="M12 6.3c-1.7-1.2-3.8-1.8-6-1.8-.7 0-1.3.6-1.3 1.3v11c0 .7.6 1.2 1.3 1 1.8-.6 3.6-.2 4.9.7.6.4 1.4.4 2 0 1.3-.9 3.1-1.3 4.9-.7.7.2 1.3-.3 1.3-1v-11c0-.7-.6-1.3-1.3-1.3-2.2 0-4.3.6-6 1.8Z"/><path d="M12 6.3v12.7"/></svg></div>
-      <div class="acct-row-body"><div class="acct-row-title">Glossario</div><div class="acct-row-sub">Tutti gli esercizi, spiegati</div></div>
-      <div class="acct-row-chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg></div>
-    </button>
+            <label style="margin-top:18px;">I 4 tasti rapidi del timer</label>
+            <p class="hint" style="margin:0 0 8px;">Sono quelli che vedi durante l'allenamento. Scrivi i secondi che vuoi e premi Salva.</p>
+            <div class="slot-timer" id="slotTimer"></div>
+            <button class="btn block" id="salvaScorciatoieBtn" style="margin-top:10px;">Salva i tasti rapidi</button>
+            <button class="btn ghost block" id="ripristinaScorciatoieBtn">Rimetti quelli iniziali</button>
+            <label style="display:flex; align-items:center; gap:9px; margin-top:16px; cursor:pointer;">
+              <input type="checkbox" id="timerSuonoChk" style="width:auto; margin:0;">
+              <span>Suono e vibrazione a fine recupero</span>
+            </label>
+            <button class="btn secondary block" id="provaSuonoBtn" style="margin-top:10px;">Prova il suono</button>
+            <p class="hint" style="margin-top:8px;">Il suono continua finché non premi "Ferma": così te ne accorgi anche se hai il telefono in tasca.</p>
+          </div>
+        </details>
+
+        <details class="card details-card" style="margin-top:10px;">
+          <summary>Sicurezza dei dati</summary>
+          <div class="details-body">
+            <p class="hint">Gli allenamenti stanno solo in questo telefono. Qui vedi se sono protetti dalla cancellazione automatica del browser.</p>
+            <div class="dato-riga"><span>Protezione dalla cancellazione</span><b id="statoPersistenza">—</b></div>
+            <div class="dato-riga"><span>Spazio occupato</span><b id="statoSpazio">—</b></div>
+
+            <button class="btn secondary block" id="proteggiBtn" style="display:none;">Attiva la protezione</button>
+            <details class="details-card" style="margin-top:12px; border:none; padding:0;">
+              <summary>Codice di recupero del profilo</summary>
+              <div class="details-body">
+                <p class="hint">Serve a rientrare se dimentichi la password. Se non l'hai mai salvato, generane uno nuovo: quello vecchio smetterà di funzionare.</p>
+                <button class="btn secondary block" id="nuovoCodiceBtn">Genera un nuovo codice</button>
+                <div class="codice-box" id="codiceMostrato" style="display:none;"></div>
+              </div>
+            </details>
+          </div>
+        </details>
+
+        <details class="card details-card" id="promemoriaCard" style="margin-top:10px; display:none;">
+          <summary>Promemoria allenamento</summary>
+          <div class="details-body">
+            <p class="hint">Un avviso sul telefono nei giorni in cui la scheda prevede un allenamento e non hai ancora registrato nulla. Arriva anche ad app chiusa, come un messaggio.</p>
+            <label style="display:flex; align-items:center; gap:9px; margin-top:10px; cursor:pointer;">
+              <input type="checkbox" id="promemoriaToggle" style="width:auto; margin:0;">
+              <span>Avvisami nei giorni di allenamento</span>
+            </label>
+            <p class="hint" id="promemoriaStato" style="margin-top:8px;"></p>
+          </div>
+        </details>
+
+        <details class="card details-card" style="margin-top:10px;">
+          <summary>Giorni saltati</summary>
+          <div class="details-body">
+            <p class="hint">Se un giorno previsto dalla scheda passa senza che tu registri nulla, viene segnato da solo come saltato — così lo storico e le statistiche restano veritieri. Puoi sempre eliminare o correggere una registrazione automatica dallo Storico.</p>
+            <label style="display:flex; align-items:center; gap:9px; margin-top:10px; cursor:pointer;">
+              <input type="checkbox" id="autoSkipToggle" style="width:auto; margin:0;">
+              <span>Segna automaticamente i giorni saltati</span>
+            </label>
+          </div>
+        </details>
+
+        <div class="sub" id="exSectionsIntro" style="margin-top:20px;">Gestisci qui il database degli esercizi: da dove pesca i suggerimenti nella tendina "Nome esercizio" e i gruppi muscolari assegnati automaticamente.</div>
+
+        <details class="card details-card" id="addExCard" style="margin-top:10px;">
+          <summary>Aggiungi esercizio</summary>
+          <div class="details-body">
+            <p class="hint">Utile per macchinari specifici della tua palestra non già presenti tra i suggerimenti. Una volta aggiunto, compare nella tendina "Nome esercizio" in Scheda → Modifica, con i muscoli già pronti. Personale: visibile solo al tuo account.</p>
+            <label>Nome esercizio</label>
+            <input type="text" id="customExName" placeholder="Es. Leg press orizzontale">
+            <label>Muscoli coinvolti</label>
+            <div class="muscle-chip-group" id="customExMuscles"></div>
+            <div id="customExVideoField" style="display:none;">
+              <label>Come si registra</label>
+            <select id="customExTipo"></select>
+            <p class="hint" style="margin:6px 0 0;">Decide quali caselle compaiono quando registri: ripetizioni e carico, solo secondi, chilometri…</p>
+
+            <label style="margin-top:16px;">Link video dimostrativo (facoltativo)</label>
+              <input type="text" id="customExVideo" placeholder="Es. https://youtube.com/...">
+            </div>
+            <button class="btn block" id="addCustomExBtn" style="margin-top:12px;">+ Aggiungi esercizio</button>
+          </div>
+        </details>
+
+        <details class="card details-card" id="myExCard" style="margin-top:10px;">
+          <summary>I tuoi esercizi personalizzati</summary>
+          <div class="details-body"><div id="customExList"></div></div>
+        </details>
+
+        <details class="card details-card" id="baseExCard" style="margin-top:10px; display:none;">
+          <summary>Esercizi di base (<span id="baseExCount"></span>)</summary>
+          <div class="details-body">
+            <p class="hint">Gli esercizi riconosciuti dall'app. Con i due pulsanti qui sotto puoi esportare l'elenco in Excel, incollare i link ai video e reimportarlo: i link compaiono poi ovunque compare l'esercizio (scheda, allenamento libero, glossario e registro).</p>
+            <div class="row" style="margin-bottom:12px;">
+              <button class="btn secondary block" id="exportExVideosBtn">⬇ Esporta link video (Excel)</button>
+              <div style="flex:1;">
+                <input type="file" id="importExVideosInput" accept=".xlsx,.xls,.csv" style="display:none;">
+                <button class="btn secondary block" id="importExVideosBtn">⬆ Importa link video (Excel o CSV)</button>
+              </div>
+            </div>
+            <p class="hint" id="importExVideosStatus"></p>
+            <div id="baseExList"></div>
+          </div>
+        </details>
+
+        <div class="card" id="noExPermCard" style="display:none;">
+          <p class="hint">Il tuo personal trainer non ti ha dato il permesso di modificare la scheda: da qui puoi comunque gestire timer e le altre impostazioni.</p>
+        </div>
+      </div>
+    </details>
+
+    <details class="card details-card acct-row" id="accGlossario" style="margin-top:10px;">
+      <summary>
+        <div class="acct-row-icon diet"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7" stroke-linejoin="round" aria-hidden="true"><path d="M12 6.3c-1.7-1.2-3.8-1.8-6-1.8-.7 0-1.3.6-1.3 1.3v11c0 .7.6 1.2 1.3 1 1.8-.6 3.6-.2 4.9.7.6.4 1.4.4 2 0 1.3-.9 3.1-1.3 4.9-.7.7.2 1.3-.3 1.3-1v-11c0-.7-.6-1.3-1.3-1.3-2.2 0-4.3.6-6 1.8Z"/><path d="M12 6.3v12.7"/></svg></div>
+        <div class="acct-row-body"><div class="acct-row-title">Glossario</div><div class="acct-row-sub">Tutti gli esercizi, spiegati</div></div>
+        <div class="acct-row-chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></div>
+      </summary>
+      <div class="details-body">
+        <div id="view-glossario">
+          <div class="card">
+            <h3>Glossario esercizi</h3>
+            <p class="hint" id="glossIntroText">Tocca un muscolo sulla figura per vedere gli esercizi che lo allenano e come si eseguono. Il petto è diviso in tre fasce: alto, medio e basso. Sono gli stessi esercizi che trovi nella scheda e nell'allenamento libero.</p>
+            <input type="text" id="glossSearch" placeholder="Oppure cerca per nome — es. panca, squat, curl">
+          </div>
+
+          <div class="card">
+            <div class="gl-viewtoggle">
+              <button type="button" data-glview="front" class="active">Fronte</button>
+              <button type="button" data-glview="back">Retro</button>
+            </div>
+            <div class="gl-figures">
+              <div class="gl-fig show" id="glFigFront"><span>Fronte</span><svg id="glFront" viewBox="0 0 724 1448" role="img" aria-label="Vista anteriore"></svg></div>
+              <div class="gl-fig" id="glFigBack"><span>Retro</span><svg id="glBack" viewBox="724 0 724 1448" role="img" aria-label="Vista posteriore"></svg></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="mp-zone-title" id="glZoneTitle">Tocca un muscolo sulla figura</div>
+            <div class="hint" id="glossCount"></div>
+            <div id="glossList" style="margin-top:10px;"></div>
+          </div>
+        </div>
+      </div>
+    </details>
 
     <button type="button" class="acct-row-link" id="acctVaiMessaggi">
       <div class="acct-row-icon chat"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a8.4 8.4 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.7a8.4 8.4 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.4 8.4 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5Z"/></svg></div>
@@ -545,17 +693,42 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
       <div class="acct-row-chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg></div>
     </button>
 
-    <button type="button" class="acct-row-link" id="acctVaiPrivacy">
-      <div class="acct-row-icon privacy"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2 4 5v6c0 5 3.4 8.9 8 11 4.6-2.1 8-6 8-11V5l-8-3Z"/></svg></div>
-      <div class="acct-row-body"><div class="acct-row-title">Privacy e Sicurezza</div><div class="acct-row-sub">Password dell'account, elimina account</div></div>
-      <div class="acct-row-chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg></div>
-    </button>
+    <details class="card details-card acct-row" id="accPrivacy" style="margin-top:10px;">
+      <summary>
+        <div class="acct-row-icon privacy"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2 4 5v6c0 5 3.4 8.9 8 11 4.6-2.1 8-6 8-11V5l-8-3Z"/></svg></div>
+        <div class="acct-row-body"><div class="acct-row-title">Privacy e Sicurezza</div><div class="acct-row-sub">Password dell'account, elimina account</div></div>
+        <div class="acct-row-chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></div>
+      </summary>
+      <div class="details-body">
+        <div class="card" style="margin-top:0;">
+          <h3>Password dell'account</h3>
+          <p class="hint">Ti mandiamo un'email all'indirizzo con cui sei registrato (<b id="privacyEmailMostrata">—</b>): apri il link e scegli lì la nuova password.</p>
+          <button class="btn block" id="privacyCambiaPwBtn" style="margin-top:10px;">Inviami l'email per cambiarla</button>
+          <div class="hint" id="privacyPwEsito" style="margin-top:10px; display:none;"></div>
+        </div>
 
-    <button type="button" class="acct-row-link" id="acctVaiAssistenza">
-      <div class="acct-row-icon help"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.8.4-1 .7-1 1.7"/><path d="M12 17.5h.01"/></svg></div>
-      <div class="acct-row-body"><div class="acct-row-title">Assistenza</div><div class="acct-row-sub">Un problema o un suggerimento?</div></div>
-      <div class="acct-row-chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg></div>
-    </button>
+        <div class="card" style="margin-top:12px; border:1px solid var(--accent);">
+          <h3 style="color:var(--accent);">Elimina il mio account</h3>
+          <p class="hint">Cancella per sempre il tuo account, la scheda, la dieta, lo storico allenamenti e le conversazioni. Non si torna indietro.</p>
+          <button class="btn danger block" id="privacyEliminaBtn" style="margin-top:10px;">Elimina il mio account</button>
+        </div>
+      </div>
+    </details>
+
+    <details class="card details-card acct-row" id="accAssistenza" style="margin-top:10px;">
+      <summary>
+        <div class="acct-row-icon help"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.8.4-1 .7-1 1.7"/><path d="M12 17.5h.01"/></svg></div>
+        <div class="acct-row-body"><div class="acct-row-title">Assistenza</div><div class="acct-row-sub">Un problema o un suggerimento?</div></div>
+        <div class="acct-row-chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></div>
+      </summary>
+      <div class="details-body">
+        <div class="card" style="margin-top:0;">
+          <h3>Hai un problema o un suggerimento?</h3>
+          <p class="hint">Scrivi direttamente a chi gestisce VIGOR: rispondiamo via email.</p>
+          <a class="btn block" id="assistenzaMailtoBtn" href="mailto:dangelomattia2002@gmail.com" style="margin-top:10px; text-decoration:none; text-align:center; display:block;">Scrivi un'email</a>
+        </div>
+      </div>
+    </details>
 
     <details class="card details-card acct-row" id="cardAmministrazione" style="margin-top:10px; display:none;">
       <summary>
@@ -610,41 +783,9 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
   </div>
 </div>
 
-<div id="privacySicurezzaPanel" style="display:none;">
-  <div class="settings-inner">
-    <div class="settings-head">
-      <h1>Privacy e Sicurezza</h1>
-      <button class="switch-user" id="closePrivacyBtn">✕ Chiudi</button>
-    </div>
-
-    <div class="card" style="margin-top:16px;">
-      <h3>Password dell'account</h3>
-      <p class="hint">Ti mandiamo un'email all'indirizzo con cui sei registrato (<b id="privacyEmailMostrata">—</b>): apri il link e scegli lì la nuova password.</p>
-      <button class="btn block" id="privacyCambiaPwBtn" style="margin-top:10px;">Inviami l'email per cambiarla</button>
-      <div class="hint" id="privacyPwEsito" style="margin-top:10px; display:none;"></div>
-    </div>
-
-    <div class="card" style="margin-top:12px; border:1px solid var(--accent);">
-      <h3 style="color:var(--accent);">Elimina il mio account</h3>
-      <p class="hint">Cancella per sempre il tuo account, la scheda, la dieta, lo storico allenamenti e le conversazioni. Non si torna indietro.</p>
-      <button class="btn danger block" id="privacyEliminaBtn" style="margin-top:10px;">Elimina il mio account</button>
-    </div>
-  </div>
-</div>
-
-<div id="assistenzaPanel" style="display:none;">
-  <div class="settings-inner">
-    <div class="settings-head">
-      <h1>Assistenza</h1>
-      <button class="switch-user" id="closeAssistenzaBtn">✕ Chiudi</button>
-    </div>
-    <div class="card" style="margin-top:16px;">
-      <h3>Hai un problema o un suggerimento?</h3>
-      <p class="hint">Scrivi direttamente a chi gestisce VIGOR: rispondiamo via email.</p>
-      <a class="btn block" id="assistenzaMailtoBtn" href="mailto:dangelomattia2002@gmail.com" style="margin-top:10px; text-decoration:none; text-align:center; display:block;">Scrivi un'email</a>
-    </div>
-  </div>
-</div>
+<!-- Privacy e Sicurezza e Assistenza: erano qui come schermate a sé, ora
+     vivono come tendine dentro #accountPanel (accPrivacy/accAssistenza,
+     25/08 diciassettesimo giro) — non più duplicate qui. -->
 
 <div class="mp-overlay" id="sceltaConversazioneOverlay">
   <div class="mp-modal" style="max-width:420px;">
@@ -658,124 +799,9 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
   </div>
 </div>
 
-<div id="settingsPanel" style="display:none;">
-  <div class="settings-inner">
-    <div class="settings-head">
-      <h1>Impostazioni</h1>
-      <button class="switch-user" id="closeSettingsBtn">✕ Chiudi</button>
-    </div>
-
-    <details class="card details-card" style="margin-top:16px;">
-      <summary>Timer di recupero</summary>
-      <div class="details-body">
-        <p class="hint">Il tempo che parte in automatico premendo "Avvia". I quattro tasti rapidi restano comunque disponibili durante l'allenamento.</p>
-        <label>Durata predefinita (secondi)</label>
-        <input type="number" id="timerDurataInput" min="10" max="900" step="5" inputmode="numeric">
-
-        <label style="margin-top:18px;">I 4 tasti rapidi del timer</label>
-        <p class="hint" style="margin:0 0 8px;">Sono quelli che vedi durante l'allenamento. Scrivi i secondi che vuoi e premi Salva.</p>
-        <div class="slot-timer" id="slotTimer"></div>
-        <button class="btn block" id="salvaScorciatoieBtn" style="margin-top:10px;">Salva i tasti rapidi</button>
-        <button class="btn ghost block" id="ripristinaScorciatoieBtn">Rimetti quelli iniziali</button>
-        <label style="display:flex; align-items:center; gap:9px; margin-top:16px; cursor:pointer;">
-          <input type="checkbox" id="timerSuonoChk" style="width:auto; margin:0;">
-          <span>Suono e vibrazione a fine recupero</span>
-        </label>
-        <button class="btn secondary block" id="provaSuonoBtn" style="margin-top:10px;">Prova il suono</button>
-        <p class="hint" style="margin-top:8px;">Il suono continua finché non premi "Ferma": così te ne accorgi anche se hai il telefono in tasca.</p>
-      </div>
-    </details>
-
-    <details class="card details-card" style="margin-top:10px;">
-      <summary>Sicurezza dei dati</summary>
-      <div class="details-body">
-        <p class="hint">Gli allenamenti stanno solo in questo telefono. Qui vedi se sono protetti dalla cancellazione automatica del browser.</p>
-        <div class="dato-riga"><span>Protezione dalla cancellazione</span><b id="statoPersistenza">—</b></div>
-        <div class="dato-riga"><span>Spazio occupato</span><b id="statoSpazio">—</b></div>
-
-        <button class="btn secondary block" id="proteggiBtn" style="display:none;">Attiva la protezione</button>
-        <details class="details-card" style="margin-top:12px; border:none; padding:0;">
-          <summary>Codice di recupero del profilo</summary>
-          <div class="details-body">
-            <p class="hint">Serve a rientrare se dimentichi la password. Se non l'hai mai salvato, generane uno nuovo: quello vecchio smetterà di funzionare.</p>
-            <button class="btn secondary block" id="nuovoCodiceBtn">Genera un nuovo codice</button>
-            <div class="codice-box" id="codiceMostrato" style="display:none;"></div>
-          </div>
-        </details>
-      </div>
-    </details>
-
-    <details class="card details-card" id="promemoriaCard" style="margin-top:10px; display:none;">
-      <summary>Promemoria allenamento</summary>
-      <div class="details-body">
-        <p class="hint">Un avviso sul telefono nei giorni in cui la scheda prevede un allenamento e non hai ancora registrato nulla. Arriva anche ad app chiusa, come un messaggio.</p>
-        <label style="display:flex; align-items:center; gap:9px; margin-top:10px; cursor:pointer;">
-          <input type="checkbox" id="promemoriaToggle" style="width:auto; margin:0;">
-          <span>Avvisami nei giorni di allenamento</span>
-        </label>
-        <p class="hint" id="promemoriaStato" style="margin-top:8px;"></p>
-      </div>
-    </details>
-
-    <details class="card details-card" style="margin-top:10px;">
-      <summary>Giorni saltati</summary>
-      <div class="details-body">
-        <p class="hint">Se un giorno previsto dalla scheda passa senza che tu registri nulla, viene segnato da solo come saltato — così lo storico e le statistiche restano veritieri. Puoi sempre eliminare o correggere una registrazione automatica dallo Storico.</p>
-        <label style="display:flex; align-items:center; gap:9px; margin-top:10px; cursor:pointer;">
-          <input type="checkbox" id="autoSkipToggle" style="width:auto; margin:0;">
-          <span>Segna automaticamente i giorni saltati</span>
-        </label>
-      </div>
-    </details>
-
-    <div class="sub" id="exSectionsIntro" style="margin-top:20px;">Gestisci qui il database degli esercizi: da dove pesca i suggerimenti nella tendina "Nome esercizio" e i gruppi muscolari assegnati automaticamente.</div>
-
-    <details class="card details-card" id="addExCard" style="margin-top:10px;">
-      <summary>Aggiungi esercizio</summary>
-      <div class="details-body">
-        <p class="hint">Utile per macchinari specifici della tua palestra non già presenti tra i suggerimenti. Una volta aggiunto, compare nella tendina "Nome esercizio" in Scheda → Modifica, con i muscoli già pronti. Personale: visibile solo al tuo account.</p>
-        <label>Nome esercizio</label>
-        <input type="text" id="customExName" placeholder="Es. Leg press orizzontale">
-        <label>Muscoli coinvolti</label>
-        <div class="muscle-chip-group" id="customExMuscles"></div>
-        <div id="customExVideoField" style="display:none;">
-          <label>Come si registra</label>
-        <select id="customExTipo"></select>
-        <p class="hint" style="margin:6px 0 0;">Decide quali caselle compaiono quando registri: ripetizioni e carico, solo secondi, chilometri…</p>
-
-        <label style="margin-top:16px;">Link video dimostrativo (facoltativo)</label>
-          <input type="text" id="customExVideo" placeholder="Es. https://youtube.com/...">
-        </div>
-        <button class="btn block" id="addCustomExBtn" style="margin-top:12px;">+ Aggiungi esercizio</button>
-      </div>
-    </details>
-
-    <details class="card details-card" id="myExCard" style="margin-top:10px;">
-      <summary>I tuoi esercizi personalizzati</summary>
-      <div class="details-body"><div id="customExList"></div></div>
-    </details>
-
-    <details class="card details-card" id="baseExCard" style="margin-top:10px; display:none;">
-      <summary>Esercizi di base (<span id="baseExCount"></span>)</summary>
-      <div class="details-body">
-        <p class="hint">Gli esercizi riconosciuti dall'app. Con i due pulsanti qui sotto puoi esportare l'elenco in Excel, incollare i link ai video e reimportarlo: i link compaiono poi ovunque compare l'esercizio (scheda, allenamento libero, glossario e registro).</p>
-        <div class="row" style="margin-bottom:12px;">
-          <button class="btn secondary block" id="exportExVideosBtn">⬇ Esporta link video (Excel)</button>
-          <div style="flex:1;">
-            <input type="file" id="importExVideosInput" accept=".xlsx,.xls,.csv" style="display:none;">
-            <button class="btn secondary block" id="importExVideosBtn">⬆ Importa link video (Excel o CSV)</button>
-          </div>
-        </div>
-        <p class="hint" id="importExVideosStatus"></p>
-        <div id="baseExList"></div>
-      </div>
-    </details>
-
-    <div class="card" id="noExPermCard" style="display:none;">
-      <p class="hint">Il tuo personal trainer non ti ha dato il permesso di modificare la scheda: da qui puoi comunque gestire timer e le altre impostazioni.</p>
-    </div>
-  </div>
-</div>
+<!-- Impostazioni: era qui come schermata a sé, ora vive come tendina dentro
+     #accountPanel (accImpostazioni, 25/08 diciassettesimo giro) — non più
+     duplicata qui. -->
 
 <div id="messaggiOverlay">
   <div class="msg-head">
@@ -1151,10 +1177,63 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
     </div>
 
     <div id="programStoricoBlock" style="display:none;">
-    <div class="seg-toggle">
-      <button class="seg-btn active" data-seg2="allenamenti">Allenamenti</button>
-      <button class="seg-btn" data-seg2="volume">Volume</button>
-      <button class="seg-btn" data-seg2="misure">Misure</button>
+    <!-- Niente più intestazione "Registro Allenamento"/card PT sopra (nascoste
+         apposta quando si è su Storico, vedi apriStorico()) e niente più i 3
+         tasti Allenamenti/Volume/Misure sempre in vista: il calendario è la
+         prima cosa che si vede, gli altri due restano raggiungibili da un
+         menu compatto (richiesta esplicita, 25/08 diciassettesimo giro). -->
+    <div class="storico-top-row">
+      <h2 class="storico-titolo">Storico</h2>
+      <div class="storico-menu-wrap">
+        <button type="button" class="storico-menu-btn" id="storicoMenuBtn" aria-haspopup="true" aria-expanded="false">
+          <span id="storicoMenuBtnLabel">Allenamenti</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+        <div class="storico-menu" id="storicoMenu">
+          <button type="button" class="seg-btn active" data-seg2="allenamenti">Allenamenti</button>
+          <button type="button" class="seg-btn" data-seg2="volume">Volume</button>
+          <button type="button" class="seg-btn" data-seg2="misure">Misure</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="historyLogsBlock">
+      <div class="card cal-card-nuovo">
+        <div class="cal-head">
+          <h3 id="calTitolo">—</h3>
+          <div class="cal-nav">
+            <button type="button" class="cal-nav-btn" id="calPrevBtn" aria-label="mese precedente">‹</button>
+            <button type="button" class="cal-nav-btn" id="calNextBtn" aria-label="mese successivo">›</button>
+          </div>
+        </div>
+        <div class="weekdays"><span>L</span><span>M</span><span>M</span><span>G</span><span>V</span><span>S</span><span>D</span></div>
+        <div class="cal-days-nuovo" id="calGiorni"></div>
+      </div>
+
+      <div id="calDettaglio"></div>
+
+      <div class="card storico-riepilogo-card">
+        <h3 id="riepilogoTitolo">Riepilogo</h3>
+        <div class="riepilogo-grid" id="riepilogoGrid"></div>
+      </div>
+
+      <details class="card details-card" open>
+        <summary>Progressi per esercizio</summary>
+        <div class="details-body">
+          <select id="progressExerciseSelect"></select>
+          <div class="record-personale" id="recordPersonale" style="display:none;"></div>
+          <p class="hint" id="exChartSpiega" style="margin-top:8px;"></p>
+          <div class="measure-chart-box" id="exChartBox" style="display:none;"><canvas id="exerciseChart"></canvas></div>
+          <div class="progress-list" id="progressTable"></div>
+        </div>
+      </details>
+
+      <div class="card">
+        <div class="card-head-row">
+          <h3>Tutti gli allenamenti</h3>
+        </div>
+        <div id="historyList"><div class="empty">Nessun allenamento registrato ancora.</div></div>
+      </div>
     </div>
 
     <div id="historyMisureBlock" style="display:none;">
@@ -1234,82 +1313,18 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
         </div>
       </div>
     </div>
-
-    <div id="historyLogsBlock">
-      <div class="card cal-card-nuovo">
-        <div class="cal-head">
-          <h3 id="calTitolo">—</h3>
-          <div class="cal-nav">
-            <button type="button" class="cal-nav-btn" id="calPrevBtn" aria-label="mese precedente">‹</button>
-            <button type="button" class="cal-nav-btn" id="calNextBtn" aria-label="mese successivo">›</button>
-          </div>
-        </div>
-        <div class="weekdays"><span>L</span><span>M</span><span>M</span><span>G</span><span>V</span><span>S</span><span>D</span></div>
-        <div class="cal-days-nuovo" id="calGiorni"></div>
-      </div>
-
-      <div id="calDettaglio"></div>
-
-      <div class="card storico-riepilogo-card">
-        <h3 id="riepilogoTitolo">Riepilogo</h3>
-        <div class="riepilogo-grid" id="riepilogoGrid"></div>
-      </div>
-
-      <details class="card details-card" open>
-        <summary>Progressi per esercizio</summary>
-        <div class="details-body">
-          <select id="progressExerciseSelect"></select>
-          <div class="record-personale" id="recordPersonale" style="display:none;"></div>
-          <p class="hint" id="exChartSpiega" style="margin-top:8px;"></p>
-          <div class="measure-chart-box" id="exChartBox" style="display:none;"><canvas id="exerciseChart"></canvas></div>
-          <div class="progress-list" id="progressTable"></div>
-        </div>
-      </details>
-
-      <div class="card">
-        <div class="card-head-row">
-          <h3>Tutti gli allenamenti</h3>
-        </div>
-        <div id="historyList"><div class="empty">Nessun allenamento registrato ancora.</div></div>
-      </div>
-    </div>
     </div>
   </section>
 
 
 
-  <!-- ===================== GLOSSARIO ESERCIZI ===================== -->
-  <section class="view" id="view-glossario">
-    <div class="card">
-      <h3>Glossario esercizi</h3>
-      <p class="hint" id="glossIntroText">Tocca un muscolo sulla figura per vedere gli esercizi che lo allenano e come si eseguono. Il petto è diviso in tre fasce: alto, medio e basso. Sono gli stessi esercizi che trovi nella scheda e nell'allenamento libero.</p>
-      <input type="text" id="glossSearch" placeholder="Oppure cerca per nome — es. panca, squat, curl">
-    </div>
-
-    <div class="card">
-      <div class="gl-viewtoggle">
-        <button type="button" data-glview="front" class="active">Fronte</button>
-        <button type="button" data-glview="back">Retro</button>
-      </div>
-      <div class="gl-figures">
-        <div class="gl-fig show" id="glFigFront"><span>Fronte</span><svg id="glFront" viewBox="0 0 724 1448" role="img" aria-label="Vista anteriore"></svg></div>
-        <div class="gl-fig" id="glFigBack"><span>Retro</span><svg id="glBack" viewBox="724 0 724 1448" role="img" aria-label="Vista posteriore"></svg></div>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="mp-zone-title" id="glZoneTitle">Tocca un muscolo sulla figura</div>
-      <div class="hint" id="glossCount"></div>
-      <div id="glossList" style="margin-top:10px;"></div>
-    </div>
-  </section>
+  <!-- Glossario: era qui come vista a sé (tab dedicato), ora vive come
+       tendina dentro #accountPanel (accGlossario, 25/08 diciassettesimo
+       giro) — non più duplicato qui, e senza più un tab proprio nella nav
+       storica qui sotto. -->
 </main>
 
 <nav class="tabs" id="navTabsLegacy">
-  <button class="tab-btn" data-tab="glossario" id="tabBtnGloss">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path d="M12 6.3c-1.7-1.2-3.8-1.8-6-1.8-.7 0-1.3.6-1.3 1.3v11c0 .7.6 1.2 1.3 1 1.8-.6 3.6-.2 4.9.7.6.4 1.4.4 2 0 1.3-.9 3.1-1.3 4.9-.7.7.2 1.3-.3 1.3-1v-11c0-.7-.6-1.3-1.3-1.3-2.2 0-4.3.6-6 1.8Z" stroke-linejoin="round" stroke-width="1.7"/><path d="M12 6.3v12.7" stroke-width="1.7"/></svg>
-    <span class="tab-label">Glossario</span>
-  </button>
   <button class="tab-btn" data-tab="program" id="tabBtnProgram">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><rect x="5" y="3.5" width="14" height="17" rx="2.5" stroke-width="1.8"/><path d="M9 8.5h6M9 12h6M9 15.5h4" stroke-linecap="round" stroke-width="1.8"/></svg>
     <span class="tab-label">Scheda</span>
@@ -1332,24 +1347,28 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
      Account e Glossario non hanno più una voce fissa qui: si aprono dall'avatar in
      alto a destra nella Dashboard (Account, che a sua volta elenca anche Glossario). -->
 <nav class="tabs" id="navTabsGlobale">
+  <!-- Ordine su richiesta esplicita dell'utente (25/08, diciassettesimo giro):
+       Home, Scheda, + Registra (centrale), Dieta, Storico. L'etichetta è
+       "Home" (non più "Dashboard": preferenza esplicita), data-go resta
+       "home" per non toccare tutta la logica di vaiA()/aggiornaNavGlobale
+       che già usa quella chiave. -->
+  <button type="button" class="active" data-go="home">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path d="M12 3.2 3 11h2.4v9h5.1v-6h3v6h5.1v-9H21z" stroke-width="1.8" stroke-linejoin="round"/></svg>
+    <span class="tab-label">Home</span>
+  </button>
   <button type="button" data-go="program">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><rect x="5" y="3.5" width="14" height="17" rx="2.5" stroke-width="1.8"/><path d="M9 8.5h6M9 12h6M9 15.5h4" stroke-linecap="round" stroke-width="1.8"/></svg>
     <span class="tab-label">Scheda</span>
   </button>
-  <button type="button" data-go="diet">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path d="M7 3v8a2 2 0 0 0 4 0V3M9 11v10M17 3c-1.5 1.5-2 3.5-2 5.5 0 1.7.8 2.5 2 2.5V3zM17 11v10" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/></svg>
-    <span class="tab-label">Dieta</span>
-  </button>
-  <!-- Bottone centrale rialzato: prima portava in Home, ora è il "+" che apre
-       Registra direttamente da qualunque schermata (come chiesto) — Dashboard
-       diventa una voce normale della nav, qui sotto. -->
+  <!-- Bottone centrale rialzato: apre Registra direttamente da qualunque
+       schermata. -->
   <button type="button" class="tab-btn-main" id="fabRegistraBtn">
     <span class="tab-fab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></span>
     <span class="tab-label">Registra</span>
   </button>
-  <button type="button" class="active" data-go="home">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path d="M12 3.2 3 11h2.4v9h5.1v-6h3v6h5.1v-9H21z" stroke-width="1.8" stroke-linejoin="round"/></svg>
-    <span class="tab-label">Dashboard</span>
+  <button type="button" data-go="diet">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path d="M7 3v8a2 2 0 0 0 4 0V3M9 11v10M17 3c-1.5 1.5-2 3.5-2 5.5 0 1.7.8 2.5 2 2.5V3zM17 11v10" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/></svg>
+    <span class="tab-label">Dieta</span>
   </button>
   <button type="button" data-go="storico">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7" stroke-linecap="round" stroke-width="1.8"/><path d="M3 4v5h5" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/><path d="M12 8v5l3.5 2" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/></svg>
@@ -3345,7 +3364,7 @@ function mostraBlocco(){
   document.getElementById('lockScreen').style.display = 'flex';
   document.getElementById('profileGate').style.display = 'none';
   document.getElementById('appRoot').style.display = 'none';
-  document.getElementById('settingsPanel').style.display = 'none';
+  document.getElementById('accountPanel').style.display = 'none';
   setTimeout(()=>document.getElementById('lockPw').focus(), 100);
 }
 function sbloccaApp(){
@@ -3849,7 +3868,7 @@ function mostraCloudGate(quale){
   document.getElementById('lockScreen').style.display = 'none';
   document.getElementById('profileGate').style.display = 'none';
   document.getElementById('appRoot').style.display = 'none';
-  document.getElementById('settingsPanel').style.display = 'none';
+  document.getElementById('accountPanel').style.display = 'none';
   const g = document.getElementById('cloudGate');
   g.style.display = 'flex';
   document.getElementById('cloudAccedi').style.display     = quale === 'accedi'      ? 'block':'none';
@@ -4260,10 +4279,9 @@ document.getElementById('notifChiudiBtn').addEventListener('click', chiudiNotifi
 
 function mostraHome(){
   document.getElementById('appRoot').style.display = 'none';
-  document.getElementById('settingsPanel').style.display = 'none';
   document.getElementById('accountPanel').style.display = 'none';
   document.getElementById('areaPT').style.display = 'none';
-  document.body.classList.remove('impostazioni-aperte', 'area-pt', 'account-aperto');
+  document.body.classList.remove('area-pt', 'account-aperto');
   document.body.classList.add('app-pronta');
   const p = (typeof activeProfile === 'function') ? activeProfile() : null;
   document.getElementById('homeSaluto').textContent = p && p.name ? `Bentornato, ${p.name}!` : 'Bentornato!';
@@ -4439,6 +4457,10 @@ function showAppRoot(){
   document.getElementById('homeScreen').style.display = 'none';
   document.getElementById('accountPanel').style.display = 'none';
   document.getElementById('appRoot').style.display = 'block';
+  // Storico li nasconde apposta (vedi apriStorico()): rientrando in una
+  // qualunque altra schermata (Scheda/Registra/Dieta) tornano visibili.
+  const sticky = document.querySelector('.sticky-top');
+  if(sticky) sticky.style.display = '';
 }
 function vaiA(tab){
   if(tab === 'home'){ mostraHome(); return; }
@@ -4479,6 +4501,15 @@ function apriStorico(){
     b.classList.toggle('active', b.dataset.segprog === 'storico'));
   try{ renderHistory(); renderVolume(); renderMeasurements(); renderCalendarioStorico(); }catch(e){ console.error(e); }
   aggiornaNavGlobale('storico');
+  // Il nuovo Storico (mockup, 25/08 sedicesimo giro) vuole il calendario come
+  // prima cosa in vista: nascondo qui l'intestazione legacy "Registro
+  // Allenamento" e la card "Il mio Personal Trainer", condivise con
+  // Scheda/Registra/Dieta — showAppRoot() le rimette a posto tornando altrove
+  // (richiesta esplicita, 25/08 diciassettesimo giro).
+  const sticky = document.querySelector('.sticky-top');
+  if(sticky) sticky.style.display = 'none';
+  const cardPT = document.getElementById('cardMioPT');
+  if(cardPT) cardPT.style.display = 'none';
 }
 function aggiornaNavGlobale(attivo){
   // 'log' non ha una voce propria nella nav nuova: nesta concettualmente sotto
@@ -4490,14 +4521,22 @@ function aggiornaNavGlobale(attivo){
   });
 }
 
+// Impostazioni non è più una schermata a sé: apre/scrolla la tendina
+// "Impostazioni" dentro Account. "provenienza" resta per sapere dove tornare
+// chiudendo Account (vedi chiudiAccountPanel) — 'app' = torna alla schermata
+// di app da cui si è premuto l'ingranaggio, altrimenti si torna in Home.
 function apriImpostazioni(provenienza){
-  _impostazioniProvenienza = provenienza;
-  document.getElementById('homeScreen').style.display = 'none';
   document.getElementById('appRoot').style.display = 'none';
-  document.getElementById('accountPanel').style.display = 'none';
-  document.body.classList.remove('account-aperto');
-  document.getElementById('settingsPanel').style.display = 'block';
-  document.body.classList.add('impostazioni-aperte');
+  apriAccountPanel();
+  _impostazioniProvenienza = provenienza;
+  const acc = document.getElementById('accImpostazioni');
+  if(acc){ acc.open = true; if(acc.scrollIntoView) acc.scrollIntoView({behavior:'smooth', block:'start'}); }
+  renderImpostazioniInline();
+}
+// Riempie i campi della tendina Impostazioni: usata sia da apriImpostazioni()
+// (ingranaggio ⚙, notifiche) sia dal 'toggle' della tendina stessa quando la
+// si apre toccandola direttamente dentro Account.
+function renderImpostazioniInline(){
   aggiornaStatoDati();
   renderImpostazioniTimer();
   renderPromemoria();
@@ -4522,22 +4561,15 @@ function apriImpostazioni(provenienza){
     renderBaseExerciseList();
   }
 }
-function chiudiImpostazioni(){
-  document.getElementById('settingsPanel').style.display = 'none';
-  document.body.classList.remove('impostazioni-aperte');
-  if(_impostazioniProvenienza === 'app'){
-    document.getElementById('appRoot').style.display = 'block';
-  } else if(_impostazioniProvenienza === 'account'){
-    apriAccountPanel();
-  } else {
-    mostraHome();
-  }
-}
-
 function apriAccountPanel(){
   document.getElementById('homeScreen').style.display = 'none';
+  document.getElementById('appRoot').style.display = 'none';
   document.getElementById('accountPanel').style.display = 'block';
   document.body.classList.add('account-aperto');
+  // Reset di default: solo apriImpostazioni() la imposta esplicitamente
+  // (chiamata subito dopo questa funzione), qualunque altra strada per
+  // arrivare qui (avatar, notifica, ecc.) deve tornare in Home chiudendo.
+  _impostazioniProvenienza = null;
   renderAmministrazione();
   aggiornaNavGlobale('account');
   const lp = loggedInProfile();
@@ -4568,7 +4600,7 @@ function apriAccountPanel(){
   // in locale non c'è un server con cui parlare né una password da resettare via email.
   const online = !!utenteOnline;
   document.getElementById('acctVaiMessaggi').style.display = online ? 'flex' : 'none';
-  document.getElementById('acctVaiPrivacy').style.display = online ? 'flex' : 'none';
+  document.getElementById('accPrivacy').style.display = online ? '' : 'none';
 }
 
 // Icona chat riusata al posto dell'emoji 💬 nei bottoni "Messaggi", per restare
@@ -4634,6 +4666,15 @@ document.getElementById('acctAvatarFile').addEventListener('change', function(e)
 function chiudiAccountPanel(){
   document.getElementById('accountPanel').style.display = 'none';
   document.body.classList.remove('account-aperto');
+  // Se si è arrivati qui premendo l'ingranaggio ⚙ da dentro Scheda/Registra/
+  // Dieta (apriImpostazioni('app')), chiudendo si torna lì invece che in
+  // Home — stesso comportamento di quando Impostazioni era una schermata a sé.
+  if(_impostazioniProvenienza === 'app'){
+    _impostazioniProvenienza = null;
+    document.getElementById('appRoot').style.display = 'block';
+    return;
+  }
+  _impostazioniProvenienza = null;
   mostraHome();
 }
 
@@ -4668,20 +4709,27 @@ document.getElementById('homeEsciBtn').addEventListener('click', async ()=>{
 });
 document.getElementById('closeAccountBtn').addEventListener('click', chiudiAccountPanel);
 
-// ---------- righe di navigazione in Account (Impostazioni/Glossario/Messaggi/Notifiche/Privacy/Assistenza) ----------
-document.getElementById('acctVaiImpostazioni').addEventListener('click', ()=>apriImpostazioni('account'));
+// ---------- righe/tendine di Account (Impostazioni/Glossario/Messaggi/Notifiche/Privacy/Assistenza) ----------
+// Impostazioni e Glossario sono ora tendine dentro Account (non più schermate
+// a sé): l'evento nativo 'toggle' di <details> copre anche l'apertura diretta
+// (click sulla riga), oltre a apriImpostazioni() usata dall'ingranaggio ⚙ e
+// dalle notifiche.
+document.getElementById('accImpostazioni').addEventListener('toggle', function(){
+  if(this.open) renderImpostazioniInline();
+});
+document.getElementById('accGlossario').addEventListener('toggle', function(){
+  if(this.open) renderGlossario();
+});
+// "Notifiche" in Account è in realtà un collegamento rapido al promemoria
+// allenamento dentro Impostazioni (mai stata una sezione a sé): apro
+// Impostazioni e scrollo/apro quella card nidificata.
 document.getElementById('acctVaiNotifiche').addEventListener('click', ()=>{
   apriImpostazioni('account');
   const card = document.getElementById('promemoriaCard');
   if(card && card.style.display !== 'none'){
     card.open = true;
-    card.scrollIntoView({behavior:'smooth', block:'start'});
+    if(card.scrollIntoView) card.scrollIntoView({behavior:'smooth', block:'start'});
   }
-});
-document.getElementById('acctVaiGlossario').addEventListener('click', ()=>{
-  document.getElementById('accountPanel').style.display = 'none';
-  document.body.classList.remove('account-aperto');
-  vaiA('glossario');
 });
 
 async function apriMessaggiGenerico(){
@@ -4725,19 +4773,13 @@ document.getElementById('sceltaConversazioneOverlay').addEventListener('click', 
 });
 
 // ---------- Privacy e Sicurezza (solo account online: password vera + eliminazione account) ----------
-function apriPrivacySicurezza(){
-  document.getElementById('accountPanel').style.display = 'none';
-  document.body.classList.remove('account-aperto');
-  document.getElementById('privacySicurezzaPanel').style.display = 'block';
+// Ora è una tendina dentro Account: aggiorno l'email mostrata e ripulisco
+// l'esito precedente ogni volta che si apre, invece di navigare altrove.
+document.getElementById('accPrivacy').addEventListener('toggle', function(){
+  if(!this.open) return;
   document.getElementById('privacyEmailMostrata').textContent = (utenteOnline && utenteOnline.email) || (loggedInProfile()||{}).email || '—';
   document.getElementById('privacyPwEsito').style.display = 'none';
-}
-function chiudiPrivacySicurezza(){
-  document.getElementById('privacySicurezzaPanel').style.display = 'none';
-  apriAccountPanel();
-}
-document.getElementById('acctVaiPrivacy').addEventListener('click', apriPrivacySicurezza);
-document.getElementById('closePrivacyBtn').addEventListener('click', chiudiPrivacySicurezza);
+});
 
 document.getElementById('privacyCambiaPwBtn').addEventListener('click', async ()=>{
   const el = document.getElementById('privacyPwEsito');
@@ -4769,17 +4811,8 @@ document.getElementById('privacyEliminaBtn').addEventListener('click', ()=>{
     });
 });
 
-// ---------- Assistenza ----------
-function apriAssistenza(){
-  document.getElementById('accountPanel').style.display = 'none';
-  document.body.classList.remove('account-aperto');
-  document.getElementById('assistenzaPanel').style.display = 'block';
-}
-document.getElementById('acctVaiAssistenza').addEventListener('click', apriAssistenza);
-document.getElementById('closeAssistenzaBtn').addEventListener('click', ()=>{
-  document.getElementById('assistenzaPanel').style.display = 'none';
-  apriAccountPanel();
-});
+// Assistenza è statica (solo un link mailto): è già una tendina in HTML
+// (#accAssistenza), non serve altro JS per aprirla/chiuderla.
 
 // ---------- ingresso ----------
 async function avvioOnline(){
@@ -5246,7 +5279,10 @@ async function renderMioPT(){
     document.getElementById('cardMioPT').style.display = 'none';
     return;
   }
-  document.getElementById('cardMioPT').style.display = 'block';
+  // Su Storico la card resta sempre nascosta (vedi apriStorico()), anche se
+  // questa funzione viene richiamata mentre Storico è ancora la schermata attiva.
+  const suStorico = document.querySelector('#navTabsGlobale button[data-go="storico"]')?.classList.contains('active');
+  document.getElementById('cardMioPT').style.display = suStorico ? 'none' : 'block';
 
   await caricaRapporti();
   const attivo = mioRapportoAttivo();
@@ -5369,9 +5405,7 @@ document.getElementById('sceltaPTOverlay').addEventListener('click', e=>{
 function apriAreaPT(){
   document.getElementById('homeScreen').style.display = 'none';
   document.getElementById('appRoot').style.display = 'none';
-  document.getElementById('settingsPanel').style.display = 'none';
   document.getElementById('accountPanel').style.display = 'none';
-  document.body.classList.remove('impostazioni-aperte');
   document.getElementById('areaPT').style.display = 'block';
   document.getElementById('ptDettaglio').style.display = 'none';
   document.getElementById('ptElenco').style.display = 'block';
@@ -7164,8 +7198,6 @@ document.getElementById('autoSkipToggle').addEventListener('change', (e)=>{
   }
 });
 
-document.getElementById('closeSettingsBtn').addEventListener('click', chiudiImpostazioni);
-
 document.getElementById('saveAccountNameBtn').addEventListener('click', ()=>{
   const newName = document.getElementById('accountNameInput').value.trim();
   if(!newName){ toast("Inserisci un nome."); return; }
@@ -7210,7 +7242,6 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     if(btn.dataset.tab==='history'){ renderHistory(); renderVolume(); renderMeasurements(); }
     if(btn.dataset.tab==='program'){ renderProgramView(); renderNewProgramForm(); segnaVistaCliente('scheda');
       if(typeof renderMioPT === 'function' && modalitaOnline()) renderMioPT(); }
-    if(btn.dataset.tab==='glossario') renderGlossario();
     aggiornaNavGlobale(btn.dataset.tab);
   });
 });
@@ -7280,6 +7311,7 @@ document.querySelectorAll('.seg-btn[data-segd]').forEach(btn=>{
   });
 });
 
+const ETICHETTA_SEG2 = { allenamenti:'Allenamenti', volume:'Volume', misure:'Misure' };
 document.querySelectorAll('.seg-btn[data-seg2]').forEach(btn=>{
   btn.addEventListener('click', ()=>{
     document.querySelectorAll('.seg-btn[data-seg2]').forEach(b=>b.classList.remove('active'));
@@ -7290,8 +7322,35 @@ document.querySelectorAll('.seg-btn[data-seg2]').forEach(btn=>{
     document.getElementById('historyMisureBlock').style.display = mode==='misure' ? 'block':'none';
     if(mode==='misure') renderMeasurements();
     if(mode==='allenamenti') renderCalendarioStorico();
+    // Il menu a tendina che ha sostituito i 3 tasti sempre in vista (25/08,
+    // diciassettesimo giro): aggiorno l'etichetta e richiudo il menu.
+    const label = document.getElementById('storicoMenuBtnLabel');
+    if(label) label.textContent = ETICHETTA_SEG2[mode] || '';
+    chiudiStoricoMenu();
   });
 });
+function chiudiStoricoMenu(){
+  const menu = document.getElementById('storicoMenu');
+  const btn = document.getElementById('storicoMenuBtn');
+  if(!menu || !btn) return;
+  menu.classList.remove('show');
+  btn.setAttribute('aria-expanded', 'false');
+}
+(function(){
+  const btn = document.getElementById('storicoMenuBtn');
+  const menu = document.getElementById('storicoMenu');
+  if(!btn || !menu) return;
+  btn.addEventListener('click', (e)=>{
+    e.stopPropagation();
+    const aperto = menu.classList.toggle('show');
+    btn.setAttribute('aria-expanded', aperto ? 'true' : 'false');
+  });
+  document.addEventListener('click', (e)=>{
+    if(!menu.classList.contains('show')) return;
+    if(e.target === btn || btn.contains(e.target) || menu.contains(e.target)) return;
+    chiudiStoricoMenu();
+  });
+})();
 
 // Toggle Scheda/Storico in cima alla Scheda: lo Storico è lo stesso contenuto che
 // prima viveva nel tab dedicato (Volume/Allenamenti/Misure), solo spostato qui dentro.
@@ -7311,7 +7370,6 @@ function updateTabVisibility(){
   document.getElementById('tabBtnLog').style.display = 'flex';
   document.getElementById('tabBtnDiet').style.display = 'flex';
   document.getElementById('tabBtnProgram').style.display = 'flex';
-  document.getElementById('tabBtnGloss').style.display = 'flex';
 }
 
 // ============================================================

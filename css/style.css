@@ -432,6 +432,24 @@
   #historyMisureBlock #measureList .log-item{padding:13px 0;}
   .measure-chart-box{position:relative; height:240px; margin-top:4px;}
 
+  /* Storico: intestazione propria + menu a tendina al posto dei 3 tasti
+     Allenamenti/Volume/Misure sempre in vista (25/08, diciassettesimo giro) */
+  .storico-top-row{display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;}
+  .storico-titolo{font-family:var(--font-display); font-size:19px; margin:0;}
+  .storico-menu-wrap{position:relative;}
+  .storico-menu-btn{display:flex; align-items:center; gap:6px; padding:8px 12px; border-radius:var(--r-pill);
+    border:1px solid var(--border); background:var(--surface); color:var(--text); font-size:12.5px;
+    font-family:var(--font-display); cursor:pointer;}
+  .storico-menu-btn svg{width:14px; height:14px; transition:transform .15s;}
+  .storico-menu-btn[aria-expanded="true"] svg{transform:rotate(180deg);}
+  .storico-menu{display:none; position:absolute; top:calc(100% + 6px); right:0; z-index:20; min-width:150px;
+    background:var(--surface); border:1px solid var(--border); border-radius:var(--r-md); box-shadow:var(--shadow-md, var(--shadow-sm));
+    padding:6px; flex-direction:column; gap:2px;}
+  .storico-menu.show{display:flex;}
+  .storico-menu .seg-btn{background:none; border:none; text-align:left; padding:9px 10px; border-radius:8px;
+    font-size:13px; color:var(--text-dim); cursor:pointer;}
+  .storico-menu .seg-btn.active{background:var(--accent-soft); color:var(--accent-2); font-weight:700;}
+
   /* Calendario allenamenti (dentro Storico → Allenamenti) — ridisegnato 25/08/2026 */
   .cal-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;}
   .cal-head h3{margin:0;}

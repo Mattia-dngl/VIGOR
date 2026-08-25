@@ -1,7 +1,7 @@
 'use strict';
 // Modifiche del 25/08/2026 su richiesta dell'utente (con mockup Figma):
-//  - Home ridiventa "Dashboard" nella nav in basso, con avatar (invece
-//    dell'ingranaggio) in alto a destra che apre Account.
+//  - Home ridiventa una voce della nav in basso (etichetta "Dashboard"), con
+//    avatar (invece dell'ingranaggio) in alto a destra che apre Account.
 //  - Il bottone centrale rialzato della nav non porta più a Home: ora è un
 //    "+" che apre Registra da qualunque schermata.
 //  - Account e Glossario non hanno più una voce fissa nella nav: si aprono
@@ -9,6 +9,14 @@
 //  - Storico diventa una voce a sé della nav, invece di un segmento dentro
 //    Scheda: apriStorico() mostra lo stesso contenuto di sempre
 //    (programStoricoBlock) ma la nav evidenzia "Storico", non "Scheda".
+//
+// Aggiornamento 25/08/2026 (diciassettesimo giro), su richiesta esplicita:
+//  - Ordine della nav cambiato a Home, Scheda, + Registra, Dieta, Storico
+//    (prima era Scheda, Dieta, + Registra, Dashboard, Storico) ed etichetta
+//    da "Dashboard" a "Home" (preferenza esplicita dell'utente).
+//  - Glossario non è più una vista/tab a sé: è diventato una tendina dentro
+//    Account (id accGlossario), come Impostazioni/Privacy e
+//    Sicurezza/Assistenza — non naviga più via, si apre in loco.
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const { loadApp, run } = require('./helpers/loadApp.js');
@@ -26,10 +34,19 @@ test('nav in basso: Dashboard e Storico esistono, Account e Glossario non hanno 
   const { window, document } = await loadApp();
   await run(window, `mostraHome();`);
   assert.ok(document.querySelector('#navTabsGlobale button[data-go="home"]'));
-  assert.match(document.querySelector('#navTabsGlobale button[data-go="home"] .tab-label').textContent, /Dashboard/);
+  assert.match(document.querySelector('#navTabsGlobale button[data-go="home"] .tab-label').textContent, /Home/);
   assert.ok(document.querySelector('#navTabsGlobale button[data-go="storico"]'), 'Storico deve avere una voce propria');
   assert.equal(document.querySelector('#navTabsGlobale button[data-go="account"]'), null);
   assert.equal(document.querySelector('#navTabsGlobale button[data-go="glossario"]'), null);
+  window.close();
+});
+
+test('nav in basso: ordine Home, Scheda, + Registra, Dieta, Storico', async () => {
+  const { window, document } = await loadApp();
+  await run(window, `mostraHome();`);
+  const bottoni = Array.from(document.querySelectorAll('#navTabsGlobale > button'));
+  const chiavi = bottoni.map(b => b.id === 'fabRegistraBtn' ? 'registra' : b.dataset.go);
+  assert.deepEqual(chiavi, ['home', 'program', 'registra', 'diet', 'storico']);
   window.close();
 });
 
@@ -94,16 +111,22 @@ test('Scheda: tornando su Scheda dopo essere stati su Storico, si vede di nuovo 
   window.close();
 });
 
-test('Glossario e Account restano raggiungibili a programma (da Account), anche senza voce fissa in nav', async () => {
+test('Glossario resta raggiungibile da Account, ma ora come tendina che si apre in loco (non naviga più via)', async () => {
   const { window, document } = await loadApp();
   await run(window, `
     const profilo = ${JSON.stringify(profiloBase())};
     state.profiles = [profilo]; activeProfileId = 'io';
     mostraHome();
     apriAccountPanel();
-    document.getElementById('acctVaiGlossario').click();
   `);
-  assert.equal(document.getElementById('appRoot').style.display, 'block');
-  assert.ok(document.getElementById('view-glossario').classList.contains('active'));
+  const acc = document.getElementById('accGlossario');
+  assert.ok(acc, 'la tendina Glossario deve esistere dentro Account');
+  assert.equal(acc.tagName, 'DETAILS');
+  assert.equal(acc.open, false, 'chiusa di default');
+  // Aprirla non deve portare via da Account: appRoot resta nascosto,
+  // accountPanel resta quello visibile.
+  await run(window, `document.getElementById('accGlossario').open = true;`);
+  assert.notEqual(document.getElementById('appRoot').style.display, 'block');
+  assert.equal(document.getElementById('accountPanel').style.display, 'block');
   window.close();
 });
