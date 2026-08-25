@@ -326,22 +326,68 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
       </div>
     </div>
 
-    <div class="home-grid">
-      <button type="button" class="home-card" id="homeMioPTBtn">
-        <img src="assets/icons/icon-pt.png" class="home-card-icon-badge" alt="">
-        <div class="home-card-title">Il mio Personal Trainer</div>
-        <div class="home-card-sub">Scheda assegnata e messaggi</div>
-        <div class="home-card-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg></div>
-      </button>
-      <button type="button" class="home-card home-card-warm" id="homePTBtn" style="display:none;">
-        <img src="assets/icons/icon-pt.png" class="home-card-icon-badge" alt="">
-        <div class="home-card-title">Area Personal Trainer</div>
-        <div class="home-card-sub">Gestisci i tuoi clienti</div>
-        <div class="home-card-arrow home-card-arrow-warm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg></div>
-      </button>
+    <div class="home-ob-card">
+      <div class="home-ob-titolo">I tuoi obiettivi</div>
+
+      <div class="home-ob-riga">
+        <div class="home-ob-testo">
+          <div class="home-ob-nome">Costanza del mese</div>
+          <div class="home-ob-sub" id="homeObMeseSub">0 / 0 allenamenti</div>
+        </div>
+        <div class="home-ob-bar"><div class="home-ob-bar-fill" id="homeObMeseFill" style="width:0%"></div></div>
+      </div>
+
+      <div class="home-ob-riga" id="homeObPesoRiga" style="display:none;">
+        <div class="home-ob-testo">
+          <div class="home-ob-nome">Peso</div>
+          <div class="home-ob-sub" id="homeObPesoSub"></div>
+        </div>
+        <div class="home-ob-bar"><div class="home-ob-bar-fill" id="homeObPesoFill" style="width:0%"></div></div>
+      </div>
+      <details class="admin-sub home-ob-form" id="homeObPesoForm">
+        <summary id="homeObPesoSummary">+ Imposta un obiettivo di peso</summary>
+        <div class="home-ob-form-body">
+          <label>Peso obiettivo (kg)</label>
+          <input type="number" step="0.1" min="1" id="obPesoTarget" placeholder="es. 75">
+          <label>Entro il</label>
+          <input type="date" id="obPesoScadenza">
+          <div class="home-ob-form-azioni">
+            <button type="button" class="btn ghost" id="obPesoRimuoviBtn" style="display:none;">Rimuovi</button>
+            <button type="button" class="btn" id="obPesoSalvaBtn">Salva obiettivo</button>
+          </div>
+        </div>
+      </details>
+
+      <div class="home-ob-riga" id="homeObRecordRiga" style="display:none;">
+        <div class="home-ob-testo">
+          <div class="home-ob-nome" id="homeObRecordNome">Record</div>
+          <div class="home-ob-sub" id="homeObRecordSub"></div>
+        </div>
+        <div class="home-ob-bar"><div class="home-ob-bar-fill" id="homeObRecordFill" style="width:0%"></div></div>
+      </div>
+      <details class="admin-sub home-ob-form" id="homeObRecordForm">
+        <summary id="homeObRecordSummary">+ Imposta un obiettivo su un esercizio</summary>
+        <div class="home-ob-form-body">
+          <label>Esercizio</label>
+          <select id="obRecordEsercizio"></select>
+          <label>Obiettivo</label>
+          <input type="number" step="0.1" min="1" id="obRecordTarget" placeholder="es. 100">
+          <div class="home-ob-form-azioni">
+            <button type="button" class="btn ghost" id="obRecordRimuoviBtn" style="display:none;">Rimuovi</button>
+            <button type="button" class="btn" id="obRecordSalvaBtn">Salva obiettivo</button>
+          </div>
+        </div>
+      </details>
     </div>
 
-    <div class="home-cta-link" id="homeEsciBtn" style="color:var(--text-faint); text-decoration:none; margin-top:6px;">Esci dall'app</div>
+    <button type="button" class="home-pt-card" id="homePTBtn" style="display:none;">
+      <img src="assets/icons/icon-pt.png" class="home-pt-card-icon" alt="">
+      <div class="home-pt-card-testo">
+        <div class="home-pt-card-titolo">Area Personal Trainer</div>
+        <div class="home-pt-card-sub">Gestisci i tuoi clienti</div>
+      </div>
+      <div class="home-pt-card-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg></div>
+    </button>
   </div>
 </div>
 
@@ -432,28 +478,50 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
         <div class="acct-row-body"><div class="acct-row-title">Gestione dell'app</div><div class="acct-row-sub">Richieste, PT, profili attivi</div></div>
         <div class="acct-row-chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></div>
       </summary>
-      <div class="details-body">
+      <div class="details-body admin-body">
         <p class="hint">Sezione riservata al tuo account. Qui decidi chi entra e rimetti in piedi gli account di chi resta fuori.</p>
 
-        <h4 class="sotto-titolo" id="titoloPwIngresso">Password d'ingresso</h4>
-        <p class="hint">È quella che serve per aprire l'app, prima dei profili. Chi non ce l'ha non entra.</p>
-        <div class="dato-riga"><span>Attuale</span><b id="statoIngresso">—</b></div>
-        <label>Nuova password d'ingresso</label>
-        <input type="text" id="nuovaPwIngresso" placeholder="Nuova password" autocomplete="off">
-        <button class="btn block" id="cambiaPwIngressoBtn">Cambia la password d'ingresso</button>
+        <!-- Prima erano 4 liste srotolate tutte insieme (era qui che ci si
+             perdeva su telefono): ora ogni gruppo è un accordion annidato,
+             chiuso di default, e si apre solo quello che apri tu. -->
+        <details class="admin-sub" id="subRichieste">
+          <summary><span>Richieste in attesa</span><span class="admin-sub-badge" id="contaAttesa"></span></summary>
+          <div class="admin-sub-body">
+            <p class="hint" style="margin:0 0 8px;">Chi si registra non entra finché non lo approvi tu.</p>
+            <div id="elencoAttesa"></div>
+          </div>
+        </details>
 
-        <h4 class="sotto-titolo">Richieste in attesa <span id="contaAttesa"></span></h4>
-        <p class="hint" style="margin:0 0 8px;">Chi si registra non entra finché non lo approvi tu.</p>
-        <div id="elencoAttesa"></div>
+        <details class="admin-sub" id="subProfili">
+          <summary><span>Profili attivi</span><span class="admin-sub-badge" id="contaProfili"></span></summary>
+          <div class="admin-sub-body">
+            <input type="text" id="filtroProfiliAmm" class="admin-filtro" placeholder="Cerca per nome o email...">
+            <div id="elencoProfiliAmm"></div>
+          </div>
+        </details>
 
-        <h4 class="sotto-titolo">Personal Trainer</h4>
-        <p class="hint" style="margin:0 0 8px;">Chi ha l'appellativo entra nella sua area riservata e può seguire le persone che glielo chiedono.</p>
-        <div id="riepilogoPT"></div>
+        <details class="admin-sub" id="subPT">
+          <summary><span>Personal Trainer</span></summary>
+          <div class="admin-sub-body">
+            <p class="hint" style="margin:0 0 8px;">Chi ha l'appellativo entra nella sua area riservata e può seguire le persone che glielo chiedono.</p>
+            <div id="riepilogoPT"></div>
+          </div>
+        </details>
 
-        <h4 class="sotto-titolo">Profili attivi</h4>
-        <div id="elencoProfiliAmm"></div>
+        <details class="admin-sub" id="subPwIngresso">
+          <summary><span>Password d'ingresso</span></summary>
+          <div class="admin-sub-body">
+            <p class="hint">È quella che serve per aprire l'app, prima dei profili. Chi non ce l'ha non entra.</p>
+            <div class="dato-riga"><span>Attuale</span><b id="statoIngresso">—</b></div>
+            <label>Nuova password d'ingresso</label>
+            <input type="text" id="nuovaPwIngresso" placeholder="Nuova password" autocomplete="off">
+            <button class="btn block" id="cambiaPwIngressoBtn">Cambia la password d'ingresso</button>
+          </div>
+        </details>
       </div>
     </details>
+
+    <button type="button" class="btn ghost block" id="homeEsciBtn" style="margin-top:16px;">Esci dall'app</button>
   </div>
 </div>
 
@@ -757,7 +825,22 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
       </div>
       <label>Alimento</label>
       <input type="text" id="mealFoodInput" placeholder="Scrivi cosa hai mangiato (suggerimenti disponibili)...">
-      <p class="hint" style="margin-top:4px;">Puoi scrivere qualsiasi cosa: se coincide con un alimento noto calcolo le calorie, altrimenti ti chiedo di inserirle a mano (una volta sola: poi lo ricordo).</p>      <div class="row">
+      <p class="hint" style="margin-top:4px;">Puoi scrivere qualsiasi cosa: se coincide con un alimento noto calcolo le calorie, altrimenti ti chiedo di inserirle a mano (una volta sola: poi lo ricordo).</p>
+      <button type="button" class="btn ghost block" id="scanBarcodeBtn" style="margin-top:8px;">📷 Scansiona codice a barre</button>
+
+      <div id="barcodeScannerPanel" style="display:none; margin-top:12px; padding:14px 15px; border-radius:var(--r-md); background:var(--diet-soft, #e3f4f7);">
+        <video id="barcodeVideo" playsinline muted style="width:100%; border-radius:10px; display:none; background:#000;"></video>
+        <p class="hint" id="barcodeStatus">Inquadra il codice a barre del prodotto.</p>
+        <div class="row">
+          <div>
+            <label>Oppure inserisci il codice a mano</label>
+            <input type="text" inputmode="numeric" id="barcodeManualInput" placeholder="es. 8001505005707">
+          </div>
+        </div>
+        <button class="btn diet-btn block" id="barcodeManualBtn" style="margin-top:10px;">Cerca prodotto</button>
+        <div id="closeBarcodeScannerBtn" style="text-align:center; margin-top:10px; color:var(--text-faint); cursor:pointer; font-size:11.5px; text-decoration:underline;">Chiudi</div>
+      </div>
+      <div class="row">
         <div>
           <label>Grammi</label>
           <input type="number" id="mealGramsInput" placeholder="es. 150">
@@ -1065,6 +1148,7 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
         <summary>Progressi per esercizio</summary>
         <div class="details-body">
           <select id="progressExerciseSelect"></select>
+          <div class="record-personale" id="recordPersonale" style="display:none;"></div>
           <p class="hint" id="exChartSpiega" style="margin-top:8px;"></p>
           <div class="measure-chart-box" id="exChartBox" style="display:none;"><canvas id="exerciseChart"></canvas></div>
           <div class="progress-list" id="progressTable"></div>
@@ -1461,6 +1545,34 @@ function isTimeBasedExercise(nome){
   return t === "tempo" || t === "tempopeso";
 }
 
+// ============================================================
+// RECORD PERSONALI (PR)
+// Calcolati al volo dai log, mai salvati a parte: stessa fonte di verità
+// del grafico "Progressi per esercizio" in Storico (evita di avere due
+// numeri diversi da tenere sincronizzati). Per gli esercizi a tempo è la
+// durata massima mai registrata; per gli altri è il massimale stimato con
+// la formula di Epley del set più pesante di ogni sessione (kg*(1+reps/30)),
+// così una sessione a ripetizioni alte e una a ripetizioni basse restano
+// confrontabili fra loro.
+// ============================================================
+function recordPersonale(prof, exName){
+  if(!prof || !prof.logs) return null;
+  const timeBased = isTimeBasedExercise(exName);
+  let migliore = null;
+  prof.logs.forEach(l=>{
+    const ex = l.exercises && l.exercises.find(e=>e.name===exName);
+    if(!ex) return;
+    const valore = timeBased
+      ? Math.max(0, ...ex.sets.map(s=>parseFloat(s.seconds)||0))
+      : Math.max(0, ...ex.sets.map(s=>{
+          const kg = parseFloat(s.kg), reps = parseFloat(s.reps);
+          return (kg>0 && reps>0) ? kg*(1+reps/30) : 0;
+        }));
+    if(valore>0 && (!migliore || valore>migliore.valore)) migliore = { valore: Math.round(valore*10)/10, data: l.date };
+  });
+  return migliore;
+}
+
 
 // Database alimenti: kcal/proteine/carboidrati/grassi per 100g
 const FOOD_DATABASE = {
@@ -1851,7 +1963,8 @@ function newProfile(name, email, password, approvato){
     approvato: !!approvato, richiestoIl: new Date().toISOString(),
     passwordHash: simpleHash(password), sesso: null,
     programs:[blankProgram()], activeProgramId:null, logs:[], measurements:[], mealLogs:[], customExercises:{}, customFoods:{}, avatarUrl:null,
-    altezza:null, dataNascita:null, eta:null, livelloAttivita:'moderato', obiettivoCalorico:'mantenimento' };
+    altezza:null, dataNascita:null, eta:null, livelloAttivita:'moderato', obiettivoCalorico:'mantenimento',
+    obiettivoPeso:null, obiettivoRecord:null };
 }
 
 // ============================================================
@@ -1901,6 +2014,8 @@ function load(){
     if(p.dataNascita === undefined) p.dataNascita = null;
     if(!p.livelloAttivita) p.livelloAttivita = 'moderato';
     if(!p.obiettivoCalorico) p.obiettivoCalorico = 'mantenimento';
+    if(p.obiettivoPeso === undefined) p.obiettivoPeso = null;
+    if(p.obiettivoRecord === undefined) p.obiettivoRecord = null;
     if(!p.customExercises) p.customExercises = {};
     Object.keys(p.customExercises).forEach(name=>{
       if(Array.isArray(p.customExercises[name])){
@@ -1914,9 +2029,39 @@ function save(){
   // in modalità PT sto modificando il cliente, non me: mai in locale sul mio
   // telefono, solo sul suo account online (vedi programmaSalvataggioPT)
   if(modalitaPT){ programmaSalvataggioPT(); return; }
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  programmaSalvataggioLocale();
   if(typeof programmaInvio === 'function') programmaInvio();   // in modalità online rimanda tutto al server
 }
+
+// save() viene chiamata ovunque nell'app, anche a ogni singolo tasto premuto
+// in un campo di Registra: `JSON.stringify(state)` serializza TUTTO lo stato
+// (tutti i profili, tutto lo storico) e con mesi di allenamenti alle spalle
+// diventa un lavoro non banale da rifare più volte al secondo. Qui si
+// accorpano le scritture su disco ravvicinate in una sola, esattamente come
+// già succede per l'invio online (vedi programmaInvio). Il dato in memoria
+// (`state`) resta aggiornato SUBITO da chi chiama save() — a essere
+// rimandata è solo la scrittura su localStorage, mai la modifica dei dati:
+// chi legge `state` (backup, export, render...) vede sempre il valore vero.
+let _salvataggioLocaleTimer = null;
+function scriviStatoLocaleSubito(){
+  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(e){}
+}
+function programmaSalvataggioLocale(){
+  clearTimeout(_salvataggioLocaleTimer);
+  _salvataggioLocaleTimer = setTimeout(scriviStatoLocaleSubito, 400);
+}
+// non perdere l'ultima modifica se l'app va in background o la pagina si
+// chiude entro i 400ms dall'ultima modifica (es. si cambia app subito dopo
+// aver scritto una serie): forzo la scrittura immediata in quel momento.
+document.addEventListener('visibilitychange', ()=>{
+  if(document.visibilityState === 'hidden' && _salvataggioLocaleTimer){
+    clearTimeout(_salvataggioLocaleTimer);
+    scriviStatoLocaleSubito();
+  }
+});
+window.addEventListener('pagehide', ()=>{
+  if(_salvataggioLocaleTimer){ clearTimeout(_salvataggioLocaleTimer); scriviStatoLocaleSubito(); }
+});
 
 // Il profilo "su cui sto lavorando": il mio di solito, quello del cliente
 // mentre lo sto seguendo come PT. loggedInProfile() è invece sempre e solo
@@ -3107,21 +3252,13 @@ async function renderAmministrazioneOnline(){
   if(card) card.style.display = amministratore ? 'block' : 'none';
   if(!amministratore || !sb) return;
 
-  // online l'ingresso è protetto dall'account: la vecchia password d'invito non serve
-  ['titoloPwIngresso','nuovaPwIngresso','cambiaPwIngressoBtn'].forEach(id=>{
-    const el = document.getElementById(id);
-    if(!el) return;
-    const riga = el.closest('.dato-riga') || el;
-    if(riga && riga.style) riga.style.display = 'none';
-  });
-  const rigaStato = document.getElementById('statoIngresso');
-  if(rigaStato){
-    const riga = rigaStato.closest('.dato-riga');
-    if(riga && riga.style) riga.style.display = 'none';
-  }
-  document.querySelectorAll('#cardAmministrazione label').forEach(l=>{
-    if(l.textContent.toLowerCase().includes("password d'ingresso")) l.style.display = 'none';
-  });
+  // online l'ingresso è protetto dall'account: la vecchia password d'invito non serve.
+  // Sotto-sezione intera nascosta per id (prima si cercava per TESTO dentro le
+  // label: bastava rinominare un'etichetta per rompere silenziosamente questo nascondimento).
+  const subPw = document.getElementById('subPwIngresso');
+  if(subPw) subPw.style.display = 'none';
+  const subPT = document.getElementById('subPT');
+  if(subPT) subPT.style.display = '';
 
   const { data, error } = await sb.from('profili').select('*').order('creato_il', { ascending: true });
   window._profiliAdmin = data;
@@ -3134,6 +3271,9 @@ async function renderAmministrazioneOnline(){
   const attesa = data.filter(p=>!p.approvato);
   const attivi = data.filter(p=>p.approvato);
   document.getElementById('contaAttesa').textContent = attesa.length ? `(${attesa.length})` : '';
+  document.getElementById('contaProfili').textContent = attivi.length ? `(${attivi.length})` : '';
+  const subRichieste = document.getElementById('subRichieste');
+  if(subRichieste && !subRichieste.dataset.toccato){ subRichieste.open = attesa.length > 0; }
 
   const conteggio = p => {
     const l = (p.dati && p.dati.logs) || [];
@@ -3254,12 +3394,24 @@ function renderAmministrazione(){
   document.getElementById('statoIngresso').className =
     (state.appLock && state.appLock.predefinita) ? "warn" : "ok";
 
+  // il ruolo Personal Trainer esiste solo online (richiede il rapporto
+  // PT↔cliente su Supabase): offline la sotto-sezione resterebbe sempre
+  // vuota, quindi la nascondo invece di mostrare un accordion senza niente dentro.
+  const subPT = document.getElementById('subPT');
+  if(subPT) subPT.style.display = 'none';
+  const subPw = document.getElementById('subPwIngresso');
+  if(subPw) subPw.style.display = '';
+
   const io = loggedInProfile();
 
   // ---- richieste in attesa ----
   const attesa = state.profiles.filter(p=>!p.approvato);
   const boxAttesa = document.getElementById('elencoAttesa');
   document.getElementById('contaAttesa').textContent = attesa.length ? `(${attesa.length})` : '';
+  document.getElementById('contaProfili').textContent = state.profiles.filter(p=>p.approvato).length
+    ? `(${state.profiles.filter(p=>p.approvato).length})` : '';
+  const subRichieste = document.getElementById('subRichieste');
+  if(subRichieste && !subRichieste.dataset.toccato){ subRichieste.open = attesa.length > 0; }
   if(attesa.length === 0){
     boxAttesa.innerHTML = '<div class="empty" style="padding:14px 0;">Nessuna richiesta in sospeso.</div>';
   } else {
@@ -3348,6 +3500,22 @@ function renderAmministrazione(){
     });
   }));
 }
+
+// "Richieste in attesa" si apre da sola quando c'è qualcosa da approvare, ma
+// se l'admin la chiude a mano non deve riaprirsi da sola al render successivo
+// (es. dopo aver approvato qualcun altro) finché non ce ne sono di nuove.
+document.getElementById('subRichieste').addEventListener('toggle', function(){
+  this.dataset.toccato = '1';
+});
+
+// Filtro per nome/email sui profili attivi: con tanti utenti la lista può
+// allungarsi parecchio, qui si cerca invece di scorrere a mano.
+document.getElementById('filtroProfiliAmm').addEventListener('input', function(){
+  const q = this.value.trim().toLowerCase();
+  document.querySelectorAll('#elencoProfiliAmm .riga-profilo').forEach(riga=>{
+    riga.style.display = !q || riga.textContent.toLowerCase().includes(q) ? '' : 'none';
+  });
+});
 
 document.getElementById('cambiaPwIngressoBtn').addEventListener('click', ()=>{
   if(!sonoAmministratore()){ toast("Solo l'amministratore può cambiarla."); return; }
@@ -3533,6 +3701,166 @@ function streakSettimane(prof, programma){
   }
   return streak;
 }
+
+// ============================================================
+// OBIETTIVI (Home): costanza mensile (automatica) + peso e record su un
+// esercizio (impostati dalla persona). Nessun dato duplicato: peso e record
+// si leggono sempre da measurements/logs, qui si salva solo il traguardo.
+// ============================================================
+// come obiettivoSettimanale, ma su tutto il mese solare in corso
+function obiettivoMensile(prof, programma){
+  if(!programma || !programma.days || programma.days.length===0) return {fatti:0, totali:0};
+  const oggi = new Date();
+  const giorniNelMese = new Date(oggi.getFullYear(), oggi.getMonth()+1, 0).getDate();
+  let fatti = 0, totali = 0;
+  for(let g=1; g<=giorniNelMese; g++){
+    const d = new Date(oggi.getFullYear(), oggi.getMonth(), g);
+    const wd = WEEKDAYS[d.getDay()];
+    const scheduled = programma.days.find(dy=>dy.weekday===wd);
+    if(!scheduled) continue;
+    totali++;
+    const iso = isoDaData(d);
+    const log = (prof.logs||[]).find(l=>l.date===iso && l.programId===programma.id && l.status!=='saltato');
+    if(log) fatti++;
+  }
+  return {fatti, totali};
+}
+
+// percentuale/avanzamento dell'obiettivo di peso impostato (prof.obiettivoPeso):
+// funziona sia per dimagrire sia per aumentare peso, il verso lo decide il
+// rapporto fra partenza e target, non un valore fisso "in giù"
+function progressoObiettivoPeso(prof){
+  const ob = prof.obiettivoPeso;
+  if(!ob) return null;
+  const ultimo = ultimoPesoRegistrato(prof);
+  const attuale = ultimo ? ultimo.weight : ob.partenza;
+  const range = ob.target - ob.partenza;
+  const percento = range !== 0
+    ? Math.max(0, Math.min(100, Math.round((attuale - ob.partenza) / range * 100)))
+    : (attuale === ob.target ? 100 : 0);
+  const raggiunto = range > 0 ? attuale >= ob.target : attuale <= ob.target;
+  const oggi = new Date(); oggi.setHours(0,0,0,0);
+  const scadenza = new Date(ob.scadenza + 'T00:00:00');
+  const giorniRimasti = Math.round((scadenza - oggi) / 86400000);
+  return { attuale, target: ob.target, partenza: ob.partenza, percento, raggiunto,
+    giorniRimasti, scaduto: giorniRimasti < 0 && !raggiunto };
+}
+
+// percentuale/avanzamento dell'obiettivo su un esercizio (prof.obiettivoRecord),
+// riusa recordPersonale così il numero è sempre lo stesso mostrato in Storico
+function progressoObiettivoRecord(prof){
+  const ob = prof.obiettivoRecord;
+  if(!ob) return null;
+  const timeBased = isTimeBasedExercise(ob.esercizio);
+  const record = recordPersonale(prof, ob.esercizio);
+  const attuale = record ? record.valore : 0;
+  const percento = ob.target > 0 ? Math.max(0, Math.min(100, Math.round(attuale/ob.target*100))) : 0;
+  return { esercizio: ob.esercizio, attuale, target: ob.target, percento, timeBased, raggiunto: attuale >= ob.target };
+}
+
+// aggiorna la card "I tuoi obiettivi" in Home: costanza mensile sempre visibile,
+// peso e record solo se impostati (altrimenti resta solo l'accordion per crearli)
+function renderObiettivi(prof, programma){
+  const {fatti, totali} = obiettivoMensile(prof, programma);
+  document.getElementById('homeObMeseSub').textContent = totali>0 ? `${fatti} / ${totali} allenamenti` : 'Nessuna scheda attiva';
+  document.getElementById('homeObMeseFill').style.width = totali>0 ? `${Math.min(100, Math.round(fatti/totali*100))}%` : '0%';
+
+  const rigaPeso = document.getElementById('homeObPesoRiga');
+  const ob = prof.obiettivoPeso;
+  if(ob){
+    const p = progressoObiettivoPeso(prof);
+    rigaPeso.style.display = 'flex';
+    document.getElementById('homeObPesoFill').style.width = `${p.percento}%`;
+    let sub = `${p.attuale != null ? p.attuale : '—'} → ${p.target} kg`;
+    if(p.raggiunto) sub += ' · raggiunto! 🎉';
+    else if(p.scaduto) sub += ' · scadenza superata';
+    else sub += ` · ${p.giorniRimasti} giorni rimasti`;
+    document.getElementById('homeObPesoSub').textContent = sub;
+    document.getElementById('homeObPesoSummary').textContent = 'Modifica obiettivo di peso';
+    document.getElementById('obPesoTarget').value = ob.target;
+    document.getElementById('obPesoScadenza').value = ob.scadenza;
+    document.getElementById('obPesoRimuoviBtn').style.display = 'inline-block';
+  } else {
+    rigaPeso.style.display = 'none';
+    document.getElementById('homeObPesoSummary').textContent = '+ Imposta un obiettivo di peso';
+    document.getElementById('obPesoTarget').value = '';
+    document.getElementById('obPesoScadenza').value = '';
+    document.getElementById('obPesoRimuoviBtn').style.display = 'none';
+  }
+
+  const rigaRecord = document.getElementById('homeObRecordRiga');
+  const selEsercizi = document.getElementById('obRecordEsercizio');
+  const nomiEsercizi = [...new Set((prof.logs||[]).flatMap(l=>(l.exercises||[]).map(e=>e.name)))].sort();
+  selEsercizi.innerHTML = nomiEsercizi.length
+    ? nomiEsercizi.map(n=>`<option value="${n}">${n}</option>`).join('')
+    : '<option value="">Registra prima un allenamento</option>';
+  const obr = prof.obiettivoRecord;
+  if(obr){
+    const r = progressoObiettivoRecord(prof);
+    rigaRecord.style.display = 'flex';
+    document.getElementById('homeObRecordNome').textContent = obr.esercizio;
+    document.getElementById('homeObRecordFill').style.width = `${r.percento}%`;
+    const unita = r.timeBased ? ' sec' : ' kg';
+    let sub = `${r.attuale}${unita} → ${r.target}${unita}`;
+    if(r.raggiunto) sub += ' · raggiunto! 🎉';
+    document.getElementById('homeObRecordSub').textContent = sub;
+    document.getElementById('homeObRecordSummary').textContent = 'Modifica obiettivo esercizio';
+    if(nomiEsercizi.includes(obr.esercizio)) selEsercizi.value = obr.esercizio;
+    document.getElementById('obRecordTarget').value = obr.target;
+    document.getElementById('obRecordRimuoviBtn').style.display = 'inline-block';
+  } else {
+    rigaRecord.style.display = 'none';
+    document.getElementById('homeObRecordSummary').textContent = '+ Imposta un obiettivo su un esercizio';
+    document.getElementById('obRecordTarget').value = '';
+    document.getElementById('obRecordRimuoviBtn').style.display = 'none';
+  }
+}
+
+document.getElementById('obPesoSalvaBtn').addEventListener('click', ()=>{
+  const prof = activeProfile();
+  const target = parseFloat(document.getElementById('obPesoTarget').value);
+  const scadenza = document.getElementById('obPesoScadenza').value;
+  if(!target || target<=0){ toast("Inserisci un peso obiettivo valido."); return; }
+  if(!scadenza){ toast("Inserisci una data di scadenza."); return; }
+  // la partenza si fissa una sola volta, al primo salvataggio dell'obiettivo
+  // (o quando lo si reimposta dopo averlo rimosso): serve a calcolare quanta
+  // strada è stata fatta, non solo quanta ne manca
+  const ultimo = ultimoPesoRegistrato(prof);
+  const partenza = (prof.obiettivoPeso && prof.obiettivoPeso.partenza != null)
+    ? prof.obiettivoPeso.partenza : (ultimo ? ultimo.weight : target);
+  prof.obiettivoPeso = { target, scadenza, partenza };
+  save();
+  document.getElementById('homeObPesoForm').open = false;
+  renderObiettivi(prof, activeProgram());
+  toast("Obiettivo salvato ✓");
+});
+document.getElementById('obPesoRimuoviBtn').addEventListener('click', ()=>{
+  const prof = activeProfile();
+  prof.obiettivoPeso = null;
+  save();
+  document.getElementById('homeObPesoForm').open = false;
+  renderObiettivi(prof, activeProgram());
+});
+
+document.getElementById('obRecordSalvaBtn').addEventListener('click', ()=>{
+  const prof = activeProfile();
+  const esercizio = document.getElementById('obRecordEsercizio').value;
+  const target = parseFloat(document.getElementById('obRecordTarget').value);
+  if(!esercizio){ toast("Registra almeno un allenamento con questo esercizio prima."); return; }
+  if(!target || target<=0){ toast("Inserisci un obiettivo valido."); return; }
+  prof.obiettivoRecord = { esercizio, target };
+  save();
+  document.getElementById('homeObRecordForm').open = false;
+  renderObiettivi(prof, activeProgram());
+  toast("Obiettivo salvato ✓");
+});
+document.getElementById('obRecordRimuoviBtn').addEventListener('click', ()=>{
+  const prof = activeProfile();
+  prof.obiettivoRecord = null;
+  save();
+  document.getElementById('homeObRecordForm').open = false;
+  renderObiettivi(prof, activeProgram());
+});
 
 // zone anatomiche coinvolte da un esercizio: prima gli esercizi personali (le zone scelte
 // in fase di creazione), poi la libreria di base (EX_LIB[].slugs). Serve per la heatmap
@@ -3747,6 +4075,7 @@ function mostraHome(){
     const ring = document.getElementById('homeStreakRing');
     ring.style.strokeDasharray = `${CIRC}`;
     ring.style.strokeDashoffset = `${CIRC * (1 - quota)}`;
+    renderObiettivi(p||{}, programma);
     aggiornaHomeCta(p, programma);
   }catch(e){ console.error(e); }
   hmRefresh();
@@ -3981,11 +4310,14 @@ document.getElementById('homeCtaBtn').addEventListener('click', ()=>{
   if(btn.dataset.azione === 'scheda'){ vaiA('program'); } else { apriRegistra(); }
 });
 document.getElementById('homeAllenatiBtn').addEventListener('click', ()=>vaiA('program'));
-document.getElementById('homeMioPTBtn').addEventListener('click', ()=>vaiA('program'));
 document.getElementById('homePTBtn').addEventListener('click', apriAreaPT);
 document.getElementById('homeSettingsBtn').addEventListener('click', ()=>apriImpostazioni('home'));
 document.getElementById('homeEsciBtn').addEventListener('click', async ()=>{
   customConfirm("Uscire dall'app? Dovrai rifare l'accesso.", async ()=>{
+    // il bottone vive dentro Account: lo richiudo sempre anch'esso, altrimenti
+    // resterebbe visibile sopra la schermata di accesso dopo l'uscita
+    document.getElementById('accountPanel').style.display = 'none';
+    document.body.classList.remove('account-aperto');
     if(modalitaOnline() && sb){
       if(_canaleMioProfilo){ sb.removeChannel(_canaleMioProfilo); _canaleMioProfilo = null; }
       await sb.auth.signOut();
@@ -7287,15 +7619,41 @@ document.getElementById('saveLogBtn').addEventListener('click', ()=>{
       })});
     });
   }
+  // record personali: il "prima" va calcolato PRIMA di aggiungere il log
+  // appena compilato, così un miglioramento viene festeggiato solo se batte
+  // un record VERO già esistente — il primissimo log di un esercizio non è
+  // "un record battuto", è solo il primo dato.
+  const recordPrima = {};
+  log.exercises.forEach(e=>{ recordPrima[e.name] = recordPersonale(prof, e.name); });
+
   // se quel giorno era stato segnato saltato in automatico, la scelta manuale ha la precedenza
   prof.logs = prof.logs.filter(l => !(l.auto && l.date===iso && l.programId===p.id));
   prof.logs.push(log);
+
+  const nuoviRecord = [];
+  log.exercises.forEach(e=>{
+    const prima = recordPrima[e.name];
+    const dopo = recordPersonale(prof, e.name);
+    if(prima && dopo && dopo.valore > prima.valore){
+      nuoviRecord.push({ nome: e.name, valore: dopo.valore, timeBased: isTimeBasedExercise(e.name) });
+    }
+  });
+
   prof.bozzaLog = null;
   FREE_DAY.exercises = [];
   currentSetInputs = {};
   selectedDayKey = null;
   save();
   toast("Allenamento salvato ✓");
+  if(nuoviRecord.length > 0){
+    // il toast è a slot unico (vedi toast()): il messaggio "Allenamento
+    // salvato" deve finire di mostrarsi prima che parta quello del record,
+    // altrimenti si sovrascriverebbero a vicenda.
+    const messaggioRecord = nuoviRecord.length === 1
+      ? `🏆 Nuovo record: ${nuoviRecord[0].nome} ${nuoviRecord[0].valore}${nuoviRecord[0].timeBased ? ' sec' : ' kg'}`
+      : `🏆 ${nuoviRecord.length} nuovi record oggi: ${nuoviRecord.map(r=>r.nome).join(', ')}`;
+    setTimeout(()=>toast(messaggioRecord), 2500);
+  }
   document.getElementById('bozzaBanner').style.display = 'none';
   document.getElementById('exerciseFormCard').style.display = 'none';
   document.getElementById('notesCard').style.display = 'none';
@@ -7635,6 +7993,127 @@ function datiAlimento(food){
   if(prof && prof.customFoods && prof.customFoods[food]) return prof.customFoods[food];
   return null;
 }
+
+// ============================================================
+// SCANNER CODICE A BARRE (dieta) — cerca il prodotto su Open Food Facts (banca
+// dati pubblica e gratuita) invece di far scrivere i valori nutrizionali a
+// mano. Dove il browser supporta la lettura nativa (BarcodeDetector, per ora
+// Chrome/Android) si inquadra col telefono; altrove — es. Safari su iPhone,
+// che non la implementa — resta sempre disponibile l'inserimento a mano del
+// codice stampato sulla confezione, così la funzione non dipende da nessuna
+// libreria esterna da scaricare.
+// ============================================================
+let _barcodeStream = null;
+let _barcodeLettura = false;
+
+function fermaScannerBarcode(){
+  _barcodeLettura = false;
+  if(_barcodeStream){
+    _barcodeStream.getTracks().forEach(t=>t.stop());
+    _barcodeStream = null;
+  }
+  const video = document.getElementById('barcodeVideo');
+  video.style.display = 'none';
+  video.srcObject = null;
+}
+
+function apriScannerBarcode(){
+  document.getElementById('barcodeManualInput').value = '';
+  document.getElementById('barcodeStatus').textContent = 'Inquadra il codice a barre del prodotto.';
+  const pannello = document.getElementById('barcodeScannerPanel');
+  pannello.style.display = 'block';
+  if(pannello.scrollIntoView) pannello.scrollIntoView({behavior:'smooth', block:'nearest'});
+  avviaLetturaFotocamera();
+}
+
+function chiudiScannerBarcode(){
+  fermaScannerBarcode();
+  document.getElementById('barcodeScannerPanel').style.display = 'none';
+}
+
+// avvia la fotocamera solo se il browser la supporta davvero: niente errori
+// in console per chi non ce l'ha, semplicemente resta solo il campo a mano
+async function avviaLetturaFotocamera(){
+  if(!('BarcodeDetector' in window) || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+    return;
+  }
+  try{
+    const stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});
+    _barcodeStream = stream;
+    const video = document.getElementById('barcodeVideo');
+    video.srcObject = stream;
+    video.style.display = 'block';
+    await video.play();
+    const detector = new window.BarcodeDetector({formats:['ean_13','ean_8','upc_a','upc_e']});
+    _barcodeLettura = true;
+    const loop = async ()=>{
+      if(!_barcodeLettura) return;
+      try{
+        const risultati = await detector.detect(video);
+        if(risultati && risultati.length){
+          const codice = risultati[0].rawValue;
+          fermaScannerBarcode();
+          cercaProdottoBarcode(codice);
+          return;
+        }
+      }catch(e){ /* frame non leggibile, si riprova al prossimo */ }
+      if(_barcodeLettura) requestAnimationFrame(loop);
+    };
+    requestAnimationFrame(loop);
+  }catch(e){
+    // permesso negato o nessuna fotocamera: resta solo l'inserimento a mano
+    document.getElementById('barcodeStatus').textContent = 'Fotocamera non disponibile: inserisci il codice a mano qui sotto.';
+  }
+}
+
+// legge la risposta di Open Food Facts (v2/product/<codice>.json) e la riporta
+// al formato usato da customFoods: separata da cercaProdottoBarcode così è
+// testabile senza dover simulare una vera chiamata di rete
+function interpretaRispostaOpenFoodFacts(dati){
+  if(!dati || dati.status !== 1 || !dati.product) return null;
+  const prod = dati.product;
+  const nutr = prod.nutriments || {};
+  const kcal = nutr['energy-kcal_100g'];
+  if(!kcal || kcal <= 0) return null; // senza kcal il dato non è utilizzabile
+  return {
+    nome: (prod.product_name || '').trim().toLowerCase(),
+    kcal: Math.round(kcal),
+    p: Math.round((nutr['proteins_100g'] || 0) * 10) / 10,
+    c: Math.round((nutr['carbohydrates_100g'] || 0) * 10) / 10,
+    f: Math.round((nutr['fat_100g'] || 0) * 10) / 10
+  };
+}
+
+async function cercaProdottoBarcode(codice){
+  codice = (codice || '').trim();
+  if(!codice){ toast("Inserisci un codice a barre."); return; }
+  document.getElementById('barcodeStatus').textContent = 'Cerco il prodotto...';
+  try{
+    const risposta = await fetch(`https://world.openfoodfacts.org/api/v2/product/${encodeURIComponent(codice)}.json?fields=product_name,nutriments`);
+    const dati = await risposta.json();
+    const info = interpretaRispostaOpenFoodFacts(dati);
+    if(!info || !info.nome){
+      document.getElementById('barcodeStatus').textContent = 'Prodotto non trovato: prova a scriverlo a mano.';
+      return;
+    }
+    const prof = activeProfile();
+    if(!prof.customFoods) prof.customFoods = {};
+    prof.customFoods[info.nome] = {kcal: info.kcal, p: info.p, c: info.c, f: info.f};
+    save();
+    document.getElementById('mealFoodInput').value = info.nome;
+    document.getElementById('mealGramsInput').focus();
+    chiudiScannerBarcode();
+    toast(`Trovato: ${toTitleCase(info.nome)} — inserisci i grammi ✓`);
+  }catch(e){
+    document.getElementById('barcodeStatus').textContent = 'Connessione non disponibile: prova più tardi o scrivi l\'alimento a mano.';
+  }
+}
+
+document.getElementById('scanBarcodeBtn').addEventListener('click', apriScannerBarcode);
+document.getElementById('closeBarcodeScannerBtn').addEventListener('click', chiudiScannerBarcode);
+document.getElementById('barcodeManualBtn').addEventListener('click', ()=>{
+  cercaProdottoBarcode(document.getElementById('barcodeManualInput').value);
+});
 
 // ============================================================
 // FABBISOGNO CALORICO — calcolato, non scritto a mano.
@@ -8028,6 +8507,7 @@ function renderProgressSelect(){
     document.getElementById('progressTable').innerHTML = "";
     document.getElementById('exChartBox').style.display = 'none';
     document.getElementById('exChartSpiega').textContent = "";
+    document.getElementById('recordPersonale').style.display = 'none';
     if(exerciseChartInstance){ exerciseChartInstance.destroy(); exerciseChartInstance = null; }
     return;
   }
@@ -8046,6 +8526,16 @@ function renderProgressTable(){
   const exName = document.getElementById('progressExerciseSelect').value;
   const container = document.getElementById('progressTable');
   const timeBased = isTimeBasedExercise(exName);
+
+  const recordBox = document.getElementById('recordPersonale');
+  const record = exName ? recordPersonale(prof, exName) : null;
+  if(record){
+    recordBox.style.display = 'block';
+    recordBox.innerHTML = `🏆 Record personale: <b>${record.valore}${timeBased ? ' sec' : ' kg'}</b> <span class="hint">— ${formatDate(record.data)}</span>`;
+  } else {
+    recordBox.style.display = 'none';
+    recordBox.innerHTML = '';
+  }
   const rows = [...prof.logs]
     .filter(l=>l.exercises.some(e=>e.name===exName))
     .sort((a,b)=>a.date.localeCompare(b.date))
