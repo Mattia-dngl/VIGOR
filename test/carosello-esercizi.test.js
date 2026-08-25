@@ -10,6 +10,8 @@
 // attivo, ricalcolata ad ogni cambio di esercizio.
 const test = require('node:test');
 const assert = require('node:assert/strict');
+const fs = require('fs');
+const path = require('path');
 const { loadApp, run } = require('./helpers/loadApp.js');
 
 function giornoConDueEsercizi(){
@@ -108,4 +110,22 @@ test('sincronizzaAltezzaCaroselloDuranteScorrimento: interpola l\'altezza in bas
   assert.equal(r.metaSwipe, '600px');
   assert.equal(r.fineSwipe, '900px');
   window.close();
+});
+
+// Bug segnalato con screenshot (dopo il fix sopra): anche interpolando
+// l'altezza in tempo reale, per un istante quel valore può restare un filo
+// più basso del vero contenuto del blocco che si sta per raggiungere (jsdom
+// non può simularlo: non fa vero layout). In quel caso, senza un blocco
+// esplicito sull'asse verticale, il contenuto in eccedenza restava visibile
+// FUORI dal riquadro e si vedeva come un "fantasma" dell'esercizio
+// precedente sovrapposto a quello nuovo (es. su Military Press). La
+// correzione è in CSS, non in altro JS di sincronizzazione: overflow-y:hidden
+// sul contenitore rende quel caso limite innocuo (al massimo un filo di
+// contenuto tagliato per una frazione di secondo) invece che un difetto
+// visibile. Qui si verifica solo che la regola non sparisca in un refactor.
+test('CSS: il carosello esercizi taglia l\'overflow verticale, cosicché nessun blocco possa "sporgere" sopra a quello vicino durante lo swipe', () => {
+  const css = fs.readFileSync(path.join(__dirname, '..', 'css', 'style.css'), 'utf8');
+  const regolaTrack = css.match(/\.ex-carousel-track\s*\{[^}]*\}/);
+  assert.ok(regolaTrack, '.ex-carousel-track non trovata in css/style.css');
+  assert.match(regolaTrack[0], /overflow-y\s*:\s*hidden/, 'il contenitore del carosello deve tagliare l\'overflow verticale');
 });

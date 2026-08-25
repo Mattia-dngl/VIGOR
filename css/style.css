@@ -683,13 +683,23 @@
   .ex-dot.done{border-color:var(--ok); color:var(--ok);}
   .ex-dot.done.current{background:var(--ok); border-color:var(--ok); color:#fff;}
   .ex-carousel-track{
-    display:flex; align-items:flex-start; overflow-x:auto; scroll-snap-type:x mandatory; scroll-behavior:smooth;
+    /* overflow-y:hidden è la parte importante qui: l'altezza di questo
+       contenitore viene impostata via JS (vedi sincronizzaAltezzaCarosello/
+       DuranteScorrimento in index.html) e durante lo swipe è un valore
+       INTERPOLATO fra l'esercizio che si lascia e quello che si raggiunge —
+       per un istante può essere leggermente più bassa del vero contenuto di
+       un blocco. Senza un blocco esplicito sull'asse verticale, quel poco di
+       contenuto in eccedenza restava visibile fuori dal riquadro e si vedeva
+       come un "fantasma" dell'esercizio precedente sovrapposto a quello
+       nuovo. Tagliandolo qui, quel caso limite al massimo sfiora un filo di
+       contenuto per una frazione di secondo — non lo mostra mai fuori posto. */
+    display:flex; align-items:flex-start; overflow-x:auto; overflow-y:hidden; scroll-snap-type:x mandatory; scroll-behavior:smooth;
     gap:0; margin:0 -2px; -webkit-overflow-scrolling:touch;
   }
   .ex-carousel-track::-webkit-scrollbar{display:none;}
   .exercise-block{
     flex:0 0 100%; width:100%; scroll-snap-align:start; scroll-snap-stop:always;
-    border-top:none; padding:2px; box-sizing:border-box;
+    border-top:none; padding:2px; box-sizing:border-box; overflow:hidden;
   }
   .ex-carousel-nav{display:flex; gap:8px; margin-top:12px;}
   .ex-carousel-nav .btn{margin-top:0; flex:1;}

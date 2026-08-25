@@ -2938,20 +2938,47 @@ function descriviSerie(serie, nomeEsercizio, dropset){
   };
   // Se l'esercizio usa dropset/rest-pause, una lista piatta di valori (es.
   // "10×45, 6×30, 4×20, 10×45, ...") non fa capire quale fosse la serie
-  // principale e quali le tappe successive di ogni round: la raggruppo (in
-  // base alla tecnica ATTUALE della scheda, la migliore informazione che
-  // abbiamo su come erano strutturati quei round) ed etichetto ogni pezzo,
-  // così "Ultima volta" si legge come si legge la scheda stessa.
-  const tappePerRound = dropset && dropset.drops ? 1 + dropset.drops.length : 0;
-  if(tappePerRound > 1 && serie.length > tappePerRound){
+  // principale e quali le tappe successive di ogni round: la raggruppo ed
+  // etichetto ogni pezzo, così "Ultima volta" si legge come si legge la scheda.
+  //
+  // Ogni riga salvata da quando esiste questo raggruppamento porta con sé la
+  // propria "tappa" reale (0 = principale, 1/2/... = drop, vedi addSetRow):
+  // uso QUELLA per trovare dove inizia ogni round, non il numero di tappe
+  // della scheda di OGGI. La scheda può essere cambiata da quel giorno (più
+  // o meno round, più o meno drop): raggruppare dati vecchi secondo la
+  // struttura di oggi poteva tagliare male l'ultimo round e far sembrare
+  // che "Ultima volta" non mostrasse tutto quello che era stato fatto.
+  const haTappeSalvate = serie.some(s => typeof s.tappa === 'number');
+  if(haTappeSalvate){
     const round = [];
-    for(let k=0, idx=0; k<serie.length; k+=tappePerRound, idx++){
-      const gruppo = serie.slice(k, k+tappePerRound);
-      const etichette = gruppo.map((s,j)=> j===0 ? descriviUna(s)
-        : `${dropset.tipo==='restpause'?'rest-pause':'drop'} ${j} ${descriviUna(s)}`);
-      round.push(`Serie ${idx+1}: ${etichette.join(' → ')}`);
+    serie.forEach(s=>{
+      if(s.tappa === 0 || round.length === 0) round.push([]);
+      round[round.length-1].push(s);
+    });
+    if(round.length > 1){
+      const tipo = dropset && dropset.tipo === 'restpause' ? 'rest-pause' : 'drop';
+      return round.map((gruppo, idx)=>{
+        const etichette = gruppo.map((s,j)=> j===0 ? descriviUna(s) : `${tipo} ${j} ${descriviUna(s)}`);
+        return `Serie ${idx+1}: ${etichette.join(' → ')}`;
+      }).join(' | ');
     }
-    return round.join(' | ');
+    // un solo round trovato: stesso trattamento del caso "senza tappe" sotto
+  } else {
+    // Dati salvati PRIMA di questa correzione, senza tappa: nessun modo di
+    // sapere davvero come erano strutturati quei round, quindi si stima in
+    // base alla tecnica ATTUALE della scheda — la migliore informazione che
+    // abbiamo, ma solo una stima se la scheda è cambiata nel frattempo.
+    const tappePerRound = dropset && dropset.drops ? 1 + dropset.drops.length : 0;
+    if(tappePerRound > 1 && serie.length > tappePerRound){
+      const round = [];
+      for(let k=0, idx=0; k<serie.length; k+=tappePerRound, idx++){
+        const gruppo = serie.slice(k, k+tappePerRound);
+        const etichette = gruppo.map((s,j)=> j===0 ? descriviUna(s)
+          : `${dropset.tipo==='restpause'?'rest-pause':'drop'} ${j} ${descriviUna(s)}`);
+        round.push(`Serie ${idx+1}: ${etichette.join(' → ')}`);
+      }
+      return round.join(' | ');
+    }
   }
   return serie.map(descriviUna).join(", ");
 }
@@ -7072,13 +7099,19 @@ document.getElementById('exerciseFormList').addEventListener('scroll', ()=>{
   window._fineScorrimento = setTimeout(()=>updateExerciseCarouselUI(currentExerciseIndex()), 90);
 }, {passive:true});
 
-function addSetRow(exName){
+function addSetRow(exName, tappa){
   const container = document.querySelector(`.sets-container[data-ex="${CSS.escape(exName)}"]`);
   const idx = currentSetInputs[exName].length;
   const campi = campiDi(exName);
 
   const vuota = {};
   campi.forEach(c=>{ vuota[c.chiave] = ''; });
+  // tappa: 0 = serie principale, 1/2/... = drop o rest-pause di quel round
+  // (passata solo da buildDropsetRound). Viaggia con la riga fino al
+  // salvataggio (vedi saveLogBtn) e serve a descriviSerie per raggruppare
+  // "Ultima volta" secondo la struttura REALE di quel giorno, non secondo
+  // la scheda di oggi — che nel frattempo può essere cambiata.
+  if(typeof tappa === 'number') vuota._tappa = tappa;
   currentSetInputs[exName].push(vuota);
 
   const row = document.createElement('div');
@@ -7148,7 +7181,7 @@ function buildDropsetRound(exName, numeroRound, dropset, targetReps){
   const container = document.querySelector(`.sets-container[data-ex="${CSS.escape(exName)}"]`);
   const target = parseInt(targetReps, 10);
 
-  addSetRow(exName);
+  addSetRow(exName, 0);
   let rigaPrec = container.lastElementChild;
   rigaPrec.classList.add('drop-row', 'drop-row-main');
   etichettaRiga(rigaPrec, `Serie ${numeroRound} · Principale`);
@@ -7157,7 +7190,7 @@ function buildDropsetRound(exName, numeroRound, dropset, targetReps){
   const righeDrop = [];   // {repsInput, idx} di ogni tappa, per il ricalcolo ripetizioni qui sotto
 
   (dropset.drops||[]).forEach((drop, dj)=>{
-    addSetRow(exName);
+    addSetRow(exName, dj+1);
     const riga = container.lastElementChild;
     riga.classList.add('drop-row');
     const nomeTappa = dropset.tipo==='restpause' ? `Rest-pause ${dj+1}` : `Drop ${dj+1} (-${drop.riduzione||0}%)`;
@@ -7235,7 +7268,11 @@ document.getElementById('saveLogBtn').addEventListener('click', ()=>{
   if(selectedDayKey!=="SKIP"){
     Object.keys(currentSetInputs).forEach(exName=>{
       const sets = currentSetInputs[exName].filter(s=>CAMPI_SERIE.some(k=>s[k]));
-      if(sets.length>0) log.exercises.push({name: exName, sets: sets.map(s=>({reps:s.reps||'', kg:s.kg||'', seconds:s.seconds||''}))});
+      if(sets.length>0) log.exercises.push({name: exName, sets: sets.map(s=>{
+        const salvata = {reps:s.reps||'', kg:s.kg||'', seconds:s.seconds||''};
+        if(typeof s._tappa === 'number') salvata.tappa = s._tappa;   // vedi addSetRow: usata da descriviSerie
+        return salvata;
+      })});
     });
   }
   // se quel giorno era stato segnato saltato in automatico, la scelta manuale ha la precedenza

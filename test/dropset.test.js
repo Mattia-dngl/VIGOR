@@ -171,6 +171,60 @@ test('descriviSerie: con un dropset, raggruppa "Ultima volta" per round invece d
   window.close();
 });
 
+// Bug segnalato con screenshot: "Ultima volta" su un esercizio a dropset
+// mostrava un round completo (principale + drop) seguito da un round "corto"
+// senza le tappe, come se mancassero dei dati. La causa era che il vecchio
+// raggruppamento tagliava la serie storica piatta in blocchi della lunghezza
+// di OGGI (scheda con più round di allora), invece di sapere davvero dove
+// finiva ogni round. Da quando ogni riga salva la propria "tappa" (vedi
+// addSetRow/buildDropsetRound), descriviSerie deve raggruppare secondo QUELLA,
+// non secondo il numero di tappe della scheda attuale.
+test('descriviSerie: con la "tappa" salvata su ogni riga, raggruppa per round REALI anche se la scheda di oggi è cambiata', async () => {
+  const { window } = await loadApp();
+  const r = await run(window, `
+    // quel giorno: un round completo (principale + 2 drop) e un secondo round
+    // in cui è stata fatta solo la principale (nessun drop) — magari perché la
+    // scheda di allora prevedeva meno round, o semplicemente si è saltato il drop.
+    const serie = [
+      {reps:'20', kg:'5', tappa:0}, {reps:'20', kg:'7', tappa:1}, {reps:'20', kg:'9', tappa:2},
+      {reps:'20', kg:'10', tappa:0}
+    ];
+    // oggi la scheda ha 4 round con 2 drop ciascuno: molto più lunga di allora
+    const dropsetOggi = { tipo:'dropset', drops:[{riduzione:25},{riduzione:25}] };
+    return descriviSerie(serie, 'Alzate Laterali', dropsetOggi);
+  `);
+  // il secondo round resta "corto" (perché lo era davvero), ma è mostrato per
+  // intero ed etichettato correttamente come round a sé — non tagliato a metà
+  // né confuso con l'inizio di un terzo round che non esiste.
+  assert.equal(r, 'Serie 1: 20×5 → drop 1 20×7 → drop 2 20×9 | Serie 2: 20×10');
+  window.close();
+});
+
+test('descriviSerie: con la "tappa" salvata, funziona anche senza passare il dropset (storico/calendario)', async () => {
+  const { window } = await loadApp();
+  const r = await run(window, `
+    const serie = [
+      {reps:'20', kg:'5', tappa:0}, {reps:'20', kg:'7', tappa:1},
+      {reps:'20', kg:'10', tappa:0}, {reps:'20', kg:'12', tappa:1}
+    ];
+    return descriviSerie(serie, 'Alzate Laterali');   // nessun dropset passato: come in renderHistory/calendario
+  `);
+  assert.equal(r, 'Serie 1: 20×5 → drop 1 20×7 | Serie 2: 20×10 → drop 1 20×12');
+  window.close();
+});
+
+test('buildDropsetRound: ogni riga (principale e drop) porta la propria tappa reale in currentSetInputs, pronta per il salvataggio', async () => {
+  const { window } = await loadApp();
+  const r = await run(window, `
+    const profilo = { id:'io', name:'Io', email:'io@test.it', logs:[], measurements:[], customExercises:{}, customFoods:{} };
+    state.profiles = [profilo]; activeProfileId = 'io';
+    buildExerciseForm(${JSON.stringify(giornoConDropset([25, 25]))});   // 1 round: principale + 2 drop
+    return currentSetInputs['Chest Press'].map(s => s._tappa);
+  `);
+  assert.deepEqual(r, [0, 1, 2]);
+  window.close();
+});
+
 test('editor scheda: togliere una tappa del dropset non cancella l\'esercizio', async () => {
   const { window } = await loadApp();
   const giorno = giornoConDropset([25, 25, 25]);   // 3 tappe
