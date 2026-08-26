@@ -1348,7 +1348,7 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
          qualunque sia il segmento scelto (Allenamenti/Volume/Misure). -->
     <details class="card details-card">
       <summary>Schede archiviate</summary>
-      <p class="hint" style="margin-top:0;">Ogni versione qui sotto mostra anche il piano alimentare che era abbinato in quel momento.</p>
+      <p class="hint" style="margin-top:0; color:var(--text-dim);">Ogni versione qui sotto mostra anche il piano alimentare che era abbinato in quel momento.</p>
       <div class="details-body" id="archiveList"><div class="empty">Nessuna scheda precedente.</div></div>
     </details>
     </div>
@@ -2947,6 +2947,11 @@ function timerAggiorna(){
   disp.textContent = formattaTempo(restano);
 }
 function timerAvvia(sec){
+  // Sblocco l'audio QUI, non a ogni tocco nell'app (26/08, vedi nota su
+  // sbloccaAudio()): questo è il momento in cui l'utente ha davvero scelto
+  // di avviare un timer, l'unico caso in cui vale la pena di una sessione
+  // audio che può mettere in pausa la musica di sottofondo.
+  sbloccaAudio();
   fermaSuono();
   _timerDurata = sec || _timerDurata || impostazioniTimer().durata;
   _timerFine = Date.now() + _timerDurata*1000;
@@ -3043,9 +3048,19 @@ function sbloccaAudio(){
     if(!_audioSveglia){ _audioSveglia = creaSuonoSveglia(); _audioSveglia.load(); }
   }catch(e){}
 }
-// il primo tocco sull'app abilita il suono per tutta la sessione
-['pointerdown','touchstart','keydown'].forEach(ev=>
-  document.addEventListener(ev, sbloccaAudio, {once:false, passive:true}));
+// PRIMA (bug segnalato 26/08): questo sblocco partiva su QUALSIASI tocco/tasto
+// in TUTTA l'app (listener globale su document, pointerdown/touchstart/keydown),
+// quindi bastava aprire l'app e toccare una volta un punto qualsiasi — anche
+// senza mai avvicinarsi al timer — per far partire il file audio muto e con
+// esso una vera sessione audio del telefono, che su iOS/Android mette in
+// pausa la musica in riproduzione (Spotify, Musica...) anche se il suono in
+// sé non si sente. Ora `sbloccaAudio()` si chiama SOLO da `timerAvvia()`,
+// cioè quando l'utente sceglie davvero di avviare un timer di recupero (dal
+// bottone "Avvia" o da una scorciatoia) — mai per il solo fatto di aprire
+// l'app o toccare qualcos'altro. Resta comunque un vero tocco dell'utente,
+// quindi il browser continua a permettere il play() (serve per poter poi far
+// suonare la sveglia più tardi, quando il timer arriva a zero, senza un
+// nuovo gesto in quel momento).
 
 function avviaSuonoRipetuto(){
   fermaSuono();
@@ -9718,8 +9733,38 @@ function renderDietEditForm(){
   applyDietEditFormVisibility();
 }
 
+// Una versione conta come "compilata" solo se ha almeno un giorno con
+// almeno un esercizio, o almeno un giorno di dieta con qualcosa scritto
+// (26/08, ventunesimo giro — prima bastava che la scheda fosse stata
+// creata, anche vuota, per finire archiviata).
+function giorniCompilati(days){
+  return !!(days && days.length>0 && days.some(d=>d.exercises && d.exercises.length>0));
+}
+function dietaCompilata(diet){
+  if(!diet || typeof diet !== 'object') return false;
+  return Object.keys(diet).some(wd=>{
+    const g = diet[wd];
+    if(!g) return false;
+    if(g.libera) return !!(g.testo && g.testo.trim());
+    return !!((g.colazione||'').trim() || (g.pranzo||'').trim() || (g.spuntino||'').trim() || (g.cena||'').trim());
+  });
+}
+function programmaVuoto(p){
+  return !giorniCompilati(p.days) && !dietaCompilata(p.diet);
+}
+
 function renderArchiveList(){
   const prof = activeProfile();
+  // Pulizia automatica: se in passato è stata archiviata una versione mai
+  // compilata (tipicamente la scheda "bianca" di partenza di un profilo
+  // nuovo), non ha senso tenerla in giro solo per ingombrare l'elenco —
+  // la scartiamo qui, non solo per le nuove archiviazioni da questo giro
+  // in poi (vedi i tre punti più sotto che impostano archivedAt).
+  const daScartare = prof.programs.filter(p=>p.archivedAt && programmaVuoto(p));
+  if(daScartare.length){
+    prof.programs = prof.programs.filter(p=>!daScartare.includes(p));
+    save();
+  }
   const list = document.getElementById('archiveList');
   const archived = prof.programs.filter(p=>p.archivedAt);
   if(archived.length===0){ list.innerHTML = '<div class="empty">Nessuna scheda precedente.</div>'; return; }
@@ -9740,7 +9785,11 @@ function renderArchiveList(){
       customConfirm("Riattivare questa scheda? Quella attualmente attiva verrà archiviata al suo posto.", ()=>{
         const id = btn.dataset.reactivate;
         const current = activeProgram();
-        current.archivedAt = new Date().toISOString().slice(0,10);
+        if(programmaVuoto(current)){
+          prof.programs = prof.programs.filter(p=>p.id!==current.id);
+        } else {
+          current.archivedAt = new Date().toISOString().slice(0,10);
+        }
         const target = prof.programs.find(x=>x.id===id);
         target.archivedAt = null;
         prof.activeProgramId = target.id;
@@ -10312,7 +10361,11 @@ document.getElementById('saveNewProgramBtn').addEventListener('click', ()=>{
   const today = new Date().toISOString().slice(0,10);
 
   const current = activeProgram();
-  current.archivedAt = today;
+  if(programmaVuoto(current)){
+    prof.programs = prof.programs.filter(p=>p.id!==current.id);
+  } else {
+    current.archivedAt = today;
+  }
 
   const newProgram = {
     id: uid(), name, createdAt: today, archivedAt: null,
@@ -10337,7 +10390,11 @@ document.getElementById('saveDietBtn').addEventListener('click', ()=>{
   const today = new Date().toISOString().slice(0,10);
 
   const current = activeProgram();
-  current.archivedAt = today;
+  if(programmaVuoto(current)){
+    prof.programs = prof.programs.filter(p=>p.id!==current.id);
+  } else {
+    current.archivedAt = today;
+  }
 
   const newProgram = {
     id: uid(), name: current.name, createdAt: today, archivedAt: null, scadenza: current.scadenza || null,
@@ -10353,7 +10410,12 @@ document.getElementById('saveDietBtn').addEventListener('click', ()=>{
 });
 
 function renderProgramDetailHtml(p){
-  const daysHtml = p.days.map(d=>`
+  // Sezioni separate e chiaramente etichettate per allenamento e dieta
+  // (26/08, ventunesimo giro — prima erano un unico blocco senza titoli,
+  // difficile da distinguere a colpo d'occhio; ognuna dice esplicitamente
+  // se non c'è nulla di compilato, invece di restare vuota o piena di "-").
+  const haGiorni = giorniCompilati(p.days);
+  const daysHtml = !haGiorni ? '' : p.days.map(d=>`
     <div class="day-editor">
       <div class="day-editor-head">
         <div style="display:flex; align-items:center; gap:10px;">
@@ -10371,20 +10433,27 @@ function renderProgramDetailHtml(p){
       }).join('')}
     </div>`).join('');
 
-  let dietHtml = '';
-  if(p.diet && typeof p.diet === 'object'){
-    dietHtml = WD_ORDER.map(wd=>{
-      const day = p.diet[wd];
-      if(!day) return "";
-      if(day.libera) return `<div class="diet-day-card"><div class="diet-day-head"><span class="wd">${wd}</span><span class="diet-free-badge">Libero</span></div><div class="diet-meal-row">${day.testo||''}</div></div>`;
-      return `<div class="diet-day-card"><div class="diet-day-head"><span class="wd">${wd}</span></div>
-        <div class="diet-meal-row"><b>Colazione</b>${day.colazione||'-'}</div>
-        <div class="diet-meal-row"><b>Pranzo</b>${day.pranzo||'-'}</div>
-        <div class="diet-meal-row"><b>Spuntino</b>${day.spuntino||'-'}</div>
-        <div class="diet-meal-row"><b>Cena</b>${day.cena||'-'}</div></div>`;
-    }).join('');
-  }
-  return `<div>${daysHtml}</div><div style="margin-top:10px;">${dietHtml}</div>`;
+  const haDieta = dietaCompilata(p.diet);
+  const dietHtml = !haDieta ? '' : WD_ORDER.map(wd=>{
+    const day = p.diet[wd];
+    if(!day) return "";
+    if(day.libera) return `<div class="diet-day-card"><div class="diet-day-head"><span class="wd">${wd}</span><span class="diet-free-badge">Libero</span></div><div class="diet-meal-row">${day.testo||''}</div></div>`;
+    return `<div class="diet-day-card"><div class="diet-day-head"><span class="wd">${wd}</span></div>
+      <div class="diet-meal-row"><b>Colazione</b>${day.colazione||'-'}</div>
+      <div class="diet-meal-row"><b>Pranzo</b>${day.pranzo||'-'}</div>
+      <div class="diet-meal-row"><b>Spuntino</b>${day.spuntino||'-'}</div>
+      <div class="diet-meal-row"><b>Cena</b>${day.cena||'-'}</div></div>`;
+  }).join('');
+
+  return `
+    <div class="archive-detail-sez">
+      <div class="archive-detail-titolo">🏋️ Allenamento</div>
+      ${haGiorni ? daysHtml : '<div class="archive-detail-vuoto">Nessun allenamento salvato in questa versione.</div>'}
+    </div>
+    <div class="archive-detail-sez" style="margin-top:14px;">
+      <div class="archive-detail-titolo">🥗 Dieta</div>
+      ${haDieta ? dietHtml : '<div class="archive-detail-vuoto">Nessuna dieta compilata in questa versione.</div>'}
+    </div>`;
 }
 
 // ============================================================
