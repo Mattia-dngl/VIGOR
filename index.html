@@ -1098,7 +1098,7 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
 
       <button class="btn block" id="saveDietBtn">Salva dieta</button>
 
-      <p class="hint" style="margin-top:14px;">Lo storico completo (scheda + dieta insieme, versione per versione) resta in Scheda → Modifica → "Schede archiviate".</p>
+      <p class="hint" style="margin-top:14px;">Lo storico completo (scheda + dieta insieme, versione per versione) resta in Storico → "Schede archiviate".</p>
     </div>
     <div id="dietPlanEditBlockAnchor"></div>
   </section>
@@ -1161,12 +1161,15 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
         <button class="btn danger" id="clearFormBtn" style="margin-top:0; padding:8px 14px;">Pulisci</button>
       </div>
       <div class="card">
-        <div class="card-head-row">
+        <div class="card-head-row" id="programEditIntroWrap" style="display:none;">
           <h3 id="programEditTitolo">Il personal trainer ti ha aggiornato la scheda?</h3>
         </div>
-        <p class="hint"><b>Aggiorna scheda</b> modifica quella attuale, senza crearne una nuova (utile per piccole correzioni). <b>Salva come nuova versione</b> archivia quella attuale (resta consultabile) e la sostituisce con questa — usalo quando cambia davvero l'allenamento. In entrambi i casi la dieta impostata e lo storico allenamenti passati non vengono mai toccati. "Pulisci" invece svuota i campi qui sotto per ripartire da zero.</p>
-        <label>Nome/etichetta scheda <span class="hint" style="font-weight:400;">(solo per "Salva come nuova versione")</span></label>
-        <input type="text" id="newProgramName" placeholder="Es. Programma Forza - Fase 2">
+        <p class="hint" id="programEditIntroHint" style="display:none;"><b>Aggiorna scheda</b> modifica quella attuale, senza crearne una nuova (utile per piccole correzioni). <b>Salva come nuova versione</b> archivia quella attuale (resta consultabile in Storico) e la sostituisce con questa — usalo quando cambia davvero l'allenamento. In entrambi i casi la dieta impostata e lo storico allenamenti passati non vengono mai toccati. "Pulisci" invece svuota i campi qui sotto per ripartire da zero.</p>
+        <p class="hint" id="programEditHintNuova" style="display:none;">Verrà creata una nuova scheda e attivata subito: quella attuale si sposta tra le versioni archiviate, consultabile da Storico.</p>
+        <div id="newProgramNameWrap" style="display:none;">
+          <label style="margin-top:0;">Nome/etichetta scheda</label>
+          <input type="text" id="newProgramName" placeholder="Es. Programma Forza - Fase 2">
+        </div>
         <div class="row" style="margin-top:14px;">
           <div>
             <label style="margin-top:0;">Durata (settimane) <span class="hint" style="font-weight:400;">(facoltativa)</span></label>
@@ -1198,12 +1201,6 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
 
       <button class="btn block" id="updateProgramBtn">Aggiorna scheda</button>
       <button class="btn secondary block" id="saveNewProgramBtn" style="margin-top:9px;">Salva come nuova versione</button>
-
-      <details class="card details-card" style="margin-top:20px;">
-        <summary>Schede archiviate</summary>
-        <p class="hint" style="margin-top:0;">Ogni versione qui sotto mostra anche il piano alimentare che era abbinato in quel momento.</p>
-        <div class="details-body" id="archiveList"><div class="empty">Nessuna scheda precedente.</div></div>
-      </details>
 
     </div>
     </div>
@@ -1345,6 +1342,15 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
         </div>
       </div>
     </div>
+
+    <!-- "Schede archiviate" viveva dentro Modifica scheda: spostata qui
+         (26/08, richiesta esplicita) — resta sempre visibile in Storico,
+         qualunque sia il segmento scelto (Allenamenti/Volume/Misure). -->
+    <details class="card details-card">
+      <summary>Schede archiviate</summary>
+      <p class="hint" style="margin-top:0;">Ogni versione qui sotto mostra anche il piano alimentare che era abbinato in quel momento.</p>
+      <div class="details-body" id="archiveList"><div class="empty">Nessuna scheda precedente.</div></div>
+    </details>
     </div>
   </section>
 
@@ -9626,6 +9632,16 @@ let editingDays = [];
 let editingDietInfo = {};
 let editingDiet = {};
 
+// Come si è entrati nell'editor scheda: 'modifica' (matita, sulla scheda già
+// attiva) o 'nuova' (+ Nuova scheda). Serve a mostrare UN SOLO bottone di
+// salvataggio alla volta invece di entrambi sempre assieme — segnalato
+// "troppo incasinato"/inutile vedere "Salva come nuova versione" mentre si
+// sta solo aggiornando (26/08/2026). Per il PT che modifica la scheda di un
+// cliente (mostraEditorSchedaInlinePT) restano invece SEMPRE visibili
+// entrambi, come prima: è l'unico punto d'ingresso che ha, non ha un
+// "+Nuova scheda" separato per i clienti.
+let _modoEditorScheda = 'modifica';
+
 function renderNewProgramForm(){
   renderSchedaEditForm();
   renderDietEditForm();
@@ -9638,17 +9654,55 @@ function renderSchedaEditForm(){
   document.getElementById('newProgramDurata').value = p.durataSettimane || "";
   document.getElementById('newProgramDataInizio').value = p.dataInizio || "";
   document.getElementById('newProgramNotePT').value = p.notePT || "";
-  const titolo = document.getElementById('programEditTitolo');
-  if(titolo){
-    titolo.textContent = (modalitaPT && _modificaPTCosa==='scheda' && _clienteAperto)
-      ? `Scheda di ${nomeDi(_clienteAperto.riga)}`
-      : "Il personal trainer ti ha aggiornato la scheda?";
-  }
+  aggiornaModalitaEditorScheda();
   renderDayEditors();
   renderArchiveList();
   renderCustomExList();
   applyEditFormVisibility();
 }
+
+// Mostra/nasconde intestazione, campo "nome scheda" e i due bottoni di
+// salvataggio in base a COME si è entrati nell'editor (_modoEditorScheda) —
+// un solo bottone alla volta, niente più spiegazione lunga su cosa fanno
+// "Aggiorna"/"Salva come nuova versione" quando in realtà se ne vede solo
+// uno (26/08/2026). Il PT che modifica la scheda di un cliente fa eccezione:
+// per lui restano sempre visibili entrambi, comportamento invariato.
+function aggiornaModalitaEditorScheda(){
+  const pt = !!(modalitaPT && _modificaPTCosa==='scheda' && _clienteAperto);
+  const titolo2 = document.getElementById('programEditTitolo2');
+  const introWrap = document.getElementById('programEditIntroWrap');
+  const introHint = document.getElementById('programEditIntroHint');
+  const hintNuova = document.getElementById('programEditHintNuova');
+  const nomeWrap = document.getElementById('newProgramNameWrap');
+  const btnAggiorna = document.getElementById('updateProgramBtn');
+  const btnNuova = document.getElementById('saveNewProgramBtn');
+  if(!titolo2 || !btnAggiorna || !btnNuova) return;
+
+  if(pt){
+    // comportamento di sempre, invariato: entrambi i bottoni e la spiegazione
+    // completa, perché il PT non ha un "+Nuova scheda" separato per i clienti
+    titolo2.textContent = `Scheda di ${nomeDi(_clienteAperto.riga)}`;
+    if(introWrap) introWrap.style.display = '';
+    if(introHint) introHint.style.display = '';
+    if(hintNuova) hintNuova.style.display = 'none';
+    if(nomeWrap) nomeWrap.style.display = 'block';
+    btnAggiorna.style.display = 'block';
+    btnNuova.style.display = 'block';
+    btnNuova.textContent = 'Salva come nuova versione';
+    return;
+  }
+
+  const nuova = _modoEditorScheda === 'nuova';
+  titolo2.textContent = nuova ? 'Nuova scheda' : 'Modifica scheda';
+  if(introWrap) introWrap.style.display = 'none';
+  if(introHint) introHint.style.display = 'none';
+  if(hintNuova) hintNuova.style.display = nuova ? 'block' : 'none';
+  if(nomeWrap) nomeWrap.style.display = nuova ? 'block' : 'none';
+  btnAggiorna.style.display = nuova ? 'none' : 'block';
+  btnNuova.style.display = nuova ? 'block' : 'none';
+  btnNuova.textContent = nuova ? 'Salva scheda' : 'Salva come nuova versione';
+}
+
 function renderDietEditForm(){
   const p = activeProgram();
   editingDietInfo = JSON.parse(JSON.stringify(p.dietInfo || defaultDietInfo()));
@@ -9895,39 +9949,55 @@ function renderExerciseEditors(di){
     return html;
   }
 
+  function riassuntoTecnica(ex){
+    if(ex.dropset) return ex.dropset.tipo==='restpause' ? 'Rest-pause' : 'Dropset';
+    if(ex.supersetCon!=null) return 'Superset';
+    return 'Nessuna';
+  }
+  function riassuntoMuscoli(ex){
+    const m = ex.muscles || [];
+    return m.length ? m.join(', ') : 'nessuno';
+  }
+
   list.innerHTML = day.exercises.map((ex,ei)=>{
     const eiNum = parseInt(ei);
     const partnerIdx = ex.supersetCon!=null ? ex.supersetCon : chiMiHaAbbinato(day, eiNum);
     const partnerEx = (partnerIdx!=null && partnerIdx>=0) ? day.exercises[partnerIdx] : null;
     const chipSuperset = partnerEx ? `<div class="superset-chip">⚡ Superset con ${escapeAttr(partnerEx.name || '(esercizio '+(parseInt(partnerIdx)+1)+')')}</div>` : '';
+    const tecnicaAttiva = riassuntoTecnica(ex);
     return `
     <div class="exercise-edit-block" data-di="${di}" data-ei="${ei}">
-      <div class="exercise-edit-num">${eiNum+1}</div>
-      <div class="exercise-edit-row">
+      <div class="exercise-edit-top">
+        <div class="exercise-edit-num">${eiNum+1}</div>
         <select class="ex-name-input" data-di="${di}" data-ei="${ei}" data-field="name">
           ${exOptionsHtml(ex.name)}
         </select>
-        <input type="number" class="small" placeholder="serie" value="${ex.sets}" data-di="${di}" data-ei="${ei}" data-field="sets">
-        <input type="text" class="small" placeholder="rip." value="${escapeAttr(ex.reps)}" data-di="${di}" data-ei="${ei}" data-field="reps">
-        <input type="number" class="small rec" placeholder="rec" title="Recupero in secondi (facoltativo)" min="0" step="5" value="${ex.recupero!=null?ex.recupero:''}" data-di="${di}" data-ei="${ei}" data-field="recupero">
-        <button type="button" class="remove-x" data-di="${di}" data-ei="${ei}">×</button>
+        <button type="button" class="remove-x" data-di="${di}" data-ei="${ei}" aria-label="Rimuovi esercizio">×</button>
       </div>
       ${chipSuperset}
-      <div class="muscle-chip-group" data-di="${di}" data-ei="${ei}">
-        ${MUSCLE_GROUPS.map(m=>`<div class="muscle-chip ${(ex.muscles||[]).includes(m)?'selected':''}" data-m="${m}">${m}</div>`).join('')}
+      <div class="exercise-edit-row">
+        <div class="ex-field"><span class="ex-field-label">Serie</span><input type="number" class="small" placeholder="serie" value="${ex.sets}" data-di="${di}" data-ei="${ei}" data-field="sets"></div>
+        <div class="ex-field"><span class="ex-field-label">Rip.</span><input type="text" class="small" placeholder="rip." value="${escapeAttr(ex.reps)}" data-di="${di}" data-ei="${ei}" data-field="reps"></div>
+        <div class="ex-field"><span class="ex-field-label">Rec. (s)</span><input type="number" class="small rec" placeholder="facolt." title="Recupero in secondi (facoltativo)" min="0" step="5" value="${ex.recupero!=null?ex.recupero:''}" data-di="${di}" data-ei="${ei}" data-field="recupero"></div>
       </div>
       <input type="text" class="ex-note-input" placeholder="Nota per l'allenamento (facoltativa) — es. presa larga, attenzione alla spalla…" value="${escapeAttr(ex.note||'')}" data-di="${di}" data-ei="${ei}" data-field="note">
-      <div class="tecnica-row">
-        <span>Tecnica speciale</span>
+      <details class="ex-sub-details">
+        <summary><span class="ex-sub-titolo">Muscoli coinvolti</span><span class="ex-sub-riassunto">${escapeAttr(riassuntoMuscoli(ex))}</span></summary>
+        <div class="muscle-chip-group" data-di="${di}" data-ei="${ei}">
+          ${MUSCLE_GROUPS.map(m=>`<div class="muscle-chip ${(ex.muscles||[]).includes(m)?'selected':''}" data-m="${m}">${m}</div>`).join('')}
+        </div>
+      </details>
+      <details class="ex-sub-details" ${tecnicaAttiva!=='Nessuna' ? 'open' : ''}>
+        <summary><span class="ex-sub-titolo">Tecnica speciale</span><span class="ex-sub-riassunto">${tecnicaAttiva}</span></summary>
         <div class="seg-toggle seg-toggle-tecnica">
           <button type="button" class="seg-btn ${!ex.dropset && ex.supersetCon==null?'active':''}" data-di="${di}" data-ei="${ei}" data-tecnica="nessuna">Nessuna</button>
           <button type="button" class="seg-btn ${ex.dropset && ex.dropset.tipo==='dropset'?'active':''}" data-di="${di}" data-ei="${ei}" data-tecnica="dropset">Dropset</button>
           <button type="button" class="seg-btn ${ex.dropset && ex.dropset.tipo==='restpause'?'active':''}" data-di="${di}" data-ei="${ei}" data-tecnica="restpause">Rest-pause</button>
           <button type="button" class="seg-btn ${ex.supersetCon!=null?'active':''}" data-di="${di}" data-ei="${ei}" data-tecnica="superset">Superset</button>
         </div>
-      </div>
-      ${ex.dropset ? dropsetEditorHtml(di, ei, ex) : ''}
-      ${ex.supersetCon!=null ? supersetEditorHtml(di, ei, ex, day) : ''}
+        ${ex.dropset ? dropsetEditorHtml(di, ei, ex) : ''}
+        ${ex.supersetCon!=null ? supersetEditorHtml(di, ei, ex, day) : ''}
+      </details>
     </div>`;
   }).join('');
 
@@ -10062,12 +10132,19 @@ function renderExerciseEditors(di){
         if(ex.muscles.includes(m)) ex.muscles = ex.muscles.filter(x=>x!==m);
         else ex.muscles.push(m);
         chip.classList.toggle('selected');
+        // niente re-render completo (si perderebbe lo stato aperto/chiuso
+        // della tendina): aggiorno solo il riassunto nel summary
+        const riassunto = group.closest('.ex-sub-details')?.querySelector('.ex-sub-riassunto');
+        if(riassunto) riassunto.textContent = ex.muscles.length ? ex.muscles.join(', ') : 'nessuno';
       });
     });
   });
 }
 document.getElementById('clearFormBtn').addEventListener('click', ()=>{
-  customConfirm("Svuotare i giorni di allenamento? (la scheda attualmente attiva non viene toccata finché non premi \"Salva scheda\")", ()=>{
+  const etichettaSalva = document.getElementById('saveNewProgramBtn').style.display!=='none' && document.getElementById('updateProgramBtn').style.display==='none'
+    ? document.getElementById('saveNewProgramBtn').textContent
+    : 'Aggiorna scheda';
+  customConfirm(`Svuotare i giorni di allenamento? (la scheda attualmente attiva non viene toccata finché non premi "${etichettaSalva}")`, ()=>{
     editingDays = [];
     document.getElementById('newProgramName').value = "";
     renderDayEditors();
@@ -10078,20 +10155,27 @@ document.getElementById('clearFormBtn').addEventListener('click', ()=>{
 // ---- header compatto di Scheda: matita (Vedi → Modifica), freccia indietro
 // (Modifica → Vedi) e "+ Nuova scheda" — pilotano lo stesso motore di sempre
 // (.seg-btn[data-seg], nascosto ma invariato: vedi #progVedModToggle) ----
+// Ognuno fissa anche _modoEditorScheda, così l'editor mostra un solo bottone
+// di salvataggio alla volta invece di entrambi assieme (26/08/2026).
 document.getElementById('schedaEditBtn').addEventListener('click', ()=>{
+  _modoEditorScheda = 'modifica';
+  aggiornaModalitaEditorScheda();
   document.querySelector('.seg-btn[data-seg="edit"]').click();
 });
 document.getElementById('schedaTornaVediBtn').addEventListener('click', ()=>{
+  _modoEditorScheda = 'modifica';   // si esce dall'editor: la prossima apertura riparte da "modifica"
   document.querySelector('.seg-btn[data-seg="view"]').click();
 });
 document.getElementById('nuovaSchedaBtn').addEventListener('click', ()=>{
-  customConfirm("Iniziare una scheda nuova da zero? La scheda attuale resta invariata finché non premi \"Salva come nuova versione\".", ()=>{
+  customConfirm("Iniziare una scheda nuova da zero? La scheda attuale resta invariata finché non premi \"Salva scheda\".", ()=>{
     editingDays = [];
     document.getElementById('newProgramName').value = "";
     document.getElementById('newProgramScadenza').value = "";
     document.getElementById('newProgramDurata').value = "";
     document.getElementById('newProgramDataInizio').value = "";
     document.getElementById('newProgramNotePT').value = "";
+    _modoEditorScheda = 'nuova';
+    aggiornaModalitaEditorScheda();
     renderDayEditors();
     document.querySelector('.seg-btn[data-seg="edit"]').click();
     toast("Scheda nuova — aggiungi il primo giorno");
