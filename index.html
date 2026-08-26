@@ -1122,14 +1122,27 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
     </div>
 
     <div id="programSchedaBlock">
-    <div class="seg-toggle" id="progVedModToggle">
+    <!-- Motore interno invariato (mostra/nasconde #programViewBlock vs
+         #programEditBlock): la barra Vedi/Modifica non si vede più, la
+         guidano ora la matita e "+ Nuova scheda" qui sotto (25/08,
+         diciottesimo giro — stesso pattern già usato per nascondere
+         progSchedaStoricoToggle al giro 15). -->
+    <div class="seg-toggle" id="progVedModToggle" style="display:none;">
       <button class="seg-btn active" data-seg="view">Vedi</button>
       <button class="seg-btn" data-seg="edit">Modifica / Aggiorna</button>
     </div>
 
     <div id="programViewBlock">
-      <div class="card" id="programViewCard">
-        <h3>Scheda allenamento attuale</h3>
+      <div class="scheda-header-row">
+        <h2 class="scheda-titolo">La tua Scheda</h2>
+        <div class="scheda-header-actions">
+          <button type="button" class="btn-nuova-scheda" id="nuovaSchedaBtn">+ Nuova scheda</button>
+          <button type="button" class="icon-btn-round" id="schedaEditBtn" aria-label="Modifica scheda" title="Modifica scheda">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+          </button>
+        </div>
+      </div>
+      <div id="programViewCard">
         <div id="programView"></div>
       </div>
       <div class="card" id="programViewHiddenCard" style="display:none;">
@@ -1140,22 +1153,41 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
 
     <div id="programEditBlockAnchor"></div>
     <div id="programEditBlock" style="display:none;">
+      <div class="scheda-header-row">
+        <button type="button" class="icon-btn-round" id="schedaTornaVediBtn" aria-label="Torna alla scheda" title="Torna alla scheda">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+        </button>
+        <h2 class="scheda-titolo" id="programEditTitolo2">Modifica scheda</h2>
+        <button class="btn danger" id="clearFormBtn" style="margin-top:0; padding:8px 14px;">Pulisci</button>
+      </div>
       <div class="card">
         <div class="card-head-row">
           <h3 id="programEditTitolo">Il personal trainer ti ha aggiornato la scheda?</h3>
-          <button class="btn danger" id="clearFormBtn">Pulisci</button>
         </div>
         <p class="hint"><b>Aggiorna scheda</b> modifica quella attuale, senza crearne una nuova (utile per piccole correzioni). <b>Salva come nuova versione</b> archivia quella attuale (resta consultabile) e la sostituisce con questa — usalo quando cambia davvero l'allenamento. In entrambi i casi la dieta impostata e lo storico allenamenti passati non vengono mai toccati. "Pulisci" invece svuota i campi qui sotto per ripartire da zero.</p>
         <label>Nome/etichetta scheda <span class="hint" style="font-weight:400;">(solo per "Salva come nuova versione")</span></label>
-        <input type="text" id="newProgramName" placeholder="Es. Scheda Settembre 2026">
+        <input type="text" id="newProgramName" placeholder="Es. Programma Forza - Fase 2">
+        <div class="row" style="margin-top:14px;">
+          <div>
+            <label style="margin-top:0;">Durata (settimane) <span class="hint" style="font-weight:400;">(facoltativa)</span></label>
+            <input type="number" id="newProgramDurata" min="1" max="104" step="1" placeholder="Es. 8">
+          </div>
+          <div>
+            <label style="margin-top:0;">Data di inizio <span class="hint" style="font-weight:400;">(facoltativa)</span></label>
+            <input type="date" id="newProgramDataInizio">
+          </div>
+        </div>
+        <p class="hint" style="margin-top:6px;">Se imposti entrambe, in Scheda compare "Settimana X di Y" con una barra di avanzamento.</p>
         <label style="margin-top:14px;">Scadenza <span class="hint" style="font-weight:400;">(facoltativa — può impostarla sia il PT sia tu)</span></label>
         <input type="date" id="newProgramScadenza">
         <p class="hint" style="margin-top:6px;">Se la imposti, verrà segnalata come "piano scaduto" una volta passata la data — utile per ricordarsi di rinnovarla.</p>
+        <label style="margin-top:14px;">Note per il cliente <span class="hint" style="font-weight:400;">(facoltative)</span></label>
+        <textarea id="newProgramNotePT" rows="2" placeholder="Es. Aumenta il carico se riesci a completare tutte le serie. Buon lavoro!"></textarea>
       </div>
 
       <div class="card" id="workoutEditCard">
         <h3>Giorni di allenamento</h3>
-        <p class="hint">Scrivi il nome dell'esercizio: se lo riconosco (es. "Panca piana", "Curl bilanciere"...) seleziono da solo i muscoli coinvolti — puoi comunque aggiungerne o toglierne a mano sotto ogni esercizio. Gestisci il database esercizi da ⚙ in alto.</p>
+        <p class="hint">Scrivi il nome dell'esercizio: se lo riconosco (es. "Panca piana", "Curl bilanciere"...) seleziono da solo i muscoli coinvolti — puoi comunque aggiungerne o toglierne a mano sotto ogni esercizio. Il campo "rec" è il recupero in secondi tra una serie e l'altra (facoltativo, compare nella scheda solo se lo scrivi). Gestisci il database esercizi da ⚙ in alto.</p>
         <div id="dayEditors"></div>
         <button class="btn secondary block" id="addDayBtn">+ Aggiungi giorno</button>
       </div>
@@ -2071,6 +2103,7 @@ function defaultProgram(){
   const today = new Date().toISOString().slice(0,10);
   return {
     id: uid(), name:"Scheda iniziale", createdAt: today, archivedAt:null, scadenza:null,
+    durataSettimane:null, dataInizio:null, notePT:null,
     days: defaultWorkoutDays(),
     dietInfo: defaultDietInfo(),
     diet: defaultDietDays()
@@ -2085,6 +2118,7 @@ function blankProgram(){
   const today = new Date().toISOString().slice(0,10);
   return {
     id: uid(), name:"La mia scheda", createdAt: today, archivedAt:null, scadenza:null,
+    durataSettimane:null, dataInizio:null, notePT:null,
     days: [],
     dietInfo: {peso:"",altezza:"",attivita:"",calorie:"",macro:"",esclusi:"",noteIntolleranza:""},
     diet: blankDietDays()
@@ -5105,6 +5139,11 @@ document.getElementById('cloudEsci').addEventListener('click', async ()=>{
 // cliente sia trainer possono chiudere il rapporto quando vogliono.
 // ============================================================
 let _rapporti = [];        // rapporti che mi riguardano (come cliente o come trainer)
+// Nome del mio PT attivo, messo in cache qui da renderMioPT() (che lo legge in modo
+// asincrono da Supabase): la card compatta di Scheda (renderSchedaView, sincrona) lo
+// mostra solo se già in cache, senza bloccarsi in attesa della rete — se non c'è ancora,
+// semplicemente non mostra la riga "PT" finché renderMioPT() non la ripopola.
+let _mioPTNomeCache = null;
 let _clienteAperto = null; // cliente che sto guardando nell'area PT
 
 function sonoPT(){ return !!(rigaOnline && rigaOnline.is_pt); }
@@ -5291,6 +5330,7 @@ async function renderMioPT(){
 
   if(attivo){
     const pt = await leggiProfilo(attivo.pt_id);
+    _mioPTNomeCache = nomeDi(pt);
     box.innerHTML = `
       <div class="pt-riga">
         <div class="pt-avatar">${avatarContentHtml(nomeDi(pt), (pt.dati||{}).avatarUrl)}</div>
@@ -5337,6 +5377,12 @@ async function renderMioPT(){
     });
   } else {
     box.innerHTML = '<div class="hint">Nessun Personal Trainer. Con il tasto <b>+</b> puoi chiedere a uno dei trainer disponibili di seguirti.</div>';
+    _mioPTNomeCache = null;
+  }
+  // riflette il nome del PT (appena arrivato dalla rete) nella card compatta di Scheda,
+  // se quella schermata esiste già ed è già stata popolata almeno una volta
+  if(typeof renderSchedaView === 'function' && activeProgram() && document.getElementById('programView')){
+    renderSchedaView();
   }
 }
 
@@ -9412,34 +9458,94 @@ function renderProgramView(){
   renderSchedaView();
   renderDietPlanView();
 }
+// Scheda in sola lettura, stile compatto (25/08/2026, diciottesimo giro):
+// card con i dati veri del programma (durata/data inizio/progresso settimane
+// solo se impostati entrambi, PT se presente) + giorni come <details> — quello
+// di oggi (o il primo, se oggi non si allena) aperto, gli altri riassunti a
+// "nome · N esercizi". Nessun numero inventato: durata/inizio/PT compaiono
+// solo se qualcuno li ha davvero impostati (vedi editor più sotto).
 function renderSchedaView(){
   document.getElementById('programViewCard').style.display = 'block';
   document.getElementById('programViewHiddenCard').style.display = 'none';
 
   const p = activeProgram();
-  const oggiWd = WEEKDAYS[new Date().getDay()];
   const wrap = document.getElementById('programView');
-  wrap.innerHTML = p.days.map(d=>{
-    const eOggi = d.weekday === oggiWd;
-    return `
-    <div class="day-editor"${eOggi ? ' style="border:1.5px solid var(--accent);"' : ''}>
-      <div class="day-editor-head">
-        <div style="display:flex; align-items:center; gap:10px;">
-          <div class="letter">${d.key}</div>
-          <div class="day-name-block">
-            <div class="dname">${d.name}</div>
-            <div class="hint">${d.weekday}${eOggi ? ' · oggi' : ''}</div>
-          </div>
-        </div>
-        ${eOggi ? `<button type="button" class="btn" style="margin-top:0; padding:8px 14px;" onclick="apriRegistra()">Registra</button>` : ''}
+  if(!p){ wrap.innerHTML = ''; return; }
+  const oggiWd = WEEKDAYS[new Date().getDay()];
+
+  let settimanaHtml = '';
+  if(p.durataSettimane && p.dataInizio){
+    const ms = Date.now() - new Date(p.dataInizio+'T00:00:00').getTime();
+    let corrente = Math.floor(ms / 604800000) + 1;
+    if(corrente < 1) corrente = 1;
+    if(corrente > p.durataSettimane) corrente = p.durataSettimane;
+    const pct = Math.min(100, Math.round(corrente / p.durataSettimane * 100));
+    settimanaHtml = `
+      <div class="scheda-settimana-row">
+        <div class="scheda-settimana-testo"><span>Settimana ${corrente} di ${p.durataSettimane}</span><span>${pct}%</span></div>
+        <div class="scheda-progress-bar"><div class="scheda-progress-fill" style="width:${pct}%;"></div></div>
+      </div>`;
+  }
+  const statVoci = [];
+  if(p.durataSettimane) statVoci.push(['Durata', `${p.durataSettimane} settiman${p.durataSettimane===1?'a':'e'}`]);
+  statVoci.push(['Giorni/settimana', `${p.days.length}`]);
+  if(p.dataInizio) statVoci.push(['Inizio', formatDate(p.dataInizio)]);
+  const statiHtml = `<div class="riepilogo-grid">${statVoci.map(([lab,val])=>`
+    <div class="riepilogo-stat"><span class="riepilogo-label">${lab.toUpperCase()}</span><span class="riepilogo-val">${val}</span></div>`).join('')}</div>`;
+
+  const infoCardHtml = `
+    <div class="card scheda-info-card">
+      <div class="scheda-info-top">
+        <h3 class="scheda-info-nome">${p.name}</h3>
+        <span class="scheda-badge-attivo">ATTIVO</span>
       </div>
-      ${d.exercises.map(ex=>{
-        const vi = getExerciseVideoInfo(ex.name);
-        return `<div class="hint">• ${ex.name} — ${ex.sets}×${ex.reps}${etichettaTecnica(ex,d)} <a href="${escapeAttr(vi.url)}" data-ex-name="${escapeAttr(ex.name)}" class="video-link">▶</a></div>
-          ${ex.note ? `<div class="exercise-note" style="margin:2px 0 6px 14px;">📌 ${escapeAttr(ex.note)}</div>` : ''}`;
-      }).join('')}
+      ${_mioPTNomeCache ? `<div class="scheda-pt-riga">PT: ${_mioPTNomeCache}</div>` : ''}
+      ${settimanaHtml}
+      ${statiHtml}
     </div>`;
+
+  const idxOggi = p.days.findIndex(d=>d.weekday===oggiWd);
+  const idxAperto = idxOggi >= 0 ? idxOggi : 0;
+  const giorniHtml = p.days.map((d,i)=>{
+    const eOggi = d.weekday === oggiWd;
+    const cat = d.categoria && CATEGORIE_ALLENAMENTO[d.categoria];
+    const nEx = d.exercises.length;
+    return `
+    <details class="day-editor day-view-accordion"${i===idxAperto ? ' open' : ''}>
+      <summary>
+        <div class="letter">${d.key}</div>
+        <div class="day-name-block">
+          <div class="dname-riepilogo">${d.name}</div>
+          <div class="hint">${d.weekday}${eOggi ? ' · oggi' : ''} · ${nEx} esercizi${nEx===1?'o':''}</div>
+        </div>
+        ${cat ? `<span class="workout-tag ${cat.classe}">${cat.label}</span>` : ''}
+        <span class="day-accordion-chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></span>
+      </summary>
+      <div class="day-view-body">
+        ${eOggi ? `<button type="button" class="btn block" onclick="apriRegistra()">Registra questo allenamento</button>` : ''}
+        ${d.exercises.map((ex,ei)=>{
+          const vi = getExerciseVideoInfo(ex.name);
+          return `<div class="day-view-ex">
+            <div class="day-view-ex-nome"><span class="day-view-ex-num">${ei+1}</span>${ex.name}${etichettaTecnica(ex,d)}</div>
+            <div class="day-view-ex-stats">
+              <span>${ex.sets}×${ex.reps}</span>
+              ${ex.recupero ? `<span>⏱ ${ex.recupero}s recupero</span>` : ''}
+              <a href="${escapeAttr(vi.url)}" data-ex-name="${escapeAttr(ex.name)}" class="video-link">▶ video</a>
+            </div>
+            ${ex.note ? `<div class="day-view-ex-note exercise-note">📌 ${ex.note}</div>` : ''}
+          </div>`;
+        }).join('') || '<div class="empty">Nessun esercizio in questo giorno.</div>'}
+      </div>
+    </details>`;
   }).join('');
+
+  const noteHtml = p.notePT ? `
+    <div class="card scheda-note-pt-card">
+      <h4>Note del PT</h4>
+      <p>${p.notePT}</p>
+    </div>` : '';
+
+  wrap.innerHTML = infoCardHtml + giorniHtml + noteHtml;
 }
 function renderDietPlanView(){
   document.getElementById('dietViewCard').style.display = 'block';
@@ -9497,6 +9603,9 @@ function renderSchedaEditForm(){
   editingDays = JSON.parse(JSON.stringify(p.days));
   document.getElementById('newProgramName').value = "";
   document.getElementById('newProgramScadenza').value = p.scadenza || "";
+  document.getElementById('newProgramDurata').value = p.durataSettimane || "";
+  document.getElementById('newProgramDataInizio').value = p.dataInizio || "";
+  document.getElementById('newProgramNotePT').value = p.notePT || "";
   const titolo = document.getElementById('programEditTitolo');
   if(titolo){
     titolo.textContent = (modalitaPT && _modificaPTCosa==='scheda' && _clienteAperto)
@@ -9558,56 +9667,102 @@ function renderArchiveList(){
 }
 
 // ---- editor giorni allenamento ----
+// Aggiorna solo la riga "Lunedì · 5 esercizi" nel riepilogo di un giorno,
+// senza ridisegnare tutto l'accordion (altrimenti si perderebbe quale
+// giorno è aperto in questo momento).
+function aggiornaRiepilogoGiorno(di){
+  const det = document.querySelector(`.day-accordion[data-di="${di}"]`);
+  if(!det) return;
+  const day = editingDays[di];
+  if(!day) return;
+  const hint = det.querySelector('.day-name-block .hint');
+  if(hint){ const n = day.exercises.length; hint.textContent = `${day.weekday} · ${n} esercizi${n===1?'o':''}`; }
+}
+// "Un giorno alla volta" (richiesta esplicita dell'utente, 25/08 diciottesimo
+// giro): aprendo una <details> di un giorno, chiudo tutte le altre — così
+// non si vedono mai due giorni pieni di campi ed esercizi insieme.
+function wireEsclusivitaGiorni(){
+  const wrap = document.getElementById('dayEditors');
+  wrap.querySelectorAll('.day-accordion').forEach(det=>{
+    det.addEventListener('toggle', ()=>{
+      if(!det.open) return;
+      wrap.querySelectorAll('.day-accordion').forEach(altro=>{ if(altro!==det) altro.open = false; });
+    });
+  });
+}
+// Un giorno alla volta (richiesta esplicita dell'utente, 25/08 diciottesimo
+// giro): ogni giorno è una <details> — riepilogo compatto quando chiusa
+// (nome, giorno della settimana, N esercizi), stesso editor di sempre
+// dentro quando aperta. Aprirne una chiude le altre (vedi wireEsclusivitaGiorni).
+// Nota per i test: renderDayEditors() resta chiamabile così com'era prima
+// (stesso nome, stesso comportamento su .ex-list[data-di]/#dayEditors) —
+// dropset.test.js e storico-calendario-25-08.test.js la chiamano direttamente.
 function renderDayEditors(){
   const wrap = document.getElementById('dayEditors');
   wrap.innerHTML = "";
   editingDays.forEach((day, di)=>{
-    const box = document.createElement('div');
-    box.className='day-editor';
+    const box = document.createElement('details');
+    box.className='day-editor day-accordion';
+    box.dataset.di = di;
+    const nEx = day.exercises.length;
     box.innerHTML = `
-      <div class="day-editor-head">
+      <summary>
         <div class="letter">${day.key}</div>
-        <button class="btn danger" data-di="${di}" data-action="remove-day">Rimuovi giorno</button>
-      </div>
-      <label>Nome giorno</label>
-      <input type="text" class="dname" data-di="${di}" value="${escapeAttr(day.name)}">
-      <label>Giorno della settimana</label>
-      <select class="dweekday" data-di="${di}">
-        ${WD_ORDER.filter(w=>w!=="Domenica").map(w=>`<option value="${w}" ${w===day.weekday?'selected':''}>${w}</option>`).join('')}
-      </select>
-      <label>Categoria (facoltativa)</label>
-      <select class="dcategoria" data-di="${di}">
-        <option value="" ${!day.categoria?'selected':''}>Nessuna</option>
-        ${Object.keys(CATEGORIE_ALLENAMENTO).map(k=>`<option value="${k}" ${day.categoria===k?'selected':''}>${CATEGORIE_ALLENAMENTO[k].label}</option>`).join('')}
-      </select>
-      <p class="hint" style="margin-top:2px;">Compare come etichetta sulla card del giorno in Storico.</p>
-      <label>Esercizi</label>
-      <div class="ex-list" data-di="${di}"></div>
-      <div style="display:flex; gap:6px; flex-wrap:wrap; margin-top:6px;">
-        <button class="btn" data-di="${di}" data-action="pick-ex" style="margin-top:0; flex:1 1 190px;">Scegli dal corpo</button>
-        <button class="btn ghost" data-di="${di}" data-action="add-ex" style="margin-top:0; flex:1 1 140px;">+ Riga vuota</button>
+        <div class="day-name-block">
+          <div class="dname-riepilogo">${escapeAttr(day.name) || 'Senza nome'}</div>
+          <div class="hint">${day.weekday} · ${nEx} esercizi${nEx===1?'o':''}</div>
+        </div>
+        <span class="day-accordion-chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></span>
+      </summary>
+      <div class="details-body">
+        <label style="margin-top:0;">Nome giorno</label>
+        <input type="text" class="dname" data-di="${di}" value="${escapeAttr(day.name)}">
+        <label>Giorno della settimana</label>
+        <select class="dweekday" data-di="${di}">
+          ${WD_ORDER.filter(w=>w!=="Domenica").map(w=>`<option value="${w}" ${w===day.weekday?'selected':''}>${w}</option>`).join('')}
+        </select>
+        <label>Categoria (facoltativa)</label>
+        <select class="dcategoria" data-di="${di}">
+          <option value="" ${!day.categoria?'selected':''}>Nessuna</option>
+          ${Object.keys(CATEGORIE_ALLENAMENTO).map(k=>`<option value="${k}" ${day.categoria===k?'selected':''}>${CATEGORIE_ALLENAMENTO[k].label}</option>`).join('')}
+        </select>
+        <p class="hint" style="margin-top:2px;">Compare come etichetta sulla card del giorno in Storico.</p>
+        <label>Esercizi</label>
+        <div class="ex-list" data-di="${di}"></div>
+        <div style="display:flex; gap:6px; flex-wrap:wrap; margin-top:6px;">
+          <button class="btn" data-di="${di}" data-action="pick-ex" style="margin-top:0; flex:1 1 190px;">Scegli dal corpo</button>
+          <button class="btn ghost" data-di="${di}" data-action="add-ex" style="margin-top:0; flex:1 1 140px;">+ Riga vuota</button>
+        </div>
+        <button class="btn danger block" data-di="${di}" data-action="remove-day" style="margin-top:14px;">Rimuovi giorno</button>
       </div>
     `;
     wrap.appendChild(box);
     renderExerciseEditors(di);
   });
-  wrap.querySelectorAll('.dname').forEach(inp=>inp.addEventListener('input', e=>{ editingDays[e.target.dataset.di].name = e.target.value; }));
-  wrap.querySelectorAll('.dweekday').forEach(sel=>sel.addEventListener('change', e=>{ editingDays[e.target.dataset.di].weekday = e.target.value; }));
+  wrap.querySelectorAll('.dname').forEach(inp=>inp.addEventListener('input', e=>{
+    editingDays[e.target.dataset.di].name = e.target.value;
+    const riep = e.target.closest('.day-accordion').querySelector('.dname-riepilogo');
+    if(riep) riep.textContent = e.target.value || 'Senza nome';
+  }));
+  wrap.querySelectorAll('.dweekday').forEach(sel=>sel.addEventListener('change', e=>{ editingDays[e.target.dataset.di].weekday = e.target.value; aggiornaRiepilogoGiorno(e.target.dataset.di); }));
   wrap.querySelectorAll('.dcategoria').forEach(sel=>sel.addEventListener('change', e=>{ editingDays[e.target.dataset.di].categoria = e.target.value || null; }));
   wrap.querySelectorAll('[data-action="remove-day"]').forEach(btn=>btn.addEventListener('click', e=>{
     customConfirm("Rimuovere questo giorno dalla nuova scheda?", ()=>{ editingDays.splice(e.target.dataset.di,1); renderDayEditors(); });
   }));
+  wireEsclusivitaGiorni();
   wrap.querySelectorAll('[data-action="pick-ex"]').forEach(btn=>btn.addEventListener('click', e=>{
     const di = e.target.dataset.di;
     openMusclePicker("Aggiungi esercizio al giorno " + editingDays[di].key, (ex)=>{
-      editingDays[di].exercises.push({name: ex.n, sets: 3, reps: ex.tempo ? "30-45 sec" : "10", muscles: [ex.g]});
+      editingDays[di].exercises.push({name: ex.n, sets: 3, reps: ex.tempo ? "30-45 sec" : "10", muscles: [ex.g], recupero: null});
       renderExerciseEditors(di);
+      aggiornaRiepilogoGiorno(di);
     });
   }));
   wrap.querySelectorAll('[data-action="add-ex"]').forEach(btn=>btn.addEventListener('click', e=>{
     const di = e.target.dataset.di;
-    editingDays[di].exercises.push({name:"", sets:3, reps:"10", muscles:[]});
+    editingDays[di].exercises.push({name:"", sets:3, reps:"10", muscles:[], recupero: null});
     renderExerciseEditors(di);
+    aggiornaRiepilogoGiorno(di);
   }));
 }
 // Tabella "serie principale + tappe" nell'editor scheda:
@@ -9713,6 +9868,7 @@ function renderExerciseEditors(di){
         </select>
         <input type="number" class="small" placeholder="serie" value="${ex.sets}" data-di="${di}" data-ei="${ei}" data-field="sets">
         <input type="text" class="small" placeholder="rip." value="${escapeAttr(ex.reps)}" data-di="${di}" data-ei="${ei}" data-field="reps">
+        <input type="number" class="small rec" placeholder="rec" title="Recupero in secondi (facoltativo)" min="0" step="5" value="${ex.recupero!=null?ex.recupero:''}" data-di="${di}" data-ei="${ei}" data-field="recupero">
         <button type="button" class="remove-x" data-di="${di}" data-ei="${ei}">×</button>
       </div>
       ${chipSuperset}
@@ -9757,7 +9913,9 @@ function renderExerciseEditors(di){
     inp.addEventListener('input', e=>{
       const {di, ei, field} = e.target.dataset;
       const ex = editingDays[di].exercises[ei];
-      ex[field] = field==='sets' ? (parseInt(e.target.value)||0) : e.target.value;
+      if(field==='sets') ex[field] = parseInt(e.target.value)||0;
+      else if(field==='recupero') ex[field] = e.target.value==='' ? null : (parseInt(e.target.value)||0);
+      else ex[field] = e.target.value;
       // aggiorno solo il testo "serie principale" della tabella dropset, senza
       // ridisegnare tutto: altrimenti perderesti il focus mentre stai scrivendo
       if((field==='reps'||field==='sets') && ex.dropset){
@@ -9850,6 +10008,7 @@ function renderExerciseEditors(di){
       });
       giorno.exercises.splice(idx,1);
       renderExerciseEditors(di);
+      aggiornaRiepilogoGiorno(di);
     });
   });
   list.querySelectorAll('.muscle-chip-group').forEach(group=>{
@@ -9875,6 +10034,29 @@ document.getElementById('clearFormBtn').addEventListener('click', ()=>{
   });
 });
 
+// ---- header compatto di Scheda: matita (Vedi → Modifica), freccia indietro
+// (Modifica → Vedi) e "+ Nuova scheda" — pilotano lo stesso motore di sempre
+// (.seg-btn[data-seg], nascosto ma invariato: vedi #progVedModToggle) ----
+document.getElementById('schedaEditBtn').addEventListener('click', ()=>{
+  document.querySelector('.seg-btn[data-seg="edit"]').click();
+});
+document.getElementById('schedaTornaVediBtn').addEventListener('click', ()=>{
+  document.querySelector('.seg-btn[data-seg="view"]').click();
+});
+document.getElementById('nuovaSchedaBtn').addEventListener('click', ()=>{
+  customConfirm("Iniziare una scheda nuova da zero? La scheda attuale resta invariata finché non premi \"Salva come nuova versione\".", ()=>{
+    editingDays = [];
+    document.getElementById('newProgramName').value = "";
+    document.getElementById('newProgramScadenza').value = "";
+    document.getElementById('newProgramDurata').value = "";
+    document.getElementById('newProgramDataInizio').value = "";
+    document.getElementById('newProgramNotePT').value = "";
+    renderDayEditors();
+    document.querySelector('.seg-btn[data-seg="edit"]').click();
+    toast("Scheda nuova — aggiungi il primo giorno");
+  });
+});
+
 document.getElementById('clearDietFormBtn').addEventListener('click', ()=>{
   customConfirm("Svuotare il piano alimentare? (la dieta attualmente attiva non viene toccata finché non premi \"Salva dieta\")", ()=>{
     editingDietInfo = {peso:"",altezza:"",attivita:"",calorie:"",macro:"",esclusi:"",noteIntolleranza:""};
@@ -9892,6 +10074,10 @@ document.getElementById('addDayBtn').addEventListener('click', ()=>{
   for(const l of letters){ if(!usedKeys.includes(l)){ nextKey=l; break; } }
   editingDays.push({key:nextKey, name:"Nuovo giorno", weekday:"Lunedì", categoria:null, exercises:[]});
   renderDayEditors();
+  // il giorno appena aggiunto si apre da solo, pronto per essere compilato
+  // (coerente con "un giorno alla volta": non serve cercarlo tra gli altri)
+  const nuovo = document.querySelector(`.day-accordion[data-di="${editingDays.length-1}"]`);
+  if(nuovo){ nuovo.open = true; if(nuovo.scrollIntoView) nuovo.scrollIntoView({behavior:'smooth', block:'start'}); }
 });
 
 // ---- editor info dieta ----
@@ -9983,6 +10169,9 @@ document.getElementById('updateProgramBtn').addEventListener('click', ()=>{
   const current = activeProgram();
   current.days = editingDays;
   current.scadenza = document.getElementById('newProgramScadenza').value || null;
+  current.durataSettimane = parseInt(document.getElementById('newProgramDurata').value) || null;
+  current.dataInizio = document.getElementById('newProgramDataInizio').value || null;
+  current.notePT = document.getElementById('newProgramNotePT').value.trim() || null;
   propagaEserciziPersonalizzatiPT(editingDays);
   segnaModifica(activeProfile(), 'scheda');
   save();
@@ -10003,6 +10192,9 @@ document.getElementById('saveNewProgramBtn').addEventListener('click', ()=>{
   const newProgram = {
     id: uid(), name, createdAt: today, archivedAt: null,
     scadenza: document.getElementById('newProgramScadenza').value || null,
+    durataSettimane: parseInt(document.getElementById('newProgramDurata').value) || null,
+    dataInizio: document.getElementById('newProgramDataInizio').value || null,
+    notePT: document.getElementById('newProgramNotePT').value.trim() || null,
     days: editingDays, dietInfo: current.dietInfo, diet: current.diet
   };
   prof.programs.push(newProgram);
