@@ -4492,9 +4492,16 @@ function showAppRoot(){
   document.getElementById('accountPanel').style.display = 'none';
   document.getElementById('appRoot').style.display = 'block';
   // Storico li nasconde apposta (vedi apriStorico()): rientrando in una
-  // qualunque altra schermata (Scheda/Registra/Dieta) tornano visibili.
+  // qualunque altra schermata (Scheda/Registra/Dieta) tornano visibili — a
+  // meno che si stia rientrando su Scheda con "Modifica scheda" ancora
+  // aperta (es. tornati da Dieta): in quel caso restano nascosti, stessa
+  // logica di aggiornaChromeSchedaEditor() ma senza richiamare anche
+  // renderMioPT() ad ogni singola navigazione (quella resta legata solo al
+  // tasto che fa uscire davvero dall'editor — vedi il toggle .seg-btn[data-seg]).
+  const inEditScheda = document.getElementById('programEditBlock')?.style.display === 'block';
   const sticky = document.querySelector('.sticky-top');
-  if(sticky) sticky.style.display = '';
+  if(sticky) sticky.style.display = inEditScheda ? 'none' : '';
+  document.body.classList.toggle('scheda-editor-aperto', inEditScheda);
 }
 function vaiA(tab){
   if(tab === 'home'){ mostraHome(); return; }
@@ -7325,6 +7332,30 @@ document.querySelectorAll('#navTabsGlobale button[data-go]').forEach(btn=>{
 })();
 
 
+// Nasconde intestazione legacy ("Registro Allenamento"/striscia settimana),
+// card "Il mio Personal Trainer" e nav in basso mentre si è su "Modifica
+// scheda"/"Nuova scheda" (26/08/2026, richiesta esplicita: restava "tutto
+// insieme" sopra all'editor) — stesso meccanismo già usato per Storico
+// (apriStorico()). Richiamata sia dal toggle qui sotto sia da showAppRoot(),
+// così anche tornare su Scheda da un'altra schermata con l'editor ancora
+// aperto (es. dopo essere passati su Dieta) nasconde di nuovo il giusto.
+function aggiornaChromeSchedaEditor(){
+  const inEdit = document.getElementById('programEditBlock')?.style.display === 'block';
+  const sticky = document.querySelector('.sticky-top');
+  if(sticky) sticky.style.display = inEdit ? 'none' : '';
+  document.body.classList.toggle('scheda-editor-aperto', inEdit);
+  if(!inEdit) document.body.classList.remove('giorno-fullscreen-aperto');
+  const cardPT = document.getElementById('cardMioPT');
+  if(cardPT){
+    if(inEdit) cardPT.style.display = 'none';
+    // tornando su "Vedi": richiamo renderMioPT() invece di rimetterla a
+    // 'block' a prescindere, così resta nascosta se non c'è un PT/si è
+    // offline/si è tornati su Storico (stessa logica di sempre di quella
+    // funzione, qui solo NON richiamata ad ogni ingresso in "Modifica scheda"
+    // per non rifare la chiamata di rete a caricaRapporti() inutilmente).
+    else if(typeof renderMioPT === 'function') renderMioPT();
+  }
+}
 document.querySelectorAll('.seg-btn[data-seg]').forEach(btn=>{
   btn.addEventListener('click', ()=>{
     document.querySelectorAll('.seg-btn[data-seg]').forEach(b=>b.classList.remove('active'));
@@ -7333,6 +7364,7 @@ document.querySelectorAll('.seg-btn[data-seg]').forEach(btn=>{
     document.getElementById('programViewBlock').style.display = isView ? 'block':'none';
     document.getElementById('programEditBlock').style.display = isView ? 'none':'block';
     if(!isView) applyEditFormVisibility();
+    aggiornaChromeSchedaEditor();
   });
 });
 
@@ -9685,8 +9717,14 @@ function wireEsclusivitaGiorni(){
   const wrap = document.getElementById('dayEditors');
   wrap.querySelectorAll('.day-accordion').forEach(det=>{
     det.addEventListener('toggle', ()=>{
-      if(!det.open) return;
-      wrap.querySelectorAll('.day-accordion').forEach(altro=>{ if(altro!==det) altro.open = false; });
+      if(det.open){
+        wrap.querySelectorAll('.day-accordion').forEach(altro=>{ if(altro!==det) altro.open = false; });
+      }
+      // Un giorno aperto occupa tutto lo schermo (vedi CSS .day-accordion[open]):
+      // blocco lo scorrimento della pagina sotto finché resta aperto, così non
+      // "trascina" anche il resto della scheda mentre si scorre dentro al giorno.
+      const unoAperto = !!wrap.querySelector('.day-accordion[open]');
+      document.body.classList.toggle('giorno-fullscreen-aperto', unoAperto);
     });
   });
 }
@@ -9712,7 +9750,10 @@ function renderDayEditors(){
           <div class="dname-riepilogo">${escapeAttr(day.name) || 'Senza nome'}</div>
           <div class="hint">${day.weekday} · ${nEx} esercizi${nEx===1?'o':''}</div>
         </div>
-        <span class="day-accordion-chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></span>
+        <span class="day-accordion-chev">
+          <svg class="day-accordion-apri" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+          <svg class="day-accordion-chiudi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </span>
       </summary>
       <div class="details-body">
         <label style="margin-top:0;">Nome giorno</label>
