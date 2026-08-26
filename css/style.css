@@ -321,6 +321,13 @@
      "tutto insieme" — via anche la nav in basso mentre si compila la scheda,
      stesso meccanismo delle righe sopra. Vedi aggiornaChromeSchedaEditor(). */
   body.scheda-editor-aperto #navTabsGlobale{display:none !important;}
+  /* Registra (26/08/2026, ventiduesimo giro): segnalato che la pagina aveva
+     troppa roba intorno (intestazione "Registro Allenamento" + nome/scheda,
+     nav in basso) mentre si sta effettivamente registrando un allenamento —
+     richiesta esplicita di farla diventare "una pagina a sé", con un solo
+     tasto per tornare alla Scheda. Stesso meccanismo delle righe sopra.
+     Vedi apriRegistra()/showAppRoot(). */
+  body.registra-aperto #navTabsGlobale{display:none !important;}
 
   /* ============================================================
      SCHEDA — toggle Scheda/Storico in cima (riusa .seg-toggle/.seg-btn esistenti)
@@ -784,19 +791,29 @@
     color:var(--text); font-size:12px; cursor:pointer; font-family:var(--font-display); letter-spacing:0.02em;}
   .chip.selected{background:var(--accent); border-color:var(--accent); color:#fff;}
 
-  /* ---------- pulsanti "Che giorno hai fatto?" in Registra: icona + testo + spunta ---------- */
-  #dayChoiceChips{gap:9px;}
+  /* ---------- pulsanti "Che giorno hai fatto?" in Registra: icona + testo + spunta ----------
+     26/08/2026 (ventiduesimo giro): erano impilati uno sotto l'altro (ogni
+     chip a piena larghezza, flex:1 1 auto dentro un contenitore che va a
+     capo) — con 4-5 opzioni diventava una colonna alta quanto mezzo schermo.
+     Ispirato a come le app di allenamento più note (Strong, Hevy) tengono la
+     schermata di logging essenziale: qui diventa una fila orizzontale
+     scorrevole (stesso pattern già in uso altrove nell'app, es. la striscia
+     dei 7 giorni in Home — .home-daystrip — e i preset del timer,
+     .timer-presets), il nome completo del giorno scelto resta comunque
+     leggibile subito sotto in #statusInfo, quindi non si perde nessuna
+     informazione, solo l'ingombro verticale quando le opzioni sono più di 2-3. */
+  #dayChoiceChips{gap:8px; flex-wrap:nowrap; overflow-x:auto; padding-bottom:2px;}
   #dayChoiceChips .chip{
-    flex:1 1 auto; min-width:0; display:flex; align-items:center; gap:8px;
+    flex:0 0 auto; min-width:0; display:flex; align-items:center; gap:7px;
     background:var(--surface2); border:1.5px solid var(--surface2); border-radius:var(--r-md);
-    padding:12px 12px; font-family:'Inter',sans-serif;
+    padding:9px 12px; font-family:'Inter',sans-serif;
   }
   #dayChoiceChips .chip.selected{background:var(--accent-soft); border-color:var(--accent); color:var(--text);}
   #dayChoiceChips .dc-icon{
-    width:28px; height:28px; border-radius:9px; background:var(--surface); color:var(--text-dim);
+    width:24px; height:24px; border-radius:8px; background:var(--surface); color:var(--text-dim);
     display:flex; align-items:center; justify-content:center; flex:0 0 auto;
   }
-  #dayChoiceChips .dc-icon svg{width:15px; height:15px;}
+  #dayChoiceChips .dc-icon svg{width:13px; height:13px;}
   #dayChoiceChips .chip.selected .dc-icon{background:var(--accent); color:#fff;}
   #dayChoiceChips .dc-label{flex:0 1 auto; min-width:0; font-size:13px; font-weight:700; color:var(--text); line-height:1.2; white-space:nowrap;}
   #dayChoiceChips .dc-check{

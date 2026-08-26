@@ -881,6 +881,18 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
 
   <!-- ===================== REGISTRA ===================== -->
   <section class="view active" id="view-log">
+    <!-- Intestazione propria di Registra (26/08/2026, ventiduesimo giro):
+         prima condivideva l'intestazione "Registro Allenamento" con
+         Scheda/Dieta (.sticky-top, ora nascosta mentre si è qui — vedi
+         apriRegistra()/showAppRoot()) — segnalato che era troppa roba in
+         vista mentre si registra un allenamento. Stesso pattern già usato
+         per "Modifica scheda" (.scheda-header-row/.icon-btn-round). -->
+    <div class="scheda-header-row">
+      <button type="button" class="icon-btn-round" id="registraTornaSchedaBtn" aria-label="Torna alla scheda" title="Torna alla scheda">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+      </button>
+      <h2 class="scheda-titolo">Registra allenamento</h2>
+    </div>
     <div class="timer-bar" id="timerBar">
       <div class="timer-display" id="timerDisplay">1:30</div>
       <div class="timer-msg" id="timerMsg">Recupero finito</div>
@@ -4523,6 +4535,10 @@ function showAppRoot(){
   const sticky = document.querySelector('.sticky-top');
   if(sticky) sticky.style.display = inEditScheda ? 'none' : '';
   document.body.classList.toggle('scheda-editor-aperto', inEditScheda);
+  // Registra (26/08/2026, ventiduesimo giro) ha la sua intestazione a sé:
+  // rientrando in una QUALUNQUE altra schermata la classe va tolta, la
+  // rimette apriRegistra() stessa se e quando si torna lì.
+  document.body.classList.remove('registra-aperto');
 }
 function vaiA(tab){
   if(tab === 'home'){ mostraHome(); return; }
@@ -4549,7 +4565,16 @@ function apriRegistra(){
   const legacyBtn = document.querySelector('#navTabsLegacy .tab-btn[data-tab="log"]');
   if(legacyBtn) legacyBtn.click();
   aggiornaNavGlobale('program');
+  // Registra come pagina a sé (26/08/2026, ventiduesimo giro): nascondo
+  // l'intestazione condivisa .sticky-top e la nav in basso DOPO
+  // showAppRoot() (che le ha appena rimesse a posto in generale) — stesso
+  // ordine già usato da apriStorico(). L'unico modo per uscire da qui resta
+  // il tasto dedicato #registraTornaSchedaBtn.
+  const sticky = document.querySelector('.sticky-top');
+  if(sticky) sticky.style.display = 'none';
+  document.body.classList.add('registra-aperto');
 }
+document.getElementById('registraTornaSchedaBtn').addEventListener('click', ()=>vaiA('program'));
 // Storico: stesso contenuto che vive dentro Scheda (programStoricoBlock), ma ora
 // raggiungibile direttamente dalla nav come voce a sé — non serve più passare da
 // Scheda e toccare il toggle interno per arrivarci.
@@ -7515,8 +7540,13 @@ function renderHeader(){
     el.dataset.iso = iso;
     el.innerHTML = `<div class="wd">${wd.slice(0,3)}</div><div class="num">${d.getDate()}</div><div class="dot ${dotClass}"></div>`;
     el.addEventListener('click', ()=>{
+      // 26/08/2026 (ventiduesimo giro): passa da apriRegistra(), non più da
+      // un click diretto sul tab nascosto — altrimenti Registra si apriva
+      // SENZA nascondere l'intestazione/nav (quel comportamento è demandato
+      // solo ad apriRegistra(), vedi sopra), lasciando la nuova intestazione
+      // dedicata di Registra impilata sopra quella condivisa ancora visibile.
       const tabRegistra = document.querySelector('.tab-btn[data-tab="log"]');
-      if(tabRegistra && !tabRegistra.classList.contains('active')) tabRegistra.click();
+      if(tabRegistra && !tabRegistra.classList.contains('active')) apriRegistra();
       const input = document.getElementById('logDate');
       if(input){ input.value = iso; renderDayChoices(); renderHeader(); }
     });
