@@ -4,7 +4,7 @@
 // Quando pubblichi una modifica, alza il numero di VERSIONE qui sotto:
 // l'app se ne accorge da sola e propone di aggiornarsi.
 // ============================================================
-const VERSIONE = "vigor-v85";
+const VERSIONE = "vigor-v86";
 
 const DA_TENERE = [
   "./",
@@ -13,6 +13,31 @@ const DA_TENERE = [
   "./js/corpo.js",
   "./js/corpo-donna.js",
   "./js/esercizi.js",
+  "./js/core/costanti.js",
+  "./js/core/dati-default.js",
+  "./js/core/stato.js",
+  "./js/onboarding/onboarding.js",
+  "./js/onboarding/recupero-codici.js",
+  "./js/admin/gestione-utenti.js",
+  "./js/home/home.js",
+  "./js/account/account.js",
+  "./js/pt/pt-collegamento.js",
+  "./js/pt/pt-area.js",
+  "./js/sistema/offline-sistema.js",
+  "./js/esercizi/esercizi-video.js",
+  "./js/esercizi/glossario-libero.js",
+  "./js/esercizi/esercizi-personalizzati.js",
+  "./js/esercizi/esercizi-export-import.js",
+  "./js/ui/profile-gate.js",
+  "./js/ui/tabs-header.js",
+  "./js/registra/registra.js",
+  "./js/storico/storico.js",
+  "./js/storico/calendario-allenamenti.js",
+  "./js/storico/volume-muscolare.js",
+  "./js/dieta/dieta.js",
+  "./js/scheda/scheda-view.js",
+  "./js/scheda/scheda-editor.js",
+  "./js/init.js",
   "./manifest.webmanifest",
   "./assets/icons/icon-192.png",
   "./assets/icons/icon-512.png",

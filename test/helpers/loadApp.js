@@ -42,6 +42,12 @@ function buildHtml(){
   html = html.replace(/<script src="js\/corpo\.js"><\/script>/, `<script>${readFile('js/corpo.js')}</script>`);
   html = html.replace(/<script src="js\/corpo-donna\.js"><\/script>/, `<script>${readFile('js/corpo-donna.js')}</script>`);
   html = html.replace(/<script src="js\/esercizi\.js"><\/script>/, `<script>${readFile('js/esercizi.js')}</script>`);
+
+  // Logica dell'app (ex unico <script> inline in fondo a index.html, ora divisa
+  // in file per argomento sotto js/): stesso trattamento, un file alla volta,
+  // nello stesso ordine con cui compaiono in index.html.
+  html = html.replace(/<script src="(js\/[a-z-]+\/[a-z-]+\.js|js\/init\.js)"><\/script>/g,
+    (match, rel) => `<script>${readFile(rel)}</script>`);
   return html;
 }
 
