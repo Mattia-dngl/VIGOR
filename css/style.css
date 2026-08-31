@@ -14,10 +14,10 @@
        Colore d'accento e font-display INVARIATI su richiesta esplicita
        dell'utente — il restyling doveva toccare solo la "resa" (luce, angoli,
        ombre), non l'identità cromatica né la tipografia. */
-    --bg:#faf9f6;
+    --bg:#f7f7f6;
     --surface:#ffffff;
-    --surface2:#f1ede4;
-    --border:#e9e3d6;
+    --surface2:#eeeeec;
+    --border:#e2e2df;
     --text:#17150f;
     --text-dim:#6d6656;
     --text-faint:#a39c8a;
