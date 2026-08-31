@@ -1820,6 +1820,19 @@
   details.acct-row[open] summary{border-bottom:1px solid var(--border);}
   details.acct-row .details-body{padding:14px 15px 16px;}
 
+  /* Codice di recupero, promosso fuori dalle tendine (31/08/2026, secondo
+     giro): card sempre a vista invece di Account → Impostazioni → Sicurezza
+     dei dati → codice, due livelli di tendina per l'unico modo di rientrare
+     se si dimentica la password. */
+  .recupero-evidenza{display:flex; align-items:flex-start; gap:13px;
+    background:linear-gradient(155deg, var(--surface), var(--accent-soft));
+    border:1px solid var(--accent-dim);}
+  .recupero-evidenza-icon{width:38px; height:38px; border-radius:11px; flex:0 0 auto;
+    background:var(--grad-accent); display:flex; align-items:center; justify-content:center;}
+  .recupero-evidenza-icon svg{width:18px; height:18px;}
+  .recupero-evidenza-body{flex:1; min-width:0;}
+  .recupero-evidenza-title{font-family:var(--font-display); font-weight:700; font-size:13.5px; margin-bottom:3px;}
+
   /* Righe di sola navigazione (Impostazioni, Glossario, Messaggi, Notifiche,
      Privacy e Sicurezza, Assistenza...): stesso aspetto delle .acct-row ad
      accordion qui sopra, ma sono bottoni che portano altrove invece di aprirsi
@@ -1887,10 +1900,17 @@
      .meal-log-* — stessi dati (mealLogs, raggruppati per pasto), stile a
      card ispirato a fitflow: sottotitolo con subtotale, stato fatto/da
      fare, righe alimenti con rimozione per riga (comportamento invariato). */
-  .meal-card{padding:14px 15px; margin-bottom:10px;}
+  .meal-card{padding:14px 15px; margin-bottom:10px; border:1.5px solid transparent;}
   .meal-card.meal-card-pending{opacity:.78;}
-  .meal-card-head{display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:2px;}
-  .meal-card-name{display:flex; align-items:center; gap:8px; font-family:var(--font-display); font-weight:700; font-size:13px; color:var(--text);}
+  /* 31/08/2026 (secondo giro): evidenzia la card del pasto scelto con la
+     pillola sopra nel diario, così è chiaro dove finirà quello che si sta
+     per registrare (prima le due cose erano visivamente scollegate). */
+  .meal-card.meal-card-active{border-color:var(--diet); background:linear-gradient(155deg, var(--surface), var(--diet-soft));
+    box-shadow:0 0 0 3px rgba(15,122,144,0.08);}
+  .meal-card-head{display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:2px; flex-wrap:wrap;}
+  .meal-card-name{display:flex; align-items:center; gap:8px; flex-wrap:wrap; row-gap:6px; font-family:var(--font-display); font-weight:700; font-size:13px; color:var(--text);}
+  .meal-card-active-badge{font-family:var(--font-display); font-size:8.5px; font-weight:700; letter-spacing:.03em; text-transform:uppercase; white-space:nowrap;
+    background:var(--diet); color:#fff; padding:3px 8px; border-radius:var(--r-pill);}
   .meal-card-name svg{width:17px; height:17px; color:var(--diet); flex:0 0 auto;}
   .meal-card-pending .meal-card-name svg{color:var(--text-faint);}
   .meal-card-kcal{font-family:var(--font-display); font-weight:800; font-size:12px; color:var(--diet);}

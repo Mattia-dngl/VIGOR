@@ -464,7 +464,26 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
       <div class="acct-badge" id="acctHeaderBadge"></div>
     </div>
 
-    <details class="card details-card acct-row" style="margin-top:0;" open>
+    <!-- Codice di recupero (31/08/2026, secondo giro): prima viveva solo dentro
+         Account → Impostazioni → Sicurezza dei dati, due tendine annidate per
+         arrivarci — segnalato che è l'unico modo per rientrare se si dimentica
+         la password e restava troppo nascosto. Promosso a card sempre a vista
+         qui in cima, subito dopo l'intestazione del profilo: stessi identici
+         #nuovoCodiceBtn/#codiceMostrato di sempre, stesso listener più sotto
+         (vedi "document.getElementById('nuovoCodiceBtn')") — solo spostato,
+         non duplicato. -->
+    <div class="card recupero-evidenza">
+      <div class="recupero-evidenza-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
+      <div class="recupero-evidenza-body">
+        <div class="recupero-evidenza-title">Codice di recupero</div>
+        <p class="hint">Genera e salva il codice: è l'unico modo per rientrare se dimentichi la password.</p>
+        <button class="btn secondary block" id="nuovoCodiceBtn" style="margin-top:10px;">Genera un nuovo codice</button>
+        <div class="codice-box" id="codiceMostrato" style="display:none;"></div>
+      </div>
+    </div>
+
+    <div class="settings-subhead" style="margin-top:18px;">Il tuo profilo</div>
+    <details class="card details-card acct-row" style="margin-top:8px;" open>
       <summary>
         <div class="acct-row-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4.5 5-7 8-7s6.5 2.5 8 7"/></svg></div>
         <div class="acct-row-body"><div class="acct-row-title">Dati generali</div><div class="acct-row-sub">Sesso, corporatura e attività fisica</div></div>
@@ -531,7 +550,8 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
          "Messaggi": è una chat vera e propria (può avere più conversazioni,
          serve prima scegliere con chi), non si presta a stare dentro una
          tendina — resta come schermata dedicata. -->
-    <details class="card details-card acct-row" id="accImpostazioni" style="margin-top:10px;">
+    <div class="settings-subhead" style="margin-top:20px;">Impostazioni</div>
+    <details class="card details-card acct-row" id="accImpostazioni" style="margin-top:8px;">
       <summary>
         <div class="acct-row-icon dark"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg></div>
         <div class="acct-row-body"><div class="acct-row-title">Impostazioni</div><div class="acct-row-sub">Timer, promemoria, esercizi personali</div></div>
@@ -567,15 +587,6 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
             <div class="dato-riga"><span>Spazio occupato</span><b id="statoSpazio">—</b></div>
 
             <button class="btn secondary block" id="proteggiBtn" style="display:none;">Attiva la protezione</button>
-
-            <!-- 31/08/2026: era un <details> annidato dentro un <details> — troppi livelli
-                 di tendine per un'informazione utile (il codice di recupero). Reso una
-                 sotto-sezione sempre visibile, coerente con l'istruzione di ridurre gli
-                 accordion e il testo esplicativo non necessario. -->
-            <div class="settings-subhead" style="margin-top:16px;">Codice di recupero del profilo</div>
-            <p class="hint" style="margin-top:2px;">Serve per rientrare se dimentichi la password.</p>
-            <button class="btn secondary block" id="nuovoCodiceBtn">Genera un nuovo codice</button>
-            <div class="codice-box" id="codiceMostrato" style="display:none;"></div>
           </div>
         </details>
 
@@ -652,7 +663,8 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
       </div>
     </details>
 
-    <details class="card details-card acct-row" id="accGlossario" style="margin-top:10px;">
+    <div class="settings-subhead" style="margin-top:20px;">Risorse</div>
+    <details class="card details-card acct-row" id="accGlossario" style="margin-top:8px;">
       <summary>
         <div class="acct-row-icon diet"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7" stroke-linejoin="round" aria-hidden="true"><path d="M12 6.3c-1.7-1.2-3.8-1.8-6-1.8-.7 0-1.3.6-1.3 1.3v11c0 .7.6 1.2 1.3 1 1.8-.6 3.6-.2 4.9.7.6.4 1.4.4 2 0 1.3-.9 3.1-1.3 4.9-.7.7.2 1.3-.3 1.3-1v-11c0-.7-.6-1.3-1.3-1.3-2.2 0-4.3.6-6 1.8Z"/><path d="M12 6.3v12.7"/></svg></div>
         <div class="acct-row-body"><div class="acct-row-title">Glossario</div><div class="acct-row-sub">Tutti gli esercizi, spiegati</div></div>
@@ -698,7 +710,8 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
       <div class="acct-row-chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg></div>
     </button>
 
-    <details class="card details-card acct-row" id="accPrivacy" style="margin-top:10px;">
+    <div class="settings-subhead" style="margin-top:20px;">Assistenza e privacy</div>
+    <details class="card details-card acct-row" id="accPrivacy" style="margin-top:8px;">
       <summary>
         <div class="acct-row-icon privacy"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2 4 5v6c0 5 3.4 8.9 8 11 4.6-2.1 8-6 8-11V5l-8-3Z"/></svg></div>
         <div class="acct-row-body"><div class="acct-row-title">Privacy e Sicurezza</div><div class="acct-row-sub">Password dell'account, elimina account</div></div>
@@ -2318,29 +2331,46 @@ function load(){
     data.profiles[0].email = EMAIL_AMMINISTRATORE;
   }
   data.profiles.forEach(p=>{
-    // chi c'era prima dell'approvazione resta abilitato
-    if(p.approvato === undefined) p.approvato = true;
-    if(p.bloccato === undefined) p.bloccato = false;
+    normalizzaProfilo(p);
+    // l'hash locale serve solo a chi non è mai passato dal login online
+    // (vedi profiloVuotoPerCloud(), che lo elimina apposta): non va quindi
+    // dentro normalizzaProfilo, o finirebbe anche sui profili online.
     if(!p.passwordHash) p.passwordHash = simpleHash("1234");
-    if(!p.measurements) p.measurements = [];
-    if(!p.mealLogs) p.mealLogs = [];
-    if(!p.waterLogs) p.waterLogs = []; // 31/08/2026: contatore acqua, Fase 3 (dieta)
-    if(!p.customFoods) p.customFoods = {};
-    if(p.altezza === undefined) p.altezza = null;
-    if(p.eta === undefined) p.eta = null;
-    if(p.dataNascita === undefined) p.dataNascita = null;
-    if(!p.livelloAttivita) p.livelloAttivita = 'moderato';
-    if(!p.obiettivoCalorico) p.obiettivoCalorico = 'mantenimento';
-    if(p.obiettivoPeso === undefined) p.obiettivoPeso = null;
-    if(p.obiettivoRecord === undefined) p.obiettivoRecord = null;
-    if(!p.customExercises) p.customExercises = {};
-    Object.keys(p.customExercises).forEach(name=>{
-      if(Array.isArray(p.customExercises[name])){
-        p.customExercises[name] = {muscles: p.customExercises[name], video:''};
-      }
-    });
   });
   return data;
+}
+
+// Riempie i campi che un profilo può non avere ancora — sia perché creato
+// prima che quel campo esistesse (es. waterLogs, 31/08/2026, contatore
+// acqua), sia perché arriva "grezzo" da qualche altra fonte. Va chiamata
+// su OGNI profilo prima di usarlo, non solo nel caricamento locale: prima
+// veniva applicata solo qui in load(), ma applicaDatiOnline() (il profilo
+// scaricato da Supabase per chi usa l'app online) lo saltava del tutto —
+// per chi aveva un account online creato prima di un campo come waterLogs,
+// prof.waterLogs restava undefined e aggiungiAcqua() lanciava un errore
+// silenzioso al primo tap su +/- (bug segnalato: "l'acqua non funziona").
+function normalizzaProfilo(p){
+  // chi c'era prima dell'approvazione resta abilitato
+  if(p.approvato === undefined) p.approvato = true;
+  if(p.bloccato === undefined) p.bloccato = false;
+  if(!p.measurements) p.measurements = [];
+  if(!p.mealLogs) p.mealLogs = [];
+  if(!p.waterLogs) p.waterLogs = []; // 31/08/2026: contatore acqua, Fase 3 (dieta)
+  if(!p.customFoods) p.customFoods = {};
+  if(p.altezza === undefined) p.altezza = null;
+  if(p.eta === undefined) p.eta = null;
+  if(p.dataNascita === undefined) p.dataNascita = null;
+  if(!p.livelloAttivita) p.livelloAttivita = 'moderato';
+  if(!p.obiettivoCalorico) p.obiettivoCalorico = 'mantenimento';
+  if(p.obiettivoPeso === undefined) p.obiettivoPeso = null;
+  if(p.obiettivoRecord === undefined) p.obiettivoRecord = null;
+  if(!p.customExercises) p.customExercises = {};
+  Object.keys(p.customExercises).forEach(name=>{
+    if(Array.isArray(p.customExercises[name])){
+      p.customExercises[name] = {muscles: p.customExercises[name], video:''};
+    }
+  });
+  return p;
 }
 function save(){
   // in modalità PT sto modificando il cliente, non me: mai in locale sul mio
@@ -5188,7 +5218,7 @@ function profiloVuotoPerCloud(){
 }
 
 function applicaDatiOnline(){
-  const dati = rigaOnline.dati || profiloVuotoPerCloud();
+  const dati = normalizzaProfilo(rigaOnline.dati || profiloVuotoPerCloud());
   dati.id = rigaOnline.id;
   dati.name = rigaOnline.nome || dati.name || 'Io';
   dati.email = rigaOnline.email;
@@ -8679,6 +8709,12 @@ document.querySelectorAll('#mealTypeChips .chip').forEach(chip=>{
     document.querySelectorAll('#mealTypeChips .chip').forEach(c=>c.classList.remove('selected'));
     chip.classList.add('selected');
     selectedMealType = chip.dataset.meal;
+    // 31/08/2026 (secondo giro): la pillola scelta qui sopra e la card del
+    // pasto qui sotto (renderMealCards) restavano visivamente scollegate —
+    // segnalato che non è ovvio dove finisce quello che si sta per
+    // registrare. Ri-renderizzo il diario così la card giusta si evidenzia
+    // subito, senza aspettare il prossimo "+ Aggiungi".
+    renderMealDiary();
   });
 });
 
@@ -9095,9 +9131,10 @@ function renderMealCards(items, date){
         <div class="meal-card-food-nutr">${nutrText}</div>
       </div>`;
     }).join('');
-    return `<div class="card meal-card${fatto?'':' meal-card-pending'}">
+    const attivo = mealKey === selectedMealType;
+    return `<div class="card meal-card${fatto?'':' meal-card-pending'}${attivo?' meal-card-active':''}" data-meal="${mealKey}">
       <div class="meal-card-head">
-        <div class="meal-card-name">${iconaPasto(mealKey)}${MEAL_LABELS[mealKey]}</div>
+        <div class="meal-card-name">${iconaPasto(mealKey)}${MEAL_LABELS[mealKey]}${attivo?'<span class="meal-card-active-badge">Stai aggiungendo qui</span>':''}</div>
         ${fatto
           ? `<span class="meal-card-kcal">${Math.round(mealKcal)} kcal</span>`
           : `<span class="meal-card-non-fatto">Non ancora registrato</span>`}
