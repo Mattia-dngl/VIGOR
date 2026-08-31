@@ -195,6 +195,12 @@
   .home-ob-bar{flex:0 0 64px; height:6px; border-radius:6px; background:var(--surface2); overflow:hidden;}
   .home-ob-bar-fill{height:100%; background:var(--accent); border-radius:6px; transition:width .3s;}
   .home-ob-form{margin:0 0 10px;}
+  /* 31/08/2026: segnalato "troppo spazio vuoto in fondo" nella card "I tuoi
+     obiettivi" — l'ultimo elemento della card è sempre uno di questi due
+     form richiudibili (Peso o Record): il loro margine sotto sommato al
+     padding della card lasciava un distacco visibile prima del bordo
+     arrotondato, anche a form chiuso. */
+  .home-ob-card > .home-ob-form:last-child{margin-bottom:2px;}
   .home-ob-form-body{padding:2px 13px 12px;}
   .home-ob-form-body label{margin-top:11px;}
   .home-ob-form-body label:first-child{margin-top:2px;}
@@ -375,7 +381,7 @@
   #settingsPanel .btn, #accountPanel .btn{padding:9px 14px; font-size:12.5px;}
   #settingsPanel .dato-riga, #accountPanel .dato-riga{padding:6px 0; font-size:12.5px;}
   #settingsPanel details.details-card > summary, #accountPanel details.details-card > summary{padding:9px 13px 9px 26px; font-size:12.5px;}
-  #settingsPanel details.details-card .details-body, #accountPanel details.details-card .details-body{padding:0 13px 11px;}
+  #settingsPanel details.details-card .details-body, #accountPanel details.details-card .details-body{padding:12px 13px 11px;}
   #profileGate .sub{color:var(--text-dim); font-size:12px; margin-bottom:18px;}
   .profile-list{display:flex; flex-direction:column; gap:8px; margin-bottom:16px;}
   .profile-chip{
@@ -740,7 +746,13 @@
     color:var(--text-faint); font-size:16px; transition:transform .15s;
   }
   details.details-card[open] > summary::before{transform:translateY(-50%) rotate(90deg);}
-  details.details-card .details-body{padding:0 13px 13px;}
+  /* 31/08/2026: segnalato che il primo elemento di una sezione aperta
+     (es. "Promemoria allenamento" in Impostazioni) restava incollato al
+     bordo superiore — il corpo aveva 0 di spazio sopra (padding-top:0) e
+     nessuna riga di separazione dal titolo. Aggiunti entrambi, come già
+     avviene per le sezioni principali di Account (.acct-row). */
+  details.details-card[open] > summary{border-bottom:1px solid var(--border);}
+  details.details-card .details-body{padding:12px 13px 13px;}
 
   /* Tendina "Piano alimentare assegnato dal PT" (31/08/2026, Fase 3): a
      differenza di .details-card, questa non vive già dentro un'altra
@@ -1096,6 +1108,18 @@
   .progress-col-sets{flex:1 1 auto; min-width:0; word-break:break-word; line-height:1.5;}
   .progress-col-kg{flex:0 0 54px; text-align:right; color:var(--accent); font-weight:700;}
   .hint{color:var(--text-faint); font-size:12px; line-height:1.5; margin-top:6px;}
+  /* 31/08/2026: segnalato del testo esplicativo "troppo grande" in
+     Impostazioni (es. sopra "Aggiungi esercizio"). Causa trovata: .sub non
+     aveva una regola generale, solo alcune scoped (#profileGate, header.top)
+     — dove nessuna delle due si applicava, il testo restava senza stile,
+     quindi alla dimensione/colore di default del browser, molto più grande
+     e scuro delle altre spiegazioni (.hint) intorno. Questa regola generale
+     fa da base ovunque non ce ne sia già una più specifica. */
+  .sub{color:var(--text-dim); font-size:12.5px; line-height:1.45;}
+  /* 31/08/2026: piccola intestazione per raggruppare voci dentro un pannello
+     (es. "Esercizi" dentro Impostazioni, "Codice di recupero del profilo"
+     dentro Sicurezza) senza dover aprire un ulteriore <details>. */
+  .settings-subhead{font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; color:var(--text-dim);}
   .archive-item{padding:10px 0; border-bottom:1px solid var(--border); font-size:13px; color:var(--text-dim);}
   .archive-item .pname{color:var(--text); font-family:var(--font-display); font-size:13.5px;}
   details.archive-sub-detail{border-bottom:1px solid var(--border); padding:10px 0;}
@@ -1151,8 +1175,23 @@
   .base-ex-video-row input{flex:1; min-width:140px;}
   .base-ex-video-row .btn{flex:0 0 auto; padding:8px 10px; font-size:11px;}
   .video-link{display:inline-block; margin-top:4px; font-size:11.5px; color:var(--accent); font-family:var(--font-display); letter-spacing:0.02em; text-decoration:none;}
-  .add-video-btn{background:none; border:none; color:var(--accent); font-size:11px; padding:4px 0; margin-top:2px; cursor:pointer; font-family:var(--font-display);}
-  .mio-ex-modifica-muscoli{background:none; border:none; color:var(--accent); font-size:11px; padding:4px 0; margin-top:4px; cursor:pointer; font-family:var(--font-display); font-weight:700; display:block;}
+  .add-video-btn{background:none; border:none; color:var(--accent); font-size:11px; padding:0; margin-top:4px; cursor:pointer; font-family:var(--font-display); display:block;}
+  .my-ex-item > .video-link, .my-ex-item > .add-video-btn{margin-top:9px;}
+  .mio-ex-modifica-muscoli{background:none; border:none; color:var(--accent); font-size:11px; padding:0; cursor:pointer; font-family:var(--font-display); font-weight:700;}
+
+  /* 31/08/2026: "I tuoi esercizi personalizzati" ridisegnata — era una riga
+     presa dal componente dei set (.exercise-edit-row) con link/emoji sparsi
+     senza gerarchia chiara. Ora ogni esercizio è una scheda compatta con
+     divisorio, i muscoli come chip di sola lettura e le due azioni
+     (Modifica muscoli / tipo di registrazione) sulla stessa riga. */
+  .my-ex-item{padding:12px 0; border-bottom:1px solid var(--border);}
+  .my-ex-item:last-child{border-bottom:none;}
+  .my-ex-head{display:flex; justify-content:space-between; align-items:center; gap:8px;}
+  .my-ex-name{font-family:var(--font-display); font-size:13.5px;}
+  .my-ex-muscles{display:flex; flex-wrap:wrap; gap:5px; margin-top:6px;}
+  .muscle-chip.readonly{cursor:default;}
+  .my-ex-actions{display:flex; align-items:center; justify-content:space-between; gap:10px; margin-top:9px; flex-wrap:wrap;}
+  .my-ex-tipo-select{width:auto; flex:0 0 auto; padding:6px 8px; font-size:11px; margin:0;}
   .base-ex-row:last-child{border-bottom:none;}
   .base-ex-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;}
   .base-ex-name{font-family:var(--font-display); font-size:12.5px; letter-spacing:0.02em;}
@@ -1693,15 +1732,21 @@
     border-bottom:1px solid var(--border); flex-wrap:wrap;}
   .pt-riga:last-child{border-bottom:none;}
   /* Card PT compatta (31/08/2026): la riga con avatar/nome/tasto messaggi
-     resta sempre in vista, permessi e "Termina rapporto" sono dietro una
-     tendina — stesso .details-card di Impostazioni/Account, ma qui SENZA
-     la classe .card (è già dentro #cardMioPT, che è già una card: non
-     serve un secondo bordo/ombra annidato), con un padding più stretto
-     visto che eredita già quello della card che la contiene. */
-  .pt-riga-compatta{padding:2px 0 12px;}
-  .pt-dettagli-details > summary{padding:9px 4px 9px 20px; font-size:12.5px; color:var(--text-dim);}
-  .pt-dettagli-details > summary::before{left:2px;}
-  .pt-dettagli-details .details-body{padding:2px 4px 4px;}
+     resta su una riga sola, permessi e "Termina rapporto" su una riga
+     compatta subito sotto — niente più tendina <details> (tolta su
+     richiesta esplicita, "non mi convincono molto"): tutto resta sempre a
+     vista, solo con un ingombro ridotto rispetto alla primissima versione. */
+  .pt-riga-compatta{padding:2px 0 10px;}
+  .pt-permessi-compatta{display:flex; align-items:center; gap:14px; flex-wrap:wrap;
+    padding:10px 0 0; border-top:1px solid var(--border);}
+  .pt-permessi-label{font-size:11.5px; color:var(--text-faint);}
+  .pt-permesso-mini{display:flex; align-items:center; gap:6px; font-size:12px; color:var(--text-dim); cursor:pointer;}
+  .interruttore-sm{width:32px; height:19px;}
+  .interruttore-sm span::before{width:13px; height:13px; left:3px; top:3px;}
+  .interruttore-sm input:checked + span::before{transform:translateX(13px);}
+  .pt-termina-mini{margin-left:auto; background:none; border:none; padding:2px 0; font-size:11.5px;
+    color:var(--text-faint); text-decoration:underline; cursor:pointer; font-family:inherit;}
+  .pt-termina-mini:hover{color:var(--accent);}
   .pt-riga .info{flex:1; min-width:150px;}
   .pt-riga .nome{font-family:var(--font-display); font-size:14px;}
   .pt-riga .meta{font-size:11.5px; color:var(--text-faint); margin-top:2px;}
@@ -1848,16 +1893,18 @@
   .meal-card-name{display:flex; align-items:center; gap:8px; font-family:var(--font-display); font-weight:700; font-size:13px; color:var(--text);}
   .meal-card-name svg{width:17px; height:17px; color:var(--diet); flex:0 0 auto;}
   .meal-card-pending .meal-card-name svg{color:var(--text-faint);}
-  .meal-card-head-right{display:flex; align-items:center; gap:8px;}
   .meal-card-kcal{font-family:var(--font-display); font-weight:800; font-size:12px; color:var(--diet);}
-  .meal-card-add-btn, .water-step-btn{transition:transform .1s;}
-  .meal-card-add-btn{width:22px; height:22px; border-radius:50%; border:1px solid var(--border); background:var(--surface2);
-    color:var(--text-dim); font-size:14px; font-weight:700; line-height:1; cursor:pointer; padding:0;
-    display:flex; align-items:center; justify-content:center;}
-  .meal-card-log-btn{padding:6px 14px; font-size:11.5px;}
-  .meal-card-food-row{display:flex; align-items:center; justify-content:space-between; gap:10px;
-    padding:8px 0; border-top:1px solid var(--border); font-size:12px; color:var(--text-dim);}
+  /* 31/08/2026: tolto il tasto "Registra"/"+" da ogni card (era ridondante:
+     il pasto si sceglie già nel diario appena sopra) — la card è ora un
+     riepilogo di sola lettura, con lo stato scritto in chiaro invece che
+     con un bottone d'azione. */
+  .meal-card-non-fatto{font-size:11.5px; color:var(--text-faint);}
+  .meal-card-empty-hint{font-size:11.5px; color:var(--text-faint); margin-top:6px;}
+  .meal-card-food-row{padding:8px 0; border-top:1px solid var(--border); font-size:12px; color:var(--text-dim);}
   .meal-card-food-row:first-of-type{border-top:none; margin-top:6px;}
+  .meal-card-food-riga1{display:flex; align-items:center; justify-content:space-between; gap:10px;}
   .meal-card-food-grams{color:var(--text-faint); font-size:11px;}
-  .meal-card-food-kcal{display:flex; align-items:center; gap:8px; flex:0 0 auto; font-family:var(--font-display); font-weight:700; color:var(--text);}
-  .meal-card-food-kcal .remove-x{flex:0 0 auto;}
+  .meal-card-food-riga1 .remove-x{flex:0 0 auto;}
+  /* Scomposizione nutrienti per alimento (31/08/2026: prima si vedevano solo
+     le kcal del subtotale della card, non per singolo alimento). */
+  .meal-card-food-nutr{font-size:11px; color:var(--text-faint); margin-top:2px;}

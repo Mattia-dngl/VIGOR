@@ -82,20 +82,19 @@ test('renderSchedaView(): con durata e data inizio impostate, mostra "Settimana 
   window.close();
 });
 
-test('renderSchedaView(): il nome del PT compare solo quando _mioPTNomeCache è valorizzata', async () => {
+// 31/08/2026: tolta la riga "PT: nome" dalla card del programma — segnalato
+// dall'utente come duplicata (il nome del PT era già mostrato, con più
+// dettagli, nella card "Il mio Personal Trainer" appena sopra). La scheda
+// stessa non ripete più questa informazione, qualunque sia _mioPTNomeCache.
+test('renderSchedaView(): non ripete più il nome del PT (già mostrato nella card "Il mio Personal Trainer" sopra)', async () => {
   const { window, document } = await loadApp();
   await run(window, `
     const profilo = ${JSON.stringify(profiloBase())};
     state.profiles = [profilo]; activeProfileId = 'io';
-    _mioPTNomeCache = null;
-    renderSchedaView();
-  `);
-  assert.equal(document.querySelector('.scheda-pt-riga'), null, 'senza PT non deve comparire la riga PT');
-  await run(window, `
     _mioPTNomeCache = 'Luca Bianchi';
     renderSchedaView();
   `);
-  assert.match(document.querySelector('.scheda-pt-riga').textContent, /Luca Bianchi/);
+  assert.equal(document.querySelector('.scheda-pt-riga'), null, 'la card del programma non deve più ripetere il nome del PT');
   window.close();
 });
 
@@ -224,20 +223,47 @@ test('editor scheda: il campo "rec" (recupero, facoltativo) si salva su editingD
   window.close();
 });
 
-test('scheda: "Aggiorna scheda" salva durata settimane, data inizio e note per il cliente sul programma attivo', async () => {
+test('scheda: "Aggiorna scheda" salva durata settimane e note per il cliente sul programma attivo, e calcola da sola scadenza/data inizio (31/08/2026: non si scrivono più a mano, un solo campo ridondante in meno)', async () => {
   const { window } = await loadApp();
   const r = await run(window, `
     const profilo = ${JSON.stringify(profiloBase())};
     state.profiles = [profilo]; activeProfileId = 'io';
     renderNewProgramForm();
     document.getElementById('newProgramDurata').value = '8';
-    document.getElementById('newProgramDataInizio').value = '2026-08-05';
     document.getElementById('newProgramNotePT').value = 'Buon lavoro!';
     document.getElementById('updateProgramBtn').click();
     const p = state.profiles.find(x=>x.id==='io').programs.find(x=>x.id==='p1');
-    return { durataSettimane: p.durataSettimane, dataInizio: p.dataInizio, notePT: p.notePT };
+    return { durataSettimane: p.durataSettimane, dataInizio: p.dataInizio, notePT: p.notePT, scadenza: p.scadenza };
   `);
-  assert.deepEqual(r, { durataSettimane: 8, dataInizio: '2026-08-05', notePT: 'Buon lavoro!' });
+  // dataInizio non essendo mai stata impostata prima, parte dalla data di creazione della scheda
+  assert.equal(r.durataSettimane, 8);
+  assert.equal(r.notePT, 'Buon lavoro!');
+  assert.equal(r.dataInizio, '2026-01-01');
+  const atteso = new Date('2026-01-01T00:00:00'); atteso.setDate(atteso.getDate() + 8*7);
+  assert.equal(r.scadenza, atteso.toISOString().slice(0,10));
+  window.close();
+});
+
+test('scheda: aggiornare di nuovo la scheda non sposta la data di inizio già impostata (l\'avanzamento delle settimane non deve resettarsi ad ogni piccola modifica)', async () => {
+  const { window } = await loadApp();
+  const r = await run(window, `
+    const profilo = ${JSON.stringify(profiloBase({ programs: [{
+      id:'p1', name:'Programma Forza - Fase 2', createdAt:'2026-01-01', archivedAt:null, scadenza:null,
+      durataSettimane:6, dataInizio:'2026-03-01', notePT:null,
+      days:[{ key:'A', name:'Giorno A', weekday:'Lunedì', categoria:null, exercises:[] }],
+      dietInfo:{}, diet:{}
+    }] }))};
+    state.profiles = [profilo]; activeProfileId = 'io';
+    renderNewProgramForm();
+    document.getElementById('newProgramDurata').value = '10';
+    document.getElementById('updateProgramBtn').click();
+    const p = state.profiles.find(x=>x.id==='io').programs.find(x=>x.id==='p1');
+    return { durataSettimane: p.durataSettimane, dataInizio: p.dataInizio, scadenza: p.scadenza };
+  `);
+  assert.equal(r.dataInizio, '2026-03-01', 'la data di inizio già impostata non deve cambiare');
+  assert.equal(r.durataSettimane, 10);
+  const atteso = new Date('2026-03-01T00:00:00'); atteso.setDate(atteso.getDate() + 10*7);
+  assert.equal(r.scadenza, atteso.toISOString().slice(0,10), 'la scadenza si ricalcola sulla nuova durata');
   window.close();
 });
 

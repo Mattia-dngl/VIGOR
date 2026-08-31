@@ -143,6 +143,29 @@ test('apriScannerBarcode/chiudiScannerBarcode: aprono e chiudono il pannello e r
   window.close();
 });
 
+// 31/08/2026: segnalato "non funziona" — su un browser senza BarcodeDetector
+// (jsdom, come Safari/iPhone nella realtà) il tasto apriva il pannello ma la
+// fotocamera non partiva mai, e il messaggio restava "Inquadra il codice a
+// barre" senza spiegare perché non succedeva nulla. Ora va dritto
+// all'inserimento a mano con un messaggio onesto.
+test('apriScannerBarcode: su un browser senza lettura automatica (es. jsdom, come Safari/iPhone) lo dice subito e passa al campo a mano', async () => {
+  const { window, document } = await loadApp();
+  const r = await run(window, `
+    apriScannerBarcode();
+    return {
+      supportato: scannerBarcodeSupportato(),
+      stato: document.getElementById('barcodeStatus').textContent,
+      videoVisibile: document.getElementById('barcodeVideo').style.display === 'block',
+      campoConFocus: document.activeElement && document.activeElement.id === 'barcodeManualInput'
+    };
+  `);
+  assert.equal(r.supportato, false, 'jsdom non implementa BarcodeDetector, come Safari/iPhone');
+  assert.match(r.stato, /non è disponibile.*codice a mano/i);
+  assert.equal(r.videoVisibile, false, 'nessuna fotocamera avviata se non è supportata');
+  assert.equal(r.campoConFocus, true, 'il campo a mano riceve subito il focus, essendo l\'unica via utilizzabile');
+  window.close();
+});
+
 test('il pulsante "Scansiona codice a barre" apre il pannello dello scanner', async () => {
   const { window, document } = await loadApp();
   const r = await run(window, `

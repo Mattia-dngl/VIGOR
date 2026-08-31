@@ -4,7 +4,7 @@
 // Quando pubblichi una modifica, alza il numero di VERSIONE qui sotto:
 // l'app se ne accorge da sola e propone di aggiornarsi.
 // ============================================================
-const VERSIONE = "vigor-v84";
+const VERSIONE = "vigor-v85";
 
 const DA_TENERE = [
   "./",
@@ -72,6 +72,44 @@ self.addEventListener("push", evento => {
       tag: "fitpro-promemoria",
       renotify: true
     })
+  );
+});
+
+// 31/08/2026: segnalato dall'utente che il promemoria "si disattiva da solo"
+// riaprendo l'app. Causa reale: il browser (specie Safari/iOS quando l'app è
+// installata in Home) può far scadere/ruotare l'iscrizione push da solo, ed
+// esiste un evento apposta per accorgersene — che prima non era gestito per
+// niente: l'iscrizione moriva in silenzio e il tasto tornava "spento" senza
+// che nessuno l'avesse toccato. Qui la rifaccio subito e avviso le pagine
+// aperte, che la ri-salvano su Supabase con lo stesso codice già usato da
+// attivaPromemoria() (le chiavi restano sempre solo lì, mai nel service
+// worker). Non è una garanzia assoluta: iOS può comunque azzerare i dati
+// del service worker se l'app resta a lungo inutilizzata — un limite del
+// sistema operativo, non dell'app.
+const VAPID_CHIAVE_PUBBLICA = "BLNF2KoXkgCvLsEZkR-4bA-TtAXDEybdoKTqtLuIbGo5Q-zXhklQho5eb5wNgv2-2ZZMNsYKNl48IWtQfUGw8Vc";
+function base64UrlAUint8(base64Url){
+  const padding = "=".repeat((4 - base64Url.length % 4) % 4);
+  const base64 = (base64Url + padding).replace(/-/g, "+").replace(/_/g, "/");
+  const raw = atob(base64);
+  const uscita = new Uint8Array(raw.length);
+  for (let i = 0; i < raw.length; i++) uscita[i] = raw.charCodeAt(i);
+  return uscita;
+}
+self.addEventListener("pushsubscriptionchange", evento => {
+  evento.waitUntil(
+    self.registration.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: base64UrlAUint8(VAPID_CHIAVE_PUBBLICA)
+    }).then(nuovaSub =>
+      self.clients.matchAll({ type: "window", includeUncontrolled: true }).then(elenco => {
+        elenco.forEach(c => c.postMessage({
+          tipo: "PUSH_SUBSCRIPTION_RINNOVATA",
+          subscription: nuovaSub.toJSON(),
+          endpoint: nuovaSub.endpoint,
+          vecchioEndpoint: evento.oldSubscription ? evento.oldSubscription.endpoint : null
+        }));
+      })
+    ).catch(() => {})
   );
 });
 

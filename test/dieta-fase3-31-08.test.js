@@ -73,7 +73,7 @@ test('renderKcalRing: con tutti i dati mostra la percentuale sull\'obiettivo e i
   window.close();
 });
 
-test('Card dei pasti: un pasto senza alimenti è "da fare" (tasto Registra), uno con alimenti mostra il subtotale', async () => {
+test('Card dei pasti: un pasto senza alimenti è "da fare" (nessun tasto: si sceglie nel diario sopra), uno con alimenti mostra il subtotale', async () => {
   const { window, document } = await loadApp();
   const oggi = new Date().toISOString().slice(0,10);
   await run(window, `
@@ -90,11 +90,16 @@ test('Card dei pasti: un pasto senza alimenti è "da fare" (tasto Registra), uno
   assert.ok(!pranzo.classList.contains('meal-card-pending'), 'pranzo ha un alimento registrato: non è più "da fare"');
   assert.match(pranzo.querySelector('.meal-card-kcal').textContent, /353 kcal/);
   assert.ok(colazione.classList.contains('meal-card-pending'), 'colazione è vuota: resta "da fare"');
-  assert.ok(colazione.querySelector('.meal-card-log-btn'), 'un pasto vuoto deve offrire il tasto "Registra"');
+  assert.equal(colazione.querySelector('.meal-card-log-btn'), null, '31/08/2026: il tasto "Registra" è stato tolto dalle card, ridondante col diario qui sopra');
+  assert.equal(colazione.querySelector('.meal-card-add-btn'), null);
   window.close();
 });
 
-test('Card dei pasti: il tasto "Registra" di un pasto vuoto seleziona quel pasto nel diario sottostante', async () => {
+// 31/08/2026 (stesso giorno, seconda modifica): tolti i tasti "Registra"/"+"
+// dalle card — richiesta esplicita, il pasto si sceglie già nel diario, ora
+// spostato SOPRA le card (prima era sotto). Le card sono un riepilogo di
+// sola lettura, ogni alimento con la scomposizione nutrienti completa.
+test('Diario alimentare: viene prima delle card dei pasti nel markup (prima era il contrario)', async () => {
   const { window, document } = await loadApp();
   await run(window, `
     const profilo = ${JSON.stringify(profiloConDati())};
@@ -102,14 +107,30 @@ test('Card dei pasti: il tasto "Registra" di un pasto vuoto seleziona quel pasto
     mostraHome();
     vaiA('diet');
   `);
-  const btnCena = Array.from(document.querySelectorAll('.meal-card-log-btn')).find(b=>b.dataset.meal==='cena');
-  btnCena.click();
-  const r = await run(window, `return {
-    selezionato: selectedMealType,
-    chipAttiva: document.querySelector('#mealTypeChips .chip.selected')?.dataset.meal
-  };`);
-  assert.equal(r.selezionato, 'cena');
-  assert.equal(r.chipAttiva, 'cena');
+  const diario = Array.from(document.querySelectorAll('#view-diet h3')).find(h => h.textContent === 'Diario alimentare');
+  const cardsWrap = document.getElementById('mealCardsWrap');
+  assert.ok(diario && cardsWrap);
+  const pos = diario.compareDocumentPosition(cardsWrap);
+  assert.ok(pos & window.Node.DOCUMENT_POSITION_FOLLOWING, 'il diario deve venire prima delle card dei pasti');
+  window.close();
+});
+
+test('Card dei pasti: ogni alimento mostra la scomposizione nutrienti completa (prima solo le kcal del subtotale)', async () => {
+  const { window, document } = await loadApp();
+  const oggi = new Date().toISOString().slice(0,10);
+  await run(window, `
+    const profilo = ${JSON.stringify(profiloConDati())};
+    profilo.mealLogs = [{ date: '${oggi}', items:[{food:'riso bianco', grams:100, meal:'pranzo'}] }];
+    state.profiles = [profilo]; activeProfileId = 'io';
+    mostraHome();
+    vaiA('diet');
+  `);
+  const pranzo = document.querySelector('#mealCardsWrap .meal-card:nth-child(2)');
+  const nutr = pranzo.querySelector('.meal-card-food-nutr').textContent;
+  assert.match(nutr, /kcal/);
+  assert.match(nutr, /P [\d.,]+g/i);
+  assert.match(nutr, /C [\d.,]+g/i);
+  assert.match(nutr, /G [\d.,]+g/i);
   window.close();
 });
 

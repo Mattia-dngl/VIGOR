@@ -138,23 +138,31 @@ test('account: cambiare la data di nascita aggiorna subito l\'età mostrata (sol
   window.close();
 });
 
-test('scheda: "Aggiorna scheda" salva la scadenza opzionale sul programma attivo', async () => {
+// 31/08/2026: la scadenza non si scrive più a mano (era un terzo campo che
+// ripeteva la stessa informazione della durata in settimane, ed era anche la
+// causa per cui "la barra Settimana X di Y non si vede mai" — richiedeva un
+// altro campo, la data di inizio, mai impostato da chi si limitava a
+// scrivere la durata) — ora si calcola da sola da durata + data di inizio
+// (quest'ultima impostata in automatico alla prima attivazione/modifica).
+test('scheda: la scadenza si calcola da sola dalla durata in settimane, senza doverla scrivere a mano', async () => {
   const { window } = await loadApp();
   const r = await run(window, `
     const profilo = ${JSON.stringify(profiloVuoto())};
     state.profiles = [profilo];
     activeProfileId = 'io';
     renderNewProgramForm();
-    document.getElementById('newProgramScadenza').value = '2026-12-31';
+    document.getElementById('newProgramDurata').value = '12';
     document.getElementById('updateProgramBtn').click();
     const p = state.profiles.find(x=>x.id==='io');
-    return p.programs.find(x=>x.id==='p1').scadenza;
+    return p.programs.find(x=>x.id==='p1');
   `);
-  assert.equal(r, '2026-12-31');
+  assert.equal(r.dataInizio, '2026-01-01', 'senza una data di inizio precedente, parte dalla creazione della scheda');
+  const atteso = new Date('2026-01-01T00:00:00'); atteso.setDate(atteso.getDate() + 12*7);
+  assert.equal(r.scadenza, atteso.toISOString().slice(0,10));
   window.close();
 });
 
-test('scheda: lasciare la scadenza vuota la azzera (nessun piano "scaduto per errore")', async () => {
+test('scheda: senza durata impostata non c\'è scadenza (nessun piano "scaduto" inventato)', async () => {
   const { window } = await loadApp();
   const r = await run(window, `
     const profilo = ${JSON.stringify(profiloVuoto())};
@@ -162,7 +170,7 @@ test('scheda: lasciare la scadenza vuota la azzera (nessun piano "scaduto per er
     state.profiles = [profilo];
     activeProfileId = 'io';
     renderNewProgramForm();
-    document.getElementById('newProgramScadenza').value = '';
+    document.getElementById('newProgramDurata').value = '';
     document.getElementById('updateProgramBtn').click();
     const p = state.profiles.find(x=>x.id==='io');
     return p.programs.find(x=>x.id==='p1').scadenza;

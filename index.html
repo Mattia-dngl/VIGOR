@@ -336,6 +336,19 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
       </div>
     </div>
 
+    <!-- Scheda attiva: nome del programma in corso, con un tasto per aprirlo.
+         31/08/2026: spostata sopra "Obiettivo settimanale" su richiesta
+         esplicita dell'utente (prima era più in basso, sotto "I tuoi
+         obiettivi" — nessun'altra modifica, stessa card di sempre). -->
+    <button type="button" class="home-scheda-card" id="homeSchedaAttivaCard">
+      <div class="home-scheda-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" aria-hidden="true"><rect x="5" y="3.5" width="14" height="17" rx="2.5"/><path d="M9 8.5h6M9 12h6M9 15.5h4" stroke-linecap="round"/></svg></div>
+      <div class="home-scheda-testo">
+        <div class="home-scheda-eyebrow">SCHEDA ATTIVA</div>
+        <div class="home-scheda-nome" id="homeSchedaAttivaNome">—</div>
+      </div>
+      <span class="home-scheda-vedi">Vedi <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg></span>
+    </button>
+
     <div class="home-goal-card">
       <div class="home-goal-left">
         <div class="home-goal-label">OBIETTIVO SETTIMANALE</div>
@@ -409,16 +422,6 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
         </div>
       </details>
     </div>
-
-    <!-- Scheda attiva: nome del programma in corso, con un tasto per aprirlo -->
-    <button type="button" class="home-scheda-card" id="homeSchedaAttivaCard">
-      <div class="home-scheda-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" aria-hidden="true"><rect x="5" y="3.5" width="14" height="17" rx="2.5"/><path d="M9 8.5h6M9 12h6M9 15.5h4" stroke-linecap="round"/></svg></div>
-      <div class="home-scheda-testo">
-        <div class="home-scheda-eyebrow">SCHEDA ATTIVA</div>
-        <div class="home-scheda-nome" id="homeSchedaAttivaNome">—</div>
-      </div>
-      <span class="home-scheda-vedi">Vedi <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg></span>
-    </button>
 
     <!-- Dieta di oggi: kcal rispetto al fabbisogno (quando calcolabile) + macro consumati -->
     <div class="card" id="homeDietaOggiCard">
@@ -538,12 +541,12 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
         <details class="card details-card" style="margin-top:0;">
           <summary>Timer di recupero</summary>
           <div class="details-body">
-            <p class="hint">Il tempo che parte in automatico premendo "Avvia". I quattro tasti rapidi restano comunque disponibili durante l'allenamento.</p>
+            <p class="hint">Il tempo che parte in automatico premendo "Avvia".</p>
             <label>Durata predefinita (secondi)</label>
             <input type="number" id="timerDurataInput" min="10" max="900" step="5" inputmode="numeric">
 
             <label style="margin-top:18px;">I 4 tasti rapidi del timer</label>
-            <p class="hint" style="margin:0 0 8px;">Sono quelli che vedi durante l'allenamento. Scrivi i secondi che vuoi e premi Salva.</p>
+            <p class="hint" style="margin:0 0 8px;">Scrivi i secondi che vuoi e premi Salva.</p>
             <div class="slot-timer" id="slotTimer"></div>
             <button class="btn block" id="salvaScorciatoieBtn" style="margin-top:10px;">Salva i tasti rapidi</button>
             <button class="btn ghost block" id="ripristinaScorciatoieBtn">Rimetti quelli iniziali</button>
@@ -559,19 +562,20 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
         <details class="card details-card" style="margin-top:10px;">
           <summary>Sicurezza dei dati</summary>
           <div class="details-body">
-            <p class="hint">Gli allenamenti stanno solo in questo telefono. Qui vedi se sono protetti dalla cancellazione automatica del browser.</p>
+            <p class="hint">I tuoi allenamenti stanno solo su questo telefono.</p>
             <div class="dato-riga"><span>Protezione dalla cancellazione</span><b id="statoPersistenza">—</b></div>
             <div class="dato-riga"><span>Spazio occupato</span><b id="statoSpazio">—</b></div>
 
             <button class="btn secondary block" id="proteggiBtn" style="display:none;">Attiva la protezione</button>
-            <details class="details-card" style="margin-top:12px; border:none; padding:0;">
-              <summary>Codice di recupero del profilo</summary>
-              <div class="details-body">
-                <p class="hint">Serve a rientrare se dimentichi la password. Se non l'hai mai salvato, generane uno nuovo: quello vecchio smetterà di funzionare.</p>
-                <button class="btn secondary block" id="nuovoCodiceBtn">Genera un nuovo codice</button>
-                <div class="codice-box" id="codiceMostrato" style="display:none;"></div>
-              </div>
-            </details>
+
+            <!-- 31/08/2026: era un <details> annidato dentro un <details> — troppi livelli
+                 di tendine per un'informazione utile (il codice di recupero). Reso una
+                 sotto-sezione sempre visibile, coerente con l'istruzione di ridurre gli
+                 accordion e il testo esplicativo non necessario. -->
+            <div class="settings-subhead" style="margin-top:16px;">Codice di recupero del profilo</div>
+            <p class="hint" style="margin-top:2px;">Serve per rientrare se dimentichi la password.</p>
+            <button class="btn secondary block" id="nuovoCodiceBtn">Genera un nuovo codice</button>
+            <div class="codice-box" id="codiceMostrato" style="display:none;"></div>
           </div>
         </details>
 
@@ -598,12 +602,13 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
           </div>
         </details>
 
-        <div class="sub" id="exSectionsIntro" style="margin-top:20px;">Gestisci qui il database degli esercizi: da dove pesca i suggerimenti nella tendina "Nome esercizio" e i gruppi muscolari assegnati automaticamente.</div>
+        <div class="settings-subhead" style="margin-top:22px;">Esercizi</div>
+        <p class="sub" id="exSectionsIntro" style="margin-top:2px;"></p>
 
-        <details class="card details-card" id="addExCard" style="margin-top:10px;">
+        <details class="card details-card" id="addExCard" style="margin-top:8px;">
           <summary>Aggiungi esercizio</summary>
           <div class="details-body">
-            <p class="hint">Utile per macchinari specifici della tua palestra non già presenti tra i suggerimenti. Una volta aggiunto, compare nella tendina "Nome esercizio" in Scheda → Modifica, con i muscoli già pronti. Personale: visibile solo al tuo account.</p>
+            <p class="hint">Utile per macchinari specifici della tua palestra. Una volta aggiunto compare nella tendina "Nome esercizio" in Scheda → Modifica, visibile solo al tuo account.</p>
             <label>Nome esercizio</label>
             <input type="text" id="customExName" placeholder="Es. Leg press orizzontale">
             <label>Muscoli coinvolti</label>
@@ -628,7 +633,7 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
         <details class="card details-card" id="baseExCard" style="margin-top:10px; display:none;">
           <summary>Esercizi di base (<span id="baseExCount"></span>)</summary>
           <div class="details-body">
-            <p class="hint">Gli esercizi riconosciuti dall'app. Con i due pulsanti qui sotto puoi esportare l'elenco in Excel, incollare i link ai video e reimportarlo: i link compaiono poi ovunque compare l'esercizio (scheda, allenamento libero, glossario e registro).</p>
+            <p class="hint">Esporta l'elenco in Excel, incolla i link ai video e reimportalo: compariranno ovunque l'esercizio è mostrato.</p>
             <div class="row" style="margin-bottom:12px;">
               <button class="btn secondary block" id="exportExVideosBtn">⬇ Esporta link video (Excel)</button>
               <div style="flex:1;">
@@ -863,9 +868,16 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
       <h1 id="mainTitle">Registro Allenamento</h1>
       <div class="sub" id="programLabel">Caricamento...</div>
     </div>
+    <!-- 31/08/2026: tolto il tasto "Home" (ridondante: c'è già la voce Home
+         nella barra in basso, sempre visibile) e sostituita l'emoji ⚙ con
+         un'icona coerente col resto dell'app (tutte le altre sono disegnate
+         a linee, non emoji — che tra l'altro cambiano aspetto da telefono a
+         telefono). Nessuna funzione tolta: apriImpostazioni('app') resta
+         invariata. -->
     <div class="header-btns">
-      <button class="header-btn" id="settingsBtn" title="Impostazioni">⚙ <span class="header-btn-label">Impostazioni</span></button>
-      <button class="header-btn" id="homeBtn" title="Torna alla home">⌂ <span class="header-btn-label">Home</span></button>
+      <button class="header-btn" id="settingsBtn" title="Impostazioni" aria-label="Impostazioni">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </button>
     </div>
   </div>
   </div>
@@ -1054,13 +1066,12 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
       <div id="todayDietPlan"></div>
     </div>
 
-    <!-- Card dei pasti (31/08/2026, Fase 3): sostituisce la vecchia card
-         "Alimenti registrati" (lista piatta in fondo) — stessi dati
-         (prof.mealLogs per la data selezionata nel diario sotto), ora
-         raggruppati per pasto con subtotale e stato fatto/da fare, come
-         in fitflow. Popolata da renderMealCards() dentro renderMealDiary(). -->
-    <div id="mealCardsWrap"></div>
-
+    <!-- 31/08/2026 (stesso giorno, seconda modifica): il diario torna sopra
+         le card dei pasti — richiesta esplicita dell'utente. Prima era il
+         contrario (card riepilogo prima, modulo per aggiungere sotto): dato
+         che si aggiunge un alimento scegliendo il pasto QUI, aveva più senso
+         avere il modulo prima e il riepilogo (le card, ora di sola lettura)
+         subito dopo come conferma di quello che hai già registrato. -->
     <div class="card">
       <h3>Diario alimentare</h3>
       <label>Data</label>
@@ -1127,6 +1138,13 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
         <div id="cancelCustomFoodBtn" style="text-align:center; margin-top:10px; color:var(--text-faint); cursor:pointer; font-size:11.5px; text-decoration:underline;">Annulla</div>
       </div>
     </div>
+
+    <!-- Card dei pasti (31/08/2026, Fase 3; riordinate lo stesso giorno dopo
+         il diario, vedi sopra): riepilogo di sola lettura di prof.mealLogs
+         per la data scelta nel diario qui sopra, raggruppato per pasto con
+         subtotale, stato fatto/da fare e scomposizione nutrienti per
+         alimento. Popolata da renderMealCards() dentro renderMealDiary(). -->
+    <div id="mealCardsWrap"></div>
 
     <!-- Piano assegnato dal PT (31/08/2026, Fase 3): prima sempre a vista in
          fondo alla pagina (vedi + modifica), ora dietro una tendina richiusa
@@ -1255,20 +1273,17 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
           <label style="margin-top:0;">Nome/etichetta scheda</label>
           <input type="text" id="newProgramName" placeholder="Es. Programma Forza - Fase 2">
         </div>
-        <div class="row" style="margin-top:14px;">
-          <div>
-            <label style="margin-top:0;">Durata (settimane) <span class="hint" style="font-weight:400;">(facoltativa)</span></label>
-            <input type="number" id="newProgramDurata" min="1" max="104" step="1" placeholder="Es. 8">
-          </div>
-          <div>
-            <label style="margin-top:0;">Data di inizio <span class="hint" style="font-weight:400;">(facoltativa)</span></label>
-            <input type="date" id="newProgramDataInizio">
-          </div>
+        <!-- 31/08/2026: prima c'erano tre campi (durata, data inizio, scadenza)
+             che dicevano in pratica la stessa cosa in tre modi diversi — ed
+             era anche perché la barra "Settimana X di Y" spariva quasi
+             sempre: compariva solo se si impostavano DUE campi su tre. Resta
+             solo la durata: data di inizio (quando attivi/salvi) e scadenza
+             si calcolano da sole. -->
+        <div style="margin-top:14px;">
+          <label style="margin-top:0;">Durata (settimane) <span class="hint" style="font-weight:400;">(facoltativa)</span></label>
+          <input type="number" id="newProgramDurata" min="1" max="104" step="1" placeholder="Es. 8">
+          <p class="hint" style="margin-top:6px;">Se la imposti, in Scheda vedi l'avanzamento delle settimane e la scadenza calcolata da sola da quando attivi questa scheda.</p>
         </div>
-        <p class="hint" style="margin-top:6px;">Se imposti entrambe, in Scheda compare "Settimana X di Y" con una barra di avanzamento.</p>
-        <label style="margin-top:14px;">Scadenza <span class="hint" style="font-weight:400;">(facoltativa — può impostarla sia il PT sia tu)</span></label>
-        <input type="date" id="newProgramScadenza">
-        <p class="hint" style="margin-top:6px;">Se la imposti, verrà segnalata come "piano scaduto" una volta passata la data — utile per ricordarsi di rinnovarla.</p>
         <label style="margin-top:14px;">Note per il cliente <span class="hint" style="font-weight:400;">(facoltative)</span></label>
         <textarea id="newProgramNotePT" rows="2" placeholder="Es. Aumenta il carico se riesci a completare tutte le serie. Buon lavoro!"></textarea>
       </div>
@@ -3314,6 +3329,30 @@ async function disattivaPromemoria(){
 document.getElementById('promemoriaToggle').addEventListener('change', (e)=>{
   if(e.target.checked) attivaPromemoria(); else disattivaPromemoria();
 });
+// 31/08/2026: il service worker (sw.js) si accorge da solo se il telefono
+// rinnova/scade l'iscrizione push (evento pushsubscriptionchange) e manda
+// qui la nuova iscrizione: la risalvo su Supabase con lo stesso upsert di
+// attivaPromemoria(), altrimenti il server resterebbe puntato su un'iscrizione
+// morta e il promemoria smetterebbe di funzionare senza che nulla lo segnali.
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.addEventListener('message', async (e)=>{
+    if(!e.data || e.data.tipo !== 'PUSH_SUBSCRIPTION_RINNOVATA') return;
+    try{
+      if(!sb || !utenteOnline) return;
+      const { error } = await sb.from('push_subscriptions').upsert({
+        profilo_id: utenteOnline.id,
+        endpoint: e.data.endpoint,
+        subscription: e.data.subscription
+      }, { onConflict: 'profilo_id,endpoint' });
+      if(error) throw error;
+      if(e.data.vecchioEndpoint && e.data.vecchioEndpoint !== e.data.endpoint){
+        await sb.from('push_subscriptions').delete().eq('profilo_id', utenteOnline.id).eq('endpoint', e.data.vecchioEndpoint);
+      }
+      const lp = loggedInProfile();
+      if(lp){ lp.promemoria = true; save(); }
+    }catch(err){ console.error(err); }
+  });
+}
 
 function renderImpostazioniTimer(){
   const t = impostazioniTimer();
@@ -4734,9 +4773,11 @@ function renderImpostazioniInline(){
   document.getElementById('codiceMostrato').style.display = 'none';
 
   const canManage = canManageExercises();
+  // 31/08/2026: testo accorciato (era un doppio periodo lungo) — l'informazione
+  // essenziale ("condiviso" vs "personale") resta, il resto è nei singoli tasti sotto.
   document.getElementById('exSectionsIntro').innerHTML = puoModificareSistema()
-    ? 'Gestisci qui il database degli esercizi. <b>Gli esercizi di base sono condivisi</b>: quello che cambi vale per tutti gli account. Quelli che aggiungi qui sotto restano invece personali.'
-    : 'Qui puoi aggiungere <b>i tuoi esercizi personali</b> — per esempio i macchinari della tua palestra. Restano visibili solo a te. La libreria di base è condivisa e la gestisce l\'amministratore.';
+    ? '<b>Gli esercizi di base sono condivisi</b> tra tutti gli account, quelli che aggiungi qui sotto restano personali.'
+    : 'Qui aggiungi <b>i tuoi esercizi personali</b> (visibili solo a te). La libreria di base è condivisa.';
   document.getElementById('exSectionsIntro').style.display = 'block';
   document.getElementById('addExCard').style.display = canManage ? 'block' : 'none';
   document.getElementById('customExVideoField').style.display = 'block';
@@ -5487,15 +5528,14 @@ async function renderMioPT(){
     const pt = await leggiProfilo(attivo.pt_id);
     _mioPTNomeCache = nomeDi(pt);
     // Card PT compatta (31/08/2026, richiesta esplicita: "quello che ho io
-    // oggi si prende troppo spazio" — stessa funzionalità di prima, solo
-    // meno ingombrante, ispirata alla card di fitflow: avatar + nome +
-    // un'azione rapida su una riga sola). Prima l'intera card era sempre
-    // tutta a vista (riga PT + tasto "Messaggi" a tutta larghezza + testo
-    // dei permessi + 2 interruttori + "Termina"): ora resta a vista solo la
-    // riga con avatar/nome/messaggi, il resto (permessi e "Termina
-    // rapporto") è dietro una tendina <details> richiusa di default, un
-    // tocco più in là — stesso pattern già usato per Impostazioni/Account
-    // (details.details-card), non tolta nessuna funzione.
+    // oggi si prende troppo spazio" — riga avatar+nome+messaggi su una riga
+    // sola, ispirata alla card di fitflow). La versione precedente (Fase 2)
+    // nascondeva permessi e "Termina rapporto" dietro una <details>: tolta
+    // su richiesta esplicita dell'utente ("non mi convincono molto" proprio
+    // riferito a questa) — restano sempre a vista ma in una riga compatta
+    // (due interruttori piccoli + un link testuale), non più nella forma
+    // ingombrante di prima (2 righe intere + un bottone a tutta larghezza).
+    // Nessuna funzione tolta.
     box.innerHTML = `
       <div class="pt-riga pt-riga-compatta">
         <div class="pt-avatar">${avatarContentHtml(nomeDi(pt), (pt.dati||{}).avatarUrl)}</div>
@@ -5507,21 +5547,18 @@ async function renderMioPT(){
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a8.4 8.4 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.7a8.4 8.4 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.4 8.4 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5Z"/></svg>
         </button>
       </div>
-      <details class="details-card pt-dettagli-details">
-        <summary>Permessi e altre azioni</summary>
-        <div class="details-body">
-          <p class="hint" style="margin:0 0 10px;">Cosa può fare ${nomeDi(pt)}. Vede sempre scheda, dieta, storico e progressi; qui decidi se può anche modificarli.</p>
-          <div class="permesso-riga">
-            <span>Può modificare la mia scheda</span>
-            <label class="interruttore"><input type="checkbox" id="permScheda" ${attivo.puo_scheda?'checked':''}><span></span></label>
-          </div>
-          <div class="permesso-riga">
-            <span>Può modificare la mia dieta</span>
-            <label class="interruttore"><input type="checkbox" id="permDieta" ${attivo.puo_dieta?'checked':''}><span></span></label>
-          </div>
-          <button class="btn danger-outline block" id="chiudiRapportoBtn" style="margin-top:10px;">Termina rapporto</button>
-        </div>
-      </details>`;
+      <div class="pt-permessi-compatta">
+        <span class="pt-permessi-label">Può modificare</span>
+        <label class="pt-permesso-mini" title="Può modificare la mia scheda">
+          <span class="interruttore interruttore-sm"><input type="checkbox" id="permScheda" ${attivo.puo_scheda?'checked':''}><span></span></span>
+          Scheda
+        </label>
+        <label class="pt-permesso-mini" title="Può modificare la mia dieta">
+          <span class="interruttore interruttore-sm"><input type="checkbox" id="permDieta" ${attivo.puo_dieta?'checked':''}><span></span></span>
+          Dieta
+        </label>
+        <button type="button" class="pt-termina-mini" id="chiudiRapportoBtn">Termina rapporto</button>
+      </div>`;
 
     document.getElementById('permScheda').addEventListener('change', e=>cambiaPermesso(attivo.id, 'puo_scheda', e.target.checked));
     document.getElementById('permDieta').addEventListener('change', e=>cambiaPermesso(attivo.id, 'puo_dieta', e.target.checked));
@@ -7384,7 +7421,6 @@ document.getElementById('setLivelloAttivita').addEventListener('change', functio
 });
 
 document.getElementById('settingsBtn').addEventListener('click', ()=>apriImpostazioni('app'));
-document.getElementById('homeBtn').addEventListener('click', mostraHome);
 document.getElementById('autoSkipToggle').addEventListener('change', (e)=>{
   const prof = loggedInProfile();
   if(!prof) return;
@@ -7470,9 +7506,52 @@ document.getElementById('fabRegistraBtn').addEventListener('click', toggleFabMen
 document.getElementById('fabMenuOverlay').addEventListener('click', (e)=>{
   if(e.target.id === 'fabMenuOverlay') chiudiFabMenu();
 });
+// 31/08/2026: segnalato dall'utente che scegliendo "Allenamento libero" e poi
+// "Registra allenamento" (per tornare a seguire la scheda) si resta bloccati
+// sulla vista di Allenamento libero. Causa: nulla riportava selectedDayKey a
+// "nessun giorno scelto" rientrando da qui — a differenza del cambio giorno
+// dentro Registra (tendina), che passa sempre da selectDay() e dal suo
+// controllo di sicurezza sui dati non salvati. Questa funzione fa la stessa
+// cosa quando si arriva dal menu del "+": se l'Allenamento libero in corso
+// ha dati non salvati chiede conferma prima di abbandonarlo (stesso testo/
+// comportamento già usato in selectDay), altrimenti pulisce e torna subito
+// alla scelta del giorno.
+function tornaAllaSceltaGiorno(){
+  if(selectedDayKey !== 'LIBERO') return;
+  const prof = activeProfile();
+  const b = prof && prof.bozzaLog;
+  const conDati = !!(b && b.dayKey === 'LIBERO' && (
+    Object.keys(b.serie||{}).some(n => (b.serie[n]||[]).some(s => CAMPI_SERIE.some(k=>s[k]))) || (b.note||'').trim()
+  ));
+  const esegui = ()=>{
+    if(prof && prof.bozzaLog && prof.bozzaLog.dayKey === 'LIBERO'){ prof.bozzaLog = null; save(); }
+    selectedDayKey = null;
+    _logIniziatoAlle = null;
+    currentSetInputs = {};
+    FREE_DAY.exercises = [];
+    document.getElementById('freeAddExBtn').style.display = 'none';
+    document.getElementById('freeAddExManualeBtn2').style.display = 'none';
+    document.getElementById('freeEmptyHint').style.display = 'none';
+    document.getElementById('exerciseFormCard').style.display = 'none';
+    document.getElementById('notesCard').style.display = 'none';
+    document.getElementById('saveLogBtn').style.display = 'none';
+    document.getElementById('bozzaBanner').style.display = 'none';
+    if(typeof aggiornaCronometroAllenamento === 'function') aggiornaCronometroAllenamento();
+    renderDayChoices();
+  };
+  if(conDati){
+    customConfirm(
+      "Hai un Allenamento libero in corso non ancora salvato. Tornando alla scheda lo perdi. Vuoi continuare?",
+      esegui
+    );
+  } else {
+    esegui();
+  }
+}
 document.getElementById('fabOptAllenamento').addEventListener('click', ()=>{
   chiudiFabMenu();
   apriRegistra();
+  tornaAllaSceltaGiorno();
 });
 document.getElementById('fabOptLibero').addEventListener('click', ()=>{
   chiudiFabMenu();
@@ -7897,12 +7976,22 @@ function selectDay(key){
       _p.bozzaLog = null; save();
     }
   }
-  const cambiaGiorno = key !== selectedDayKey;
   selectedDayKey = key;
   const selDay = document.getElementById('dayChoiceChips');
   if(selDay && selDay.value !== key) selDay.value = key;
+  // 31/08/2026: prima il cronometro ripartiva da zero SOLO se si cambiava
+  // giorno (key !== selectedDayKey precedente) — segnalato dall'utente che
+  // "a volte continua dal tempo della sessione precedente invece di
+  // azzerarsi rientrando in Registra". Capita per esempio riaprendo
+  // "Allenamento libero" dal menu del "+" quando era già quello il giorno
+  // scelto: senza un vero allenamento in corso da riprendere, l'utente si
+  // aspetta un cronometro azzerato, non quello lasciato indietro. Chi
+  // davvero deve riprendere un cronometro già avviato (ripristinaBozza, che
+  // resta l'unico caso legittimo) lo fa scrivendo _logIniziatoAlle SUBITO
+  // DOPO aver chiamato selectDay — quindi qui si può azzerare sempre senza
+  // rompere quel percorso.
   if(key === "SKIP"){ _logIniziatoAlle = null; }
-  else if(cambiaGiorno){ _logIniziatoAlle = new Date().toISOString(); }
+  else { _logIniziatoAlle = new Date().toISOString(); }
   if(typeof aggiornaCronometroAllenamento === 'function') aggiornaCronometroAllenamento();
 
   const p = activeProgram();
@@ -8697,13 +8786,31 @@ function fermaScannerBarcode(){
   video.srcObject = null;
 }
 
+// 31/08/2026: segnalato "non funziona" — su iPhone/Safari (BarcodeDetector
+// non esiste affatto lì, solo Chrome/Android la implementa) il tasto apriva
+// il pannello ma la fotocamera non partiva mai: il messaggio restava fermo
+// su "Inquadra il codice a barre" senza mai spiegare perché non succedeva
+// nulla, e l'unica via che funziona davvero ovunque (il campo a mano) restava
+// nascosta in fondo, sotto un video vuoto. Ora lo si controlla SUBITO, prima
+// di aprire: se la lettura automatica non è disponibile, lo si dice chiaro e
+// si passa dritti al campo a mano (che chiama la stessa cercaProdottoBarcode
+// di sempre — nessuna funzione tolta, solo un percorso reso onesto).
+function scannerBarcodeSupportato(){
+  return ('BarcodeDetector' in window) && !!navigator.mediaDevices && !!navigator.mediaDevices.getUserMedia;
+}
 function apriScannerBarcode(){
   document.getElementById('barcodeManualInput').value = '';
-  document.getElementById('barcodeStatus').textContent = 'Inquadra il codice a barre del prodotto.';
   const pannello = document.getElementById('barcodeScannerPanel');
   pannello.style.display = 'block';
   if(pannello.scrollIntoView) pannello.scrollIntoView({behavior:'smooth', block:'nearest'});
-  avviaLetturaFotocamera();
+  if(scannerBarcodeSupportato()){
+    document.getElementById('barcodeStatus').textContent = 'Inquadra il codice a barre del prodotto.';
+    avviaLetturaFotocamera();
+  } else {
+    document.getElementById('barcodeStatus').textContent = 'La lettura automatica non è disponibile su questo telefono: inserisci il codice a mano qui sotto.';
+    const manualInput = document.getElementById('barcodeManualInput');
+    if(manualInput) manualInput.focus({preventScroll:true});
+  }
 }
 
 function chiudiScannerBarcode(){
@@ -8955,24 +9062,15 @@ const MEAL_ICON_PATHS = {
 function iconaPasto(mealKey){
   return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${MEAL_ICON_PATHS[mealKey]||''}</svg>`;
 }
-// Seleziona il pasto e porta al modulo "Diario alimentare" per aggiungere
-// un alimento — stesso meccanismo del tasto "Registra pasto" del menu del
-// "+" (fabOptPasto), qui applicato al pasto specifico della card toccata.
-function avviaRegistraPasto(mealKey){
-  const chip = document.querySelector(`#mealTypeChips .chip[data-meal="${mealKey}"]`);
-  if(chip) chip.click();
-  const input = document.getElementById('mealFoodInput');
-  if(input){
-    input.scrollIntoView({behavior:'smooth', block:'center'});
-    input.focus({preventScroll:true});
-  }
-}
-
-// Card dei pasti (31/08/2026, Fase 3): raggruppa prof.mealLogs della data
-// selezionata per pasto, come faceva prima la lista piatta #mealList, ma
-// mostrando anche i pasti ancora vuoti (stato "da fare", con tasto
-// "Registra") invece di ometterli — così la card di ogni pasto è sempre
-// visibile, come in fitflow.
+// Card dei pasti (31/08/2026, Fase 3; riviste lo stesso giorno — vedi
+// commento sopra #mealCardsWrap nell'HTML): raggruppano prof.mealLogs della
+// data selezionata per pasto, mostrando anche i pasti ancora vuoti (stato
+// "da fare") invece di ometterli — così la card di ogni pasto è sempre
+// visibile, come in fitflow. Da sola lettura: il pasto si sceglie nel
+// diario qui sopra (il tasto "Registra"/"+" che c'era su ogni card è stato
+// tolto — richiesta esplicita, era ridondante dato che il pasto si sceglie
+// già lì), e ora ogni alimento mostra la scomposizione nutrienti completa
+// (prima solo le kcal), non solo il subtotale della card.
 function renderMealCards(items, date){
   const wrap = document.getElementById('mealCardsWrap');
   if(!wrap) return;
@@ -8985,20 +9083,26 @@ function renderMealCards(items, date){
     }, 0);
     const righeHtml = mealItems.map(it=>{
       const f = datiAlimento(it.food);
-      const kcalText = f ? `${Math.round(f.kcal*it.grams/100)} kcal` : 'kcal non disponibili';
+      const factor = it.grams/100;
+      const nutrText = f
+        ? `${Math.round(f.kcal*factor)} kcal · P ${Math.round(f.p*factor*10)/10}g · C ${Math.round(f.c*factor*10)/10}g · G ${Math.round(f.f*factor*10)/10}g`
+        : 'valori nutrizionali non disponibili';
       return `<div class="meal-card-food-row">
-        <span>${toTitleCase(it.food)} <span class="meal-card-food-grams">${it.grams} g</span></span>
-        <span class="meal-card-food-kcal">${kcalText}<button type="button" class="remove-x" data-idx="${it.idx}" aria-label="Rimuovi ${toTitleCase(it.food)}">×</button></span>
+        <div class="meal-card-food-riga1">
+          <span>${toTitleCase(it.food)} <span class="meal-card-food-grams">${it.grams} g</span></span>
+          <button type="button" class="remove-x" data-idx="${it.idx}" aria-label="Rimuovi ${toTitleCase(it.food)}">×</button>
+        </div>
+        <div class="meal-card-food-nutr">${nutrText}</div>
       </div>`;
     }).join('');
     return `<div class="card meal-card${fatto?'':' meal-card-pending'}">
       <div class="meal-card-head">
         <div class="meal-card-name">${iconaPasto(mealKey)}${MEAL_LABELS[mealKey]}</div>
         ${fatto
-          ? `<div class="meal-card-head-right"><span class="meal-card-kcal">${Math.round(mealKcal)} kcal</span><button type="button" class="meal-card-add-btn" data-meal="${mealKey}" aria-label="Aggiungi un altro alimento a ${MEAL_LABELS[mealKey]}">+</button></div>`
-          : `<button type="button" class="btn diet-btn meal-card-log-btn" data-meal="${mealKey}">Registra</button>`}
+          ? `<span class="meal-card-kcal">${Math.round(mealKcal)} kcal</span>`
+          : `<span class="meal-card-non-fatto">Non ancora registrato</span>`}
       </div>
-      ${righeHtml}
+      ${righeHtml || `<div class="meal-card-empty-hint">Scegli "${MEAL_LABELS[mealKey]}" nel diario qui sopra per registrarlo.</div>`}
     </div>`;
   }).join('');
 
@@ -9010,9 +9114,6 @@ function renderMealCards(items, date){
       save();
       renderMealDiary();
     });
-  });
-  wrap.querySelectorAll('.meal-card-log-btn, .meal-card-add-btn').forEach(btn=>{
-    btn.addEventListener('click', ()=> avviaRegistraPasto(btn.dataset.meal));
   });
 }
 
@@ -9776,7 +9877,6 @@ function renderSchedaView(){
         <h3 class="scheda-info-nome">${p.name}</h3>
         <span class="scheda-badge-attivo">ATTIVO</span>
       </div>
-      ${_mioPTNomeCache ? `<div class="scheda-pt-riga">PT: ${_mioPTNomeCache}</div>` : ''}
       ${settimanaHtml}
       ${statiHtml}
     </div>`;
@@ -9889,9 +9989,7 @@ function renderSchedaEditForm(){
   const p = activeProgram();
   editingDays = JSON.parse(JSON.stringify(p.days));
   document.getElementById('newProgramName').value = "";
-  document.getElementById('newProgramScadenza').value = p.scadenza || "";
   document.getElementById('newProgramDurata').value = p.durataSettimane || "";
-  document.getElementById('newProgramDataInizio').value = p.dataInizio || "";
   document.getElementById('newProgramNotePT').value = p.notePT || "";
   aggiornaModalitaEditorScheda();
   renderDayEditors();
@@ -10443,9 +10541,7 @@ document.getElementById('nuovaSchedaBtn').addEventListener('click', ()=>{
   customConfirm("Iniziare una scheda nuova da zero? La scheda attuale resta invariata finché non premi \"Salva scheda\".", ()=>{
     editingDays = [];
     document.getElementById('newProgramName').value = "";
-    document.getElementById('newProgramScadenza').value = "";
     document.getElementById('newProgramDurata').value = "";
-    document.getElementById('newProgramDataInizio').value = "";
     document.getElementById('newProgramNotePT').value = "";
     _modoEditorScheda = 'nuova';
     aggiornaModalitaEditorScheda();
@@ -10562,13 +10658,23 @@ function renderDietDayEditors(){
 }
 
 // ---- salvataggio nuovo programma ----
+// 31/08/2026: la data di inizio non si scrive più a mano (vedi il commento
+// sopra il campo Durata) — resta quella già impostata se c'era, altrimenti
+// parte da quando la scheda è stata creata; la scadenza si ricalcola sempre
+// da qui + la durata appena salvata.
+function calcolaScadenzaScheda(dataInizioIso, durataSettimane){
+  if(!dataInizioIso || !durataSettimane) return null;
+  const d = new Date(dataInizioIso + 'T00:00:00');
+  d.setDate(d.getDate() + durataSettimane*7);
+  return d.toISOString().slice(0,10);
+}
 document.getElementById('updateProgramBtn').addEventListener('click', ()=>{
   if(editingDays.length===0){ toast("Aggiungi almeno un giorno di allenamento."); return; }
   const current = activeProgram();
   current.days = editingDays;
-  current.scadenza = document.getElementById('newProgramScadenza').value || null;
   current.durataSettimane = parseInt(document.getElementById('newProgramDurata').value) || null;
-  current.dataInizio = document.getElementById('newProgramDataInizio').value || null;
+  if(!current.dataInizio) current.dataInizio = current.createdAt || new Date().toISOString().slice(0,10);
+  current.scadenza = calcolaScadenzaScheda(current.dataInizio, current.durataSettimane);
   current.notePT = document.getElementById('newProgramNotePT').value.trim() || null;
   propagaEserciziPersonalizzatiPT(editingDays);
   segnaModifica(activeProfile(), 'scheda');
@@ -10591,11 +10697,12 @@ document.getElementById('saveNewProgramBtn').addEventListener('click', ()=>{
     current.archivedAt = today;
   }
 
+  const durataSettimaneNuova = parseInt(document.getElementById('newProgramDurata').value) || null;
   const newProgram = {
     id: uid(), name, createdAt: today, archivedAt: null,
-    scadenza: document.getElementById('newProgramScadenza').value || null,
-    durataSettimane: parseInt(document.getElementById('newProgramDurata').value) || null,
-    dataInizio: document.getElementById('newProgramDataInizio').value || null,
+    durataSettimane: durataSettimaneNuova,
+    dataInizio: today,
+    scadenza: calcolaScadenzaScheda(today, durataSettimaneNuova),
     notePT: document.getElementById('newProgramNotePT').value.trim() || null,
     days: editingDays, dietInfo: current.dietInfo, diet: current.diet
   };
@@ -10713,22 +10820,31 @@ function renderCustomExList(){
   const opzioniTipo = (scelto)=>Object.entries(TIPI_MISURA).map(([k,v])=>
     `<option value="${k}"${k===scelto?' selected':''}>${v.nome}</option>`).join('');
   if(entries.length===0){ wrap.innerHTML = '<div class="hint">Nessun esercizio personalizzato ancora.</div>'; return; }
+  // 31/08/2026: ridisegnata — era una riga presa in prestito da .exercise-edit-row
+  // (pensata per i campi di un set), con link ed emoji sparsi senza gerarchia
+  // ("poco curata"). Ora ogni esercizio è una scheda compatta con divisorio,
+  // muscoli mostrati come chip (non testo semplice) e le due azioni allineate
+  // sulla stessa riga.
   wrap.innerHTML = entries.map(([name, data])=>{
     const muscles = data.muscles || [];
     const video = data.video || '';
     const fine = eFormatoFine(muscles);
-    const etichette = fine ? muscles.map(etichettaZonaFine).join(', ') : muscles.join(', ');
-    return `<div class="exercise-edit-row" style="align-items:flex-start;">
-      <div style="flex:1;">
-        <div style="font-family:var(--font-display); font-size:13.5px;">${toTitleCase(name)}</div>
-        <div class="hint">${etichette || 'Nessun muscolo indicato'}</div>
-        <button type="button" class="mio-ex-modifica-muscoli" data-name="${escapeAttr(name)}">✏️ Modifica muscoli</button>
-        <div class="muscle-chip-group mio-ex-muscoli-editor" data-name="${escapeAttr(name)}" style="display:none; margin-top:6px;"></div>
-        <select class="mio-ex-tipo" data-name="${escapeAttr(name)}" style="margin-top:6px; padding:7px 8px; font-size:11.5px;">${opzioniTipo(tipoMisura(name))}</select>
-        ${video ? `<a href="${escapeAttr(video)}" data-ex-name="${escapeAttr(name)}" class="video-link">▶ Video</a>`
-                : (canVideo ? `<button type="button" class="add-video-btn" data-name="${escapeAttr(name)}">+ Aggiungi link video</button>` : '')}
+    const chips = fine
+      ? muscles.map(m=>`<span class="muscle-chip mini readonly">${etichettaZonaFine(m)}</span>`).join('')
+      : (muscles.length ? muscles.map(m=>`<span class="muscle-chip mini readonly">${m}</span>`).join('') : '');
+    return `<div class="my-ex-item">
+      <div class="my-ex-head">
+        <div class="my-ex-name">${toTitleCase(name)}</div>
+        <button type="button" class="remove-x" data-name="${escapeAttr(name)}" aria-label="Rimuovi ${escapeAttr(toTitleCase(name))}">×</button>
       </div>
-      <button type="button" class="remove-x" data-name="${escapeAttr(name)}">×</button>
+      <div class="my-ex-muscles">${chips || '<span class="hint" style="margin:0;">Nessun muscolo indicato</span>'}</div>
+      <div class="my-ex-actions">
+        <button type="button" class="mio-ex-modifica-muscoli" data-name="${escapeAttr(name)}">Modifica muscoli</button>
+        <select class="mio-ex-tipo my-ex-tipo-select" data-name="${escapeAttr(name)}">${opzioniTipo(tipoMisura(name))}</select>
+      </div>
+      <div class="muscle-chip-group mio-ex-muscoli-editor" data-name="${escapeAttr(name)}" style="display:none;"></div>
+      ${video ? `<a href="${escapeAttr(video)}" data-ex-name="${escapeAttr(name)}" class="video-link">▶ Video</a>`
+              : (canVideo ? `<button type="button" class="add-video-btn" data-name="${escapeAttr(name)}">+ Aggiungi link video</button>` : '')}
     </div>`;
   }).join('');
   wrap.querySelectorAll('.mio-ex-tipo').forEach(sel=>sel.addEventListener('change', ()=>{

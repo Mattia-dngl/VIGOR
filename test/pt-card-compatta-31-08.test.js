@@ -4,14 +4,21 @@
 // in Scheda mostrava sempre tutto (riga PT + tasto Messaggi a tutta
 // larghezza + testo permessi + 2 interruttori + tasto "Termina rapporto").
 // Ora resta sempre a vista solo una riga compatta (avatar + nome + badge
-// "ti segue" + data + tasto tondo Messaggi); permessi e "Termina rapporto"
-// sono dietro una <details> richiusa di default (stesso pattern di
-// Impostazioni/Account). Nessuna funzione tolta, solo riorganizzata.
+// "ti segue" + data + tasto tondo Messaggi) più una riga permessi altrettanto
+// compatta (due interruttori piccoli + un link "Termina rapporto").
+//
+// 31/08/2026 (stesso giorno, seconda modifica): la primissima versione di
+// questa card metteva permessi e "Termina rapporto" dietro una <details>
+// richiusa di default — segnalato esplicitamente dall'utente che non gli
+// piace il pattern accordion in generale, "anche nella sezione Permessi non
+// mi convincono molto". Tolta la <details>: tutto resta SEMPRE a vista, ma
+// nella riga compatta descritta sopra invece che nella forma ingombrante di
+// prima. Nessuna funzione tolta, solo riorganizzata due volte di fila.
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const { loadApp, run } = require('./helpers/loadApp.js');
 
-test('renderMioPT (attivo): card compatta con dettagli/permessi dietro una tendina richiusa', async () => {
+test('renderMioPT (attivo): card compatta con riga avatar/nome/messaggi + riga permessi, tutto sempre a vista', async () => {
   const { window, document } = await loadApp();
   const r = await run(window, `
     window.modalitaOnline = () => true;
@@ -33,36 +40,35 @@ test('renderMioPT (attivo): card compatta con dettagli/permessi dietro una tendi
     };
     await renderMioPT();
     const box = document.getElementById('statoMioPT');
-    const details = box.querySelector('details.pt-dettagli-details');
     return {
+      niunaDetails: !box.querySelector('details'),
       haRigaCompatta: !!box.querySelector('.pt-riga-compatta'),
       nomeVisibile: box.querySelector('.pt-riga-compatta .nome').textContent.includes('Marco Rossi'),
       haBadge: !!box.querySelector('.pt-riga-compatta .pt-badge'),
       haTastoMessaggi: !!box.querySelector('#apriMessaggiClienteBtn.icon-btn-round'),
-      haDetails: !!details,
-      detailsChiusaDiDefault: details ? !details.open : false,
-      permSchedaDentroDetails: !!(details && details.querySelector('#permScheda')),
-      permDietaDentroDetails: !!(details && details.querySelector('#permDieta')),
-      terminaDentroDetails: !!(details && details.querySelector('#chiudiRapportoBtn')),
-      permSchedaChecked: details.querySelector('#permScheda').checked,
-      permDietaChecked: details.querySelector('#permDieta').checked
+      haRigaPermessi: !!box.querySelector('.pt-permessi-compatta'),
+      permSchedaVisibile: !!box.querySelector('#permScheda'),
+      permDietaVisibile: !!box.querySelector('#permDieta'),
+      terminaVisibile: !!box.querySelector('#chiudiRapportoBtn'),
+      permSchedaChecked: box.querySelector('#permScheda').checked,
+      permDietaChecked: box.querySelector('#permDieta').checked
     };
   `);
+  assert.equal(r.niunaDetails, true, 'nessun accordion/<details>: tutto deve restare sempre a vista');
   assert.equal(r.haRigaCompatta, true, 'deve esserci la riga compatta avatar+nome+messaggi');
   assert.equal(r.nomeVisibile, true);
   assert.equal(r.haBadge, true);
-  assert.equal(r.haTastoMessaggi, true, 'il tasto Messaggi resta sempre visibile, non dietro la tendina');
-  assert.equal(r.haDetails, true, 'permessi e "Termina rapporto" devono stare dentro una <details>');
-  assert.equal(r.detailsChiusaDiDefault, true, 'la tendina deve essere richiusa di default (non occupare spazio)');
-  assert.equal(r.permSchedaDentroDetails, true);
-  assert.equal(r.permDietaDentroDetails, true);
-  assert.equal(r.terminaDentroDetails, true);
+  assert.equal(r.haTastoMessaggi, true);
+  assert.equal(r.haRigaPermessi, true, 'la riga permessi deve essere sempre presente, non dietro un tap in più');
+  assert.equal(r.permSchedaVisibile, true);
+  assert.equal(r.permDietaVisibile, true);
+  assert.equal(r.terminaVisibile, true);
   assert.equal(r.permSchedaChecked, true);
   assert.equal(r.permDietaChecked, false);
   window.close();
 });
 
-test('renderMioPT (attivo): gli interruttori dei permessi restano funzionanti dentro la tendina', async () => {
+test('renderMioPT (attivo): gli interruttori dei permessi restano funzionanti', async () => {
   const { window, document } = await loadApp();
   const r = await run(window, `
     window.modalitaOnline = () => true;
