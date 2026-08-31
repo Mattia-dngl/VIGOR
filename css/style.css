@@ -310,7 +310,7 @@
   .home-cta-card::after{content:""; position:absolute; right:-40px; top:-40px; width:150px; height:150px;
     border-radius:50%; background:rgba(255,75,43,.18);}
   .home-cta-eyebrow{font-size:10px; letter-spacing:.06em; opacity:.85; font-weight:700; font-family:var(--font-display);}
-  .home-cta-title{font-size:18px; font-weight:800; margin:5px 0 3px; line-height:1.25; font-family:var(--font-display);}
+  .home-cta-title{font-size:18px; font-weight:800; margin:5px 0 8px; line-height:1.25; font-family:var(--font-display);}
   .home-cta-meta{font-size:11.5px; opacity:.9; margin-bottom:14px;}
   .home-cta-btn{display:flex; align-items:center; justify-content:center; gap:8px; width:100%;
     background:var(--accent); color:#fff; border:none; border-radius:999px;
