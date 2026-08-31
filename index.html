@@ -308,6 +308,13 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
       <div class="home-cta-title" id="homeCtaTitle">—</div>
       <div class="home-cta-meta" id="homeCtaMeta"></div>
       <button type="button" class="home-cta-btn" id="homeCtaBtn">Inizia allenamento</button>
+      <!-- 31/08/2026 (quinto giro, richiesta esplicita): quando l'allenamento
+           di oggi è già fatto, sotto "Rivedi allenamento" serve un modo
+           diretto per registrarne comunque un altro (es. un extra fuori
+           scheda) — stessa identica azione di "Allenamento libero" nel menu
+           del +, vedi fabOptLibero qui sotto. Nascosto di default, mostrato
+           solo nel ramo "già fatto" di aggiornaHomeCta(). -->
+      <button type="button" class="home-cta-btn home-cta-btn-secondary" id="homeCtaAddBtn" style="display:none;">+ Aggiungi un altro allenamento</button>
       <div class="home-cta-link" id="homeAllenatiBtn">Vedi la scheda completa</div>
     </div>
 
@@ -4676,9 +4683,11 @@ function aggiornaHomeCta(prof, programma){
   const meta = document.getElementById('homeCtaMeta');
   const btn = document.getElementById('homeCtaBtn');
   const card = document.getElementById('homeCtaCard');
+  const addBtn = document.getElementById('homeCtaAddBtn');
   if(!eyebrow || !title || !meta || !btn || !card) return;
   card.classList.remove('home-cta-done');
   btn.dataset.azione = 'registra';
+  if(addBtn) addBtn.style.display = 'none';
   if(!programma || !programma.days || programma.days.length===0){
     eyebrow.textContent = 'NESSUNA SCHEDA ATTIVA';
     title.textContent = 'Crea la tua prima scheda';
@@ -4705,6 +4714,11 @@ function aggiornaHomeCta(prof, programma){
     title.textContent = giornoOggi.name || 'Allenamento completato';
     meta.textContent = (giaFatto.exercises||[]).length + ' esercizi registrati';
     btn.textContent = 'Rivedi allenamento';
+    // 31/08/2026 (quinto giro): "Rivedi allenamento" apriva Registra come se si
+    // dovesse registrare di nuovo — segnalato che deve invece portare allo
+    // Storico, dove l'allenamento appena fatto si può davvero rivedere.
+    btn.dataset.azione = 'storico';
+    if(addBtn) addBtn.style.display = 'block';
     return;
   }
   eyebrow.textContent = 'ALLENAMENTO DI OGGI';
@@ -4969,7 +4983,13 @@ function chiudiAccountPanel(){
 
 document.getElementById('homeCtaBtn').addEventListener('click', ()=>{
   const btn = document.getElementById('homeCtaBtn');
-  if(btn.dataset.azione === 'scheda'){ vaiA('program'); } else { apriRegistra(); }
+  if(btn.dataset.azione === 'scheda'){ vaiA('program'); }
+  else if(btn.dataset.azione === 'storico'){ apriStorico(); }
+  else { apriRegistra(); }
+});
+document.getElementById('homeCtaAddBtn').addEventListener('click', ()=>{
+  apriRegistra();
+  selectDay('LIBERO');
 });
 document.getElementById('homeAllenatiBtn').addEventListener('click', ()=>vaiA('program'));
 document.getElementById('homePTBtn').addEventListener('click', apriAreaPT);
@@ -8499,6 +8519,11 @@ document.getElementById('saveLogBtn').addEventListener('click', ()=>{
   document.getElementById('logNotes').value = "";
   renderHeader();
   renderDayChoices();
+  // 31/08/2026 (quinto giro, richiesta esplicita): finito di registrare
+  // restava sulla schermata di Registra, ormai vuota/azzerata — riporta in
+  // Home, che intanto mostra già "Fatto oggi ✓" (aggiornaHomeCta() viene
+  // richiamata da mostraHome()).
+  mostraHome();
 });
 
 // ============================================================

@@ -322,6 +322,14 @@
   .home-cta-done .home-cta-eyebrow{color:var(--ok); opacity:1;}
   .home-cta-done .home-cta-title{color:var(--text);}
   .home-cta-done .home-cta-btn{background:var(--surface2); color:var(--text-dim);}
+  /* "+ Aggiungi un altro allenamento" (31/08/2026, quinto giro): unico
+     pulsante visibile solo a giornata già fatta — resta colorato ad accento
+     (a differenza di "Rivedi allenamento" qui sopra, reso volutamente
+     tenue) perché è l'unica vera azione ancora possibile in quello stato.
+     Selettore con .home-cta-done .home-cta-btn ripetuto apposta: altrimenti
+     quella regola (due classi) batte in specificità questa (una sola). */
+  .home-cta-done .home-cta-btn.home-cta-btn-secondary{margin-top:9px; background:transparent;
+    color:var(--accent); border:1.5px solid var(--accent-dim); box-shadow:none;}
 
   /* ============================================================
      NAV — nuova barra persistente a 5 voci (Scheda, Dieta, Home, Account, Glossario).
