@@ -579,6 +579,11 @@
   }
   .btn.top-action-btn svg{width:13px; height:13px;}
   .scheda-titolo{font-family:var(--font-display); font-size:19px; margin:0; flex:1; min-width:0;}
+  /* Riuso di .scheda-titolo/.scheda-header-row per l'intestazione vedi/modifica
+     di Dieta (31/08/2026, richiesta esplicita: "rendere Dieta più simile a
+     Scheda") — stesso font/dimensione, solo tinto del colore di Dieta invece
+     di quello di default, coerente con .card h3.diet qui sotto. */
+  .scheda-titolo.diet{color:var(--diet);}
   .scheda-header-actions{display:flex; align-items:center; gap:8px;}
   .icon-btn-round{width:34px; height:34px; min-width:34px; border-radius:50%; border:1px solid var(--border);
     background:var(--surface2); color:var(--text); display:flex; align-items:center; justify-content:center;

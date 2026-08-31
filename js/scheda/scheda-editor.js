@@ -584,6 +584,18 @@ document.getElementById('nuovaSchedaBtn').addEventListener('click', ()=>{
   });
 });
 
+// ---- header compatto di Dieta: stessa coppia matita/freccia di Scheda
+// qui sopra (31/08/2026, richiesta esplicita) — pilotano lo stesso motore
+// di sempre (.seg-btn[data-segd], nascosto ma invariato: vedi
+// #dietPlanVedModToggle), così anche l'apertura automatica della tendina
+// "Piano alimentare assegnato dal PT" (gestita da quel motore) resta invariata. ----
+document.getElementById('dietEditBtn').addEventListener('click', ()=>{
+  document.querySelector('.seg-btn[data-segd="edit"]').click();
+});
+document.getElementById('dietTornaVediBtn').addEventListener('click', ()=>{
+  document.querySelector('.seg-btn[data-segd="view"]').click();
+});
+
 document.getElementById('clearDietFormBtn').addEventListener('click', ()=>{
   customConfirm("Svuotare il piano alimentare? (la dieta attualmente attiva non viene toccata finché non premi \"Salva dieta\")", ()=>{
     editingDietInfo = {peso:"",altezza:"",attivita:"",calorie:"",macro:"",esclusi:"",noteIntolleranza:""};
@@ -779,6 +791,10 @@ document.getElementById('saveDietBtn').addEventListener('click', ()=>{
   save();
   toast("Dieta aggiornata ✓");
   renderHeader(); renderDayChoices(); renderDietEditForm(); renderDietPlanView(); renderArchiveList();
+  // 31/08/2026: stesso passaggio già usato da updateProgramBtn/saveNewProgramBtn
+  // in Scheda qui sopra — esce davvero da "Modifica" invece di restarci con
+  // la dieta appena salvata sotto agli occhi ancora in modalità editor.
+  document.querySelector('.seg-btn[data-segd="view"]').click();
   document.querySelector('.tab-btn[data-tab="diet"]').click();
 });
 
