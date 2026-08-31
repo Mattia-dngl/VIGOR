@@ -86,12 +86,12 @@ test('progressoObiettivoRecord: percentuale verso il target e "raggiunto" quando
   const r = await run(window, `
     const profilo = {
       id:'io', name:'Io', email:'io@test.it', measurements:[], customExercises:{}, customFoods:{},
-      logs:[{ id:'l1', date:'2026-01-01', exercises:[{ name:'Panca Piana', sets:[{reps:'5', kg:'80'}] }] }], // epley 93.3
+      logs:[{ id:'l1', date:'2026-01-01', exercises:[{ name:'Panca Piana', sets:[{reps:'5', kg:'80'}] }] }], // epley 93.33 -> arrotondato a 93 (31/08/2026: recordPersonale ora arrotonda all'intero, non più al decimale)
       obiettivoRecord: { esercizio:'Panca Piana', target: 100 }
     };
     return progressoObiettivoRecord(profilo);
   `);
-  assert.equal(r.attuale, 93.3);
+  assert.equal(r.attuale, 93);
   assert.equal(r.percento, 93);
   assert.equal(r.raggiunto, false);
   window.close();
@@ -151,7 +151,7 @@ test('Home: salvare un obiettivo su un esercizio lo mostra nella card con la per
   await run(window, `
     const profilo = {
       id:'io', name:'Io', email:'io@test.it', measurements:[], customExercises:{}, customFoods:{},
-      logs:[{ id:'l1', date:'2026-01-01', exercises:[{ name:'Squat', sets:[{reps:'5', kg:'100'}] }] }], // epley 116.7
+      logs:[{ id:'l1', date:'2026-01-01', exercises:[{ name:'Squat', sets:[{reps:'5', kg:'100'}] }] }], // epley 116.67 -> arrotondato a 117
       programs:[{id:'p1', days:[]}], activeProgramId:'p1'
     };
     state.profiles = [profilo]; activeProfileId = 'io';
@@ -164,6 +164,6 @@ test('Home: salvare un obiettivo su un esercizio lo mostra nella card con la per
   assert.deepEqual(ob, { esercizio:'Squat', target: 150 });
   assert.equal(document.getElementById('homeObRecordRiga').style.display, 'flex');
   assert.equal(document.getElementById('homeObRecordNome').textContent, 'Squat');
-  assert.match(document.getElementById('homeObRecordSub').textContent, /116\.7 kg.*150 kg/);
+  assert.match(document.getElementById('homeObRecordSub').textContent, /117 kg.*150 kg/);
   window.close();
 });
