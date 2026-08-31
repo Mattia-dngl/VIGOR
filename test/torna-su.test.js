@@ -71,14 +71,21 @@ test('menu in basso: ritoccare la scheda già attiva torna in cima, non ricarica
   window.close();
 });
 
-test('menu in basso: toccare una scheda DIVERSA da quella attiva naviga normalmente (nessuno scorrimento forzato)', async () => {
+// 31/08/2026 (quarto giro, segnalato con screenshot): passare da una
+// schermata all'altra (es. da Dieta scorsa in basso a Scheda) lasciava la
+// stessa posizione di scorrimento di prima — la nuova schermata sembrava
+// già scorsa invece di partire dall'inizio. Richiesta esplicita: cambiare
+// scheda deve sempre "atterrare" in cima. Il test qui sotto imponeva il
+// comportamento opposto (nessuno scorrimento forzato) — invertito di
+// proposito, non è una regressione.
+test('menu in basso: toccare una scheda DIVERSA da quella attiva naviga e torna sempre in cima', async () => {
   const { window } = await loadApp();
   const r = await run(window, `
     const profilo = { id:'io', name:'Io', email:'io@test.it', logs:[], measurements:[], customExercises:{}, customFoods:{} };
     state.profiles = [profilo]; activeProfileId = 'io';
     mostraHome(); // stato noto: Home attiva, "Storico" non attiva
     let chiamate = [];
-    window.scrollTo = (opz) => chiamate.push(opz);
+    window.scrollTo = (...args) => chiamate.push(args);
     const btnStorico = document.querySelector('#navTabsGlobale button[data-go="storico"]');
     btnStorico.click();
     return {
@@ -87,7 +94,8 @@ test('menu in basso: toccare una scheda DIVERSA da quella attiva naviga normalme
       schedaAttivaOra: btnStorico.classList.contains('active')
     };
   `);
-  assert.equal(r.chiamate.length, 0, 'passando a una scheda diversa non deve scattare lo scorrimento automatico');
+  assert.equal(r.chiamate.length, 1, 'passando a una scheda diversa deve scattare lo scorrimento in cima');
+  assert.deepEqual(r.chiamate[0], [0, 0]);
   assert.equal(r.schedaVisibile, true);
   assert.equal(r.schedaAttivaOra, true);
   window.close();
