@@ -637,8 +637,20 @@
      usato dai test) — solo CSS. */
   .day-accordion[open]{position:fixed; inset:0; z-index:200; margin:0; border-radius:0;
     background:var(--bg); box-shadow:none; overflow-y:auto; -webkit-overflow-scrolling:touch;}
-  .day-accordion[open] summary{position:sticky; top:0; z-index:1; background:var(--bg);}
-  .day-accordion[open] .details-body{padding:16px 16px 40px;}
+  /* 31/08/2026 (quarto giro, segnalato con screenshot da telefono): con
+     position:sticky l'intestazione del giorno (lettera/nome/×) finiva
+     scorrendo per andare a sovrapporsi al testo di "Muscoli coinvolti"/
+     "Tecnica speciale" invece di restarci sopra in modo pulito — su iOS
+     Safari sticky dentro un <details>/<summary> con overflow-scrolling
+     touch è un abbinamento noto per comportarsi in modo incoerente.
+     .day-accordion[open] copre già tutto lo schermo (position:fixed;
+     inset:0), quindi un'intestazione position:fixed ancorata in cima
+     ottiene lo stesso effetto in modo più affidabile: aggiungo il
+     padding-top al corpo per non farci scorrere il primo esercizio sotto. */
+  .day-accordion[open] > summary{
+    position:fixed; top:0; left:0; right:0; z-index:1; background:var(--bg);
+  }
+  .day-accordion[open] .details-body{padding:76px 16px 40px;}
   body.giorno-fullscreen-aperto{overflow:hidden;}
   /* L'icona diventa una × quando il giorno è aperto a schermo intero, più
      chiara di una freccina come invito a tornare all'elenco dei giorni. */

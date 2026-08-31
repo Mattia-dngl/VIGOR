@@ -7644,6 +7644,13 @@ document.querySelectorAll('#navTabsGlobale button[data-go]').forEach(btn=>{
       return;
     }
     vaiA(btn.dataset.go);
+    // 31/08/2026 (quarto giro, segnalato con screenshot): passando da una
+    // schermata all'altra (es. da Dieta scorsa in basso a Scheda) restava
+    // la stessa posizione di scorrimento di prima — la nuova schermata si
+    // vedeva "già scorsa" invece che dall'inizio. Sopra c'era già lo stesso
+    // scrollTo ma solo per il tocco sulla scheda GIÀ attiva; qui serve anche
+    // quando si cambia scheda davvero.
+    window.scrollTo(0, 0);
   });
 });
 
@@ -10751,6 +10758,11 @@ document.getElementById('updateProgramBtn').addEventListener('click', ()=>{
   save();
   toast("Scheda aggiornata ✓");
   renderHeader(); renderDayChoices(); renderNewProgramForm(); renderProgramView();
+  // 31/08/2026 (quarto giro, segnalato con screenshot): il tasto sotto
+  // cambiava solo la voce di nav attiva, non usciva davvero da "Modifica
+  // scheda" — restava sull'editor invece di tornare a vedere la scheda
+  // appena salvata. Stesso passaggio già usato da #schedaTornaVediBtn.
+  document.querySelector('.seg-btn[data-seg="view"]').click();
   document.querySelector('.tab-btn[data-tab="program"]').click();
 });
 
@@ -10783,6 +10795,10 @@ document.getElementById('saveNewProgramBtn').addEventListener('click', ()=>{
   save();
   toast("Scheda attivata ✓");
   renderHeader(); renderDayChoices(); renderNewProgramForm(); renderProgramView();
+  // 31/08/2026 (quarto giro): stesso motivo del tasto "Aggiorna scheda" qui
+  // sopra — esce davvero dall'editor invece di limitarsi a evidenziare la
+  // voce di nav.
+  document.querySelector('.seg-btn[data-seg="view"]').click();
   document.querySelector('.tab-btn[data-tab="program"]').click();
 });
 
