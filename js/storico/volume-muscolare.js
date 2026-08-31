@@ -22,7 +22,15 @@ function youtubeSearchUrl(name){
 // Restituisce { url, isCustomLink } — un link video specifico se impostato, altrimenti una ricerca YouTube di riserva
 function getExerciseVideoInfo(name){
   const n = (name||'').trim().toLowerCase();
-  if(!n) return null;
+  // Non torna mai null (bug reale segnalato con screenshot: un esercizio
+  // senza nome — dato incompleto/corrotto — faceva mancare qui il ritorno
+  // anticipato, e ogni chiamante che leggeva subito ".url" senza controllo
+  // (renderSchedaView, l'editor, Registra, Glossario...) andava in crash con
+  // "null is not an object (evaluating 'vi.url')", bloccando anche il
+  // rientro nell'app dopo un accesso riuscito: qui basta un nome vuoto per
+  // portarsi dietro tutta la sessione). Con nome vuoto le chiavi sotto
+  // restano semplicemente senza corrispondenza: si arriva sempre al
+  // fallback finale, mai a un valore nullo.
   const lp = activeProfile();
   if(lp && lp.customExercises && lp.customExercises[n] && lp.customExercises[n].video){
     return { url: lp.customExercises[n].video, isCustomLink: true, fonte: 'utente' };

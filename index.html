@@ -539,6 +539,20 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
       <p class="hint" style="margin-top:14px;">Password, privacy e le altre opzioni sono in <b>Impostazioni</b> (icona ⚙ in alto).</p>
     </div>
 
+    <!-- Segnaposto per una funzione futura (31/08/2026, quarto giro): oggi
+         nessuna palestra è collegata all'app, quindi non c'è ancora nessuna
+         scadenza reale da mostrare — la card lo dice chiaramente invece di
+         restare vuota o nascosta. Il campo profilo (abbonamentoScadenza,
+         vedi dati-default.js/stato.js) esiste già: appena una palestra lo
+         imposterà, questa stessa card mostrerà data e badge di stato senza
+         bisogno di altre modifiche (vedi renderAbbonamento() in account.js). -->
+    <div class="settings-subhead" style="margin-top:18px;">Abbonamento</div>
+    <div class="card" id="acctAbbonamentoCard" style="margin-top:8px;">
+      <span class="membership-badge" id="abbonamentoBadge" style="display:none;"></span>
+      <div class="dato-riga"><span>Scadenza abbonamento</span><b id="abbonamentoScadenzaMostrata">—</b></div>
+      <p class="hint" id="abbonamentoHint" style="margin-top:6px;"></p>
+    </div>
+
     <!-- Da qui in giù: solo le funzioni più usate restano a vista sulla
          schermata principale di Account (redesign ispirato ai social,
          31/08/2026 terzo giro). Password, Impostazioni vere e proprie,

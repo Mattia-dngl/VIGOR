@@ -1266,6 +1266,13 @@
   .pdf-upload-box input{margin-top:8px;}
   .info-grid{display:grid; grid-template-columns:1fr; gap:6px; margin-top:5px;}
   .info-grid .field label{margin-top:0;}
+  /* Peso/Altezza/Attività fisica in "Info generali dieta" arrivano da
+     Storico → Misure e da Account, non si scrivono più a mano qui (richiesta
+     esplicita, 31/08/2026 quarto giro): stesso ingombro di un input, ma
+     testo attenuato e nessun bordo "attivo" per segnalare che è di sola
+     lettura. */
+  .dieta-info-sola-lettura{width:100%; background:var(--surface2); border:1.5px solid transparent;
+    color:var(--text-dim); padding:10px 12px; border-radius:var(--r-sm); font-size:14px; box-sizing:border-box;}
 
 
   /* ================= MAPPA MUSCOLARE + GLOSSARIO ================= */

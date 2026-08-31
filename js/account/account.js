@@ -179,6 +179,7 @@ function apriAccountPanel(){
   document.getElementById('setAltezza').value = lp.altezza || '';
   document.getElementById('setLivelloAttivita').value = lp.livelloAttivita || 'moderato';
   renderEtaCalcolata();
+  renderAbbonamento(lp);
 
   document.getElementById('acctAvatarInitials').textContent = inizialiNome(lp.name);
   document.getElementById('acctHeaderName').textContent = lp.name || "Senza nome";
@@ -194,6 +195,37 @@ function apriAccountPanel(){
   // Impostazioni e resta sempre raggiungibile (online o offline mostra
   // internamente il blocco giusto — vedi il 'toggle' di #accPrivacy).
   document.getElementById('acctVaiMessaggi').style.display = utenteOnline ? 'flex' : 'none';
+}
+
+// Segnaposto per una funzione futura: oggi nessuna palestra è collegata
+// all'app, quindi lp.abbonamentoScadenza è sempre null e la card lo dice
+// esplicitamente. Appena una palestra imposterà questa data da qualche
+// parte (gestione PT/admin, non ancora costruita), la stessa card mostrerà
+// da sola data e badge di stato senza bisogno di altre modifiche qui.
+function renderAbbonamento(lp){
+  const badge = document.getElementById('abbonamentoBadge');
+  const valore = document.getElementById('abbonamentoScadenzaMostrata');
+  const hint = document.getElementById('abbonamentoHint');
+  const scadenza = lp && lp.abbonamentoScadenza;
+  if(!scadenza){
+    badge.style.display = 'none';
+    valore.textContent = '—';
+    hint.textContent = "Non ancora collegato: appena la tua palestra lo attiva, qui vedrai in automatico quando scade il tuo abbonamento.";
+    return;
+  }
+  const giorni = giorniDaOggi(scadenza);
+  valore.textContent = formatDate(scadenza);
+  badge.style.display = 'inline-block';
+  if(giorni !== null && giorni > 0){
+    badge.className = 'membership-badge low'; badge.textContent = 'Scaduto';
+    hint.textContent = "Il tuo abbonamento è scaduto: parla con la tua palestra per rinnovarlo.";
+  } else if(giorni !== null && giorni > -7){
+    badge.className = 'membership-badge warn'; badge.textContent = 'In scadenza';
+    hint.textContent = "Sta per scadere: rinnovalo per continuare ad allenarti senza interruzioni.";
+  } else {
+    badge.className = 'membership-badge ok'; badge.textContent = 'Attivo';
+    hint.textContent = "Il tuo abbonamento è attivo.";
+  }
 }
 
 // Icona chat riusata al posto dell'emoji 💬 nei bottoni "Messaggi", per restare
