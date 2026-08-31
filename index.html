@@ -485,24 +485,6 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
       <div class="acct-badge" id="acctHeaderBadge"></div>
     </div>
 
-    <!-- Codice di recupero (31/08/2026, secondo giro): prima viveva solo dentro
-         Account → Impostazioni → Sicurezza dei dati, due tendine annidate per
-         arrivarci — segnalato che è l'unico modo per rientrare se si dimentica
-         la password e restava troppo nascosto. Promosso a card sempre a vista
-         qui in cima, subito dopo l'intestazione del profilo: stessi identici
-         #nuovoCodiceBtn/#codiceMostrato di sempre, stesso listener più sotto
-         (vedi "document.getElementById('nuovoCodiceBtn')") — solo spostato,
-         non duplicato. -->
-    <div class="card recupero-evidenza">
-      <div class="recupero-evidenza-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
-      <div class="recupero-evidenza-body">
-        <div class="recupero-evidenza-title">Codice di recupero</div>
-        <p class="hint">Genera e salva il codice: è l'unico modo per rientrare se dimentichi la password.</p>
-        <button class="btn secondary block" id="nuovoCodiceBtn" style="margin-top:10px;">Genera un nuovo codice</button>
-        <div class="codice-box" id="codiceMostrato" style="display:none;"></div>
-      </div>
-    </div>
-
     <div class="settings-subhead" style="margin-top:18px;">Il tuo profilo</div>
     <div class="card acct-profile-card" style="margin-top:8px;">
       <div class="dato-riga"><span>Email dell'account</span><b id="accountEmailMostrata">—</b></div>
@@ -643,6 +625,23 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
           <label>Conferma nuova password</label>
           <input type="password" id="accountNewPw2" placeholder="Ripeti la nuova password" autocomplete="new-password">
           <button class="btn secondary block" id="saveAccountPwBtn" style="margin-top:8px;">Cambia password</button>
+
+          <!-- Codice di recupero: unico modo per rientrare in un profilo locale
+               se si dimentica la password (niente email/server con cui parlare).
+               Vive qui, accanto a "Cambia password", perché riguarda solo i
+               profili offline (stesso gate di #pwOfflineBlock) — spostato da
+               Account, dove stava come card sempre a vista (31/08/2026, terzo
+               giro): stessi identici #nuovoCodiceBtn/#codiceMostrato di sempre,
+               stesso listener in account.js. -->
+          <div class="card recupero-evidenza" style="margin-top:16px;">
+            <div class="recupero-evidenza-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
+            <div class="recupero-evidenza-body">
+              <div class="recupero-evidenza-title">Codice di recupero</div>
+              <p class="hint">Genera e salva il codice: è l'unico modo per rientrare se dimentichi la password.</p>
+              <button class="btn secondary block" id="nuovoCodiceBtn" style="margin-top:10px;">Genera un nuovo codice</button>
+              <div class="codice-box" id="codiceMostrato" style="display:none;"></div>
+            </div>
+          </div>
         </div>
 
         <div class="card" id="pwEliminaBlock" style="margin-top:12px; border:1px solid var(--accent);">
