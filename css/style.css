@@ -550,6 +550,16 @@
   .registra-sticky-group .timer-bar{
     position:static; margin:0 -12px 12px; top:auto;
   }
+  /* Barra "Aggiorna scheda"/"Salva come nuova versione" sempre raggiungibile
+     mentre si scorre l'elenco dei giorni (31/08/2026, terzo giro): stesso
+     pattern sticky di .registra-sticky-group qui sopra, ma ancorata in
+     basso invece che in alto. z-index sotto ai 200 di .day-accordion[open]
+     apposta, per restare dietro l'editor a schermo intero di un giorno. */
+  .scheda-editor-sticky-actions{
+    position:sticky; bottom:0; z-index:60; background:var(--bg);
+    margin:14px -12px -12px; padding:10px 12px calc(10px + env(safe-area-inset-bottom, 0px));
+    box-shadow:0 -8px 16px -8px rgba(23,21,15,0.08);
+  }
   .btn.top-action-btn{
     flex:0 0 auto; display:inline-flex; align-items:center; gap:5px;
     padding:9px 14px; font-size:12.5px; border-radius:var(--r-pill); white-space:nowrap;

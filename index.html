@@ -1312,8 +1312,20 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
         <p class="hint">Il tuo personal trainer ha bloccato la modifica della scheda. Contattalo se vuoi richiedere delle modifiche.</p>
       </div>
 
-      <button class="btn block" id="updateProgramBtn">Aggiorna scheda</button>
-      <button class="btn secondary block" id="saveNewProgramBtn" style="margin-top:9px;">Salva come nuova versione</button>
+      <!-- 31/08/2026 (terzo giro, richiesta esplicita): i due tasti di salvataggio
+           restavano in fondo a un form che può diventare lungo (più giorni,
+           più esercizi ciascuno) — bisognava scorrere fino in fondo ogni
+           volta. Incollati al fondo dello schermo mentre si scorre (stesso
+           pattern di .registra-sticky-group qui sopra, ma ancorato in basso),
+           senza toccare id/classi/logica di mostra o nascondi dei due tasti.
+           #dayEditors resta l'unico posto con l'overlay a schermo intero
+           (.day-accordion[open], z-index:200): questa barra ha z-index più
+           basso apposta, così quando un giorno è aperto resta sotto e non lo
+           copre. -->
+      <div class="scheda-editor-sticky-actions">
+        <button class="btn block" id="updateProgramBtn">Aggiorna scheda</button>
+        <button class="btn secondary block" id="saveNewProgramBtn" style="margin-top:9px;">Salva come nuova versione</button>
+      </div>
 
     </div>
     </div>
