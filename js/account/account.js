@@ -555,18 +555,35 @@ async function dopoAccessoOnline(){
     document.documentElement.classList.remove('avvio');
     nascondiCloudGate();
     controllaSaltati(true);
-    renderAll();
-    _timerDurata = impostazioniTimer().durata;
-    renderScorciatoieTimer();
-    _bozzaPronta = false;
-    if(ripristinaBozza()) toast("Ripresa la registrazione lasciata a metà");
-    _bozzaPronta = true;
+    // Da qui in poi l'accesso è già riuscito per davvero: i dati sono
+    // caricati e applicati (applicaDatiOnline(), qui sopra). Un problema
+    // isolato nel disegnare la UI (renderAll() e dintorni) non deve più far
+    // ripiombare la persona sulla schermata di login con un errore — bug
+    // segnalato con screenshot: capitava proprio così, invitandola a
+    // reinserire le credenziali quando in realtà era già dentro. Qui
+    // l'eventuale fallimento resta contenuto: si continua comunque verso
+    // Home/Area PT invece di annullare un accesso già avvenuto.
+    try{
+      renderAll();
+      _timerDurata = impostazioniTimer().durata;
+      renderScorciatoieTimer();
+      _bozzaPronta = false;
+      if(ripristinaBozza()) toast("Ripresa la registrazione lasciata a metà");
+      _bozzaPronta = true;
+    }catch(e){
+      console.error(e);
+    }
     mostraStatoSync('ok', 'sincronizzato');
     // Chi è Personal Trainer entra direttamente nella sua area riservata:
     // non è un utente come gli altri, non deve passare dalla home normale
     // (da lì può comunque tornare alla propria home col tasto "Torna Home").
-    if(sonoPT()) apriAreaPT();
-    else mostraHome();
+    try{
+      if(sonoPT()) apriAreaPT();
+      else mostraHome();
+    }catch(e){
+      console.error(e);
+      try{ mostraHome(); }catch(e2){ console.error(e2); }
+    }
   }catch(e){
     // Qualunque errore qui (rete, timeout, server) non deve lasciare la
     // persona bloccata a guardare l'indicatore girare per sempre: torna
@@ -645,7 +662,7 @@ function traduciErrore(m){
   // cambio password) non va mai mostrato così com'è: nessuno capirebbe cosa
   // fare. Meglio un messaggio generico ma comprensibile, con cui si può
   // comunque riprovare.
-  const sembraErroreTecnico = !t || /is not an object|is not a function|evaluating|undefined is not|cannot read propert|null is not|object object|\bnan\b/.test(t);
+  const sembraErroreTecnico = !t || /is not an object|is not a function|evaluating|undefined is not|cannot read propert|null is not|object object|\bnan\b|can't find variable|is not defined/.test(t);
   if(sembraErroreTecnico) return "Qualcosa non ha funzionato. Riprova tra poco.";
   return m;
 }
