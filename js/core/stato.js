@@ -66,6 +66,7 @@ function normalizzaProfilo(p){
   if(!p.obiettivoCalorico) p.obiettivoCalorico = 'mantenimento';
   if(p.obiettivoPeso === undefined) p.obiettivoPeso = null;
   if(p.obiettivoRecord === undefined) p.obiettivoRecord = null;
+  if(p.abbonamentoScadenza === undefined) p.abbonamentoScadenza = null;
   if(!p.customExercises) p.customExercises = {};
   Object.keys(p.customExercises).forEach(name=>{
     if(Array.isArray(p.customExercises[name])){

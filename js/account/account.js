@@ -92,18 +92,43 @@ function aggiornaNavGlobale(attivo){
   });
 }
 
-// Impostazioni non è più una schermata a sé: apre/scrolla la tendina
-// "Impostazioni" dentro Account. "provenienza" resta per sapere dove tornare
-// chiudendo Account (vedi chiudiAccountPanel) — 'app' = torna alla schermata
-// di app da cui si è premuto l'ingranaggio, altrimenti si torna in Home.
+// Impostazioni è una schermata a sé (#settingsPanel, redesign ispirato ai
+// social — 31/08/2026 terzo giro): raccoglie Password e sicurezza,
+// Allenamento e dati (timer/promemoria/esercizi), Assistenza e Gestione
+// dell'app, così la schermata principale di Account resta con solo le
+// funzioni più importanti. "provenienza" dice a chiudiSettingsPanel() dove
+// tornare: 'account' = si torna ad Account (ci si è arrivati con
+// l'ingranaggio ⚙ lì dentro), 'app' = torna alla schermata di app da cui si
+// è aperta Impostazioni, altrimenti si torna in Home.
 function apriImpostazioni(provenienza){
+  document.getElementById('homeScreen').style.display = 'none';
   document.getElementById('appRoot').style.display = 'none';
-  apriAccountPanel();
+  document.getElementById('accountPanel').style.display = 'none';
+  document.getElementById('settingsPanel').style.display = 'block';
   _impostazioniProvenienza = provenienza;
+  renderImpostazioniInline();
+  renderAmministrazione();
   const acc = document.getElementById('accImpostazioni');
   if(acc){ acc.open = true; if(acc.scrollIntoView) acc.scrollIntoView({behavior:'smooth', block:'start'}); }
-  renderImpostazioniInline();
 }
+// Chiude #settingsPanel tornando a dove si è aperta (vedi apriImpostazioni).
+function chiudiSettingsPanel(){
+  document.getElementById('settingsPanel').style.display = 'none';
+  if(_impostazioniProvenienza === 'app'){
+    _impostazioniProvenienza = null;
+    document.getElementById('appRoot').style.display = 'block';
+    return;
+  }
+  if(_impostazioniProvenienza === 'account'){
+    _impostazioniProvenienza = null;
+    apriAccountPanel();
+    return;
+  }
+  _impostazioniProvenienza = null;
+  mostraHome();
+}
+document.getElementById('openSettingsBtn').addEventListener('click', ()=>apriImpostazioni('account'));
+document.getElementById('closeSettingsBtn').addEventListener('click', chiudiSettingsPanel);
 // Riempie i campi della tendina Impostazioni: usata sia da apriImpostazioni()
 // (ingranaggio ⚙, notifiche) sia dal 'toggle' della tendina stessa quando la
 // si apre toccandola direttamente dentro Account.
@@ -139,11 +164,6 @@ function apriAccountPanel(){
   document.getElementById('appRoot').style.display = 'none';
   document.getElementById('accountPanel').style.display = 'block';
   document.body.classList.add('account-aperto');
-  // Reset di default: solo apriImpostazioni() la imposta esplicitamente
-  // (chiamata subito dopo questa funzione), qualunque altra strada per
-  // arrivare qui (avatar, notifica, ecc.) deve tornare in Home chiudendo.
-  _impostazioniProvenienza = null;
-  renderAmministrazione();
   aggiornaNavGlobale('account');
   const lp = loggedInProfile();
   if(!lp) return;
@@ -159,6 +179,7 @@ function apriAccountPanel(){
   document.getElementById('setAltezza').value = lp.altezza || '';
   document.getElementById('setLivelloAttivita').value = lp.livelloAttivita || 'moderato';
   renderEtaCalcolata();
+  renderAbbonamento(lp);
 
   document.getElementById('acctAvatarInitials').textContent = inizialiNome(lp.name);
   document.getElementById('acctHeaderName').textContent = lp.name || "Senza nome";
@@ -169,11 +190,42 @@ function apriAccountPanel(){
   else if(sonoPT()){ badge.textContent = "Personal Trainer"; badge.classList.add('show'); }
   else { badge.classList.remove('show'); }
 
-  // Messaggi e Privacy e Sicurezza hanno senso solo con un account online:
-  // in locale non c'è un server con cui parlare né una password da resettare via email.
-  const online = !!utenteOnline;
-  document.getElementById('acctVaiMessaggi').style.display = online ? 'flex' : 'none';
-  document.getElementById('accPrivacy').style.display = online ? '' : 'none';
+  // Messaggi ha senso solo con un account online: in locale non c'è un
+  // server con cui parlare. "Password e sicurezza" invece vive ora dentro
+  // Impostazioni e resta sempre raggiungibile (online o offline mostra
+  // internamente il blocco giusto — vedi il 'toggle' di #accPrivacy).
+  document.getElementById('acctVaiMessaggi').style.display = utenteOnline ? 'flex' : 'none';
+}
+
+// Segnaposto per una funzione futura: oggi nessuna palestra è collegata
+// all'app, quindi lp.abbonamentoScadenza è sempre null e la card lo dice
+// esplicitamente. Appena una palestra imposterà questa data da qualche
+// parte (gestione PT/admin, non ancora costruita), la stessa card mostrerà
+// da sola data e badge di stato senza bisogno di altre modifiche qui.
+function renderAbbonamento(lp){
+  const badge = document.getElementById('abbonamentoBadge');
+  const valore = document.getElementById('abbonamentoScadenzaMostrata');
+  const hint = document.getElementById('abbonamentoHint');
+  const scadenza = lp && lp.abbonamentoScadenza;
+  if(!scadenza){
+    badge.style.display = 'none';
+    valore.textContent = '—';
+    hint.textContent = "Non ancora collegato: appena la tua palestra lo attiva, qui vedrai in automatico quando scade il tuo abbonamento.";
+    return;
+  }
+  const giorni = giorniDaOggi(scadenza);
+  valore.textContent = formatDate(scadenza);
+  badge.style.display = 'inline-block';
+  if(giorni !== null && giorni > 0){
+    badge.className = 'membership-badge low'; badge.textContent = 'Scaduto';
+    hint.textContent = "Il tuo abbonamento è scaduto: parla con la tua palestra per rinnovarlo.";
+  } else if(giorni !== null && giorni > -7){
+    badge.className = 'membership-badge warn'; badge.textContent = 'In scadenza';
+    hint.textContent = "Sta per scadere: rinnovalo per continuare ad allenarti senza interruzioni.";
+  } else {
+    badge.className = 'membership-badge ok'; badge.textContent = 'Attivo';
+    hint.textContent = "Il tuo abbonamento è attivo.";
+  }
 }
 
 // Icona chat riusata al posto dell'emoji 💬 nei bottoni "Messaggi", per restare
@@ -239,15 +291,6 @@ document.getElementById('acctAvatarFile').addEventListener('change', function(e)
 function chiudiAccountPanel(){
   document.getElementById('accountPanel').style.display = 'none';
   document.body.classList.remove('account-aperto');
-  // Se si è arrivati qui premendo l'ingranaggio ⚙ da dentro Scheda/Registra/
-  // Dieta (apriImpostazioni('app')), chiudendo si torna lì invece che in
-  // Home — stesso comportamento di quando Impostazioni era una schermata a sé.
-  if(_impostazioniProvenienza === 'app'){
-    _impostazioniProvenienza = null;
-    document.getElementById('appRoot').style.display = 'block';
-    return;
-  }
-  _impostazioniProvenienza = null;
   mostraHome();
 }
 
@@ -288,27 +331,15 @@ document.getElementById('homeEsciBtn').addEventListener('click', async ()=>{
 });
 document.getElementById('closeAccountBtn').addEventListener('click', chiudiAccountPanel);
 
-// ---------- righe/tendine di Account (Impostazioni/Glossario/Messaggi/Notifiche/Privacy/Assistenza) ----------
-// Impostazioni e Glossario sono ora tendine dentro Account (non più schermate
-// a sé): l'evento nativo 'toggle' di <details> copre anche l'apertura diretta
-// (click sulla riga), oltre a apriImpostazioni() usata dall'ingranaggio ⚙ e
-// dalle notifiche.
+// ---------- righe/tendine di Account e Impostazioni (Allenamento/Glossario/Messaggi/Password/Assistenza) ----------
+// L'evento nativo 'toggle' di <details> copre sia l'apertura diretta (click
+// sulla riga) sia l'apertura via apriImpostazioni() (usata dall'ingranaggio
+// ⚙ e da chi arriva da una notifica).
 document.getElementById('accImpostazioni').addEventListener('toggle', function(){
   if(this.open) renderImpostazioniInline();
 });
 document.getElementById('accGlossario').addEventListener('toggle', function(){
   if(this.open) renderGlossario();
-});
-// "Notifiche" in Account è in realtà un collegamento rapido al promemoria
-// allenamento dentro Impostazioni (mai stata una sezione a sé): apro
-// Impostazioni e scrollo/apro quella card nidificata.
-document.getElementById('acctVaiNotifiche').addEventListener('click', ()=>{
-  apriImpostazioni('account');
-  const card = document.getElementById('promemoriaCard');
-  if(card && card.style.display !== 'none'){
-    card.open = true;
-    if(card.scrollIntoView) card.scrollIntoView({behavior:'smooth', block:'start'});
-  }
 });
 
 async function apriMessaggiGenerico(){
@@ -356,6 +387,14 @@ document.getElementById('sceltaConversazioneOverlay').addEventListener('click', 
 // l'esito precedente ogni volta che si apre, invece di navigare altrove.
 document.getElementById('accPrivacy').addEventListener('toggle', function(){
   if(!this.open) return;
+  const online = !!utenteOnline;
+  // Online: password vera gestita da Supabase, si cambia col link via email
+  // (+ elimina account, che richiede un server). Offline: il profilo locale
+  // ha una password propria (accountOldPw/New/New2, ex "Nome e password"),
+  // niente server con cui parlare per eliminare l'account da qui.
+  document.getElementById('pwOnlineBlock').style.display = online ? '' : 'none';
+  document.getElementById('pwEliminaBlock').style.display = online ? '' : 'none';
+  document.getElementById('pwOfflineBlock').style.display = online ? 'none' : '';
   document.getElementById('privacyEmailMostrata').textContent = (utenteOnline && utenteOnline.email) || (loggedInProfile()||{}).email || '—';
   document.getElementById('privacyPwEsito').style.display = 'none';
 });
@@ -363,9 +402,15 @@ document.getElementById('accPrivacy').addEventListener('toggle', function(){
 document.getElementById('privacyCambiaPwBtn').addEventListener('click', async ()=>{
   const el = document.getElementById('privacyPwEsito');
   if(!utenteOnline || !sb){ el.style.color='var(--accent)'; el.textContent="Disponibile solo con un account online."; el.style.display='block'; return; }
-  const { error } = await sb.auth.resetPasswordForEmail(utenteOnline.email, { redirectTo: location.origin + location.pathname });
-  el.style.color = error ? 'var(--accent)' : 'var(--ok)';
-  el.textContent = error ? traduciErrore(error.message) : "Email inviata ✓ apri il link che ti abbiamo mandato per scegliere la nuova password.";
+  try{
+    const { error } = await sb.auth.resetPasswordForEmail(utenteOnline.email, { redirectTo: location.origin + location.pathname });
+    el.style.color = error ? 'var(--accent)' : 'var(--ok)';
+    el.textContent = error ? traduciErrore(error.message) : "Email inviata ✓ apri il link che ti abbiamo mandato per scegliere la nuova password.";
+  }catch(e){
+    console.error(e);
+    el.style.color = 'var(--accent)';
+    el.textContent = traduciErrore(e && e.message);
+  }
   el.style.display = 'block';
 });
 
@@ -594,7 +639,15 @@ function traduciErrore(m){
   if(t.includes('password should be')) return "La password deve avere almeno 8 caratteri.";
   if(t.includes('email not confirmed')) return "Devi confermare l'email: controlla la posta.";
   if(t.includes('failed to fetch') || t.includes('networkerror')) return "Nessuna connessione: riprova quando hai rete.";
-  return m || "Qualcosa non ha funzionato.";
+  // Qualunque altro messaggio che sembri un errore tecnico "grezzo" (uscito
+  // da una libreria minificata, un blocco try/catch mancante, ecc. — es.
+  // "null is not an object (evaluating 'x.y')" visto in Safari dopo un
+  // cambio password) non va mai mostrato così com'è: nessuno capirebbe cosa
+  // fare. Meglio un messaggio generico ma comprensibile, con cui si può
+  // comunque riprovare.
+  const sembraErroreTecnico = !t || /is not an object|is not a function|evaluating|undefined is not|cannot read propert|null is not|object object|\bnan\b/.test(t);
+  if(sembraErroreTecnico) return "Qualcosa non ha funzionato. Riprova tra poco.";
+  return m;
 }
 
 document.getElementById('cloudVaiRegistra').addEventListener('click', ()=>mostraCloudGate('registra'));
@@ -605,10 +658,19 @@ document.getElementById('cloudEntraBtn').addEventListener('click', async ()=>{
   const pw = document.getElementById('cloudPw').value;
   document.getElementById('cloudErr').style.display = 'none';
   if(!emailValida(email) || !pw){ mostraErroreAccesso("Inserisci email e password."); return; }
-  const { data, error } = await sb.auth.signInWithPassword({ email, password: pw });
-  if(error){ mostraErroreAccesso(error.message); return; }
-  utenteOnline = data.user;
-  await dopoAccessoOnline();
+  try{
+    const { data, error } = await sb.auth.signInWithPassword({ email, password: pw });
+    if(error){ mostraErroreAccesso(error.message); return; }
+    utenteOnline = data.user;
+    await dopoAccessoOnline();
+  }catch(e){
+    // Qualunque eccezione imprevista qui (anche dentro la libreria di
+    // autenticazione, non solo nostra) non deve lasciare la persona davanti
+    // a un testo tecnico incomprensibile: si vede un errore normale, con cui
+    // può riprovare — mai bloccata sulla schermata di accesso senza spiegazioni.
+    console.error(e);
+    mostraErroreAccesso(e && e.message);
+  }
 });
 
 document.getElementById('regBtn').addEventListener('click', async ()=>{
@@ -620,34 +682,45 @@ document.getElementById('regBtn').addEventListener('click', async ()=>{
   if(!nome){ err.textContent = "Inserisci il tuo nome."; err.style.display='block'; return; }
   if(!emailValida(email)){ err.textContent = "Inserisci un'email valida."; err.style.display='block'; return; }
   if(pw.length < 8){ err.textContent = "La password deve avere almeno 8 caratteri."; err.style.display='block'; return; }
-  // l'email di conferma deve riportare esattamente a questa pagina, altrimenti si finisce su un 404
-  const ritorno = location.origin + location.pathname;
-  const { data, error } = await sb.auth.signUp({
-    email, password: pw,
-    options:{ data:{ nome }, emailRedirectTo: ritorno }
-  });
-  if(error){ err.textContent = traduciErrore(error.message); err.style.display='block'; return; }
-  if(data.session){
-    utenteOnline = data.user;
-    await dopoAccessoOnline();
-  } else {
-    // niente sessione = serve confermare l'email: porto subito su Accedi con un avviso ben visibile,
-    // invece di lasciare la persona sulla schermata di registrazione con un testo piccolo
-    mostraCloudGate('accedi');
-    document.getElementById('confermaEmailIndirizzo').textContent = email;
-    document.getElementById('confermaEmailBanner').style.display = 'flex';
-    document.getElementById('cloudEmail').value = email;
-    document.getElementById('cloudPw').focus();
+  try{
+    // l'email di conferma deve riportare esattamente a questa pagina, altrimenti si finisce su un 404
+    const ritorno = location.origin + location.pathname;
+    const { data, error } = await sb.auth.signUp({
+      email, password: pw,
+      options:{ data:{ nome }, emailRedirectTo: ritorno }
+    });
+    if(error){ err.textContent = traduciErrore(error.message); err.style.display='block'; return; }
+    if(data.session){
+      utenteOnline = data.user;
+      await dopoAccessoOnline();
+    } else {
+      // niente sessione = serve confermare l'email: porto subito su Accedi con un avviso ben visibile,
+      // invece di lasciare la persona sulla schermata di registrazione con un testo piccolo
+      mostraCloudGate('accedi');
+      document.getElementById('confermaEmailIndirizzo').textContent = email;
+      document.getElementById('confermaEmailBanner').style.display = 'flex';
+      document.getElementById('cloudEmail').value = email;
+      document.getElementById('cloudPw').focus();
+    }
+  }catch(e){
+    console.error(e);
+    err.textContent = traduciErrore(e && e.message); err.style.display='block';
   }
 });
 
 document.getElementById('cloudRecuperoBtn').addEventListener('click', async ()=>{
   const email = document.getElementById('cloudEmail').value.trim().toLowerCase();
   if(!emailValida(email)){ mostraErroreAccesso("Scrivi la tua email qui sopra, poi premi di nuovo."); return; }
-  const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: location.origin + location.pathname });
   const el = document.getElementById('cloudErr');
-  el.style.color = error ? 'var(--accent)' : 'var(--ok)';
-  el.textContent = error ? traduciErrore(error.message) : "Ti ho mandato un'email per reimpostare la password.";
+  try{
+    const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: location.origin + location.pathname });
+    el.style.color = error ? 'var(--accent)' : 'var(--ok)';
+    el.textContent = error ? traduciErrore(error.message) : "Ti ho mandato un'email per reimpostare la password.";
+  }catch(e){
+    console.error(e);
+    el.style.color = 'var(--accent)';
+    el.textContent = traduciErrore(e && e.message);
+  }
   el.style.display = 'block';
 });
 
@@ -660,10 +733,26 @@ document.getElementById('recoveryBtn').addEventListener('click', async ()=>{
   err.style.display = 'none';
   if(pw1.length < 8){ err.textContent = "La password deve avere almeno 8 caratteri."; err.style.display='block'; return; }
   if(pw1 !== pw2){ err.textContent = "Le due password non coincidono."; err.style.display='block'; return; }
-  const { error } = await sb.auth.updateUser({ password: pw1 });
-  if(error){ err.textContent = traduciErrore(error.message); err.style.display='block'; return; }
+  let aggiornata;
+  try{
+    aggiornata = await sb.auth.updateUser({ password: pw1 });
+  }catch(e){
+    // updateUser stessa può lanciare invece di restituire {error} (bug
+    // segnalato con screenshot: "null is not an object (evaluating
+    // 'vi.url')" — un errore grezzo della libreria che sfuggiva a qualunque
+    // try/catch, qui non ce n'era nessuno). In questo caso la password NON
+    // è garantita salvata: resto sul modulo e permetto di riprovare, invece
+    // di lasciare la persona bloccata su un testo incomprensibile.
+    console.error(e);
+    err.textContent = traduciErrore(e && e.message); err.style.display='block';
+    return;
+  }
+  if(aggiornata.error){ err.textContent = traduciErrore(aggiornata.error.message); err.style.display='block'; return; }
+  // Da qui la password È salvata: è il risultato che conta per la persona,
+  // quindi qualunque problema nei passi seguenti (chiudere la sessione di
+  // recupero) non deve più far sparire questo esito né lasciarla bloccata.
   _recuperoPasswordAttivo = false;
-  await sb.auth.signOut();
+  try{ await sb.auth.signOut(); }catch(e){ console.error(e); }
   document.getElementById('recoveryPw1').value = '';
   document.getElementById('recoveryPw2').value = '';
   mostraCloudGate('accedi');

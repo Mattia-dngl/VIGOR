@@ -620,18 +620,41 @@ document.getElementById('addDayBtn').addEventListener('click', ()=>{
 });
 
 // ---- editor info dieta ----
+// Peso, altezza e attività fisica non si scrivono più a mano qui (richiesta
+// esplicita, 31/08/2026 quarto giro): arrivano sempre da Storico → Misure e
+// da Account → Il tuo profilo, così non possono più andare fuori sincrono
+// coi dati veri. Restano dentro editingDietInfo (e quindi nel salvataggio,
+// vedi #saveDietBtn) solo come "fotografia" leggibile di quei valori nel
+// momento in cui la dieta viene salvata.
+function sincronizzaDietInfoDaFonte(){
+  const prof = activeProfile();
+  const pesata = (typeof ultimoPesoRegistrato === 'function') ? ultimoPesoRegistrato(prof) : null;
+  const livello = prof && LIVELLI_ATTIVITA[prof.livelloAttivita];
+  editingDietInfo.peso = pesata ? `${pesata.weight} kg (misurato il ${formatDate(pesata.date)})` : '';
+  editingDietInfo.altezza = (prof && prof.altezza) ? `${prof.altezza} cm` : '';
+  editingDietInfo.attivita = livello ? livello.label : '';
+}
 function renderDietInfoEditors(){
+  sincronizzaDietInfoDaFonte();
   const wrap = document.getElementById('dietInfoEditors');
-  const fields = [
-    ["peso","Peso attuale"], ["altezza","Altezza"], ["attivita","Attività fisica"],
+  const soleLettura = [["peso","Peso attuale"], ["altezza","Altezza"], ["attivita","Attività fisica"]];
+  const editabili = [
     ["calorie","Calorie giornaliere target"], ["macro","Macronutrienti"],
     ["esclusi","Alimenti esclusi"], ["noteIntolleranza","Note (es. intolleranze)"]
   ];
-  wrap.innerHTML = fields.map(([key,label])=>`
+  const soleLetturaHtml = soleLettura.map(([key,label])=>`
+    <div class="field">
+      <label>${label}</label>
+      <div class="dieta-info-sola-lettura">${editingDietInfo[key] || 'Non disponibile'}</div>
+    </div>`).join('');
+  const editabiliHtml = editabili.map(([key,label])=>`
     <div class="field">
       <label>${label}</label>
       <input type="text" data-key="${key}" value="${escapeAttr(editingDietInfo[key]||'')}">
     </div>`).join('');
+  wrap.innerHTML = `
+    <p class="hint" style="grid-column:1/-1; margin:0 0 6px;">Peso, altezza e attività fisica arrivano da Storico → Misure e da Account: qui sono solo mostrati, si aggiornano da lì.</p>
+    ${soleLetturaHtml}${editabiliHtml}`;
   wrap.querySelectorAll('input').forEach(inp=>{
     inp.addEventListener('input', e=>{ editingDietInfo[e.target.dataset.key] = e.target.value; });
   });

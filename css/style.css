@@ -723,6 +723,14 @@
   header.top .sub{color:var(--text-dim); font-size:12.5px; margin-top:4px; font-weight:500; line-height:1.4;}
   .switch-user{background:var(--surface); border:1px solid var(--border); color:var(--text-dim); font-size:11px;
     padding:7px 12px; border-radius:20px; font-family:var(--font-display); letter-spacing:0.03em; cursor:pointer; white-space:nowrap;}
+  /* Azioni in alto a destra di Account/Impostazioni: "Chiudi" + ingranaggio
+     ⚙ (redesign ispirato ai social, 31/08/2026 terzo giro) — stesso cerchio
+     icona già usato altrove (.home-settings-btn) per restare in tema. */
+  .settings-head-actions{display:flex; align-items:center; gap:8px; flex:0 0 auto;}
+  .acct-gear-btn{width:34px; height:34px; border-radius:50%; background:var(--surface); border:1px solid var(--border);
+    display:flex; align-items:center; justify-content:center; color:var(--text-dim); cursor:pointer; flex:0 0 auto; padding:0;}
+  .acct-gear-btn svg{width:17px; height:17px;}
+  .acct-gear-btn:active{background:var(--accent-soft); color:var(--accent); border-color:var(--accent-dim);}
   .pulse{display:flex; gap:6px; margin-top:14px;}
   .quick-summary{display:flex; gap:8px; flex-wrap:wrap; margin-top:8px; font-size:10.5px; color:var(--text-dim);}
   .quick-summary span{background:var(--surface); border:1px solid var(--border); border-radius:7px; padding:4px 8px;}
@@ -1258,6 +1266,13 @@
   .pdf-upload-box input{margin-top:8px;}
   .info-grid{display:grid; grid-template-columns:1fr; gap:6px; margin-top:5px;}
   .info-grid .field label{margin-top:0;}
+  /* Peso/Altezza/Attività fisica in "Info generali dieta" arrivano da
+     Storico → Misure e da Account, non si scrivono più a mano qui (richiesta
+     esplicita, 31/08/2026 quarto giro): stesso ingombro di un input, ma
+     testo attenuato e nessun bordo "attivo" per segnalare che è di sola
+     lettura. */
+  .dieta-info-sola-lettura{width:100%; background:var(--surface2); border:1.5px solid transparent;
+    color:var(--text-dim); padding:10px 12px; border-radius:var(--r-sm); font-size:14px; box-sizing:border-box;}
 
 
   /* ================= MAPPA MUSCOLARE + GLOSSARIO ================= */
@@ -1886,7 +1901,6 @@
     margin-bottom:9px; padding:14px 15px; width:100%; display:flex; align-items:center; gap:12px;
     cursor:pointer; text-align:left; font:inherit; color:inherit;}
   button.acct-row-link:active{opacity:.85;}
-  .acct-row-icon.notif{background:linear-gradient(155deg,#f2a71b,#c8380f);}
   .acct-row-icon.privacy{background:linear-gradient(155deg,#4a5a8a,#232a45);}
   .acct-row-icon.help{background:linear-gradient(155deg,#2fae7e,#136b4a);}
   .acct-row-icon.chat{background:linear-gradient(155deg,#6b7280,#3a3f47);}

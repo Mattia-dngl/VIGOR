@@ -463,7 +463,12 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
   <div class="settings-inner">
     <div class="settings-head">
       <h1>Account</h1>
-      <button class="switch-user" id="closeAccountBtn">✕ Chiudi</button>
+      <div class="settings-head-actions">
+        <button class="switch-user" id="closeAccountBtn">✕ Chiudi</button>
+        <button type="button" class="acct-gear-btn" id="openSettingsBtn" aria-label="Impostazioni" title="Impostazioni">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg>
+        </button>
+      </div>
     </div>
 
     <div class="acct-header">
@@ -499,78 +504,159 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
     </div>
 
     <div class="settings-subhead" style="margin-top:18px;">Il tuo profilo</div>
-    <details class="card details-card acct-row" style="margin-top:8px;" open>
+    <div class="card acct-profile-card" style="margin-top:8px;">
+      <div class="dato-riga"><span>Email dell'account</span><b id="accountEmailMostrata">—</b></div>
+      <p class="hint" style="margin:6px 0 0;">L'email identifica l'account e non si può cambiare: serve per riconoscerti e, per l'amministratore, per accedere alla gestione. Se sbagliata, chiedi di eliminare il profilo e rifallo.</p>
+      <label style="margin-top:16px;">Nome profilo</label>
+      <input type="text" id="accountNameInput">
+      <button class="btn secondary block" id="saveAccountNameBtn" style="margin-top:8px;">Salva nome</button>
+
+      <label style="margin-top:18px;">Sesso</label>
+      <div class="seg-toggle" id="setSesso">
+        <button type="button" class="seg-btn" data-val="uomo">Uomo</button>
+        <button type="button" class="seg-btn" data-val="donna">Donna</button>
+      </div>
+      <div class="row" style="margin-top:14px;">
+        <div>
+          <label>Data di nascita</label>
+          <input type="date" id="setDataNascita">
+        </div>
+        <div>
+          <label>Altezza (cm)</label>
+          <input type="number" id="setAltezza" placeholder="es. 178" min="100" max="230">
+        </div>
+      </div>
+      <p class="hint" style="margin-top:8px;">Età: <b id="setEtaCalcolata">—</b> <span id="setEtaLegacyNota"></span></p>
+      <p class="hint" style="margin-top:12px;">Il peso lo prendo automaticamente dall'ultima misurazione che registri in Scheda → Storico → Misure — non serve scriverlo qui.</p>
+      <label style="margin-top:2px;">Livello di attività fisica</label>
+      <select id="setLivelloAttivita">
+        <option value="sedentario">Sedentario — lavoro da seduto, poco o nessun esercizio</option>
+        <option value="leggero">Leggero — esercizio 1-3 giorni a settimana</option>
+        <option value="moderato">Moderato — esercizio 3-5 giorni a settimana</option>
+        <option value="intenso">Intenso — esercizio 6-7 giorni a settimana</option>
+        <option value="molto_intenso">Molto intenso — esercizio quotidiano + lavoro fisico</option>
+      </select>
+      <p class="hint" style="margin-top:14px;">Password, privacy e le altre opzioni sono in <b>Impostazioni</b> (icona ⚙ in alto).</p>
+    </div>
+
+    <!-- Segnaposto per una funzione futura (31/08/2026, quarto giro): oggi
+         nessuna palestra è collegata all'app, quindi non c'è ancora nessuna
+         scadenza reale da mostrare — la card lo dice chiaramente invece di
+         restare vuota o nascosta. Il campo profilo (abbonamentoScadenza,
+         vedi dati-default.js/stato.js) esiste già: appena una palestra lo
+         imposterà, questa stessa card mostrerà data e badge di stato senza
+         bisogno di altre modifiche (vedi renderAbbonamento() in account.js). -->
+    <div class="settings-subhead" style="margin-top:18px;">Abbonamento</div>
+    <div class="card" id="acctAbbonamentoCard" style="margin-top:8px;">
+      <span class="membership-badge" id="abbonamentoBadge" style="display:none;"></span>
+      <div class="dato-riga"><span>Scadenza abbonamento</span><b id="abbonamentoScadenzaMostrata">—</b></div>
+      <p class="hint" id="abbonamentoHint" style="margin-top:6px;"></p>
+    </div>
+
+    <!-- Da qui in giù: solo le funzioni più usate restano a vista sulla
+         schermata principale di Account (redesign ispirato ai social,
+         31/08/2026 terzo giro). Password, Impostazioni vere e proprie,
+         Privacy, Assistenza e Gestione dell'app vivono ora in una schermata
+         a sé (#settingsPanel), raggiungibile con l'icona ⚙ in alto —
+         "Notifiche" (era solo un collegamento rapido, mai stata una sezione
+         a sé) è stata tolta del tutto. "Messaggi" resta un bottone a sé (è
+         una chat vera e propria, non si presta a stare dentro una tendina).
+         Glossario resta qui: è consultato spesso durante l'allenamento. -->
+    <details class="card details-card acct-row" id="accGlossario" style="margin-top:8px;">
       <summary>
-        <div class="acct-row-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4.5 5-7 8-7s6.5 2.5 8 7"/></svg></div>
-        <div class="acct-row-body"><div class="acct-row-title">Dati generali</div><div class="acct-row-sub">Sesso, corporatura e attività fisica</div></div>
+        <div class="acct-row-icon diet"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7" stroke-linejoin="round" aria-hidden="true"><path d="M12 6.3c-1.7-1.2-3.8-1.8-6-1.8-.7 0-1.3.6-1.3 1.3v11c0 .7.6 1.2 1.3 1 1.8-.6 3.6-.2 4.9.7.6.4 1.4.4 2 0 1.3-.9 3.1-1.3 4.9-.7.7.2 1.3-.3 1.3-1v-11c0-.7-.6-1.3-1.3-1.3-2.2 0-4.3.6-6 1.8Z"/><path d="M12 6.3v12.7"/></svg></div>
+        <div class="acct-row-body"><div class="acct-row-title">Glossario</div><div class="acct-row-sub">Tutti gli esercizi, spiegati</div></div>
         <div class="acct-row-chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></div>
       </summary>
       <div class="details-body">
-        <p class="hint">Usati per la scheda, la figura nel Glossario e per calcolare il tuo fabbisogno calorico in Dieta.</p>
-        <label>Sesso</label>
-        <div class="seg-toggle" id="setSesso">
-          <button type="button" class="seg-btn" data-val="uomo">Uomo</button>
-          <button type="button" class="seg-btn" data-val="donna">Donna</button>
-        </div>
-        <div class="row" style="margin-top:14px;">
-          <div>
-            <label>Data di nascita</label>
-            <input type="date" id="setDataNascita">
+        <div id="view-glossario">
+          <div class="card">
+            <h3>Glossario esercizi</h3>
+            <p class="hint" id="glossIntroText">Tocca un muscolo sulla figura per vedere gli esercizi che lo allenano e come si eseguono. Il petto è diviso in tre fasce: alto, medio e basso. Sono gli stessi esercizi che trovi nella scheda e nell'allenamento libero.</p>
+            <input type="text" id="glossSearch" placeholder="Oppure cerca per nome — es. panca, squat, curl">
           </div>
-          <div>
-            <label>Altezza (cm)</label>
-            <input type="number" id="setAltezza" placeholder="es. 178" min="100" max="230">
+
+          <div class="card">
+            <div class="gl-viewtoggle">
+              <button type="button" data-glview="front" class="active">Fronte</button>
+              <button type="button" data-glview="back">Retro</button>
+            </div>
+            <div class="gl-figures">
+              <div class="gl-fig show" id="glFigFront"><span>Fronte</span><svg id="glFront" viewBox="0 0 724 1448" role="img" aria-label="Vista anteriore"></svg></div>
+              <div class="gl-fig" id="glFigBack"><span>Retro</span><svg id="glBack" viewBox="724 0 724 1448" role="img" aria-label="Vista posteriore"></svg></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="mp-zone-title" id="glZoneTitle">Tocca un muscolo sulla figura</div>
+            <div class="hint" id="glossCount"></div>
+            <div id="glossList" style="margin-top:10px;"></div>
           </div>
         </div>
-        <p class="hint" style="margin-top:8px;">Età: <b id="setEtaCalcolata">—</b> <span id="setEtaLegacyNota"></span></p>
-        <p class="hint" style="margin-top:12px;">Il peso lo prendo automaticamente dall'ultima misurazione che registri in Scheda → Storico → Misure — non serve scriverlo qui.</p>
-        <label style="margin-top:2px;">Livello di attività fisica</label>
-        <select id="setLivelloAttivita">
-          <option value="sedentario">Sedentario — lavoro da seduto, poco o nessun esercizio</option>
-          <option value="leggero">Leggero — esercizio 1-3 giorni a settimana</option>
-          <option value="moderato">Moderato — esercizio 3-5 giorni a settimana</option>
-          <option value="intenso">Intenso — esercizio 6-7 giorni a settimana</option>
-          <option value="molto_intenso">Molto intenso — esercizio quotidiano + lavoro fisico</option>
-        </select>
       </div>
     </details>
 
-    <details class="card details-card acct-row" style="margin-top:10px;">
+    <button type="button" class="acct-row-link" id="acctVaiMessaggi">
+      <div class="acct-row-icon chat"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a8.4 8.4 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.7a8.4 8.4 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.4 8.4 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5Z"/></svg></div>
+      <div class="acct-row-body"><div class="acct-row-title">Messaggi</div><div class="acct-row-sub">La chat col tuo PT o coi tuoi clienti</div></div>
+      <div class="acct-row-chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg></div>
+    </button>
+
+    <button type="button" class="btn ghost block" id="homeEsciBtn" style="margin-top:16px;">Esci dall'app</button>
+  </div>
+</div>
+
+<!-- Impostazioni: schermata a sé, raggiunta dall'icona ⚙ in Account (o da
+     apriImpostazioni('app'/'home') per gli altri ingressi già esistenti).
+     Raccoglie tutte le opzioni secondarie (Password e sicurezza, Timer,
+     promemoria, esercizi personali, Assistenza, Gestione dell'app) così la
+     schermata principale di Account resta con solo le funzioni più
+     importanti (redesign ispirato ai social, 31/08/2026 terzo giro). -->
+<div id="settingsPanel" style="display:none;">
+  <div class="settings-inner">
+    <div class="settings-head">
+      <h1>Impostazioni</h1>
+      <button class="switch-user" id="closeSettingsBtn">✕ Chiudi</button>
+    </div>
+
+    <details class="card details-card acct-row" id="accPrivacy" style="margin-top:8px;">
       <summary>
-        <div class="acct-row-icon dark"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></div>
-        <div class="acct-row-body"><div class="acct-row-title">Nome e password</div><div class="acct-row-sub">Modifica il profilo con cui accedi</div></div>
+        <div class="acct-row-icon privacy"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2 4 5v6c0 5 3.4 8.9 8 11 4.6-2.1 8-6 8-11V5l-8-3Z"/></svg></div>
+        <div class="acct-row-body"><div class="acct-row-title">Password e sicurezza</div><div class="acct-row-sub">Cambia password, elimina account</div></div>
         <div class="acct-row-chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></div>
       </summary>
       <div class="details-body">
-        <p class="hint">Modifica nome e password del profilo con cui hai fatto accesso.</p>
-        <div class="dato-riga"><span>Email dell'account</span><b id="accountEmailMostrata">—</b></div>
-        <p class="hint" style="margin:6px 0 0;">L'email identifica l'account e non si può cambiare: serve per riconoscerti e, per l'amministratore, per accedere alla gestione. Se sbagliata, chiedi di eliminare il profilo e rifallo.</p>
-        <label style="margin-top:16px;">Nome profilo</label>
-        <input type="text" id="accountNameInput">
-        <button class="btn secondary block" id="saveAccountNameBtn" style="margin-top:8px;">Salva nome</button>
+        <div class="card" id="pwOnlineBlock" style="margin-top:0;">
+          <h3>Password dell'account</h3>
+          <p class="hint">Ti mandiamo un'email all'indirizzo con cui sei registrato (<b id="privacyEmailMostrata">—</b>): apri il link e scegli lì la nuova password.</p>
+          <button class="btn block" id="privacyCambiaPwBtn" style="margin-top:10px;">Inviami l'email per cambiarla</button>
+          <div class="hint" id="privacyPwEsito" style="margin-top:10px; display:none;"></div>
+        </div>
 
-        <label style="margin-top:18px;">Password attuale</label>
-        <input type="password" id="accountOldPw" autocomplete="current-password">
-        <label>Nuova password</label>
-        <input type="password" id="accountNewPw" placeholder="Almeno 4 caratteri" autocomplete="new-password">
-        <label>Conferma nuova password</label>
-        <input type="password" id="accountNewPw2" placeholder="Ripeti la nuova password" autocomplete="new-password">
-        <button class="btn secondary block" id="saveAccountPwBtn" style="margin-top:8px;">Cambia password</button>
+        <div class="card" id="pwOfflineBlock" style="margin-top:0;">
+          <h3>Cambia password</h3>
+          <p class="hint">Password del profilo con cui hai fatto accesso su questo telefono.</p>
+          <label style="margin-top:10px;">Password attuale</label>
+          <input type="password" id="accountOldPw" autocomplete="current-password">
+          <label>Nuova password</label>
+          <input type="password" id="accountNewPw" placeholder="Almeno 4 caratteri" autocomplete="new-password">
+          <label>Conferma nuova password</label>
+          <input type="password" id="accountNewPw2" placeholder="Ripeti la nuova password" autocomplete="new-password">
+          <button class="btn secondary block" id="saveAccountPwBtn" style="margin-top:8px;">Cambia password</button>
+        </div>
+
+        <div class="card" id="pwEliminaBlock" style="margin-top:12px; border:1px solid var(--accent);">
+          <h3 style="color:var(--accent);">Elimina il mio account</h3>
+          <p class="hint">Cancella per sempre il tuo account, la scheda, la dieta, lo storico allenamenti e le conversazioni. Non si torna indietro.</p>
+          <button class="btn danger block" id="privacyEliminaBtn" style="margin-top:10px;">Elimina il mio account</button>
+        </div>
       </div>
     </details>
 
-    <!-- Da qui in giù: erano bottoni che portavano via ad una schermata a sé,
-         ora sono tendine come "Dati generali"/"Nome e password" qui sopra —
-         non ti spostano più da nessuna parte, si gestisce tutto da Account
-         (richiesta esplicita, 25/08 diciassettesimo giro). Fa eccezione
-         "Messaggi": è una chat vera e propria (può avere più conversazioni,
-         serve prima scegliere con chi), non si presta a stare dentro una
-         tendina — resta come schermata dedicata. -->
-    <div class="settings-subhead" style="margin-top:20px;">Impostazioni</div>
-    <details class="card details-card acct-row" id="accImpostazioni" style="margin-top:8px;">
+    <details class="card details-card acct-row" id="accImpostazioni" style="margin-top:10px;">
       <summary>
         <div class="acct-row-icon dark"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg></div>
-        <div class="acct-row-body"><div class="acct-row-title">Impostazioni</div><div class="acct-row-sub">Timer, promemoria, esercizi personali</div></div>
+        <div class="acct-row-body"><div class="acct-row-title">Allenamento e dati</div><div class="acct-row-sub">Timer, promemoria, esercizi personali</div></div>
         <div class="acct-row-chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></div>
       </summary>
       <div class="details-body">
@@ -679,76 +765,6 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
       </div>
     </details>
 
-    <div class="settings-subhead" style="margin-top:20px;">Risorse</div>
-    <details class="card details-card acct-row" id="accGlossario" style="margin-top:8px;">
-      <summary>
-        <div class="acct-row-icon diet"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7" stroke-linejoin="round" aria-hidden="true"><path d="M12 6.3c-1.7-1.2-3.8-1.8-6-1.8-.7 0-1.3.6-1.3 1.3v11c0 .7.6 1.2 1.3 1 1.8-.6 3.6-.2 4.9.7.6.4 1.4.4 2 0 1.3-.9 3.1-1.3 4.9-.7.7.2 1.3-.3 1.3-1v-11c0-.7-.6-1.3-1.3-1.3-2.2 0-4.3.6-6 1.8Z"/><path d="M12 6.3v12.7"/></svg></div>
-        <div class="acct-row-body"><div class="acct-row-title">Glossario</div><div class="acct-row-sub">Tutti gli esercizi, spiegati</div></div>
-        <div class="acct-row-chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></div>
-      </summary>
-      <div class="details-body">
-        <div id="view-glossario">
-          <div class="card">
-            <h3>Glossario esercizi</h3>
-            <p class="hint" id="glossIntroText">Tocca un muscolo sulla figura per vedere gli esercizi che lo allenano e come si eseguono. Il petto è diviso in tre fasce: alto, medio e basso. Sono gli stessi esercizi che trovi nella scheda e nell'allenamento libero.</p>
-            <input type="text" id="glossSearch" placeholder="Oppure cerca per nome — es. panca, squat, curl">
-          </div>
-
-          <div class="card">
-            <div class="gl-viewtoggle">
-              <button type="button" data-glview="front" class="active">Fronte</button>
-              <button type="button" data-glview="back">Retro</button>
-            </div>
-            <div class="gl-figures">
-              <div class="gl-fig show" id="glFigFront"><span>Fronte</span><svg id="glFront" viewBox="0 0 724 1448" role="img" aria-label="Vista anteriore"></svg></div>
-              <div class="gl-fig" id="glFigBack"><span>Retro</span><svg id="glBack" viewBox="724 0 724 1448" role="img" aria-label="Vista posteriore"></svg></div>
-            </div>
-          </div>
-
-          <div class="card">
-            <div class="mp-zone-title" id="glZoneTitle">Tocca un muscolo sulla figura</div>
-            <div class="hint" id="glossCount"></div>
-            <div id="glossList" style="margin-top:10px;"></div>
-          </div>
-        </div>
-      </div>
-    </details>
-
-    <button type="button" class="acct-row-link" id="acctVaiMessaggi">
-      <div class="acct-row-icon chat"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a8.4 8.4 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.7a8.4 8.4 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.4 8.4 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5Z"/></svg></div>
-      <div class="acct-row-body"><div class="acct-row-title">Messaggi</div><div class="acct-row-sub">La chat col tuo PT o coi tuoi clienti</div></div>
-      <div class="acct-row-chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg></div>
-    </button>
-
-    <button type="button" class="acct-row-link" id="acctVaiNotifiche">
-      <div class="acct-row-icon notif"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div>
-      <div class="acct-row-body"><div class="acct-row-title">Notifiche</div><div class="acct-row-sub">Promemoria di allenamento sul telefono</div></div>
-      <div class="acct-row-chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg></div>
-    </button>
-
-    <div class="settings-subhead" style="margin-top:20px;">Assistenza e privacy</div>
-    <details class="card details-card acct-row" id="accPrivacy" style="margin-top:8px;">
-      <summary>
-        <div class="acct-row-icon privacy"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2 4 5v6c0 5 3.4 8.9 8 11 4.6-2.1 8-6 8-11V5l-8-3Z"/></svg></div>
-        <div class="acct-row-body"><div class="acct-row-title">Privacy e Sicurezza</div><div class="acct-row-sub">Password dell'account, elimina account</div></div>
-        <div class="acct-row-chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></div>
-      </summary>
-      <div class="details-body">
-        <div class="card" style="margin-top:0;">
-          <h3>Password dell'account</h3>
-          <p class="hint">Ti mandiamo un'email all'indirizzo con cui sei registrato (<b id="privacyEmailMostrata">—</b>): apri il link e scegli lì la nuova password.</p>
-          <button class="btn block" id="privacyCambiaPwBtn" style="margin-top:10px;">Inviami l'email per cambiarla</button>
-          <div class="hint" id="privacyPwEsito" style="margin-top:10px; display:none;"></div>
-        </div>
-
-        <div class="card" style="margin-top:12px; border:1px solid var(--accent);">
-          <h3 style="color:var(--accent);">Elimina il mio account</h3>
-          <p class="hint">Cancella per sempre il tuo account, la scheda, la dieta, lo storico allenamenti e le conversazioni. Non si torna indietro.</p>
-          <button class="btn danger block" id="privacyEliminaBtn" style="margin-top:10px;">Elimina il mio account</button>
-        </div>
-      </div>
-    </details>
-
     <details class="card details-card acct-row" id="accAssistenza" style="margin-top:10px;">
       <summary>
         <div class="acct-row-icon help"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.8.4-1 .7-1 1.7"/><path d="M12 17.5h.01"/></svg></div>
@@ -812,14 +828,8 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
         </details>
       </div>
     </details>
-
-    <button type="button" class="btn ghost block" id="homeEsciBtn" style="margin-top:16px;">Esci dall'app</button>
   </div>
 </div>
-
-<!-- Privacy e Sicurezza e Assistenza: erano qui come schermate a sé, ora
-     vivono come tendine dentro #accountPanel (accPrivacy/accAssistenza,
-     25/08 diciassettesimo giro) — non più duplicate qui. -->
 
 <div class="mp-overlay" id="sceltaConversazioneOverlay">
   <div class="mp-modal" style="max-width:420px;">

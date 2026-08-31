@@ -98,7 +98,12 @@ function newProfile(name, email, password, approvato){
     passwordHash: simpleHash(password), sesso: null,
     programs:[blankProgram()], activeProgramId:null, logs:[], measurements:[], mealLogs:[], waterLogs:[], customExercises:{}, customFoods:{}, avatarUrl:null,
     altezza:null, dataNascita:null, eta:null, livelloAttivita:'moderato', obiettivoCalorico:'mantenimento',
-    obiettivoPeso:null, obiettivoRecord:null };
+    obiettivoPeso:null, obiettivoRecord:null,
+    // Scadenza dell'abbonamento in palestra: nessuno la imposta ancora da
+    // nessuna parte (la sezione "Abbonamento" in Account è un segnaposto
+    // pronto per quando la palestra sarà collegata), ma il campo esiste già
+    // qui così la UI può leggerlo fin da subito appena verrà popolato.
+    abbonamentoScadenza:null };
 }
 
 // ============================================================
