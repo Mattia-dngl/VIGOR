@@ -517,7 +517,11 @@ async function dopoAccessoOnline(){
     if(ripristinaBozza()) toast("Ripresa la registrazione lasciata a metà");
     _bozzaPronta = true;
     mostraStatoSync('ok', 'sincronizzato');
-    mostraHome();
+    // Chi è Personal Trainer entra direttamente nella sua area riservata:
+    // non è un utente come gli altri, non deve passare dalla home normale
+    // (da lì può comunque tornare alla propria home col tasto "Torna Home").
+    if(sonoPT()) apriAreaPT();
+    else mostraHome();
   }catch(e){
     // Qualunque errore qui (rete, timeout, server) non deve lasciare la
     // persona bloccata a guardare l'indicatore girare per sempre: torna
