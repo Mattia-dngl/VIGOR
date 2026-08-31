@@ -1,0 +1,254 @@
+/* ============================================================
+   MULTI-PALESTRA — foglio di stile isolato.
+   Le variabili qui sotto sono una COPIA dei token visivi definiti
+   in css/style.css (stessi valori: sfondo, accento, bordi, ombre,
+   font) per dare continuità visiva al prototipo senza però
+   linkare o dipendere dal CSS dell'app attuale.
+   INTEGRAZIONE FUTURA: a quel punto questi --mp-* vanno tolti e le
+   classi .mp-* devono puntare direttamente alle variabili globali
+   già presenti in style.css (--bg, --accent, --r-lg, ecc.).
+   ============================================================ */
+
+:root{
+  --mp-bg:#f7f7f6;
+  --mp-surface:#ffffff;
+  --mp-surface2:#eeeeec;
+  --mp-border:#e2e2df;
+  --mp-text:#17150f;
+  --mp-text-dim:#6d6656;
+  --mp-text-faint:#a39c8a;
+  --mp-accent:#ff4b2b;
+  --mp-accent-2:#ff3018;
+  --mp-accent-soft:#ffe4d8;
+  --mp-grad-accent:linear-gradient(155deg, var(--mp-accent), var(--mp-accent-2));
+  --mp-font-display:'Plus Jakarta Sans',sans-serif;
+  --mp-font-body:'Inter',system-ui,sans-serif;
+  --mp-font-mono:'Roboto Mono',monospace;
+  --mp-r-lg:28px;
+  --mp-r-md:18px;
+  --mp-r-sm:14px;
+  --mp-r-pill:999px;
+  --mp-shadow-sm:0 1px 2px rgba(23,21,15,.04), 0 1px 1px rgba(23,21,15,.03);
+  --mp-shadow-md:0 14px 30px -10px rgba(23,21,15,.09), 0 2px 6px rgba(23,21,15,.04);
+  --mp-shadow-lg:0 22px 44px -14px rgba(23,21,15,.13);
+}
+
+*{box-sizing:border-box;}
+html,body{margin:0; padding:0;}
+
+/* L'attributo hidden va sempre rispettato, anche quando la stessa
+   classe imposta altrove un display:flex/grid (es. .mp-tab-panel,
+   .mp-switcher-vuoto, .mp-devpanel-body): senza questa regola
+   quel display vince sull'attributo e l'elemento resta visibile. */
+[hidden]{ display:none !important; }
+body{
+  background:#d8d6cf;
+  color:var(--mp-text);
+  font-family:var(--mp-font-body);
+  min-height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:flex-start;
+}
+
+/* Cornice "telefono" per la preview su desktop; su mobile occupa tutto */
+.mp-frame{
+  position:relative;
+  width:100%;
+  max-width:430px;
+  min-height:100vh;
+  background:var(--mp-bg);
+  overflow:hidden;
+  box-shadow:var(--mp-shadow-lg);
+}
+@media (min-width:520px){
+  body{ padding:28px 0; }
+  .mp-frame{ min-height:844px; border-radius:36px; }
+}
+
+.mp-schermata{
+  display:none;
+  position:absolute;
+  inset:0;
+  flex-direction:column;
+  min-height:100%;
+}
+.mp-schermata.attiva{ display:flex; }
+
+button{ font-family:inherit; }
+input{ font-family:inherit; }
+
+/* ---------- header comune ---------- */
+.mp-header{
+  display:flex; align-items:center; justify-content:space-between;
+  padding:18px 20px 6px;
+}
+.mp-logo{
+  font-family:var(--mp-font-display); font-weight:800; font-size:20px;
+  font-style:italic; letter-spacing:-.01em;
+}
+.mp-logo-accent{ color:var(--mp-accent); }
+.mp-header-icone{ display:flex; gap:8px; }
+.mp-icon-btn{
+  width:38px; height:38px; border-radius:50%; background:var(--mp-surface);
+  border:1px solid var(--mp-border); display:flex; align-items:center; justify-content:center;
+  color:var(--mp-text); cursor:pointer; box-shadow:var(--mp-shadow-sm);
+}
+.mp-header-sub{ padding:16px 16px 4px; }
+.mp-header-title{ font-family:var(--mp-font-display); font-weight:700; font-size:15px; }
+
+/* ---------- switcher ---------- */
+.mp-switcher-intro{ padding:14px 22px 4px; }
+.mp-greeting{ font-family:var(--mp-font-display); font-size:22px; font-weight:800; margin:0 0 4px; }
+.mp-subtitle{ font-size:13px; color:var(--mp-text-dim); margin:0; }
+
+.mp-switcher-lista{ padding:16px 18px; display:flex; flex-direction:column; gap:10px; flex:1; }
+
+.mp-riga-palestra{
+  display:flex; align-items:center; gap:12px; width:100%;
+  background:var(--mp-surface); border:1px solid var(--mp-border); border-radius:var(--mp-r-md);
+  padding:12px 14px; box-shadow:var(--mp-shadow-sm); cursor:pointer; text-align:left;
+}
+.mp-riga-logo{
+  flex:0 0 auto; width:42px; height:42px; border-radius:13px; background:var(--mp-accent-soft);
+  color:var(--mp-accent-2); font-family:var(--mp-font-display); font-weight:800; font-size:13px;
+  display:flex; align-items:center; justify-content:center;
+}
+.mp-riga-info{ flex:1; min-width:0; }
+.mp-riga-nome{ font-family:var(--mp-font-display); font-weight:700; font-size:14.5px; }
+.mp-riga-indirizzo{ font-size:12px; color:var(--mp-text-dim); margin-top:2px; }
+.mp-riga-freccia{ flex:0 0 auto; color:var(--mp-text-faint); }
+.mp-riga-attesa{ cursor:default; opacity:.72; }
+.mp-riga-tag-attesa{
+  display:inline-flex; align-items:center; gap:5px; font-size:11px; font-weight:600;
+  color:var(--mp-text-dim); margin-top:3px;
+}
+
+.mp-switcher-vuoto{
+  flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center;
+  text-align:center; padding:40px 30px; gap:12px;
+}
+.mp-switcher-vuoto p{ color:var(--mp-text-dim); font-size:13.5px; margin:0; }
+
+.mp-fab{
+  position:absolute; bottom:26px; left:50%; transform:translateX(-50%);
+  width:56px; height:56px; border-radius:50%; background:var(--mp-grad-accent);
+  color:#fff; border:none; display:flex; align-items:center; justify-content:center;
+  box-shadow:0 10px 22px -4px rgba(255,75,43,.45); cursor:pointer;
+}
+
+/* ---------- aggiungi palestra ---------- */
+.mp-tab-switch{
+  display:flex; gap:6px; margin:14px 18px 6px; background:var(--mp-surface2);
+  padding:4px; border-radius:var(--mp-r-pill);
+}
+.mp-tab{
+  flex:1; border:none; background:none; padding:9px 8px; border-radius:var(--mp-r-pill);
+  font-family:var(--mp-font-display); font-weight:700; font-size:12.5px; color:var(--mp-text-dim);
+  cursor:pointer;
+}
+.mp-tab.active{ background:var(--mp-surface); color:var(--mp-text); box-shadow:var(--mp-shadow-sm); }
+
+.mp-tab-panel{ padding:16px 18px; display:flex; flex-direction:column; gap:10px; }
+.mp-label{ font-size:11.5px; font-weight:700; color:var(--mp-text-dim); }
+.mp-input{
+  width:100%; border:1px solid var(--mp-border); border-radius:var(--mp-r-sm); background:var(--mp-surface);
+  padding:12px 14px; font-size:14px; color:var(--mp-text);
+}
+.mp-input.mono{ font-family:var(--mp-font-mono); letter-spacing:.05em; }
+.mp-btn-primary{
+  border:none; border-radius:var(--mp-r-sm); background:var(--mp-grad-accent); color:#fff;
+  font-family:var(--mp-font-display); font-weight:700; font-size:13.5px; padding:13px; cursor:pointer;
+  box-shadow:0 10px 22px -6px rgba(255,75,43,.4);
+}
+.mp-hint{ font-size:11.5px; color:var(--mp-text-faint); margin:0; }
+
+.mp-elenco-palestre{ display:flex; flex-direction:column; gap:8px; margin-top:4px; }
+.mp-riga-elenco{ cursor:default; }
+.mp-btn-piccolo{
+  flex:0 0 auto; border:1px solid var(--mp-accent); background:var(--mp-accent-soft); color:var(--mp-accent-2);
+  font-family:var(--mp-font-display); font-weight:700; font-size:11.5px; padding:8px 12px;
+  border-radius:var(--mp-r-pill); cursor:pointer;
+}
+.mp-btn-piccolo:disabled{ opacity:.55; cursor:default; border-color:var(--mp-border); background:var(--mp-surface2); color:var(--mp-text-faint); }
+
+/* ---------- badge (stile HeyConad) ---------- */
+.mp-schermata-badge{ background:var(--mp-surface); justify-content:space-between; }
+.mp-badge-indietro{ position:absolute; top:16px; left:16px; z-index:5; }
+.mp-badge-brand{
+  flex:1; display:flex; align-items:center; justify-content:center; padding-top:40px;
+}
+.mp-badge-logo{ font-family:var(--mp-font-display); font-weight:800; font-size:19px; text-align:center; padding:0 30px; }
+
+.mp-badge-alza{
+  position:relative; flex:0 0 auto; padding:26px 0 14px; text-align:center;
+  background:var(--mp-grad-accent); border-radius:46px 46px 0 0; color:#fff;
+  cursor:grab; touch-action:none; user-select:none;
+}
+.mp-badge-chevron{ display:flex; justify-content:center; opacity:.9; }
+.mp-badge-testo{ font-size:11.5px; font-weight:700; letter-spacing:.03em; text-transform:uppercase; margin-top:4px; }
+
+.mp-badge-tessera{
+  margin:16px auto 0; width:82%; background:var(--mp-surface); color:var(--mp-text);
+  border-radius:var(--mp-r-md); box-shadow:var(--mp-shadow-lg); padding:16px;
+  transform:translateY(64%); transition:transform .32s cubic-bezier(.2,.8,.2,1);
+}
+.mp-badge-alza.espansa .mp-badge-tessera{ transform:translateY(6%); }
+.mp-badge-alza.espansa .mp-badge-chevron svg{ transform:rotate(180deg); }
+.mp-badge-chevron svg{ transition:transform .3s; }
+
+.mp-tessera-header{ display:flex; align-items:center; justify-content:space-between; }
+.mp-tessera-logo{ font-family:var(--mp-font-display); font-weight:800; font-style:italic; font-size:13px; }
+.mp-tessera-palestra{ font-size:11px; color:var(--mp-text-dim); font-weight:600; }
+.mp-tessera-nome{ font-family:var(--mp-font-display); font-weight:700; font-size:15px; margin-top:10px; }
+.mp-tessera-barcode{ margin-top:12px; color:var(--mp-text); overflow:hidden; border-radius:6px; }
+
+.mp-badge-continua{
+  background:none; border:none; color:#fff; opacity:.92; font-size:12.5px; font-weight:600;
+  padding:14px 0 22px; cursor:pointer; text-decoration:underline; text-underline-offset:3px;
+}
+
+/* ---------- placeholder app palestra ---------- */
+.mp-placeholder{
+  flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center;
+  text-align:center; padding:40px 30px; gap:14px;
+}
+.mp-placeholder h2{ font-family:var(--mp-font-display); font-size:18px; }
+.mp-placeholder p{ color:var(--mp-text-dim); font-size:13px; line-height:1.5; margin:0; }
+
+/* ---------- pulsanti generici di navigazione testuale ---------- */
+.mp-link-btn{
+  border:1px solid var(--mp-border); background:var(--mp-surface); color:var(--mp-text);
+  font-family:var(--mp-font-display); font-weight:700; font-size:12.5px; padding:11px 18px;
+  border-radius:var(--mp-r-pill); cursor:pointer;
+}
+
+/* ---------- toast ---------- */
+.mp-toast{
+  position:absolute; left:50%; bottom:20px; transform:translate(-50%, 12px);
+  background:var(--mp-text); color:#fff; font-size:12.5px; font-weight:600;
+  padding:11px 16px; border-radius:var(--mp-r-pill); box-shadow:var(--mp-shadow-md);
+  opacity:0; pointer-events:none; transition:opacity .2s, transform .2s; z-index:50; max-width:88%; text-align:center;
+}
+.mp-toast.visibile{ opacity:1; transform:translate(-50%, 0); }
+.mp-toast.mp-toast-errore{ background:var(--mp-accent-2); }
+
+/* ---------- pannello di test (SOLO prototipo) ---------- */
+.mp-devpanel{
+  position:fixed; left:12px; bottom:12px; z-index:200;
+  font-family:var(--mp-font-body);
+}
+.mp-devpanel-toggle{
+  border:none; background:var(--mp-text); color:#fff; font-size:11.5px; font-weight:700;
+  padding:9px 13px; border-radius:var(--mp-r-pill); cursor:pointer; box-shadow:var(--mp-shadow-md);
+}
+.mp-devpanel-body{
+  margin-top:8px; background:var(--mp-surface); border:1px solid var(--mp-border); border-radius:var(--mp-r-sm);
+  box-shadow:var(--mp-shadow-md); padding:10px; width:200px; display:flex; flex-direction:column; gap:6px;
+}
+.mp-devpanel-titolo{ font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; color:var(--mp-text-faint); margin:2px 0 2px; }
+.mp-devpanel-body button{
+  border:1px solid var(--mp-border); background:var(--mp-surface2); color:var(--mp-text);
+  font-size:11.5px; font-weight:600; padding:8px 9px; border-radius:9px; cursor:pointer; text-align:left;
+}
+.mp-devpanel-body button:hover{ background:var(--mp-accent-soft); }

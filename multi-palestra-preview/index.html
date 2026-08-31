@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>VIGOR — Multi-palestra (prototipo isolato)</title>
+<!--
+  ============================================================
+  PROTOTIPO ISOLATO — vedi README.md in questa cartella.
+  Non è collegato a index.html dell'app: nessun link, nessuno
+  script condiviso, nessuna dipendenza da js/config.js o da
+  Supabase. Si apre da solo, direttamente nel browser.
+  ============================================================
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Roboto+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/multi-palestra.css">
+</head>
+<body>
+
+<div class="mp-frame" id="mpApp">
+
+  <!-- ============ SCHERMATA 1: SWITCHER "LE TUE PALESTRE" (punto 4) ============ -->
+  <section id="schermataSwitcher" class="mp-schermata">
+    <header class="mp-header">
+      <div class="mp-logo">VIG<span class="mp-logo-accent">OR</span></div>
+      <div class="mp-header-icone">
+        <button class="mp-icon-btn" title="Notifiche" data-icona-campanella></button>
+        <button class="mp-icon-btn" title="Impostazioni" data-icona-ingranaggio></button>
+      </div>
+    </header>
+
+    <div class="mp-switcher-intro">
+      <h1 class="mp-greeting">Bentornato, <span id="mpNomeUtente">…</span>!</h1>
+      <p class="mp-subtitle">Seleziona la tua palestra per iniziare:</p>
+    </div>
+
+    <div class="mp-switcher-lista" id="mpListaPalestre"></div>
+
+    <div class="mp-switcher-vuoto" id="mpSwitcherVuoto" hidden>
+      <p>Non sei ancora iscritto a nessuna palestra.</p>
+      <button class="mp-link-btn" id="mpBtnAggiungiDaVuoto">Aggiungi la tua prima palestra</button>
+    </div>
+
+    <button class="mp-fab" id="mpBtnAggiungiPalestra" title="Aggiungi palestra" data-icona-piu></button>
+  </section>
+
+  <!-- ============ SCHERMATA 2: AGGIUNGI PALESTRA (punto 3) ============ -->
+  <section id="schermataAggiungi" class="mp-schermata">
+    <header class="mp-header mp-header-sub">
+      <button class="mp-icon-btn" id="mpBtnIndietroAggiungi" data-icona-indietro></button>
+      <div class="mp-header-title">Aggiungi palestra</div>
+      <div style="width:38px"></div>
+    </header>
+
+    <div class="mp-tab-switch">
+      <button class="mp-tab active" data-tab="codice">Ho un codice</button>
+      <button class="mp-tab" data-tab="elenco">Cerca dall'elenco</button>
+    </div>
+
+    <div class="mp-tab-panel" id="mpPannelloCodice">
+      <label class="mp-label" for="mpInputCodice">Codice d'iscrizione</label>
+      <input class="mp-input mono" id="mpInputCodice" placeholder="Es. FFR-4821" maxlength="12" autocomplete="off">
+      <button class="mp-btn-primary" id="mpBtnInviaCodice">Invia richiesta</button>
+      <p class="mp-hint">La palestra dovrà confermare la tua richiesta prima che tu possa accedere.</p>
+    </div>
+
+    <div class="mp-tab-panel" id="mpPannelloElenco" hidden>
+      <input class="mp-input" id="mpInputRicerca" placeholder="Cerca una palestra…" autocomplete="off">
+      <div class="mp-elenco-palestre" id="mpElencoPalestre"></div>
+    </div>
+  </section>
+
+  <!-- ============ SCHERMATA 3: BADGE, stile HeyConad (punto 7) ============ -->
+  <section id="schermataBadge" class="mp-schermata mp-schermata-badge">
+    <button class="mp-icon-btn mp-badge-indietro" id="mpBtnIndietroBadge" data-icona-indietro></button>
+
+    <div class="mp-badge-brand">
+      <div class="mp-badge-logo" id="mpBadgeLogoPalestra">…</div>
+    </div>
+
+    <div class="mp-badge-alza" id="mpBadgeAlza">
+      <div class="mp-badge-chevron" data-icona-chevron-su></div>
+      <div class="mp-badge-testo">Scorri verso l'alto per il badge</div>
+      <div class="mp-badge-tessera">
+        <div class="mp-tessera-header">
+          <div class="mp-tessera-logo">VIG<span style="opacity:.6">OR</span></div>
+          <div class="mp-tessera-palestra" id="mpTesseraPalestra">…</div>
+        </div>
+        <div class="mp-tessera-nome" id="mpTesseraNome">…</div>
+        <div class="mp-tessera-barcode" id="mpTesseraBarcode"></div>
+      </div>
+      <button class="mp-badge-continua" id="mpBtnContinua">Continua senza badge →</button>
+    </div>
+  </section>
+
+  <!-- ============ SCHERMATA 4: placeholder "app della palestra" — solo prototipo ============ -->
+  <section id="schermataPlaceholder" class="mp-schermata">
+    <header class="mp-header mp-header-sub">
+      <button class="mp-icon-btn" id="mpBtnIndietroPlaceholder" data-icona-indietro></button>
+      <div class="mp-header-title">Anteprima</div>
+      <div style="width:38px"></div>
+    </header>
+    <div class="mp-placeholder">
+      <h2>Sei entrato in <span id="mpPlaceholderPalestra">…</span></h2>
+      <p>Qui, a integrazione avvenuta, ci sarà l'app vera per questa palestra (home, allenamenti, dieta…). Questa schermata esiste solo per poter testare l'intero percorso del prototipo.</p>
+      <button class="mp-link-btn" id="mpBtnTornaSwitcherDaPlaceholder">Torna a "Le tue palestre"</button>
+    </div>
+  </section>
+
+  <div class="mp-toast" id="mpToast"></div>
+
+  <!-- Pannello di test: SOLO per progettare/rifinire questo prototipo. Non va integrato. -->
+  <div class="mp-devpanel" id="mpDevPanel">
+    <button class="mp-devpanel-toggle" id="mpDevToggle">Simula scenario ▾</button>
+    <div class="mp-devpanel-body" id="mpDevBody" hidden>
+      <p class="mp-devpanel-titolo">Iscrizioni dell'utente</p>
+      <button data-scenario="molte">Più palestre attive</button>
+      <button data-scenario="una">Una sola palestra attiva</button>
+      <button data-scenario="nessuna">Nessuna palestra</button>
+      <button data-scenario="attesa">Con richiesta in attesa</button>
+    </div>
+  </div>
+
+</div>
+
+<script src="js/icone.js"></script>
+<script src="js/dati-mock.js"></script>
+<script src="js/stato.js"></script>
+<script src="js/schermata-switcher.js"></script>
+<script src="js/schermata-aggiungi.js"></script>
+<script src="js/schermata-badge.js"></script>
+<script src="js/schermata-placeholder.js"></script>
+<script src="js/main.js"></script>
+<script>
+  // Inietta le icone SVG nei placeholder marcati con data-icona-*.
+  // Tenuto qui (e non in icone.js) perché è puro "cablaggio" di
+  // questa pagina, non logica riutilizzabile.
+  document.addEventListener('DOMContentLoaded', () => {
+    const mappa = {
+      'data-icona-campanella': MP.icone.campanella,
+      'data-icona-ingranaggio': MP.icone.ingranaggio,
+      'data-icona-indietro': MP.icone.indietro,
+      'data-icona-piu': MP.icone.piu,
+      'data-icona-chevron-su': MP.icone.chevronSu
+    };
+    Object.entries(mappa).forEach(([attributo, fn]) => {
+      document.querySelectorAll('[' + attributo + ']').forEach(el => { el.innerHTML = fn(); });
+    });
+    document.getElementById('mpBtnTornaSwitcherDaPlaceholder')
+      .addEventListener('click', () => MP.stato.vaiA('switcher'));
+  });
+</script>
+</body>
+</html>
