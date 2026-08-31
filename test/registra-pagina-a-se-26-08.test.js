@@ -32,6 +32,10 @@ function profiloBase(){
   };
 }
 
+// Aggiornamento 31/08/2026 (restyling fitflow, fase 1): il "+" ora apre un
+// menu invece di Registra direttamente (vedi test/fabmenu-31-08.test.js) —
+// questi due test passano prima dal menu, scegliendo "Registra allenamento",
+// per arrivare allo stesso punto di partenza di prima.
 test('apriRegistra(): nasconde l\'intestazione condivisa e la nav in basso, mostra il tasto dedicato per tornare alla scheda', async () => {
   const { window, document } = await loadApp();
   await run(window, `
@@ -39,6 +43,7 @@ test('apriRegistra(): nasconde l\'intestazione condivisa e la nav in basso, most
     state.profiles = [profilo]; activeProfileId = 'io';
     mostraHome();
     document.getElementById('fabRegistraBtn').click();
+    document.getElementById('fabOptAllenamento').click();
   `);
   assert.equal(document.body.classList.contains('registra-aperto'), true, 'la classe che nasconde nav/intestazione deve essere attiva');
   assert.equal(document.querySelector('.sticky-top').style.display, 'none', 'l\'intestazione condivisa deve sparire');
@@ -55,6 +60,7 @@ test('tasto "torna alla scheda": chiude la pagina a sé di Registra e riporta su
     state.profiles = [profilo]; activeProfileId = 'io';
     mostraHome();
     document.getElementById('fabRegistraBtn').click();
+    document.getElementById('fabOptAllenamento').click();
     document.getElementById('registraTornaSchedaBtn').click();
   `);
   assert.equal(document.body.classList.contains('registra-aperto'), false, 'la classe deve sparire tornando alla scheda');
@@ -86,11 +92,13 @@ test('CSS: la nav in basso sparisce con body.registra-aperto', () => {
   assert.match(css, /body\.registra-aperto #navTabsGlobale\{display:none !important;\}/);
 });
 
-test('CSS: le scelte "che giorno hai fatto?" sono una fila orizzontale scorrevole, non più una colonna impilata', () => {
+// Aggiornamento 31/08/2026 (feedback su screenshot): "che giorno hai fatto?"
+// non è più una fila di chip ma una tendina nativa (<select>), su richiesta
+// esplicita ("lo vorrei a tendina così da togliere i caroselli") — vedi
+// css/style.css (.day-select) e renderDayChoices()/selectDay() in index.html.
+test('CSS: #dayChoiceChips (la tendina "che giorno hai fatto?") esiste come stile .day-select', () => {
   const css = fs.readFileSync(path.join(__dirname, '..', 'css', 'style.css'), 'utf8');
-  const blocco = css.slice(css.indexOf('#dayChoiceChips{'));
-  assert.match(blocco, /#dayChoiceChips\{[^}]*flex-wrap:nowrap;[^}]*overflow-x:auto;/, 'il contenitore deve scorrere in orizzontale invece di andare a capo');
-  assert.match(blocco, /#dayChoiceChips \.chip\{[^}]*flex:0 0 auto;/, 'ogni scelta non deve più occupare tutta la larghezza (flex:1 1 auto)');
+  assert.match(css, /\.day-select\{/, 'deve esistere lo stile della tendina giorno');
 });
 
 test('regressione: selezionare un giorno dentro Registra continua a funzionare (dropset.test.js/altri dipendono da #dayChoiceChips)', async () => {
@@ -100,9 +108,26 @@ test('regressione: selezionare un giorno dentro Registra continua a funzionare (
     state.profiles = [profilo]; activeProfileId = 'io';
     mostraHome();
     document.getElementById('fabRegistraBtn').click();
+    document.getElementById('fabOptAllenamento').click();
     renderDayChoices();
   `);
-  const chips = document.querySelectorAll('#dayChoiceChips .chip');
-  assert.ok(chips.length >= 3, 'deve mostrare almeno il giorno A, Allenamento libero e Saltato');
+  // Aggiornamento 31/08/2026: "che giorno hai fatto?" è ora una <select>
+  // (#dayChoiceChips), non più una fila di chip; "Allenamento libero" resta
+  // fuori da qui, scorporato nel menu del "+" (vedi test/fabmenu-31-08.test.js).
+  const select = document.getElementById('dayChoiceChips');
+  assert.equal(select.tagName, 'SELECT', 'deve essere una tendina nativa');
+  const options = Array.from(select.querySelectorAll('option'));
+  const labels = options.map(o => o.textContent);
+  assert.ok(labels.some(l => l.includes('A')), 'deve esserci l\'opzione del giorno A');
+  assert.ok(labels.some(l => l.includes('Saltato')), 'deve esserci l\'opzione "Saltato"');
+  assert.ok(!labels.some(l => l.includes('Allenamento libero')), '"Allenamento libero" non deve più essere tra le opzioni, è nel menu del "+"');
+
+  // selezionare un'opzione deve continuare a chiamare selectDay() come prima
+  const opzioneA = options.find(o => o.value === 'A');
+  assert.ok(opzioneA, 'deve esistere l\'opzione con value "A"');
+  select.value = 'A';
+  select.dispatchEvent(new window.Event('change', { bubbles: true }));
+  const r = await run(window, `return { giorno: selectedDayKey };`);
+  assert.equal(r.giorno, 'A', 'selezionare la tendina deve aggiornare il giorno selezionato');
   window.close();
 });

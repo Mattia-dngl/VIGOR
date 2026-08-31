@@ -8,10 +8,16 @@
        deciso e angoli leggermente più morbidi. Nessun token è stato tolto —
        struttura, nav, glossario e mappa muscolare non dipendono da nient'altro
        che questi stessi nomi di variabile, quindi restano intatti da soli. */
-    --bg:#f7f5f0;
+    /* Restyling "fitflow" (31/08/2026, fase 1 — solo token, nessuna struttura
+       toccata): sfondo ancora più chiaro così le card bianche risaltano di
+       più, ombre più diffuse/soffuse (meno "pesanti"), angoli più morbidi.
+       Colore d'accento e font-display INVARIATI su richiesta esplicita
+       dell'utente — il restyling doveva toccare solo la "resa" (luce, angoli,
+       ombre), non l'identità cromatica né la tipografia. */
+    --bg:#faf9f6;
     --surface:#ffffff;
-    --surface2:#efeae0;
-    --border:#e6e0d3;
+    --surface2:#f1ede4;
+    --border:#e9e3d6;
     --text:#17150f;
     --text-dim:#6d6656;
     --text-faint:#a39c8a;
@@ -27,14 +33,14 @@
     --ink:#17150f;
     --grad-accent:linear-gradient(155deg, var(--accent), var(--accent-2));
     --grad-ink:linear-gradient(150deg, var(--ink), #2a2015);
-    --r-lg:24px;
-    --r-md:18px;
-    --r-sm:12px;
+    --r-lg:28px;
+    --r-md:20px;
+    --r-sm:14px;
     --r-pill:999px;
-    --shadow-sm:0 1px 3px rgba(23,21,15,0.06), 0 1px 2px rgba(23,21,15,0.04);
-    --shadow-md:0 10px 24px -6px rgba(23,21,15,0.10), 0 2px 6px rgba(23,21,15,0.05);
-    --shadow-lg:0 16px 36px -8px rgba(23,21,15,0.14);
-    --shadow-accent:0 10px 22px -4px rgba(255,75,43,0.45);
+    --shadow-sm:0 1px 2px rgba(23,21,15,0.04), 0 1px 1px rgba(23,21,15,0.03);
+    --shadow-md:0 14px 30px -10px rgba(23,21,15,0.09), 0 2px 6px rgba(23,21,15,0.04);
+    --shadow-lg:0 22px 44px -14px rgba(23,21,15,0.13);
+    --shadow-accent:0 10px 22px -4px rgba(255,75,43,0.4);
     --font-display:'Plus Jakarta Sans',sans-serif;
   }
   *{box-sizing:border-box;}
@@ -343,10 +349,11 @@
   .ultima-volta{padding:8px 11px !important; border-radius:10px !important; margin-bottom:2px;}
   .superset-badge{padding:8px 11px !important; border-radius:10px !important; margin-bottom:8px;}
   .set-row{margin-bottom:6px !important;}
-  .ex-carousel-counter{background:var(--surface2); padding:3px 9px; border-radius:999px; font-weight:700;}
 
-  /* fila di azioni sopra il carosello (allenamento libero): pulsante
-     principale pieno + due chip secondarie ben distinte, non testo nudo */
+  /* fila di azioni sopra la lista esercizi (allenamento libero): pulsante
+     principale pieno + chip secondaria ben distinta, non testo nudo.
+     31/08/2026: tolta la chip "Togli esercizio" — con la lista verticale
+     ogni esercizio ha il proprio tasto di rimozione (.ex-remove-btn). */
   .free-actions-row{display:flex; gap:8px; margin-top:10px;}
   .free-actions-row:empty{margin:0;}
   .free-chip-btn{flex:1; display:flex; align-items:center; justify-content:center; gap:6px;
@@ -356,8 +363,6 @@
   .free-chip-btn svg{width:14px; height:14px; flex:0 0 auto;}
   .free-chip-btn:active{transform:scale(.97);}
   .free-chip-btn.aggiungi:active{background:var(--accent-soft); border-color:var(--accent); color:var(--accent);}
-  .free-chip-btn.rimuovi{color:var(--accent);}
-  .free-chip-btn.rimuovi:active{background:var(--accent-soft); border-color:var(--accent);}
 
   /* Impostazioni e Account compatti: meno aria fra le sezioni, testi descrittivi più piccoli */
   #settingsPanel .card, #accountPanel .card{padding:14px 15px; margin-bottom:9px;}
@@ -399,8 +404,13 @@
   .acting-banner{display:flex; justify-content:space-between; align-items:center; gap:10px;
     background:rgba(221,69,38,0.1); border-bottom:1px solid var(--accent); padding:8px 14px; font-size:12px; color:var(--accent);}
   .acting-banner .btn{padding:5px 10px; font-size:10.5px;}
-  .reminder-banner{background:rgba(221,69,38,0.1); border:1px solid var(--accent); border-radius:8px;
-    padding:10px 12px; margin-bottom:9px; font-size:12.5px; color:var(--accent); font-family:var(--font-display); letter-spacing:0.02em;}
+  /* 31/08/2026: era negli stessi toni dell'accent usati per gli errori
+     (regErr, cloudErr...) — ma "Oggi tocca: ... non ancora registrato" è
+     solo un promemoria, non un errore: passato ai toni ambra (--warn),
+     come .info-banner.esito-attenzione, per non sembrare che qualcosa sia
+     andato storto. */
+  .reminder-banner{background:rgba(177,121,10,0.10); border:1px solid var(--warn); border-radius:8px;
+    padding:10px 12px; margin-bottom:9px; font-size:12.5px; color:var(--warn); font-family:var(--font-display); letter-spacing:0.02em;}
   .client-card{border:1px solid var(--border); border-radius:10px; padding:12px; margin-bottom:10px; background:var(--surface);}
   .client-card-top{display:flex; align-items:center; gap:10px; margin-bottom:10px;}
   .client-avatar{flex:0 0 auto; width:36px; height:36px; border-radius:50%; background:var(--accent); color:#fff;
@@ -515,6 +525,30 @@
      <details> in sola lettura (oggi aperto, gli altri riassunti) — stesso
      linguaggio visivo dell'editor sotto (vedi .day-accordion). */
   .scheda-header-row{display:flex; align-items:center; gap:10px; margin-bottom:14px;}
+  /* Intestazione di Registra fissa in cima allo scorrimento (31/08/2026,
+     richiesta esplicita: "tutta la barra in alto"), incapsulata insieme
+     alla barra del timer di recupero (già sticky da un giro precedente) in
+     un unico contenitore sticky — vedi .registra-sticky-group più sotto,
+     stesso trucco del margine negativo pari al padding di <main> (12px) per
+     "uscire" fino al bordo vero dello schermo e poi riprenderselo come
+     padding proprio. Prima le due barre erano sticky ciascuna per conto
+     proprio con lo stesso top:0: quella del timer (z-index più alto)
+     finiva per coprire completamente l'intestazione invece di restarci
+     sotto — un unico contenitore sticky con le due barre normalmente
+     impilate dentro risolve il problema alla radice. */
+  .registra-sticky-group{
+    position:sticky; top:0; z-index:70; background:var(--bg);
+    margin:-12px -12px 14px; padding:12px 12px 0;
+  }
+  .registra-sticky-group .scheda-header-row{ margin-bottom:10px; }
+  .registra-sticky-group .timer-bar{
+    position:static; margin:0 -12px 12px; top:auto;
+  }
+  .btn.top-action-btn{
+    flex:0 0 auto; display:inline-flex; align-items:center; gap:5px;
+    padding:9px 14px; font-size:12.5px; border-radius:var(--r-pill); white-space:nowrap;
+  }
+  .btn.top-action-btn svg{width:13px; height:13px;}
   .scheda-titolo{font-family:var(--font-display); font-size:19px; margin:0; flex:1; min-width:0;}
   .scheda-header-actions{display:flex; align-items:center; gap:8px;}
   .icon-btn-round{width:34px; height:34px; min-width:34px; border-radius:50%; border:1px solid var(--border);
@@ -683,7 +717,7 @@
   .view{display:none;}
   .view.active{display:block; animation:fade .18s ease;}
   @keyframes fade{from{opacity:0; transform:translateY(4px);} to{opacity:1; transform:translateY(0);}}
-  .card{background:var(--surface); border:none; box-shadow:var(--shadow-sm); border-radius:var(--r-lg); padding:16px 17px; margin-bottom:12px; position:relative; overflow:hidden;}
+  .card{background:var(--surface); border:1px solid var(--border); box-shadow:var(--shadow-sm); border-radius:var(--r-lg); padding:16px 17px; margin-bottom:12px; position:relative; overflow:hidden;}
   .card h3{font-size:15px; color:var(--text); margin-bottom:10px; font-weight:800;}
   .card h3.diet{color:var(--diet);}
   .card-head-row{display:flex; justify-content:space-between; align-items:center; margin-bottom:9px;}
@@ -707,6 +741,29 @@
   }
   details.details-card[open] > summary::before{transform:translateY(-50%) rotate(90deg);}
   details.details-card .details-body{padding:0 13px 13px;}
+
+  /* Tendina "Piano alimentare assegnato dal PT" (31/08/2026, Fase 3): a
+     differenza di .details-card, questa non vive già dentro un'altra
+     card — è la card stessa, di modo che il contenuto (le card esistenti
+     di vedi/modifica piano, invariate) non finisca annidato dentro un'altra
+     card doppia. Richiusa di default: prima occupava sempre spazio in
+     fondo a Dieta anche per chi non ha (o non guarda spesso) un piano PT. */
+  .diet-plan-toggle{margin:4px 0 18px;}
+  .diet-plan-toggle > summary{
+    list-style:none; cursor:pointer; user-select:none; position:relative;
+    display:flex; flex-direction:column; gap:2px;
+    padding:14px 34px 14px 16px; background:var(--surface); border:1px solid var(--border);
+    border-radius:var(--r-md); box-shadow:var(--shadow-sm);
+    font-family:var(--font-display); font-weight:700; font-size:13px; color:var(--diet);
+  }
+  .diet-plan-toggle > summary::-webkit-details-marker{display:none;}
+  .diet-plan-toggle > summary::before{
+    content:"›"; position:absolute; right:15px; top:50%; transform:translateY(-50%) rotate(0deg);
+    color:var(--text-faint); font-size:18px; transition:transform .15s;
+  }
+  .diet-plan-toggle[open] > summary::before{transform:translateY(-50%) rotate(90deg);}
+  .diet-plan-toggle > summary .hint{color:var(--text-dim); font-weight:400; margin-top:2px;}
+  .diet-plan-toggle .details-body{padding-top:14px;}
 
   /* ---------- RESPONSIVE: TABLET ---------- */
   @media (min-width:680px){
@@ -791,38 +848,35 @@
     color:var(--text); font-size:12px; cursor:pointer; font-family:var(--font-display); letter-spacing:0.02em;}
   .chip.selected{background:var(--accent); border-color:var(--accent); color:#fff;}
 
-  /* ---------- pulsanti "Che giorno hai fatto?" in Registra: icona + testo + spunta ----------
-     26/08/2026 (ventiduesimo giro): erano impilati uno sotto l'altro (ogni
-     chip a piena larghezza, flex:1 1 auto dentro un contenitore che va a
-     capo) — con 4-5 opzioni diventava una colonna alta quanto mezzo schermo.
-     Ispirato a come le app di allenamento più note (Strong, Hevy) tengono la
-     schermata di logging essenziale: qui diventa una fila orizzontale
-     scorrevole (stesso pattern già in uso altrove nell'app, es. la striscia
-     dei 7 giorni in Home — .home-daystrip — e i preset del timer,
-     .timer-presets), il nome completo del giorno scelto resta comunque
-     leggibile subito sotto in #statusInfo, quindi non si perde nessuna
-     informazione, solo l'ingombro verticale quando le opzioni sono più di 2-3. */
-  #dayChoiceChips{gap:8px; flex-wrap:nowrap; overflow-x:auto; padding-bottom:2px;}
-  #dayChoiceChips .chip{
-    flex:0 0 auto; min-width:0; display:flex; align-items:center; gap:7px;
-    background:var(--surface2); border:1.5px solid var(--surface2); border-radius:var(--r-md);
-    padding:9px 12px; font-family:'Inter',sans-serif;
+  /* ---------- "Che giorno hai fatto?" in Registra: tendina ----------
+     31/08/2026 (richiesta esplicita): prima era una fila di chip a
+     scorrimento orizzontale (introdotta il 26/08 per accorciare una colonna
+     troppo alta) — ora è una tendina nativa, più compatta e senza bisogno di
+     scorrere. Stesso elemento condiviso da Registra allenamento e
+     Allenamento libero (vedi renderDayChoices()/selectDay() in index.html). */
+  .day-select{
+    -webkit-appearance:none; appearance:none; cursor:pointer;
+    padding-right:38px; font-family:var(--font-display); font-weight:700; font-size:13.5px;
+    background-color:var(--surface2);
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236d6656' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M6 9l6 6 6-6'/></svg>");
+    background-repeat:no-repeat; background-position:right 12px center; background-size:16px;
   }
-  #dayChoiceChips .chip.selected{background:var(--accent-soft); border-color:var(--accent); color:var(--text);}
-  #dayChoiceChips .dc-icon{
-    width:24px; height:24px; border-radius:8px; background:var(--surface); color:var(--text-dim);
-    display:flex; align-items:center; justify-content:center; flex:0 0 auto;
-  }
-  #dayChoiceChips .dc-icon svg{width:13px; height:13px;}
-  #dayChoiceChips .chip.selected .dc-icon{background:var(--accent); color:#fff;}
-  #dayChoiceChips .dc-label{flex:0 1 auto; min-width:0; font-size:13px; font-weight:700; color:var(--text); line-height:1.2; white-space:nowrap;}
-  #dayChoiceChips .dc-check{
-    width:0; height:20px; border-radius:50%; background:transparent; color:transparent;
-    display:flex; align-items:center; justify-content:center; flex:0 0 auto; opacity:0;
-    margin-left:0; overflow:hidden; transition:width .15s, opacity .15s, margin-left .15s;
-  }
-  #dayChoiceChips .dc-check svg{width:12px; height:12px; flex:0 0 auto;}
-  #dayChoiceChips .chip.selected .dc-check{width:20px; background:var(--accent); color:#fff; opacity:1; margin-left:auto;}
+  .day-select:focus{background-color:var(--surface);}
+  .day-select option:disabled{color:var(--text-faint);}
+
+  /* ---------- card "Cronometro allenamento" in Registra (31/08/2026) ---------- */
+  .timer-elapsed-card{padding:14px 16px;}
+  .timer-elapsed-head{display:flex; align-items:center; gap:7px; font-family:var(--font-display); font-weight:800; font-size:13px; color:var(--text); margin-bottom:12px;}
+  .timer-elapsed-head svg{width:15px; height:15px; color:var(--accent); flex:0 0 auto;}
+  .timer-elapsed-body{display:flex; align-items:center; gap:16px;}
+  .timer-elapsed-ring{position:relative; flex:0 0 auto; width:84px; height:84px;}
+  .timer-elapsed-ring .ring-track{stroke:var(--border);}
+  .timer-elapsed-ring .ring-fill{stroke:var(--accent); transition:stroke-dashoffset .5s linear;}
+  .timer-elapsed-center{position:absolute; inset:0; display:flex; align-items:center; justify-content:center;}
+  .timer-elapsed-center span{font-family:var(--font-display); font-weight:800; font-size:15px; color:var(--text);}
+  .timer-elapsed-copy{flex:1; min-width:0;}
+  .timer-elapsed-title{margin:0; font-family:var(--font-display); font-weight:700; font-size:13.5px; color:var(--text);}
+  .timer-elapsed-sub{margin:3px 0 0; font-size:11.5px; color:var(--text-dim); line-height:1.4;}
 
   /* ---------- card "Data allenamento" in Registra ---------- */
   .datacard-top{display:flex; align-items:center; gap:12px;}
@@ -842,73 +896,67 @@
   .data-hidden-input{position:absolute; inset:0; width:100%; height:100%; opacity:0; border:none; padding:0; margin:0; cursor:pointer;}
   .datacard-divider{height:1px; background:var(--border); margin:16px 0 14px;}
 
-  /* ---------- banner informativo (pesca) ---------- */
+  /* ---------- banner informativo ---------- */
+  /* 31/08/2026: di base era sempre nei toni dell'accent (rosso-arancio) —
+     che nell'app è ANCHE il colore degli errori (regErr, cloudErr,
+     .reminder-banner...) — quindi ogni banner puramente informativo o
+     positivo (es. "Come da programma" in Registra) sembrava un errore.
+     Segnalato una prima volta il 25/08/2026 (solo per l'esito positivo di
+     conferma email) e di nuovo il 31/08/2026 (più in generale, "sembra
+     quasi un errore"): ora il DEFAULT è un tono neutro (grigio, nessun
+     legame con successo/errore) e ogni tono diverso — positivo, di
+     attenzione — è una classe esplicita, mai l'accent. Aggiunto anche
+     margin-bottom (mancava: il banner restava "attaccato" all'elemento
+     successivo mentre sopra c'era il normale spazio fra le card). */
   .info-banner{
-    display:flex; align-items:flex-start; gap:11px; background:var(--accent-soft); border-radius:var(--r-md);
-    padding:13px 14px; margin-top:10px; font-size:12.5px; color:var(--text-dim); line-height:1.5;
+    display:flex; align-items:flex-start; gap:11px; background:rgba(107,114,128,0.10); border-radius:var(--r-md);
+    padding:13px 14px; margin:10px 0 12px; font-size:12.5px; color:var(--text-dim); line-height:1.5;
   }
   .info-banner::before{
-    content:""; flex:0 0 auto; width:26px; height:26px; border-radius:50%; background:var(--accent);
+    content:""; flex:0 0 auto; width:26px; height:26px; border-radius:50%; background:var(--skip);
     -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2'%3E%3Cpath d='M12 8v5m0 3.5h.01M12 3.5C7 3.5 3 7.5 3 12.5s4 9 9 9 9-4 9-9-4-9-9-9Z' stroke-linecap='round'/%3E%3C/svg%3E") center/16px no-repeat;
     mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2'%3E%3Cpath d='M12 8v5m0 3.5h.01M12 3.5C7 3.5 3 7.5 3 12.5s4 9 9 9 9-4 9-9-4-9-9-9Z' stroke-linecap='round'/%3E%3C/svg%3E") center/16px no-repeat;
   }
   .info-banner:empty{display:none;}
   .info-banner .status-badge{margin-right:2px;}
   /* Variante per un banner che conferma un ESITO POSITIVO (es. "Account
-     creato!"): di base .info-banner usa i toni dell'accent, che nell'app
-     sono anche il colore degli errori (regErr, cloudErr...) — su un
-     messaggio positivo sembra quindi che qualcosa sia andato storto.
-     Segnalato il 25/08/2026. */
+     creato!", "Come da programma" in Registra). */
   .info-banner.esito-positivo{background:rgba(31,177,95,.12);}
   .info-banner.esito-positivo::before{
     background:var(--ok);
     -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2.4'%3E%3Cpath d='M5 13l4 4L19 7' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/16px no-repeat;
     mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2.4'%3E%3Cpath d='M5 13l4 4L19 7' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/16px no-repeat;
   }
+  /* Variante di ATTENZIONE (non un errore, solo qualcosa da notare: "Giorno
+     diverso dal previsto", "Allenamento libero") — toni ambra (--warn),
+     mai rosso-arancio: quel colore nell'app è riservato agli errori veri. */
+  .info-banner.esito-attenzione{background:rgba(177,121,10,.12);}
+  .info-banner.esito-attenzione::before{
+    background:var(--warn);
+    -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2'%3E%3Cpath d='M12 9v4m0 3.5h.01M10.3 3.9 2.6 17.3c-.6 1 .1 2.2 1.3 2.2h16.2c1.2 0 1.9-1.3 1.3-2.2L13.7 3.9c-.6-1-2-1-2.6 0Z' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/16px no-repeat;
+    mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2'%3E%3Cpath d='M12 9v4m0 3.5h.01M10.3 3.9 2.6 17.3c-.6 1 .1 2.2 1.3 2.2h16.2c1.2 0 1.9-1.3 1.3-2.2L13.7 3.9c-.6-1-2-1-2.6 0Z' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/16px no-repeat;
+  }
 
-  /* ---------- CAROSELLO ESERCIZI (Registra): un esercizio alla volta, scorrimento orizzontale ---------- */
-  .ex-carousel-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;}
-  .ex-carousel-counter{font-family:'Roboto Mono',monospace; font-size:11.5px; color:var(--text-faint); flex:0 0 auto;}
-  /* Un esercizio alla volta, ognuno nel proprio riquadro indipendente — non più
-     un unico nastro con tutti gli esercizi affiancati che scorre in orizzontale.
-     Ogni `.exercise-block` resta SEMPRE nel DOM (serve a addSetRow/riportaUltimaVolta,
-     che cercano gli input per nome esercizio), ma solo quello attivo è visibile:
-     tutti gli altri sono position:absolute, invisibili e fuori dal flusso — quindi
-     non contribuiscono MAI all'altezza del contenitore. L'altezza si legge una
-     sola volta, per intero, dal blocco di arrivo (mostraEsercizio in index.html),
-     mai a metà fra due blocchi diversi: non c'è più nulla da "indovinare" durante
-     un cambio esercizio, quindi non può più sporgere né sovrapporsi a quello
-     precedente come succedeva con il vecchio scorrimento orizzontale nativo. */
-  .ex-carousel-track{
-    position:relative; overflow:hidden; margin:0 -2px;
-    transition: height .26s cubic-bezier(.4,0,.2,1);
+  /* ---------- ESERCIZI (Registra): lista verticale ----------
+     31/08/2026: il vecchio carosello (un esercizio alla volta, con frecce/
+     swipe e una macchina di calcolo altezze per evitare "fantasmi" durante
+     il cambio) è stato tolto su richiesta esplicita — ora sono tutti
+     impilati e sempre visibili, quindi non c'è più nulla da animare o
+     misurare: nessuna classe di stato (.active/.entra-*/.esce-*), nessun
+     position:absolute, nessuna transizione di altezza. */
+  .exercise-list-title{margin-bottom:10px;}
+  .exercise-list{display:flex; flex-direction:column;}
+  .exercise-block{ border-top:1px solid var(--border); box-sizing:border-box; }
+  .exercise-block:first-child{ border-top:none; }
+  .exercise-name{position:relative;}
+  .ex-remove-btn{
+    position:absolute; top:-2px; right:0; width:26px; height:26px;
+    display:flex; align-items:center; justify-content:center;
+    border:none; border-radius:50%; background:none; color:var(--text-faint);
+    cursor:pointer; padding:0;
   }
-  /* top+left, non inset:0: con anche il bottom fissato (quello che inset:0
-     imposta) un elemento position:absolute con height:auto si "allunga" per
-     riempire esattamente l'altezza del contenitore invece di prendere
-     l'altezza naturale del proprio contenuto — che è proprio quello che deve
-     fare qui: mostraEsercizio legge scrollHeight per sapere quanto è alto
-     DAVVERO il blocco, e con il bottom fissato quella lettura tornava sempre
-     "alto quanto il contenitore in quel momento", restando bloccata
-     sull'esercizio più alto visto fino a lì (bug segnalato: lo spazio vuoto
-     non si richiudeva mai passando a un esercizio corto). */
-  .exercise-block{
-    position:absolute; top:0; left:0; width:100%;
-    border-top:none; padding:2px; box-sizing:border-box;
-    opacity:0; pointer-events:none; transform:translateX(0);
-    transition: transform .26s cubic-bezier(.4,0,.2,1), opacity .2s ease;
-  }
-  .exercise-block.active{ opacity:1; pointer-events:auto; transform:translateX(0); }
-  .exercise-block.entra-avanti{ transform:translateX(36px); }
-  .exercise-block.entra-indietro{ transform:translateX(-36px); }
-  .exercise-block.esce-avanti{ opacity:0; transform:translateX(-36px); }
-  .exercise-block.esce-indietro{ opacity:0; transform:translateX(36px); }
-  @media (prefers-reduced-motion: reduce){
-    .ex-carousel-track, .exercise-block{ transition:none; }
-  }
-  .ex-carousel-nav{display:flex; gap:8px; margin-top:12px;}
-  .ex-carousel-nav .btn{margin-top:0; flex:1;}
-  .ex-carousel-nav .btn:disabled{opacity:0.4; cursor:default;}
+  .ex-remove-btn svg{width:15px; height:15px;}
+  .ex-remove-btn:active{background:var(--accent-soft); color:var(--accent);}
 
   .exercise-name{font-family:var(--font-display); font-size:13px; letter-spacing:0.02em; margin-bottom:6px;}
   .target{color:var(--text-faint); font-size:11px; margin-left:5px; text-transform:none; letter-spacing:0;}
@@ -1463,6 +1511,37 @@
   nav.tabs .tab-btn-main .tab-label{color:var(--text-faint); margin-top:1px;}
   nav.tabs .tab-btn-main.active .tab-label{color:var(--accent);}
   nav.tabs .tab-btn-main:active .tab-fab{transform:scale(.94);}
+  /* il "+" ruota a X quando il menu sotto è aperto (31/08/2026) */
+  nav.tabs .tab-btn-main .tab-fab{transition:transform .2s ease;}
+  nav.tabs .tab-btn-main.aperto .tab-fab{transform:rotate(45deg);}
+  nav.tabs .tab-btn-main.aperto:active .tab-fab{transform:rotate(45deg) scale(.94);}
+
+  /* ---------- menu del "+": scelta rapida cosa registrare (31/08/2026) ---------- */
+  .fabmenu-overlay{position:fixed; inset:0; z-index:200; background:rgba(23,21,15,0.5);
+    backdrop-filter:blur(2px); display:flex; align-items:flex-end; justify-content:center;
+    opacity:0; pointer-events:none; transition:opacity .2s ease;}
+  .fabmenu-overlay.show{opacity:1; pointer-events:auto;}
+  .fabmenu-sheet{width:100%; max-width:520px; background:var(--surface);
+    border-radius:26px 26px 0 0; padding:10px 16px calc(22px + env(safe-area-inset-bottom, 0px));
+    box-shadow:var(--shadow-lg); transform:translateY(100%);
+    transition:transform .28s cubic-bezier(.32,.72,0,1);}
+  .fabmenu-overlay.show .fabmenu-sheet{transform:translateY(0);}
+  .fabmenu-handle{width:36px; height:4px; margin:10px auto 16px; border-radius:2px; background:var(--border);}
+  .fabmenu-title{font-family:var(--font-display); font-size:16px; font-weight:800; margin:0 4px 14px;}
+  .fabmenu-option{width:100%; display:flex; align-items:center; gap:13px; text-align:left;
+    background:var(--surface2); border:1px solid var(--border); border-radius:var(--r-md);
+    padding:12px 14px; margin-bottom:10px; cursor:pointer; transition:transform .12s ease, background .12s ease;
+    font:inherit; color:inherit;}
+  .fabmenu-option:last-child{margin-bottom:0;}
+  .fabmenu-option:active{transform:scale(.98); background:var(--accent-soft);}
+  .fabmenu-icon{flex:0 0 auto; width:42px; height:42px; border-radius:var(--r-sm);
+    background:var(--accent-soft); color:var(--accent); display:flex; align-items:center; justify-content:center;}
+  .fabmenu-icon svg{width:20px; height:20px;}
+  .fabmenu-copy{flex:1; display:flex; flex-direction:column; gap:2px;}
+  .fabmenu-copy strong{font-family:var(--font-display); font-size:14px; font-weight:700; color:var(--text);}
+  .fabmenu-copy span{font-size:11.5px; color:var(--text-dim);}
+  .fabmenu-arrow{flex:0 0 auto; width:16px; height:16px; color:var(--text-faint);}
+  @media(min-width:760px){ .fabmenu-sheet{border-radius:26px; margin-bottom:16px;} }
   @media(min-width:760px){
     nav.tabs{left:50%; right:auto; transform:translateX(-50%); width:min(560px, 96vw);
       bottom:16px;}
@@ -1613,6 +1692,16 @@
   .pt-riga{display:flex; align-items:center; gap:11px; padding:12px 0;
     border-bottom:1px solid var(--border); flex-wrap:wrap;}
   .pt-riga:last-child{border-bottom:none;}
+  /* Card PT compatta (31/08/2026): la riga con avatar/nome/tasto messaggi
+     resta sempre in vista, permessi e "Termina rapporto" sono dietro una
+     tendina — stesso .details-card di Impostazioni/Account, ma qui SENZA
+     la classe .card (è già dentro #cardMioPT, che è già una card: non
+     serve un secondo bordo/ombra annidato), con un padding più stretto
+     visto che eredita già quello della card che la contiene. */
+  .pt-riga-compatta{padding:2px 0 12px;}
+  .pt-dettagli-details > summary{padding:9px 4px 9px 20px; font-size:12.5px; color:var(--text-dim);}
+  .pt-dettagli-details > summary::before{left:2px;}
+  .pt-dettagli-details .details-body{padding:2px 4px 4px;}
   .pt-riga .info{flex:1; min-width:150px;}
   .pt-riga .nome{font-family:var(--font-display); font-size:14px;}
   .pt-riga .meta{font-size:11.5px; color:var(--text-faint); margin-top:2px;}
@@ -1707,22 +1796,24 @@
   #mealTypeChips .chip{display:inline-flex; align-items:center; gap:6px;}
   #mealTypeChips .chip svg{width:14px; height:14px; flex:0 0 auto;}
 
-  .macro-ring-row{display:flex; align-items:center; gap:16px; position:relative; z-index:1;}
-  .macro-ring-wrap{position:relative; width:98px; height:98px; flex:0 0 auto;}
-  .macro-ring-wrap svg{width:100%; height:100%; transform:rotate(-90deg);}
-  .macro-ring-wrap circle{fill:none; stroke-width:9;}
-  .macro-track{stroke:var(--diet-soft, #e3f4f7);}
-  .macro-seg{stroke-linecap:round; transition:stroke-dasharray .8s cubic-bezier(.4,0,.2,1), stroke-dashoffset .8s cubic-bezier(.4,0,.2,1);}
-  .macro-seg-p{stroke:var(--diet);}
-  .macro-seg-c{stroke:var(--accent);}
-  .macro-seg-f{stroke:#f0b429;}
-  .macro-center{position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center;}
-  .macro-kcal{font-family:var(--font-display); font-weight:800; font-size:17px; color:var(--text); line-height:1;}
-  .macro-kcal-label{font-size:8.5px; color:var(--text-faint); text-transform:uppercase; letter-spacing:.05em; margin-top:3px; text-align:center;}
+  /* 31/08/2026 (Fase 3, restyling ispirato a fitflow): anello unico "kcal
+     consumate/obiettivo" al posto del vecchio anello a 3 segmenti P/C/F
+     (quello resta come semplici righe .macro-row, riusate anche da Home). */
+  .diet-ring-row{display:flex; align-items:center; gap:16px; position:relative; z-index:1;}
+  .kcal-ring-wrap{position:relative; width:98px; height:98px; flex:0 0 auto;}
+  .kcal-ring-wrap svg{width:100%; height:100%; transform:rotate(-90deg);}
+  .kcal-ring-wrap circle{fill:none; stroke-width:9;}
+  .kcal-ring-track{stroke:var(--diet-soft, #e3f4f7);}
+  .kcal-ring-fill{stroke:var(--diet); stroke-linecap:round; transition:stroke-dasharray .8s cubic-bezier(.4,0,.2,1), stroke-dashoffset .8s cubic-bezier(.4,0,.2,1);}
+  .kcal-ring-fill.kcal-ring-fill-over{stroke:var(--warn);}
+  .kcal-ring-center{position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center;}
+  .kcal-ring-pct{font-family:var(--font-display); font-weight:800; font-size:19px; color:var(--text); line-height:1;}
+  .kcal-ring-pct-label{font-size:8.5px; color:var(--text-faint); text-transform:uppercase; letter-spacing:.05em; margin-top:3px;}
+  .kcal-ring-copy{flex:1; min-width:0; position:relative; z-index:1;}
+  .kcal-ring-value{font-family:var(--font-display); font-weight:800; font-size:17px; color:var(--text); margin-top:3px;}
+  .kcal-ring-sub{font-size:11.5px; color:var(--text-dim); margin-top:3px;}
+  .kcal-ring-sub.kcal-ring-sub-over{color:var(--warn); font-weight:700;}
 
-  .fabbisogno-num{font-family:var(--font-display); font-weight:800; font-size:30px; color:var(--text);
-    line-height:1.15; position:relative; z-index:1;}
-  .fabbisogno-num span{font-size:13px; font-weight:700; color:var(--text-faint); margin-left:2px;}
   #fabbisognoBody{position:relative; z-index:1;}
   #fabbisognoBody .seg-toggle{margin-top:2px;}
   .macro-side{flex:1; min-width:0;}
@@ -1732,13 +1823,41 @@
   .macro-row-label{font-size:11.5px; color:var(--text-dim); flex:1;}
   .macro-row-val{font-family:var(--font-display); font-weight:800; font-size:12px; color:var(--text);}
 
-  .meal-log-group{margin-bottom:4px;}
-  .meal-log-head{display:flex; justify-content:space-between; align-items:center; padding:8px 2px 4px;
-    font-family:var(--font-display); font-weight:700; font-size:11.5px; color:var(--text-dim); text-transform:uppercase; letter-spacing:.03em;}
-  .meal-log-row{display:flex; align-items:center; gap:11px; padding:10px 0; border-bottom:1px solid var(--border);}
-  .meal-log-row:last-child{border-bottom:none;}
-  .meal-log-tag{width:7px; height:32px; border-radius:5px; flex:0 0 auto;}
-  .meal-log-body{flex:1; min-width:0;}
-  .meal-log-name{font-family:var(--font-display); font-weight:700; font-size:12.5px;}
-  .meal-log-sub{font-size:11px; color:var(--text-dim); margin-top:1px;}
-  .meal-log-row .remove-x{flex:0 0 auto;}
+  /* Acqua (31/08/2026, Fase 3): funzionalità nuova, nessun dato preesistente da riusare. */
+  .water-row{display:flex; align-items:center; justify-content:space-between; gap:10px;
+    margin-top:14px; padding-top:14px; border-top:1px solid var(--border); position:relative; z-index:1;}
+  .water-label{display:flex; align-items:center; gap:7px; font-family:var(--font-display); font-weight:700; font-size:12.5px; color:var(--text);}
+  .water-label svg{width:16px; height:16px; color:var(--diet); flex:0 0 auto;}
+  .water-action{display:flex; align-items:center; gap:8px;}
+  .water-value{font-family:var(--font-display); font-weight:800; font-size:12px; color:var(--diet); min-width:78px; text-align:center;}
+  .water-step-btn{width:26px; height:26px; border-radius:50%; border:1px solid var(--border); background:var(--surface2);
+    color:var(--text-dim); font-size:15px; font-weight:700; line-height:1; cursor:pointer; padding:0;
+    display:flex; align-items:center; justify-content:center;}
+  .water-step-btn.water-step-btn-fill{background:var(--diet); border-color:var(--diet); color:#fff;}
+  .water-step-btn:active{transform:scale(0.94);}
+  .water-bar{height:6px; border-radius:6px; background:var(--diet-soft); overflow:hidden; margin-top:10px; position:relative; z-index:1;}
+  .water-bar-fill{height:100%; background:var(--diet); border-radius:6px; transition:width .3s;}
+
+  /* Meal card (31/08/2026, Fase 3): sostituisce la vecchia lista piatta
+     .meal-log-* — stessi dati (mealLogs, raggruppati per pasto), stile a
+     card ispirato a fitflow: sottotitolo con subtotale, stato fatto/da
+     fare, righe alimenti con rimozione per riga (comportamento invariato). */
+  .meal-card{padding:14px 15px; margin-bottom:10px;}
+  .meal-card.meal-card-pending{opacity:.78;}
+  .meal-card-head{display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:2px;}
+  .meal-card-name{display:flex; align-items:center; gap:8px; font-family:var(--font-display); font-weight:700; font-size:13px; color:var(--text);}
+  .meal-card-name svg{width:17px; height:17px; color:var(--diet); flex:0 0 auto;}
+  .meal-card-pending .meal-card-name svg{color:var(--text-faint);}
+  .meal-card-head-right{display:flex; align-items:center; gap:8px;}
+  .meal-card-kcal{font-family:var(--font-display); font-weight:800; font-size:12px; color:var(--diet);}
+  .meal-card-add-btn, .water-step-btn{transition:transform .1s;}
+  .meal-card-add-btn{width:22px; height:22px; border-radius:50%; border:1px solid var(--border); background:var(--surface2);
+    color:var(--text-dim); font-size:14px; font-weight:700; line-height:1; cursor:pointer; padding:0;
+    display:flex; align-items:center; justify-content:center;}
+  .meal-card-log-btn{padding:6px 14px; font-size:11.5px;}
+  .meal-card-food-row{display:flex; align-items:center; justify-content:space-between; gap:10px;
+    padding:8px 0; border-top:1px solid var(--border); font-size:12px; color:var(--text-dim);}
+  .meal-card-food-row:first-of-type{border-top:none; margin-top:6px;}
+  .meal-card-food-grams{color:var(--text-faint); font-size:11px;}
+  .meal-card-food-kcal{display:flex; align-items:center; gap:8px; flex:0 0 auto; font-family:var(--font-display); font-weight:700; color:var(--text);}
+  .meal-card-food-kcal .remove-x{flex:0 0 auto;}

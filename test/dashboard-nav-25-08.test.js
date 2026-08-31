@@ -50,13 +50,19 @@ test('nav in basso: ordine Home, Scheda, + Registra, Dieta, Storico', async () =
   window.close();
 });
 
-test('il bottone centrale rialzato della nav apre Registra, non più Home', async () => {
+// Aggiornamento 31/08/2026 (restyling fitflow, fase 1): il bottone centrale
+// non apre più Registra direttamente al primo click, apre un menu con 3
+// scelte (vedi test/fabmenu-31-08.test.js per il menu stesso). Questo test
+// verifica che, scegliendo "Registra allenamento" dal menu, si arrivi
+// comunque su Registra come prima.
+test('il bottone centrale rialzato della nav apre il menu, e "Registra allenamento" porta su Registra', async () => {
   const { window, document } = await loadApp();
   await run(window, `
     const profilo = ${JSON.stringify(profiloBase())};
     state.profiles = [profilo]; activeProfileId = 'io';
     mostraHome();
     document.getElementById('fabRegistraBtn').click();
+    document.getElementById('fabOptAllenamento').click();
   `);
   assert.equal(document.getElementById('appRoot').style.display, 'block', 'Registra deve aprire appRoot');
   assert.ok(document.getElementById('view-log').classList.contains('active'), 'la vista attiva deve essere Registra (log)');

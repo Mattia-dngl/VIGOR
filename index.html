@@ -887,23 +887,41 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
          apriRegistra()/showAppRoot()) — segnalato che era troppa roba in
          vista mentre si registra un allenamento. Stesso pattern già usato
          per "Modifica scheda" (.scheda-header-row/.icon-btn-round). -->
-    <div class="scheda-header-row">
-      <button type="button" class="icon-btn-round" id="registraTornaSchedaBtn" aria-label="Torna alla scheda" title="Torna alla scheda">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
-      </button>
-      <h2 class="scheda-titolo">Registra allenamento</h2>
-    </div>
-    <div class="timer-bar" id="timerBar">
-      <div class="timer-display" id="timerDisplay">1:30</div>
-      <div class="timer-msg" id="timerMsg">Recupero finito</div>
-      <div class="timer-presets" id="timerPresets">
-        <button type="button" data-sec="60">60"</button>
-        <button type="button" data-sec="90">90"</button>
-        <button type="button" data-sec="120">2:00</button>
-        <button type="button" data-sec="180">3:00</button>
+    <!-- 31/08/2026: intestazione e barra del timer di recupero (quest'ultima
+         già sticky da un giro precedente) sono incapsulate in un unico
+         contenitore sticky, una sopra l'altra — prima erano sticky ciascuna
+         per conto proprio con lo stesso top:0, quindi la barra del timer
+         (z-index più alto) finiva per coprire l'intestazione invece di
+         restarci sotto. Vedi .registra-sticky-group in style.css. -->
+    <div class="registra-sticky-group" id="registraStickyGroup">
+      <div class="scheda-header-row">
+        <button type="button" class="icon-btn-round" id="registraTornaSchedaBtn" aria-label="Torna alla scheda" title="Torna alla scheda">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+        </button>
+        <h2 class="scheda-titolo">Registra allenamento</h2>
+        <!-- Spostato qui dal fondo pagina (31/08/2026, richiesta esplicita):
+             stesso #saveLogBtn di sempre, stessa logica show/hide via
+             style.display 'block'/'none' sparsa nel resto del file — solo
+             riposizionato e restilizzato come pulsante compatto in alto a
+             destra. Il gruppo intero è sticky, quindi resta visibile
+             scorrendo la pagina. -->
+        <button class="btn top-action-btn" id="saveLogBtn" style="display:none;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 13l4 4L19 7"/></svg>
+          Registra
+        </button>
       </div>
-      <button class="btn timer-avvia" id="timerAvvia" type="button">Avvia</button>
-      <button class="timer-chiudi" id="timerChiudi" type="button" aria-label="Nascondi il timer">&#10005;</button>
+      <div class="timer-bar" id="timerBar">
+        <div class="timer-display" id="timerDisplay">1:30</div>
+        <div class="timer-msg" id="timerMsg">Recupero finito</div>
+        <div class="timer-presets" id="timerPresets">
+          <button type="button" data-sec="60">60"</button>
+          <button type="button" data-sec="90">90"</button>
+          <button type="button" data-sec="120">2:00</button>
+          <button type="button" data-sec="180">3:00</button>
+        </div>
+        <button class="btn timer-avvia" id="timerAvvia" type="button">Avvia</button>
+        <button class="timer-chiudi" id="timerChiudi" type="button" aria-label="Nascondi il timer">&#10005;</button>
+      </div>
     </div>
     <button class="timer-apri" id="timerApri" type="button">⏱ Mostra il timer di recupero</button>
 
@@ -921,10 +939,44 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
         </div>
       </div>
       <div class="datacard-divider"></div>
-      <div class="eyebrow" style="margin-bottom:11px;">Che giorno hai fatto?</div>
-      <div class="chip-group" id="dayChoiceChips"></div>
+      <div class="eyebrow" style="margin-bottom:8px;">Che giorno hai fatto?</div>
+      <!-- Tendina al posto delle chip a carosello (31/08/2026, richiesta
+           esplicita): stesso elemento condiviso tra Registra allenamento e
+           Allenamento libero (renderDayChoices() ricostruisce solo le
+           <option>, il <select> resta lo stesso nodo — l'ascoltatore
+           'change' è registrato una volta sola più sotto, stesso pattern
+           già usato per #logDate). -->
+      <select class="day-select" id="dayChoiceChips"></select>
     </div>
     <div id="statusInfo" class="info-banner"></div>
+
+    <!-- Cronometro allenamento (31/08/2026, ispirato a fitflow, richiesta
+         esplicita): tempo trascorso dall'inizio, in AGGIUNTA al timer di
+         recupero esistente (.timer-bar, sopra) che resta invariato. Parte da
+         solo quando scegli un giorno/allenamento libero (riusa
+         _logIniziatoAlle, già tracciato per calcolare la durata a fine
+         allenamento), si nasconde da solo per "Saltato" o quando non c'è
+         niente in corso. Aggiornato una volta al secondo da
+         aggiornaCronometroAllenamento(), vedi index.html. -->
+    <div class="card timer-elapsed-card" id="workoutTimerCard" style="display:none;">
+      <div class="timer-elapsed-head">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Cronometro allenamento
+      </div>
+      <div class="timer-elapsed-body">
+        <div class="timer-elapsed-ring">
+          <svg viewBox="0 0 108 108" width="84" height="84">
+            <circle class="ring-track" cx="54" cy="54" r="46" fill="none" stroke-width="6"/>
+            <circle class="ring-fill" id="workoutTimerRingFill" cx="54" cy="54" r="46" fill="none" stroke-width="6" stroke-linecap="round" transform="rotate(-90 54 54)"/>
+          </svg>
+          <div class="timer-elapsed-center"><span id="workoutTimerDisplay">0:00</span></div>
+        </div>
+        <div class="timer-elapsed-copy">
+          <p class="timer-elapsed-title">Allenamento in corso</p>
+          <p class="timer-elapsed-sub">Si ferma da solo quando registri.</p>
+        </div>
+      </div>
+    </div>
 
 
     <div class="card" id="bozzaBanner" style="display:none; border-left:3px solid var(--warn);">
@@ -938,45 +990,77 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6.5h11M9 12h11M9 17.5h11"/><path d="M4 6.5h.01M4 12h.01M4 17.5h.01"/></svg>
         Aggiungi dall'elenco
       </button>
-      <button class="free-chip-btn rimuovi" id="freeDelExBtn" style="display:none;">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2m-9 0 1 12a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1l1-12"/></svg>
-        Togli esercizio
-      </button>
     </div>
     <div class="free-hint" id="freeEmptyHint" style="display:none;">Scegli un muscolo sulla figura per iniziare.</div>
 
+    <!-- Registra (31/08/2026): il carosello "un esercizio alla volta" è stato
+         tolto su richiesta esplicita ("toglierei il carosello degli esercizi
+         e li metterei uno sotto l'altro così da non avere bug di nessun tipo
+         sul carosello") — ora è una semplice lista verticale, tutti gli
+         esercizi visibili insieme, nessuna navigazione/animazione da gestire.
+         In Allenamento libero, dove prima "Togli esercizio" agiva su "quello
+         che si stava guardando nel carosello" (concetto che senza carosello
+         non esiste più), ogni riquadro ha ora il proprio tasto di rimozione
+         (vedi buildExerciseForm). -->
   <div class="card" id="exerciseFormCard" style="display:none; margin-top:12px;">
-      <div class="ex-carousel-head">
-        <h3 id="exerciseFormTitle">Esercizi</h3>
-        <span class="ex-carousel-counter" id="exCarouselCounter"></span>
-      </div>
-      <div class="ex-carousel-track" id="exerciseFormList"></div>
-      <div class="ex-carousel-nav">
-        <button type="button" class="btn secondary" id="exPrevBtn">← Precedente</button>
-        <button type="button" class="btn secondary" id="exNextBtn">Successivo →</button>
-      </div>
+      <h3 id="exerciseFormTitle" class="exercise-list-title">Esercizi</h3>
+      <div class="exercise-list" id="exerciseFormList"></div>
     </div>
 
     <div class="card" id="notesCard" style="display:none;">
       <label>Note (facoltativo)</label>
       <textarea id="logNotes" placeholder="Sensazioni, dolori, energia, variazioni..."></textarea>
     </div>
-
-    <button class="btn block" id="saveLogBtn" style="display:none;">Salva allenamento</button>
   </section>
 
   <!-- ===================== DIETA (DIARIO ALIMENTARE) ===================== -->
   <section class="view" id="view-diet">
-    <div class="card">
+    <!-- 31/08/2026 (Fase 3, restyling ispirato a fitflow): anello unico
+         "kcal consumate/obiettivo" al posto delle due card separate
+         "Il tuo fabbisogno calorico" + "Totali di oggi" (stessi dati,
+         stesse funzioni calcolaFabbisogno()/renderFabbisognoCalorico(),
+         solo unificati in un'unica card in cima) + contatore acqua, nuovo. -->
+    <div class="card card-diet" id="dietRingCard">
       <div class="halo halo-diet" style="width:140px; height:140px; top:-40px; right:-40px;"></div>
-      <h3 class="diet">Il tuo fabbisogno calorico</h3>
+      <div class="diet-ring-row">
+        <div class="kcal-ring-wrap">
+          <svg viewBox="0 0 104 104">
+            <circle cx="52" cy="52" r="45" class="kcal-ring-track"/>
+            <circle cx="52" cy="52" r="45" class="kcal-ring-fill" id="kcalRingFill"/>
+          </svg>
+          <div class="kcal-ring-center"><div class="kcal-ring-pct" id="kcalRingPct">–</div><div class="kcal-ring-pct-label">fatto</div></div>
+        </div>
+        <div class="kcal-ring-copy">
+          <div class="eyebrow" id="dietRingDataLabel">Calorie di oggi</div>
+          <div class="kcal-ring-value" id="kcalRingValue">0 kcal</div>
+          <div class="kcal-ring-sub" id="kcalRingSub"></div>
+        </div>
+      </div>
+      <div class="macro-side" id="mealTotals" style="margin-top:12px;"></div>
       <div id="fabbisognoBody"></div>
+      <div class="water-row">
+        <div class="water-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3c4 5 7 8.5 7 12a7 7 0 0 1-14 0c0-3.5 3-7 7-12Z"/></svg>Acqua</div>
+        <div class="water-action">
+          <button type="button" class="water-step-btn" id="waterMinusBtn" aria-label="Togli 250ml">−</button>
+          <span class="water-value" id="waterValue">0,00 / 2,50 L</span>
+          <button type="button" class="water-step-btn water-step-btn-fill" id="waterPlusBtn" aria-label="Aggiungi 250ml">+</button>
+        </div>
+      </div>
+      <div class="water-bar"><div class="water-bar-fill" id="waterBarFill"></div></div>
     </div>
     <div class="card card-diet">
       <h3 class="diet">Oggi dovresti mangiare</h3>
       <p class="hint">Dalla tua scheda alimentare — è una linea guida, non un obbligo: scrivi qui sotto quello che mangi davvero.</p>
       <div id="todayDietPlan"></div>
     </div>
+
+    <!-- Card dei pasti (31/08/2026, Fase 3): sostituisce la vecchia card
+         "Alimenti registrati" (lista piatta in fondo) — stessi dati
+         (prof.mealLogs per la data selezionata nel diario sotto), ora
+         raggruppati per pasto con subtotale e stato fatto/da fare, come
+         in fitflow. Popolata da renderMealCards() dentro renderMealDiary(). -->
+    <div id="mealCardsWrap"></div>
+
     <div class="card">
       <h3>Diario alimentare</h3>
       <label>Data</label>
@@ -1044,75 +1128,64 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
       </div>
     </div>
 
-    <div class="card">
-      <div class="halo halo-diet" style="width:130px; height:130px; top:-40px; right:-40px;"></div>
-      <h3 class="diet">Totali di oggi</h3>
-      <div class="macro-ring-row">
-        <div class="macro-ring-wrap">
-          <svg viewBox="0 0 104 104">
-            <circle cx="52" cy="52" r="45" class="macro-track"/>
-            <circle cx="52" cy="52" r="45" class="macro-seg macro-seg-p" id="macroSegP"/>
-            <circle cx="52" cy="52" r="45" class="macro-seg macro-seg-c" id="macroSegC"/>
-            <circle cx="52" cy="52" r="45" class="macro-seg macro-seg-f" id="macroSegF"/>
-          </svg>
-          <div class="macro-center"><div class="macro-kcal" id="macroKcalNum">0</div><div class="macro-kcal-label">kcal oggi</div></div>
+    <!-- Piano assegnato dal PT (31/08/2026, Fase 3): prima sempre a vista in
+         fondo alla pagina (vedi + modifica), ora dietro una tendina richiusa
+         di default — in Dieta resta a vista solo il pasto di oggi (card
+         "Oggi dovresti mangiare" sopra). Contenuto interno (le due card
+         vedi/modifica) invariato: stessi id, stessa logica, stesso
+         meccanismo di spostamento DOM per il PT (mostraEditorDietaInlinePT). -->
+    <details class="diet-plan-toggle" id="pianoPTDetails">
+      <summary>Piano alimentare assegnato dal PT<span class="hint">Vedi la settimana completa o aggiorna il piano</span></summary>
+      <div class="details-body">
+        <div class="seg-toggle" style="margin-top:0;">
+          <button class="seg-btn active" data-segd="view">Vedi piano</button>
+          <button class="seg-btn" data-segd="edit">Modifica / Aggiorna</button>
         </div>
-        <div class="macro-side" id="mealTotals"></div>
-      </div>
-    </div>
 
-    <div class="card">
-      <h3>Alimenti registrati</h3>
-      <div id="mealList"><div class="empty">Nessun alimento registrato per questa data.</div></div>
-    </div>
-
-    <div class="seg-toggle" style="margin-top:22px;">
-      <button class="seg-btn active" data-segd="view">Vedi piano</button>
-      <button class="seg-btn" data-segd="edit">Modifica / Aggiorna</button>
-    </div>
-
-    <div id="dietPlanViewBlock">
-      <div class="card card-diet" id="dietViewCard">
-        <h3 class="diet">Piano alimentare attuale</h3>
-        <div id="dietInfoView" class="hint"></div>
-        <div id="dietView"></div>
-      </div>
-      <div class="card" id="dietViewHiddenCard" style="display:none;">
-        <h3>Dieta non ancora visibile</h3>
-        <p class="hint">Il tuo personal trainer non ha ancora reso visibile la tua dieta.</p>
-      </div>
-    </div>
-
-    <div id="dietPlanEditBlock" style="display:none;">
-      <div class="card">
-        <div class="card-head-row">
-          <h3 id="dietEditTitolo">Il personal trainer ti ha aggiornato la dieta?</h3>
-          <button class="btn danger" id="clearDietFormBtn">Pulisci</button>
+        <div id="dietPlanViewBlock">
+          <div class="card card-diet" id="dietViewCard">
+            <h3 class="diet">Piano alimentare attuale</h3>
+            <div id="dietInfoView" class="hint"></div>
+            <div id="dietView"></div>
+          </div>
+          <div class="card" id="dietViewHiddenCard" style="display:none;">
+            <h3>Dieta non ancora visibile</h3>
+            <p class="hint">Il tuo personal trainer non ha ancora reso visibile la tua dieta.</p>
+          </div>
         </div>
-        <p class="hint">Aggiornando il piano, quello attuale viene archiviato (resta consultabile) e da qui in poi si usano i nuovi dati — la scheda di allenamento non viene toccata. Il diario di quello che mangi davvero, qui sopra, non viene mai toccato. "Pulisci" svuota i campi qui sotto per ripartire da zero invece di modificare quello attuale.</p>
-      </div>
 
-      <details class="card details-card card-diet" id="dietInfoEditCard">
-        <summary class="diet">Info generali dieta</summary>
-        <div class="details-body">
-          <div class="info-grid" id="dietInfoEditors"></div>
+        <div id="dietPlanEditBlock" style="display:none;">
+          <div class="card">
+            <div class="card-head-row">
+              <h3 id="dietEditTitolo">Il personal trainer ti ha aggiornato la dieta?</h3>
+              <button class="btn danger" id="clearDietFormBtn">Pulisci</button>
+            </div>
+            <p class="hint">Aggiornando il piano, quello attuale viene archiviato (resta consultabile) e da qui in poi si usano i nuovi dati — la scheda di allenamento non viene toccata. Il diario di quello che mangi davvero, qui sopra, non viene mai toccato. "Pulisci" svuota i campi qui sotto per ripartire da zero invece di modificare quello attuale.</p>
+          </div>
+
+          <details class="card details-card card-diet" id="dietInfoEditCard">
+            <summary class="diet">Info generali dieta</summary>
+            <div class="details-body">
+              <div class="info-grid" id="dietInfoEditors"></div>
+            </div>
+          </details>
+
+          <div class="card card-diet" id="dietDayEditCard">
+            <h3 class="diet">Piano alimentare per giorno</h3>
+            <div id="dietDayEditors"></div>
+          </div>
+          <div class="card" id="dietLockedCard" style="display:none;">
+            <h3>Dieta bloccata</h3>
+            <p class="hint">Il tuo personal trainer ha bloccato la modifica della dieta. Contattalo se vuoi richiedere delle modifiche.</p>
+          </div>
+
+          <button class="btn block" id="saveDietBtn">Salva dieta</button>
+
+          <p class="hint" style="margin-top:14px;">Lo storico completo (scheda + dieta insieme, versione per versione) resta in Storico → "Schede archiviate".</p>
         </div>
-      </details>
-
-      <div class="card card-diet" id="dietDayEditCard">
-        <h3 class="diet">Piano alimentare per giorno</h3>
-        <div id="dietDayEditors"></div>
+        <div id="dietPlanEditBlockAnchor"></div>
       </div>
-      <div class="card" id="dietLockedCard" style="display:none;">
-        <h3>Dieta bloccata</h3>
-        <p class="hint">Il tuo personal trainer ha bloccato la modifica della dieta. Contattalo se vuoi richiedere delle modifiche.</p>
-      </div>
-
-      <button class="btn block" id="saveDietBtn">Salva dieta</button>
-
-      <p class="hint" style="margin-top:14px;">Lo storico completo (scheda + dieta insieme, versione per versione) resta in Storico → "Schede archiviate".</p>
-    </div>
-    <div id="dietPlanEditBlockAnchor"></div>
+    </details>
   </section>
 
   <!-- ===================== STORICO (+ VOLUME) ===================== -->
@@ -1425,6 +1498,34 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
     <span class="tab-label">Storico</span>
   </button>
 </nav>
+
+<!-- Menu del "+" (31/08/2026, fase 1 del restyling ispirato a fitflow): il
+     tasto centrale della nav non apre più Registra direttamente, apre questo
+     bottom sheet con 3 scelte fisse (uguali in ogni schermata). "Allenamento
+     libero" era prima solo una delle chip "che giorno hai fatto?" dentro
+     Registra — ora è anche un ingresso diretto da qui, che salta dritto
+     sull'allenamento libero senza passare dalla scelta del giorno. -->
+<div class="fabmenu-overlay" id="fabMenuOverlay">
+  <div class="fabmenu-sheet" id="fabMenuSheet">
+    <div class="fabmenu-handle"></div>
+    <h3 class="fabmenu-title">Cosa vuoi registrare?</h3>
+    <button type="button" class="fabmenu-option" id="fabOptAllenamento">
+      <span class="fabmenu-icon"><svg viewBox="0 0 24 24" fill="currentColor" stroke="none" aria-hidden="true"><rect x="1.5" y="9.5" width="2.8" height="5" rx="1.2"/><rect x="19.7" y="9.5" width="2.8" height="5" rx="1.2"/><rect x="5" y="7.5" width="3" height="9" rx="1.3"/><rect x="16" y="7.5" width="3" height="9" rx="1.3"/><rect x="7.6" y="11" width="8.8" height="2" rx="1"/></svg></span>
+      <span class="fabmenu-copy"><strong>Registra allenamento</strong><span>Segui la tua scheda di oggi</span></span>
+      <svg class="fabmenu-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path d="M9 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+    </button>
+    <button type="button" class="fabmenu-option" id="fabOptLibero">
+      <span class="fabmenu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path d="M13 2 4 14h6l-1 8 9-12h-6z" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/></svg></span>
+      <span class="fabmenu-copy"><strong>Allenamento libero</strong><span>Scegli tu gli esercizi, senza seguire la scheda</span></span>
+      <svg class="fabmenu-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path d="M9 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+    </button>
+    <button type="button" class="fabmenu-option" id="fabOptPasto">
+      <span class="fabmenu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path d="M7 3v8a2 2 0 0 0 4 0V3M9 11v10M17 3c-1.5 1.5-2 3.5-2 5.5 0 1.7.8 2.5 2 2.5V3zM17 11v10" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/></svg></span>
+      <span class="fabmenu-copy"><strong>Registra pasto</strong><span>Aggiungi un alimento al diario di oggi</span></span>
+      <svg class="fabmenu-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path d="M9 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+    </button>
+  </div>
+</div>
 
 <button type="button" class="back-to-top" id="backToTopBtn" aria-label="Torna su">
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path d="M12 19V5M6 11l6-6 6 6" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
@@ -2161,7 +2262,7 @@ function newProfile(name, email, password, approvato){
   return { id: uid(), name: name.trim(), email: (email||'').trim().toLowerCase(), createdAt,
     approvato: !!approvato, bloccato:false, richiestoIl: new Date().toISOString(),
     passwordHash: simpleHash(password), sesso: null,
-    programs:[blankProgram()], activeProgramId:null, logs:[], measurements:[], mealLogs:[], customExercises:{}, customFoods:{}, avatarUrl:null,
+    programs:[blankProgram()], activeProgramId:null, logs:[], measurements:[], mealLogs:[], waterLogs:[], customExercises:{}, customFoods:{}, avatarUrl:null,
     altezza:null, dataNascita:null, eta:null, livelloAttivita:'moderato', obiettivoCalorico:'mantenimento',
     obiettivoPeso:null, obiettivoRecord:null };
 }
@@ -2208,6 +2309,7 @@ function load(){
     if(!p.passwordHash) p.passwordHash = simpleHash("1234");
     if(!p.measurements) p.measurements = [];
     if(!p.mealLogs) p.mealLogs = [];
+    if(!p.waterLogs) p.waterLogs = []; // 31/08/2026: contatore acqua, Fase 3 (dieta)
     if(!p.customFoods) p.customFoods = {};
     if(p.altezza === undefined) p.altezza = null;
     if(p.eta === undefined) p.eta = null;
@@ -5384,25 +5486,42 @@ async function renderMioPT(){
   if(attivo){
     const pt = await leggiProfilo(attivo.pt_id);
     _mioPTNomeCache = nomeDi(pt);
+    // Card PT compatta (31/08/2026, richiesta esplicita: "quello che ho io
+    // oggi si prende troppo spazio" — stessa funzionalità di prima, solo
+    // meno ingombrante, ispirata alla card di fitflow: avatar + nome +
+    // un'azione rapida su una riga sola). Prima l'intera card era sempre
+    // tutta a vista (riga PT + tasto "Messaggi" a tutta larghezza + testo
+    // dei permessi + 2 interruttori + "Termina"): ora resta a vista solo la
+    // riga con avatar/nome/messaggi, il resto (permessi e "Termina
+    // rapporto") è dietro una tendina <details> richiusa di default, un
+    // tocco più in là — stesso pattern già usato per Impostazioni/Account
+    // (details.details-card), non tolta nessuna funzione.
     box.innerHTML = `
-      <div class="pt-riga">
+      <div class="pt-riga pt-riga-compatta">
         <div class="pt-avatar">${avatarContentHtml(nomeDi(pt), (pt.dati||{}).avatarUrl)}</div>
         <div class="info">
           <div class="nome">${nomeDi(pt)}<span class="pt-badge">ti segue</span></div>
           <div class="meta">dal ${formatDate((attivo.accettato_il||'').slice(0,10))}</div>
         </div>
-        <div class="azioni"><button class="pericolo" id="chiudiRapportoBtn">Termina</button></div>
+        <button class="icon-btn-round" id="apriMessaggiClienteBtn" aria-label="Messaggi" title="Messaggi">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a8.4 8.4 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.7a8.4 8.4 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.4 8.4 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5Z"/></svg>
+        </button>
       </div>
-      <button class="btn secondary block" id="apriMessaggiClienteBtn" style="margin-top:10px;">${ICONA_CHAT_SVG} Messaggi</button>
-      <p class="hint" style="margin:12px 0 6px;">Cosa può fare ${nomeDi(pt)}. Vede sempre scheda, dieta, storico e progressi; qui decidi se può anche modificarli.</p>
-      <div class="permesso-riga">
-        <span>Può modificare la mia scheda</span>
-        <label class="interruttore"><input type="checkbox" id="permScheda" ${attivo.puo_scheda?'checked':''}><span></span></label>
-      </div>
-      <div class="permesso-riga">
-        <span>Può modificare la mia dieta</span>
-        <label class="interruttore"><input type="checkbox" id="permDieta" ${attivo.puo_dieta?'checked':''}><span></span></label>
-      </div>`;
+      <details class="details-card pt-dettagli-details">
+        <summary>Permessi e altre azioni</summary>
+        <div class="details-body">
+          <p class="hint" style="margin:0 0 10px;">Cosa può fare ${nomeDi(pt)}. Vede sempre scheda, dieta, storico e progressi; qui decidi se può anche modificarli.</p>
+          <div class="permesso-riga">
+            <span>Può modificare la mia scheda</span>
+            <label class="interruttore"><input type="checkbox" id="permScheda" ${attivo.puo_scheda?'checked':''}><span></span></label>
+          </div>
+          <div class="permesso-riga">
+            <span>Può modificare la mia dieta</span>
+            <label class="interruttore"><input type="checkbox" id="permDieta" ${attivo.puo_dieta?'checked':''}><span></span></label>
+          </div>
+          <button class="btn danger-outline block" id="chiudiRapportoBtn" style="margin-top:10px;">Termina rapporto</button>
+        </div>
+      </details>`;
 
     document.getElementById('permScheda').addEventListener('change', e=>cambiaPermesso(attivo.id, 'puo_scheda', e.target.checked));
     document.getElementById('permDieta').addEventListener('change', e=>cambiaPermesso(attivo.id, 'puo_dieta', e.target.checked));
@@ -5880,6 +5999,7 @@ function mostraEditorSchedaInlinePT(){
   });
   if(!buffer.measurements) buffer.measurements = [];
   if(!buffer.mealLogs) buffer.mealLogs = [];
+  if(!buffer.waterLogs) buffer.waterLogs = [];
   if(!buffer.customFoods) buffer.customFoods = {};
 
   _clienteBuffer = buffer;
@@ -5931,6 +6051,7 @@ function mostraEditorDietaInlinePT(){
   });
   if(!buffer.measurements) buffer.measurements = [];
   if(!buffer.mealLogs) buffer.mealLogs = [];
+  if(!buffer.waterLogs) buffer.waterLogs = [];
   if(!buffer.customFoods) buffer.customFoods = {};
 
   _clienteBuffer = buffer;
@@ -5977,6 +6098,7 @@ function modificaComePT(cosa){
   });
   if(!buffer.measurements) buffer.measurements = [];
   if(!buffer.mealLogs) buffer.mealLogs = [];
+  if(!buffer.waterLogs) buffer.waterLogs = [];
   if(!buffer.customFoods) buffer.customFoods = {};
 
   _clienteBuffer = buffer;
@@ -6618,7 +6740,6 @@ function pulisciBozza(silenzioso){
   document.getElementById('saveLogBtn').style.display = 'none';
   document.getElementById('freeAddExBtn').style.display = 'none';
   document.getElementById('freeAddExManualeBtn2').style.display='none';
-  document.getElementById('freeDelExBtn').style.display = 'none';
   document.getElementById('freeEmptyHint').style.display = 'none';
   renderDayChoices();
   if(!silenzioso) toast("Registrazione pulita");
@@ -6642,7 +6763,6 @@ function ripristinaBozza(){
       buildExerciseForm(FREE_DAY);
       document.getElementById('exerciseFormCard').style.display='block';
       document.getElementById('freeEmptyHint').style.display='none';
-      document.getElementById('freeDelExBtn').style.display='block';
     }
   } else {
     selectDay(b.dayKey);
@@ -6652,6 +6772,7 @@ function ripristinaBozza(){
   // ogni volta che riapri l'app durante un allenamento in corso la durata
   // registrata alla fine ripartirebbe da zero.
   _logIniziatoAlle = b.iniziatoAlle || _logIniziatoAlle;
+  if(typeof aggiornaCronometroAllenamento === 'function') aggiornaCronometroAllenamento();
 
   // rimetto i valori digitati, aggiungendo le serie extra create al momento
   Object.keys(b.serie||{}).forEach(nome=>{
@@ -6950,7 +7071,6 @@ let FREE_DAY = { key:"LIBERO", name:"Allenamento libero", weekday:null, exercise
 
 function rebuildFreeForm(){
   const snap = JSON.parse(JSON.stringify(currentSetInputs || {}));
-  const indicePrima = currentExerciseIndex();   // dove mi trovavo prima di ricostruire il carosello
   buildExerciseForm(FREE_DAY);
   // ripristina i valori gia' digitati, cosi' aggiungere un esercizio non cancella il lavoro fatto
   Object.keys(snap).forEach(name=>{
@@ -6966,9 +7086,8 @@ function rebuildFreeForm(){
       });
     });
   });
-  // buildExerciseForm riparte sempre dal primo esercizio: lo riporto dov'ero,
-  // senza animazione (altrimenti si vede lo scatto a sinistra e poi il rientro)
-  mostraEsercizio(indicePrima, {animato:false});
+  // Lista verticale (31/08/2026): non c'è più una "posizione nel carosello"
+  // da ripristinare dopo il rebuild — sono tutti visibili insieme.
 }
 
 function freeAddExercise(ex){
@@ -6980,7 +7099,6 @@ function freeAddExercise(ex){
   salvaBozza();
   document.getElementById('freeEmptyHint').style.display = 'none';
   document.getElementById('exerciseFormCard').style.display = 'block';
-  document.getElementById('freeDelExBtn').style.display = 'block';
   toast(`${ex.n} aggiunto ✓`);
 }
 
@@ -7084,25 +7202,10 @@ function renderListaEserciziLibero(filtro){
 document.getElementById('esListaCerca').addEventListener('input', e=>renderListaEserciziLibero(e.target.value));
 document.getElementById('esListaClose').addEventListener('click', chiudiListaEserciziLibero);
 document.getElementById('freeAddExManualeBtn2').addEventListener('click', apriListaEserciziLibero);
-document.getElementById('freeDelExBtn').addEventListener('click', ()=>{
-  const i = currentExerciseIndex();
-  const ex = FREE_DAY.exercises[i];
-  if(!ex){ toast("Nessun esercizio da togliere."); return; }
-  customConfirm(`Togliere "${ex.name}" dall'allenamento di oggi?`, ()=>{
-    delete currentSetInputs[ex.name];
-    FREE_DAY.exercises.splice(i,1);
-    if(FREE_DAY.exercises.length===0){
-      currentSetInputs = {};
-      document.getElementById('exerciseFormCard').style.display='none';
-      document.getElementById('freeEmptyHint').style.display='block';
-      document.getElementById('freeDelExBtn').style.display='none';
-    } else {
-      rebuildFreeForm();
-    }
-    salvaBozza();
-    toast("Esercizio rimosso");
-  });
-});
+// 31/08/2026: il vecchio #freeDelExBtn globale ("Togli esercizio", legato a
+// "quello che si stava guardando nel carosello") è stato tolto insieme al
+// carosello — ogni riquadro esercizio ha ora il proprio tasto di rimozione,
+// vedi .ex-remove-btn dentro buildExerciseForm().
 
 // ============================================================
 // PROFILE GATE
@@ -7347,7 +7450,46 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
 
 // nav visibile: Scheda/Dieta/Glossario mostrano appRoot e cliccano "per conto loro"
 // il tab corrispondente nella nav storica; Home e Account riusano le funzioni esistenti.
-document.getElementById('fabRegistraBtn').addEventListener('click', apriRegistra);
+// Il "+" (31/08/2026): non apre più Registra direttamente, apre il menu con le
+// 3 scelte (Registra allenamento / Allenamento libero / Registra pasto). Gli
+// altri ingressi che chiamano apriRegistra() direttamente (puntino della
+// settimana in Scheda, CTA "Registra questo allenamento" in Home) restano
+// invariati e continuano a saltare il menu.
+function apriFabMenu(){
+  document.getElementById('fabMenuOverlay').classList.add('show');
+  document.getElementById('fabRegistraBtn').classList.add('aperto');
+}
+function chiudiFabMenu(){
+  document.getElementById('fabMenuOverlay').classList.remove('show');
+  document.getElementById('fabRegistraBtn').classList.remove('aperto');
+}
+function toggleFabMenu(){
+  document.getElementById('fabMenuOverlay').classList.contains('show') ? chiudiFabMenu() : apriFabMenu();
+}
+document.getElementById('fabRegistraBtn').addEventListener('click', toggleFabMenu);
+document.getElementById('fabMenuOverlay').addEventListener('click', (e)=>{
+  if(e.target.id === 'fabMenuOverlay') chiudiFabMenu();
+});
+document.getElementById('fabOptAllenamento').addEventListener('click', ()=>{
+  chiudiFabMenu();
+  apriRegistra();
+});
+document.getElementById('fabOptLibero').addEventListener('click', ()=>{
+  chiudiFabMenu();
+  apriRegistra();
+  selectDay('LIBERO');
+});
+document.getElementById('fabOptPasto').addEventListener('click', ()=>{
+  chiudiFabMenu();
+  vaiA('diet');
+  const input = document.getElementById('mealFoodInput');
+  if(input){
+    setTimeout(()=>{
+      if(input.scrollIntoView) input.scrollIntoView({behavior:'smooth', block:'center'});
+      input.focus({preventScroll:true});
+    }, 60);
+  }
+});
 
 document.querySelectorAll('#navTabsGlobale button[data-go]').forEach(btn=>{
   btn.addEventListener('click', ()=>{
@@ -7432,6 +7574,12 @@ document.querySelectorAll('.seg-btn[data-segd]').forEach(btn=>{
     document.getElementById('dietPlanViewBlock').style.display = isView ? 'block':'none';
     document.getElementById('dietPlanEditBlock').style.display = isView ? 'none':'block';
     if(!isView) applyDietEditFormVisibility();
+    // 31/08/2026: questi tasti ora vivono dentro la tendina richiusa
+    // "Piano alimentare assegnato dal PT" — toccarli (o farli toccare da
+    // codice, es. iniziaModificaPT) deve aprirla, altrimenti il contenuto
+    // cambierebbe fuori dalla vista.
+    const det = btn.closest('details');
+    if(det) det.open = true;
   });
 });
 
@@ -7595,6 +7743,54 @@ function renderQuickSummary(prof, p){
 // ============================================================
 const logDateInput = document.getElementById('logDate');
 logDateInput.addEventListener('change', ()=>{ renderDayChoices(); renderHeader(); });
+// Tendina "che giorno hai fatto?" (31/08/2026): il <select> resta lo stesso
+// nodo tra un renderDayChoices() e l'altro (si ricostruiscono solo le
+// <option>), quindi l'ascoltatore va registrato una volta sola qui, non ad
+// ogni render.
+document.getElementById('dayChoiceChips').addEventListener('change', (e)=>{ if(e.target.value) selectDay(e.target.value); });
+
+// Cronometro allenamento (31/08/2026): legge _logIniziatoAlle ad ogni tick e
+// mostra/nasconde la card di conseguenza, quindi qualunque punto del codice
+// che cambia _logIniziatoAlle (selectDay, save, pulisciBozza,
+// ripristinaBozza...) viene riflesso entro un secondo senza dover chiamare
+// nulla in più — BASTA però chiamare aggiornaCronometroAllenamento() una
+// volta quando _logIniziatoAlle diventa vera per far partire il primo tick.
+//
+// L'interval NON è più globale/sempre acceso (lo era in una prima versione):
+// gira solo mentre c'è davvero un allenamento in corso e si ferma da solo
+// (clearInterval) non appena _logIniziatoAlle torna null — sia per non far
+// lavorare inutilmente il browser quando non serve, sia perché un interval
+// sempre attivo, avviato al solo caricamento della pagina, teneva viva per
+// sempre la finestra jsdom nei test: un test che uscisse con un'eccezione
+// prima del proprio window.close() (una asserzione fallita, non solo qui,
+// in QUALUNQUE file di test) restava appeso per sempre invece di fallire e
+// basta, bloccando l'intera suite (node --test non termina finché restano
+// timer attivi).
+let _cronometroInterval = null;
+function formatDurataCronometro(sec){
+  const h = Math.floor(sec/3600), m = Math.floor((sec%3600)/60), s = sec%60;
+  const mm = String(m).padStart(2,'0'), ss = String(s).padStart(2,'0');
+  return h > 0 ? `${h}:${mm}:${ss}` : `${m}:${ss}`;
+}
+function aggiornaCronometroAllenamento(){
+  const card = document.getElementById('workoutTimerCard');
+  const disp = document.getElementById('workoutTimerDisplay');
+  const ringFill = document.getElementById('workoutTimerRingFill');
+  if(!card || !disp || !ringFill) return;
+  if(!_logIniziatoAlle){
+    card.style.display = 'none';
+    if(_cronometroInterval){ clearInterval(_cronometroInterval); _cronometroInterval = null; }
+    return;
+  }
+  card.style.display = 'block';
+  if(!_cronometroInterval) _cronometroInterval = setInterval(aggiornaCronometroAllenamento, 1000);
+  const secTrascorsi = Math.max(0, Math.floor((Date.now() - new Date(_logIniziatoAlle).getTime())/1000));
+  disp.textContent = formatDurataCronometro(secTrascorsi);
+  const pct = Math.min(secTrascorsi/3600*100, 100);
+  const c = 2*Math.PI*46;
+  ringFill.style.strokeDasharray = String(c);
+  ringFill.style.strokeDashoffset = String(c*(1-pct/100));
+}
 
 let selectedDayKey = null;
 // Durata dell'allenamento (Storico, 15° giro): quando scegli un giorno vero (non
@@ -7636,24 +7832,40 @@ function renderDayChoices(){
   wrap.innerHTML = "";
   selectedDayKey = null;
 
-  const ICON_MANUBRIO = `<svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><rect x="1.5" y="9.5" width="2.8" height="5" rx="1.2"/><rect x="19.7" y="9.5" width="2.8" height="5" rx="1.2"/><rect x="5" y="7.5" width="3" height="9" rx="1.3"/><rect x="16" y="7.5" width="3" height="9" rx="1.3"/><rect x="7.6" y="11" width="8.8" height="2" rx="1"/></svg>`;
-  const ICON_SALTA = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 12h16M4 12l4.5-4.5M4 12l4.5 4.5M20 12l-4.5-4.5M20 12l-4.5 4.5" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>`;
-  const ICON_CHECK = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.6"/></svg>`;
+  // Tendina (31/08/2026): un'unica <option> per scelta, niente più icone SVG
+  // per riga (il <select> nativo non le rende comunque). Placeholder vuoto e
+  // disabilitato finché nessun giorno è ancora selezionato, per non far
+  // sembrare "già scelto" il primo giorno solo perché è il primo in lista
+  // (comportamento identico a prima, quando nessuna chip era evidenziata).
+  const placeholder = document.createElement('option');
+  placeholder.value = '';
+  placeholder.textContent = '— Scegli —';
+  placeholder.disabled = true;
+  placeholder.selected = true;
+  wrap.appendChild(placeholder);
 
-  const creaChip = (key, label, iconSvg) => {
-    const chip = document.createElement('div');
-    chip.className='chip';
-    chip.dataset.key = key;
-    chip.innerHTML = `<span class="dc-icon">${iconSvg}</span><span class="dc-label">${label}</span><span class="dc-check">${ICON_CHECK}</span>`;
-    chip.addEventListener('click', ()=>selectDay(key));
-    wrap.appendChild(chip);
+  const creaOpzione = (key, label) => {
+    const opt = document.createElement('option');
+    opt.value = key;
+    opt.textContent = label;
+    wrap.appendChild(opt);
   };
 
-  p.days.forEach(d=> creaChip(d.key, d.key + " · " + d.name, ICON_MANUBRIO));
-  creaChip("LIBERO", "Allenamento libero", ICON_MANUBRIO);
-  creaChip("SKIP", "Saltato", ICON_SALTA);
+  p.days.forEach(d=> creaOpzione(d.key, d.key + " · " + d.name));
+  // "Allenamento libero" non è più una scelta qui (31/08/2026): è stato
+  // scorporato ed è ora un ingresso diretto dal menu del "+" (vedi
+  // fabOptLibero più sotto), che chiama selectDay('LIBERO') senza passare
+  // da questa tendina. La logica di selectDay('LIBERO')/FREE_DAY resta
+  // intatta e funziona identica anche senza questa opzione.
+  creaOpzione("SKIP", "Saltato");
 
   const info = document.getElementById('statusInfo');
+  // 31/08/2026: il banner di stato ha un tono neutro di base (vedi
+  // .info-banner in style.css) — qui, prima che selectDay() imposti un
+  // tono più specifico (esito-positivo/esito-attenzione), riparte sempre
+  // pulito così non resta appiccicato il tono del giorno scelto in
+  // precedenza.
+  info.className = 'info-banner';
   info.textContent = scheduled ? `Di ${wd} è previsto: ${scheduled.key} · ${scheduled.name}` : `${wd} non è un giorno previsto dalla scheda.`;
 
   document.getElementById('exerciseFormCard').style.display='none';
@@ -7687,9 +7899,11 @@ function selectDay(key){
   }
   const cambiaGiorno = key !== selectedDayKey;
   selectedDayKey = key;
-  document.querySelectorAll('#dayChoiceChips .chip').forEach(c=>c.classList.toggle('selected', c.dataset.key===key));
+  const selDay = document.getElementById('dayChoiceChips');
+  if(selDay && selDay.value !== key) selDay.value = key;
   if(key === "SKIP"){ _logIniziatoAlle = null; }
   else if(cambiaGiorno){ _logIniziatoAlle = new Date().toISOString(); }
+  if(typeof aggiornaCronometroAllenamento === 'function') aggiornaCronometroAllenamento();
 
   const p = activeProgram();
   const iso = logDateInput.value;
@@ -7700,8 +7914,8 @@ function selectDay(key){
   if(key==="SKIP"){
     document.getElementById('freeAddExBtn').style.display='none';
   document.getElementById('freeAddExManualeBtn2').style.display='none';
-    document.getElementById('freeDelExBtn').style.display='none';
     document.getElementById('freeEmptyHint').style.display='none';
+    info.className = 'info-banner';
     info.innerHTML = `<span class="status-badge skip">Saltato</span> Nessun esercizio da registrare per questo giorno.`;
     document.getElementById('exerciseFormCard').style.display='none';
     document.getElementById('notesCard').style.display='block';
@@ -7711,13 +7925,13 @@ function selectDay(key){
   }
 
   if(key==="LIBERO"){
+    info.className = 'info-banner esito-attenzione';
     info.innerHTML = `<span class="status-badge warn">Allenamento libero</span>`;
     FREE_DAY.exercises = [];
     currentSetInputs = {};
     buildExerciseForm(FREE_DAY);
     document.getElementById('freeAddExBtn').style.display='block';
   document.getElementById('freeAddExManualeBtn2').style.display='block';
-    document.getElementById('freeDelExBtn').style.display='none';
     document.getElementById('freeEmptyHint').style.display='block';
     document.getElementById('exerciseFormCard').style.display='none';
     document.getElementById('notesCard').style.display='block';
@@ -7726,13 +7940,14 @@ function selectDay(key){
   }
   document.getElementById('freeAddExBtn').style.display='none';
   document.getElementById('freeAddExManualeBtn2').style.display='none';
-  document.getElementById('freeDelExBtn').style.display='none';
   document.getElementById('freeEmptyHint').style.display='none';
 
   const day = p.days.find(d=>d.key===key);
   if(scheduled && scheduled.key===key){
+    info.className = 'info-banner esito-positivo';
     info.innerHTML = `<span class="status-badge ok">Come da programma</span> ${wd}: ${day.key} · ${day.name}`;
   } else {
+    info.className = 'info-banner esito-attenzione';
     info.innerHTML = `<span class="status-badge warn">Giorno diverso dal previsto</span> Hai scelto ${day.key} · ${day.name}`;
   }
 
@@ -7765,6 +7980,14 @@ function buildExerciseForm(day){
     const partner = (partnerIdx!=null && partnerIdx>=0) ? day.exercises[partnerIdx] : null;
     const supersetBadge = partner ? `<div class="superset-badge">⚡ Superset con <b>${escapeAttr(partner.name)}</b>
         <button type="button" class="superset-vai" data-vai="${partnerIdx}">Vai →</button></div>` : '';
+    // Allenamento libero: senza più un carosello non c'è un "esercizio
+    // attivo" su cui far agire un tasto "Togli esercizio" globale — ognuno ha
+    // quindi il proprio tasto di rimozione (sostituisce il vecchio #freeDelExBtn).
+    const rimuoviBtn = day.key === 'LIBERO'
+      ? `<button type="button" class="ex-remove-btn" data-exidx="${i}" title="Togli esercizio" aria-label="Togli esercizio">
+           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2m-9 0 1 12a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1l1-12"/></svg>
+         </button>`
+      : '';
     // Nell'allenamento libero non c'è una scheda pre-pianificata: la tecnica
     // (dropset/rest-pause/superset) si sceglie qui, esercizio per esercizio,
     // con lo stesso meccanismo già usato in "Modifica scheda".
@@ -7782,7 +8005,8 @@ function buildExerciseForm(day){
         ${ex.dropset.drops.length>1 ? `<button type="button" class="tecnica-extra-btn rimuovi" data-libidx="${i}" data-azione="rimuovi">− Rimuovi ultimo</button>` : ''}
       </div>` : ''}` : '';
     block.innerHTML = `<div class="exercise-name">${ex.name}<span class="target">(target: ${ex.sets}×${ex.reps})</span>
-        <a href="${escapeAttr(videoInfo.url)}" data-ex-name="${escapeAttr(ex.name)}" class="video-link" style="margin-left:8px;">▶ Video</a></div>
+        <a href="${escapeAttr(videoInfo.url)}" data-ex-name="${escapeAttr(ex.name)}" class="video-link" style="margin-left:8px;">▶ Video</a>
+        ${rimuoviBtn}</div>
       ${supersetBadge}
       ${nota}
       ${rigaPrec}
@@ -7850,168 +8074,52 @@ function buildExerciseForm(day){
     }
   }));
   list.querySelectorAll('[data-riporta]').forEach(btn=>btn.addEventListener('click', ()=>riportaUltimaVolta(btn.dataset.riporta)));
+  // Lista verticale (31/08/2026): "Vai →" del superset non cambia più
+  // esercizio in un carosello, scorre semplicemente fino al blocco del
+  // partner, che è già visibile insieme a tutti gli altri.
   list.querySelectorAll('.superset-vai').forEach(btn=>btn.addEventListener('click', ()=>{
-    mostraEsercizio(parseInt(btn.dataset.vai));
+    const target = list.querySelector(`.exercise-block[data-ex-index="${parseInt(btn.dataset.vai)}"]`);
+    if(target) target.scrollIntoView({behavior:'smooth', block:'center'});
   }));
-
-  inizializzaCarosello();
+  list.querySelectorAll('.ex-remove-btn[data-exidx]').forEach(btn=>btn.addEventListener('click', ()=>{
+    const i = parseInt(btn.dataset.exidx);
+    const ex = FREE_DAY.exercises[i];
+    if(!ex){ toast("Nessun esercizio da togliere."); return; }
+    customConfirm(`Togliere "${ex.name}" dall'allenamento di oggi?`, ()=>{
+      delete currentSetInputs[ex.name];
+      FREE_DAY.exercises.splice(i,1);
+      if(FREE_DAY.exercises.length===0){
+        currentSetInputs = {};
+        document.getElementById('exerciseFormCard').style.display='none';
+        document.getElementById('freeEmptyHint').style.display='block';
+      } else {
+        rebuildFreeForm();
+      }
+      salvaBozza();
+      toast("Esercizio rimosso");
+    });
+  }));
 }
 
 
 // ============================================================
-// CAROSELLO ESERCIZI (Registra) — un riquadro indipendente per esercizio.
+// ESERCIZI (Registra) — lista verticale.
 //
-// Fino a questa versione era un unico nastro flex con TUTTI gli esercizi
-// affiancati, scorso in orizzontale; l'altezza del contenitore veniva
-// indovinata via JS ad ogni frame di scorrimento, interpolando fra il blocco
-// che si lasciava e quello che si raggiungeva (in base a scrollLeft). Quel
-// valore indovinato poteva restare — anche solo per un istante — più basso
-// del vero contenuto del blocco in arrivo: senza un taglio esplicito, quel
-// poco sporgeva fuori dal riquadro e si vedeva come un "fantasma"
-// dell'esercizio precedente sovrapposto a quello nuovo (bug segnalato più
-// volte, l'ultima su Military Press).
-//
-// Qui l'architettura è diversa, non un'altra rincorsa alla precisione del
-// calcolo: ogni `.exercise-block` resta sempre nel DOM (serve a
-// addSetRow/riportaUltimaVolta, che cercano gli input per nome esercizio),
-// ma è position:absolute e invisibile finché non è quello attivo — quindi
-// NESSUN blocco, tranne quello scelto, può mai contribuire all'altezza o
-// sovrapporsi visivamente agli altri. Cambiare esercizio è una decisione
-// netta (avanti di uno, indietro di uno, o un salto diretto), non un
-// trascinamento seguito frame per frame: si legge l'altezza VERA del
-// blocco di arrivo una volta sola (mostraEsercizio), e si lascia che sia la
-// transizione CSS ad animare in modo fluido fra il valore vecchio e quello
-// nuovo — non c'è più nulla da indovinare a metà gesto.
-let _indiceEsercizioAttivo = 0;
-let _carouselHeightObserver = null;
-
-function currentExerciseIndex(){ return _indiceEsercizioAttivo; }
-
-function aggiornaControlliCarosello(i, totale){
-  document.getElementById('exCarouselCounter').textContent = totale ? `${i+1} / ${totale}` : "";
-  document.getElementById('exPrevBtn').disabled = (i<=0);
-  document.getElementById('exNextBtn').disabled = (i>=totale-1);
-  document.getElementById('exNextBtn').textContent = (i>=totale-1) ? 'Ultimo esercizio' : 'Successivo →';
-}
-
-// Tiene l'altezza del contenitore agganciata al blocco attivo anche quando il
-// SUO contenuto cambia senza passare da mostraEsercizio (es. "+ Aggiungi
-// serie", "riporta" che aggiunge righe): un ResizeObserver sul solo blocco
-// attivo, ricollegato ad ogni cambio esercizio — la stessa idea semplice e
-// sicura di prima, qui non più mescolata con l'interpolazione fra due blocchi.
-function osservaAltezzaEsercizioAttivo(blocco){
-  const list = document.getElementById('exerciseFormList');
-  if(_carouselHeightObserver){ _carouselHeightObserver.disconnect(); _carouselHeightObserver = null; }
-  if(!blocco || typeof ResizeObserver === 'undefined') return;
-  _carouselHeightObserver = new ResizeObserver(()=>{
-    if(list.children[_indiceEsercizioAttivo] === blocco) list.style.height = blocco.scrollHeight + 'px';
-  });
-  _carouselHeightObserver.observe(blocco);
-}
-
-// Chiamata una sola volta, a form appena costruito: nessuna transizione,
-// il primo esercizio è semplicemente quello che si vede.
-function inizializzaCarosello(){
-  const list = document.getElementById('exerciseFormList');
-  const blocchi = Array.from(list.children);
-  blocchi.forEach(b=>b.classList.remove('active','entra-avanti','entra-indietro','esce-avanti','esce-indietro'));
-  _indiceEsercizioAttivo = 0;
-  if(blocchi.length === 0){
-    list.style.height = '';
-    aggiornaControlliCarosello(0, 0);
-    osservaAltezzaEsercizioAttivo(null);
-    return;
-  }
-  blocchi[0].classList.add('active');
-  list.style.height = blocchi[0].scrollHeight + 'px';
-  aggiornaControlliCarosello(0, blocchi.length);
-  osservaAltezzaEsercizioAttivo(blocchi[0]);
-}
-
-// Cambia l'esercizio mostrato. opzioni.animato=false salta la transizione
-// (usato solo per ripristinare la posizione dopo aver ricostruito l'intero
-// carosello, es. rebuildFreeForm — lì non deve "scorrere", deve solo riapparire
-// dov'era). opzioni.direzione forza avanti/indietro quando non è ovvio dagli indici.
-function mostraEsercizio(i, opzioni){
-  const list = document.getElementById('exerciseFormList');
-  const blocchi = Array.from(list.children);
-  if(blocchi.length === 0) return;
-  i = Math.max(0, Math.min(blocchi.length - 1, i));
-  const animato = !opzioni || opzioni.animato !== false;
-  const precedente = blocchi[_indiceEsercizioAttivo];
-  const nuovo = blocchi[i];
-  const verso = (opzioni && opzioni.direzione) || (i >= _indiceEsercizioAttivo ? 'avanti' : 'indietro');
-  const cambiaBlocco = precedente && nuovo && precedente !== nuovo;
-  _indiceEsercizioAttivo = i;
-  aggiornaControlliCarosello(i, blocchi.length);
-
-  if(!animato || !cambiaBlocco){
-    blocchi.forEach(b=>{
-      b.classList.remove('entra-avanti','entra-indietro','esce-avanti','esce-indietro');
-      b.classList.toggle('active', b===nuovo);
-    });
-    list.style.height = nuovo.scrollHeight + 'px';
-    osservaAltezzaEsercizioAttivo(nuovo);
-    return;
-  }
-
-  // Altezza del blocco di arrivo letta UNA VOLTA sola (non inseguita ad ogni
-  // frame durante un trascinamento): resta la stessa lettura, sia che
-  // l'animazione duri 260ms sia che il browser la salti del tutto
-  // (prefers-reduced-motion) — niente stime a metà gesto da poter sbagliare.
-  list.style.height = nuovo.scrollHeight + 'px';
-  nuovo.classList.add('active', verso === 'avanti' ? 'entra-avanti' : 'entra-indietro');
-  void nuovo.offsetWidth;   // forza il browser a "fissare" la posizione di partenza prima di animarla via
-  precedente.classList.remove('active');
-  precedente.classList.add(verso === 'avanti' ? 'esce-avanti' : 'esce-indietro');
-
-  requestAnimationFrame(()=>{ nuovo.classList.remove('entra-avanti','entra-indietro'); });
-  const ripulisci = ()=>{
-    precedente.classList.remove('esce-avanti','esce-indietro');
-    precedente.removeEventListener('transitionend', ripulisci);
-  };
-  precedente.addEventListener('transitionend', ripulisci);
-  setTimeout(ripulisci, 340);   // rete di sicurezza se transitionend non scatta
-
-  osservaAltezzaEsercizioAttivo(nuovo);
-}
-
-document.getElementById('exPrevBtn').addEventListener('click', ()=>{
-  if(_indiceEsercizioAttivo>0) mostraEsercizio(_indiceEsercizioAttivo-1, {direzione:'indietro'});
-});
-document.getElementById('exNextBtn').addEventListener('click', ()=>{
-  const list = document.getElementById('exerciseFormList');
-  if(_indiceEsercizioAttivo<list.children.length-1) mostraEsercizio(_indiceEsercizioAttivo+1, {direzione:'avanti'});
-});
-
-// Swipe col dito: si decide alla fine del gesto (in base a quanto ci si è
-// spostati in orizzontale), non lo si insegue in tempo reale — è proprio
-// questo il cambiamento voluto: prima l'altezza doveva rincorrere una
-// posizione di scorrimento continua, adesso non esiste più uno scorrimento
-// continuo da rincorrere. Ascolto passivo: non interferisce mai con lo
-// scorrimento verticale della pagina.
-(function(){
-  const list = document.getElementById('exerciseFormList');
-  let partenzaX = null, partenzaY = null;
-  list.addEventListener('touchstart', (e)=>{
-    if(e.touches.length !== 1) return;
-    partenzaX = e.touches[0].clientX;
-    partenzaY = e.touches[0].clientY;
-  }, {passive:true});
-  list.addEventListener('touchend', (e)=>{
-    if(partenzaX === null) return;
-    const t = e.changedTouches[0];
-    const dx = t.clientX - partenzaX;
-    const dy = t.clientY - partenzaY;
-    partenzaX = null;
-    // solo un gesto chiaramente orizzontale (altrimenti è uno scroll verticale
-    // della pagina) e oltre una soglia minima, per non scattare per sbaglio
-    if(Math.abs(dx) > 45 && Math.abs(dx) > Math.abs(dy) * 1.5){
-      if(dx < 0 && _indiceEsercizioAttivo < list.children.length-1) mostraEsercizio(_indiceEsercizioAttivo+1, {direzione:'avanti'});
-      else if(dx > 0 && _indiceEsercizioAttivo > 0) mostraEsercizio(_indiceEsercizioAttivo-1, {direzione:'indietro'});
-    }
-  }, {passive:true});
-})();
+// Fino a questa versione era un carosello: un esercizio alla volta, con
+// frecce/swipe per passare al successivo, e tutta una macchina di calcolo
+// altezze/animazioni per evitare che si vedesse un "fantasma" dell'esercizio
+// precedente durante il cambio (bug segnalato più volte, l'ultima su
+// Military Press). Richiesta esplicita (31/08/2026): "toglierei il carosello
+// degli esercizi e li metterei uno sotto l'altro così da non avere bug di
+// nessun tipo sul carosello" — con tutti gli esercizi semplicemente impilati
+// e sempre visibili non c'è più nulla da animare, misurare o indovinare: le
+// funzioni currentExerciseIndex/aggiornaControlliCarosello/
+// osservaAltezzaEsercizioAttivo/inizializzaCarosello/mostraEsercizio, le
+// frecce #exPrevBtn/#exNextBtn e lo swipe non servono più e sono state tolte.
+// `.exercise-block` resta il nome della classe di ogni riquadro (usata da
+// addSetRow/riportaUltimaVolta per trovare gli input per nome esercizio, e da
+// diversi test) ma ora è un blocco normale nel flusso della pagina, non più
+// position:absolute — vedi css/style.css.
 
 function addSetRow(exName, tappa){
   const container = document.querySelector(`.sets-container[data-ex="${CSS.escape(exName)}"]`);
@@ -8233,7 +8341,6 @@ document.getElementById('saveLogBtn').addEventListener('click', ()=>{
   document.getElementById('saveLogBtn').style.display = 'none';
   document.getElementById('freeAddExBtn').style.display = 'none';
   document.getElementById('freeAddExManualeBtn2').style.display='none';
-  document.getElementById('freeDelExBtn').style.display = 'none';
   document.getElementById('freeEmptyHint').style.display = 'none';
   document.getElementById('logNotes').value = "";
   renderHeader();
@@ -8775,8 +8882,8 @@ function renderFabbisognoCalorico(){
 
   if(!r || r.mancanti.length){
     box.innerHTML = `
-      <p class="hint" style="margin-top:0;">Per calcolarlo mi mancano: <b>${(r ? r.mancanti : ['sesso','età','altezza','peso']).join(', ')}</b>.</p>
-      <button class="btn diet-btn block" id="vaiCompletaDatiBtn" type="button">Completa in Account</button>
+      <p class="hint" style="margin:12px 0 0;">Per calcolare il tuo fabbisogno calorico (e mostrarlo qui sopra) mi mancano: <b>${(r ? r.mancanti : ['sesso','età','altezza','peso']).join(', ')}</b>.</p>
+      <button class="btn diet-btn block" id="vaiCompletaDatiBtn" type="button" style="margin-top:8px;">Completa in Account</button>
     `;
     document.getElementById('vaiCompletaDatiBtn').addEventListener('click', ()=>{
       apriAccountPanel();
@@ -8785,15 +8892,17 @@ function renderFabbisognoCalorico(){
     return;
   }
 
+  // 31/08/2026: il numero grande (kcal/giorno) ora vive nell'anello in cima
+  // alla pagina (renderKcalRing) — qui restano solo l'obiettivo scelto e il
+  // dettaglio del calcolo, informazioni di supporto, non il dato principale.
   const obiettivoBtns = Object.keys(OBIETTIVI_CALORICI).map(k=>
     `<button type="button" class="seg-btn${k===r.obiettivo?' active':''}" data-obiettivo="${k}">${OBIETTIVI_CALORICI[k].label}</button>`
   ).join('');
 
   box.innerHTML = `
-    <div class="fabbisogno-num">${r.risultato.toLocaleString('it-IT')} <span>kcal / giorno</span></div>
-    <div class="hint" style="margin:2px 0 12px;">${OBIETTIVI_CALORICI[r.obiettivo].nota}</div>
-    <div class="seg-toggle" id="obiettivoCaloricoToggle">${obiettivoBtns}</div>
-    <p class="hint" style="margin-top:12px; margin-bottom:0;">
+    <div class="hint" style="margin:12px 0 8px;">${OBIETTIVI_CALORICI[r.obiettivo].nota}</div>
+    <div class="seg-toggle" id="obiettivoCaloricoToggle" style="margin-bottom:0;">${obiettivoBtns}</div>
+    <p class="hint" style="margin-top:10px; margin-bottom:0;">
       Metabolismo basale ${r.bmr} kcal · attività "${LIVELLI_ATTIVITA[r.liv].label.toLowerCase()}" ×${LIVELLI_ATTIVITA[r.liv].mult} →
       mantenimento ${r.tdee} kcal. Calcolato su ${r.peso} kg (misurazione del ${formatDate(r.dataPeso)}), ${r.altezza} cm, ${r.eta} anni.
       Stima con la formula di Mifflin-St Jeor: è indicativa, non sostituisce il parere di un nutrizionista.
@@ -8805,6 +8914,7 @@ function renderFabbisognoCalorico(){
       p.obiettivoCalorico = btn.dataset.obiettivo;
       save();
       renderFabbisognoCalorico();
+      renderKcalRing(activeProfile(), document.getElementById('mealDate').value || new Date().toISOString().slice(0,10));
     });
   });
 }
@@ -8835,6 +8945,166 @@ function renderTodayDietPlan(){
   `;
 }
 
+const MEAL_ORDER = ['colazione','pranzo','spuntino','cena'];
+const MEAL_ICON_PATHS = {
+  colazione: '<path d="M3 8h13a4 4 0 0 1 0 8H3z"/><path d="M16 10h2a2 2 0 0 1 0 4h-2"/><path d="M6 3v3M9 3v3M12 3v3"/>',
+  pranzo: '<circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 3"/>',
+  spuntino: '<path d="M12 3c-4 3-6 6-6 10a6 6 0 0 0 12 0c0-4-2-7-6-10Z"/>',
+  cena: '<path d="M12 3a6 6 0 0 0 0 12 6 6 0 0 0 6-6c0 4-3 8-8 8a8 8 0 1 1 2-15z"/>'
+};
+function iconaPasto(mealKey){
+  return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${MEAL_ICON_PATHS[mealKey]||''}</svg>`;
+}
+// Seleziona il pasto e porta al modulo "Diario alimentare" per aggiungere
+// un alimento — stesso meccanismo del tasto "Registra pasto" del menu del
+// "+" (fabOptPasto), qui applicato al pasto specifico della card toccata.
+function avviaRegistraPasto(mealKey){
+  const chip = document.querySelector(`#mealTypeChips .chip[data-meal="${mealKey}"]`);
+  if(chip) chip.click();
+  const input = document.getElementById('mealFoodInput');
+  if(input){
+    input.scrollIntoView({behavior:'smooth', block:'center'});
+    input.focus({preventScroll:true});
+  }
+}
+
+// Card dei pasti (31/08/2026, Fase 3): raggruppa prof.mealLogs della data
+// selezionata per pasto, come faceva prima la lista piatta #mealList, ma
+// mostrando anche i pasti ancora vuoti (stato "da fare", con tasto
+// "Registra") invece di ometterli — così la card di ogni pasto è sempre
+// visibile, come in fitflow.
+function renderMealCards(items, date){
+  const wrap = document.getElementById('mealCardsWrap');
+  if(!wrap) return;
+  wrap.innerHTML = MEAL_ORDER.map(mealKey=>{
+    const mealItems = items.map((it,idx)=>({...it, idx})).filter(it=>(it.meal||'colazione')===mealKey);
+    const fatto = mealItems.length>0;
+    const mealKcal = mealItems.reduce((sum,it)=>{
+      const f = datiAlimento(it.food);
+      return sum + (f ? f.kcal*it.grams/100 : 0);
+    }, 0);
+    const righeHtml = mealItems.map(it=>{
+      const f = datiAlimento(it.food);
+      const kcalText = f ? `${Math.round(f.kcal*it.grams/100)} kcal` : 'kcal non disponibili';
+      return `<div class="meal-card-food-row">
+        <span>${toTitleCase(it.food)} <span class="meal-card-food-grams">${it.grams} g</span></span>
+        <span class="meal-card-food-kcal">${kcalText}<button type="button" class="remove-x" data-idx="${it.idx}" aria-label="Rimuovi ${toTitleCase(it.food)}">×</button></span>
+      </div>`;
+    }).join('');
+    return `<div class="card meal-card${fatto?'':' meal-card-pending'}">
+      <div class="meal-card-head">
+        <div class="meal-card-name">${iconaPasto(mealKey)}${MEAL_LABELS[mealKey]}</div>
+        ${fatto
+          ? `<div class="meal-card-head-right"><span class="meal-card-kcal">${Math.round(mealKcal)} kcal</span><button type="button" class="meal-card-add-btn" data-meal="${mealKey}" aria-label="Aggiungi un altro alimento a ${MEAL_LABELS[mealKey]}">+</button></div>`
+          : `<button type="button" class="btn diet-btn meal-card-log-btn" data-meal="${mealKey}">Registra</button>`}
+      </div>
+      ${righeHtml}
+    </div>`;
+  }).join('');
+
+  wrap.querySelectorAll('.remove-x').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const prof = activeProfile();
+      const day = prof.mealLogs.find(m=>m.date===date);
+      if(day) day.items.splice(parseInt(btn.dataset.idx),1);
+      save();
+      renderMealDiary();
+    });
+  });
+  wrap.querySelectorAll('.meal-card-log-btn, .meal-card-add-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=> avviaRegistraPasto(btn.dataset.meal));
+  });
+}
+
+// Anello "kcal consumate/obiettivo" (31/08/2026, Fase 3): sostituisce il
+// vecchio anello a 3 segmenti (che mostrava solo la composizione P/C/F,
+// non un progresso). Le righe P/C/F restano, spostate sotto come semplici
+// .macro-row (stesso component riusato da Home).
+function renderKcalRing(prof, date){
+  const fillEl = document.getElementById('kcalRingFill');
+  const pctEl = document.getElementById('kcalRingPct');
+  const valueEl = document.getElementById('kcalRingValue');
+  const subEl = document.getElementById('kcalRingSub');
+  const labelEl = document.getElementById('dietRingDataLabel');
+  const totalsEl = document.getElementById('mealTotals');
+  if(!fillEl || !prof) return;
+
+  const day = prof.mealLogs.find(m=>m.date===date);
+  const items = day ? day.items : [];
+  const hasUnknown = items.some(it=>!datiAlimento(it.food));
+  const totals = items.reduce((acc,it)=>{
+    const f = datiAlimento(it.food);
+    if(!f) return acc;
+    const factor = it.grams/100;
+    acc.kcal += f.kcal*factor; acc.p += f.p*factor; acc.c += f.c*factor; acc.f += f.f*factor;
+    return acc;
+  }, {kcal:0,p:0,c:0,f:0});
+
+  const oggiIso = new Date().toISOString().slice(0,10);
+  if(labelEl) labelEl.textContent = date===oggiIso ? 'Calorie di oggi' : `Calorie del ${formatDate(date)}`;
+
+  const r = 45, C = 2*Math.PI*r;
+  const fabbisogno = calcolaFabbisogno(prof);
+  if(fabbisogno && !fabbisogno.mancanti.length){
+    const pct = Math.min(100, Math.round(totals.kcal/fabbisogno.risultato*100));
+    fillEl.style.strokeDasharray = String(C);
+    fillEl.style.strokeDashoffset = String(C*(1-pct/100));
+    const inEccesso = totals.kcal > fabbisogno.risultato;
+    fillEl.classList.toggle('kcal-ring-fill-over', inEccesso);
+    pctEl.textContent = pct + '%';
+    valueEl.textContent = `${Math.round(totals.kcal)} / ${fabbisogno.risultato} kcal`;
+    const resto = fabbisogno.risultato - totals.kcal;
+    subEl.textContent = resto>=0 ? `${Math.round(resto)} kcal rimanenti` : `${Math.round(-resto)} kcal in eccesso`;
+    subEl.classList.toggle('kcal-ring-sub-over', resto<0);
+  } else {
+    fillEl.style.strokeDasharray = `0 ${C}`;
+    fillEl.classList.remove('kcal-ring-fill-over');
+    pctEl.textContent = '–';
+    valueEl.textContent = `${Math.round(totals.kcal)} kcal`;
+    subEl.textContent = '';
+    subEl.classList.remove('kcal-ring-sub-over');
+  }
+
+  if(totalsEl) totalsEl.innerHTML = `
+    <div class="macro-row"><span class="macro-dot" style="background:var(--diet);"></span><span class="macro-row-label">Proteine</span><span class="macro-row-val">${Math.round(totals.p)} g</span></div>
+    <div class="macro-row"><span class="macro-dot" style="background:var(--accent);"></span><span class="macro-row-label">Carboidrati</span><span class="macro-row-val">${Math.round(totals.c)} g</span></div>
+    <div class="macro-row"><span class="macro-dot" style="background:#f0b429;"></span><span class="macro-row-label">Grassi</span><span class="macro-row-val">${Math.round(totals.f)} g</span></div>
+    ${hasUnknown ? '<div class="hint" style="margin-top:8px;">Alcuni alimenti scritti liberamente non hanno dati nutrizionali: i totali potrebbero essere incompleti.</div>' : ''}
+  `;
+}
+
+// Contatore acqua (31/08/2026, Fase 3): funzionalità nuova, nessun dato
+// preesistente da riusare — prof.waterLogs, un record per data (come
+// prof.mealLogs), inizializzato per tutti i profili in load()/newProfile()
+// e nei buffer del PT. Obiettivo indicativo fisso (non è un consiglio
+// medico, solo un riferimento visivo, come in fitflow).
+const OBIETTIVO_ACQUA_ML = 2500;
+function acquaDelGiorno(prof, date){
+  return (prof.waterLogs||[]).find(w=>w.date===date);
+}
+function aggiungiAcqua(deltaMl){
+  const prof = activeProfile();
+  const date = document.getElementById('mealDate').value || new Date().toISOString().slice(0,10);
+  let giorno = acquaDelGiorno(prof, date);
+  if(!giorno){ giorno = {date, ml:0}; prof.waterLogs.push(giorno); }
+  giorno.ml = Math.max(0, giorno.ml + deltaMl);
+  save();
+  renderWaterRow(prof, date);
+}
+function renderWaterRow(prof, date){
+  const valueEl = document.getElementById('waterValue');
+  const fillEl = document.getElementById('waterBarFill');
+  if(!valueEl || !prof) return;
+  const giorno = acquaDelGiorno(prof, date);
+  const ml = giorno ? giorno.ml : 0;
+  const litri = (ml/1000).toFixed(2).replace('.', ',');
+  const obLitri = (OBIETTIVO_ACQUA_ML/1000).toFixed(2).replace('.', ',');
+  valueEl.textContent = `${litri} / ${obLitri} L`;
+  if(fillEl) fillEl.style.width = Math.min(100, Math.round(ml/OBIETTIVO_ACQUA_ML*100)) + '%';
+}
+document.getElementById('waterPlusBtn').addEventListener('click', ()=>aggiungiAcqua(250));
+document.getElementById('waterMinusBtn').addEventListener('click', ()=>aggiungiAcqua(-250));
+
 function renderMealDiary(){
   const prof = activeProfile();
   renderTodayDietPlan();
@@ -8845,85 +9115,9 @@ function renderMealDiary(){
   const day = prof.mealLogs.find(m=>m.date===date);
   const items = day ? day.items : [];
 
-  const listEl = document.getElementById('mealList');
-  if(items.length===0){
-    listEl.innerHTML = '<div class="empty">Nessun alimento registrato per questa data.</div>';
-  } else {
-    const mealOrder = ['colazione','pranzo','spuntino','cena'];
-    let html = '';
-    mealOrder.forEach(mealKey=>{
-      const mealItems = items.map((it,idx)=>({...it, idx})).filter(it=>(it.meal||'colazione')===mealKey);
-      if(mealItems.length===0) return;
-      const mealKcal = mealItems.reduce((sum,it)=>{
-        const f = datiAlimento(it.food);
-        return sum + (f ? f.kcal*it.grams/100 : 0);
-      }, 0);
-      const mealTagColor = {colazione:'#f0b429', pranzo:'var(--accent)', spuntino:'#8b5cf6', cena:'var(--diet)'}[mealKey] || 'var(--text-faint)';
-      html += `<div class="meal-log-group">
-        <div class="meal-log-head">${MEAL_LABELS[mealKey]}<span>${Math.round(mealKcal)} kcal</span></div>
-        ${mealItems.map(it=>{
-          const f = datiAlimento(it.food);
-          const kcalText = f ? `${Math.round(f.kcal * it.grams/100)} kcal` : 'kcal non disponibili';
-          return `<div class="meal-log-row">
-            <span class="meal-log-tag" style="background:${mealTagColor};"></span>
-            <div class="meal-log-body">
-              <div class="meal-log-name">${toTitleCase(it.food)}</div>
-              <div class="meal-log-sub">${it.grams} g · ${kcalText}</div>
-            </div>
-            <button type="button" class="remove-x" data-idx="${it.idx}">×</button>
-          </div>`;
-        }).join('')}
-      </div>`;
-    });
-    listEl.innerHTML = html;
-    listEl.querySelectorAll('.remove-x').forEach(btn=>{
-      btn.addEventListener('click', ()=>{
-        day.items.splice(parseInt(btn.dataset.idx),1);
-        save();
-        renderMealDiary();
-      });
-    });
-  }
-
-  const hasUnknown = items.some(it=>!datiAlimento(it.food));
-  const totals = items.reduce((acc,it)=>{
-    const f = datiAlimento(it.food);
-    if(!f) return acc;
-    const factor = it.grams/100;
-    acc.kcal += f.kcal*factor; acc.p += f.p*factor; acc.c += f.c*factor; acc.f += f.f*factor;
-    return acc;
-  }, {kcal:0,p:0,c:0,f:0});
-
-  document.getElementById('mealTotals').innerHTML = `
-    <div class="macro-row"><span class="macro-dot" style="background:var(--diet);"></span><span class="macro-row-label">Proteine</span><span class="macro-row-val">${Math.round(totals.p)} g</span></div>
-    <div class="macro-row"><span class="macro-dot" style="background:var(--accent);"></span><span class="macro-row-label">Carboidrati</span><span class="macro-row-val">${Math.round(totals.c)} g</span></div>
-    <div class="macro-row"><span class="macro-dot" style="background:#f0b429;"></span><span class="macro-row-label">Grassi</span><span class="macro-row-val">${Math.round(totals.f)} g</span></div>
-    ${hasUnknown ? '<div class="hint" style="margin-top:8px;">Alcuni alimenti scritti liberamente non hanno dati nutrizionali: i totali potrebbero essere incompleti.</div>' : ''}
-  `;
-  aggiornaAnelloMacro(totals);
-}
-
-// Anello "Totali di oggi": non abbiamo un obiettivo calorico numerico (il PT lo scrive
-// come testo libero in dietInfo.calorie), quindi l'anello mostra la COMPOSIZIONE dei
-// macro di oggi (proteine/carbo/grassi in proporzione alle kcal), non un progresso verso un target.
-function aggiornaAnelloMacro(totals){
-  const segP = document.getElementById('macroSegP');
-  const segC = document.getElementById('macroSegC');
-  const segF = document.getElementById('macroSegF');
-  const numEl = document.getElementById('macroKcalNum');
-  if(!segP || !segC || !segF || !numEl) return;
-  numEl.textContent = Math.round(totals.kcal);
-  const r = 45, C = 2*Math.PI*r;
-  const kcalP = totals.p*4, kcalC = totals.c*4, kcalF = totals.f*9;
-  const somma = kcalP + kcalC + kcalF;
-  if(somma <= 0){
-    [segP,segC,segF].forEach(el=>{ el.style.strokeDasharray = `0 ${C}`; el.style.strokeDashoffset = '0'; });
-    return;
-  }
-  const lenP = C*kcalP/somma, lenC = C*kcalC/somma, lenF = C*kcalF/somma;
-  segP.style.strokeDasharray = `${lenP} ${C-lenP}`; segP.style.strokeDashoffset = '0';
-  segC.style.strokeDasharray = `${lenC} ${C-lenC}`; segC.style.strokeDashoffset = `${-lenP}`;
-  segF.style.strokeDasharray = `${lenF} ${C-lenF}`; segF.style.strokeDashoffset = `${-(lenP+lenC)}`;
+  renderMealCards(items, date);
+  renderKcalRing(prof, date);
+  renderWaterRow(prof, date);
 }
 document.getElementById('mealDate').addEventListener('change', renderMealDiary);
 
