@@ -1180,14 +1180,27 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
     <details class="diet-plan-toggle" id="pianoPTDetails">
       <summary>Piano alimentare assegnato dal PT<span class="hint">Vedi la settimana completa o aggiorna il piano</span></summary>
       <div class="details-body">
-        <div class="seg-toggle" style="margin-top:0;">
+        <!-- Vedi/Modifica ora pilotati dalla stessa coppia matita/freccia di
+             Scheda (31/08/2026, richiesta esplicita: rendere questo blocco
+             più simile a Scheda) al posto del vecchio seg-toggle a due
+             pulsanti affiancati. Motore invariato sotto (.seg-btn[data-segd],
+             nascosto ma funzionante: ci clicca sopra anche modificaComePT()
+             per il PT) — vedi #progVedModToggle in Scheda per lo stesso pattern. -->
+        <div class="seg-toggle" id="dietPlanVedModToggle" style="display:none;">
           <button class="seg-btn active" data-segd="view">Vedi piano</button>
           <button class="seg-btn" data-segd="edit">Modifica / Aggiorna</button>
         </div>
 
         <div id="dietPlanViewBlock">
+          <div class="scheda-header-row">
+            <h2 class="scheda-titolo diet">Piano alimentare attuale</h2>
+            <div class="scheda-header-actions">
+              <button type="button" class="icon-btn-round" id="dietEditBtn" aria-label="Modifica dieta" title="Modifica dieta">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+              </button>
+            </div>
+          </div>
           <div class="card card-diet" id="dietViewCard">
-            <h3 class="diet">Piano alimentare attuale</h3>
             <div id="dietInfoView" class="hint"></div>
             <div id="dietView"></div>
           </div>
@@ -1198,11 +1211,15 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
         </div>
 
         <div id="dietPlanEditBlock" style="display:none;">
+          <div class="scheda-header-row">
+            <button type="button" class="icon-btn-round" id="dietTornaVediBtn" aria-label="Torna al piano" title="Torna al piano">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+            </button>
+            <h2 class="scheda-titolo diet" id="dietEditTitolo2">Modifica dieta</h2>
+            <button class="btn danger" id="clearDietFormBtn" style="margin-top:0; padding:8px 14px;">Pulisci</button>
+          </div>
           <div class="card">
-            <div class="card-head-row">
-              <h3 id="dietEditTitolo">Il personal trainer ti ha aggiornato la dieta?</h3>
-              <button class="btn danger" id="clearDietFormBtn">Pulisci</button>
-            </div>
+            <h3 id="dietEditTitolo">Il personal trainer ti ha aggiornato la dieta?</h3>
             <p class="hint">Aggiornando il piano, quello attuale viene archiviato (resta consultabile) e da qui in poi si usano i nuovi dati — la scheda di allenamento non viene toccata. Il diario di quello che mangi davvero, qui sopra, non viene mai toccato. "Pulisci" svuota i campi qui sotto per ripartire da zero invece di modificare quello attuale.</p>
           </div>
 
@@ -1222,7 +1239,9 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
             <p class="hint">Il tuo personal trainer ha bloccato la modifica della dieta. Contattalo se vuoi richiedere delle modifiche.</p>
           </div>
 
-          <button class="btn block" id="saveDietBtn">Salva dieta</button>
+          <div class="scheda-editor-sticky-actions">
+            <button class="btn block" id="saveDietBtn">Salva dieta</button>
+          </div>
 
           <p class="hint" style="margin-top:14px;">Lo storico completo (scheda + dieta insieme, versione per versione) resta in Storico → "Schede archiviate".</p>
         </div>
