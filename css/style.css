@@ -160,12 +160,15 @@
   .home-hero{position:relative; flex:0 0 auto; width:185px;}
   .home-hero-photo{display:block; width:100%; height:auto;}
 
-  .home-goal-card{
-    display:flex; align-items:center; justify-content:space-between; gap:12px; background:var(--surface);
-    border:1px solid var(--border); border-radius:16px; padding:14px 16px; margin-bottom:10px;
-    box-shadow:0 1px 4px rgba(0,0,0,.05);
+  /* Riga di due card compatte (31/08/2026, quarto giro): stesso angolo e
+     ombra della card condivisa (.card, var(--r-lg)/var(--shadow-sm)) invece
+     dei valori più piatti/squadrati che questa zona di Home aveva per conto
+     suo — coerenza con Dieta/Account/Scheda, che già usano .card. */
+  .home-goal-card{display:flex; align-items:stretch; gap:10px; margin-bottom:10px;}
+  .home-stat-card{
+    flex:1; min-width:0; background:var(--surface); border:1px solid var(--border);
+    border-radius:var(--r-lg); box-shadow:var(--shadow-sm); padding:14px 16px;
   }
-  .home-goal-left{flex:1; min-width:0;}
   .home-goal-label{font-size:10px; letter-spacing:.04em; color:var(--text-faint); font-family:var(--font-display);}
   .home-goal-num{font-family:var(--font-display); font-size:22px; margin:3px 0 1px; color:var(--accent);}
   .home-goal-num-dim{color:var(--text);}
@@ -173,6 +176,8 @@
   .home-goal-bar{height:6px; border-radius:6px; background:var(--surface2); overflow:hidden;}
   .home-goal-bar-fill{height:100%; background:var(--accent); border-radius:6px; transition:width .3s;}
 
+  .home-streak-card{display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center;}
+  .home-streak-card .home-goal-label{margin-bottom:6px;}
   .home-streak-ring{position:relative; flex:0 0 auto; width:56px; height:64px;}
   .home-streak-ring-svg{width:100%; height:100%; transform:scaleX(0.82) rotate(-90deg);}
   .home-streak-ring .ring-track{fill:none; stroke:var(--surface2); stroke-width:5;}
@@ -184,8 +189,8 @@
   .home-streak-num{font-family:var(--font-display); font-size:15px; line-height:1.1;}
   .home-streak-label{font-size:8.5px; color:var(--text-faint);}
 
-  .home-ob-card{background:var(--surface); border:1px solid var(--border); border-radius:16px;
-    padding:14px 16px 6px; margin-bottom:10px; box-shadow:0 1px 4px rgba(0,0,0,.05);}
+  .home-ob-card{background:var(--surface); border:1px solid var(--border); border-radius:var(--r-lg);
+    padding:14px 16px 6px; margin-bottom:10px; box-shadow:var(--shadow-sm);}
   .home-ob-titolo{font-size:10px; letter-spacing:.04em; color:var(--text-faint); font-family:var(--font-display);
     text-transform:uppercase; margin-bottom:10px;}
   .home-ob-riga{display:flex; align-items:center; gap:12px; margin-bottom:10px;}
@@ -214,8 +219,8 @@
      larghezza, in tema con lo stile caldo/accento del resto di Home invece
      del vecchio riquadro chiaro con icona in alto. */
   .home-pt-card{display:flex; align-items:center; gap:13px; width:100%; text-align:left;
-    background:var(--accent-soft); border:none; border-radius:16px; padding:14px 15px;
-    margin-bottom:10px; cursor:pointer; box-shadow:0 1px 4px rgba(0,0,0,.05);}
+    background:var(--accent-soft); border:none; border-radius:var(--r-lg); padding:14px 15px;
+    margin-bottom:10px; cursor:pointer; box-shadow:var(--shadow-sm);}
   .home-pt-card-icon{width:42px; height:42px; border-radius:12px; object-fit:cover; flex:0 0 auto;}
   .home-pt-card-testo{flex:1; min-width:0;}
   .home-pt-card-titolo{font-family:var(--font-display); font-size:14px; font-weight:700; color:var(--accent);}
@@ -254,7 +259,7 @@
 
   /* Card "Scheda attiva" */
   .home-scheda-card{display:flex; align-items:center; gap:13px; width:100%; text-align:left;
-    background:var(--surface); border:none; border-radius:16px; padding:14px 15px;
+    background:var(--surface); border:none; border-radius:var(--r-lg); padding:14px 15px;
     margin-bottom:10px; cursor:pointer; box-shadow:var(--shadow-sm);}
   .home-scheda-icon{width:42px; height:42px; border-radius:12px; flex:0 0 auto; background:var(--grad-accent);
     display:flex; align-items:center; justify-content:center;}
@@ -272,8 +277,8 @@
   .home-dieta-kcal-bar{flex:1; height:7px; border-radius:7px; background:var(--surface2); overflow:hidden;}
   .home-dieta-kcal-fill{height:100%; background:var(--diet); border-radius:7px; transition:width .3s;}
 
-  .heatmap-card{background:var(--surface); border:1px solid var(--border); border-radius:16px;
-    padding:16px 16px 14px; margin-bottom:10px; box-shadow:0 1px 4px rgba(0,0,0,.05);}
+  .heatmap-card{background:var(--surface); border:1px solid var(--border); border-radius:var(--r-lg);
+    padding:16px 16px 14px; margin-bottom:10px; box-shadow:var(--shadow-sm);}
   .heatmap-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:2px;}
   .heatmap-title{font-family:var(--font-display); font-size:14.5px; font-weight:700;}
   .heatmap-sub{font-size:11px; color:var(--text-faint); margin-top:2px;}
@@ -313,7 +318,7 @@
     box-shadow:var(--shadow-accent, 0 10px 22px -4px rgba(255,75,43,.45));}
   .home-cta-link{display:block; text-align:center; font-size:11.5px; color:rgba(255,255,255,.92);
     margin-top:10px; text-decoration:underline; cursor:pointer; position:relative; z-index:1;}
-  .home-cta-done{background:var(--surface); border:1px solid var(--border); color:var(--text); box-shadow:0 1px 4px rgba(0,0,0,.05);}
+  .home-cta-done{background:var(--surface); border:1px solid var(--border); color:var(--text); box-shadow:var(--shadow-sm);}
   .home-cta-done .home-cta-eyebrow{color:var(--ok); opacity:1;}
   .home-cta-done .home-cta-title{color:var(--text);}
   .home-cta-done .home-cta-btn{background:var(--surface2); color:var(--text-dim);}
@@ -549,6 +554,16 @@
   .registra-sticky-group .scheda-header-row{ margin-bottom:10px; }
   .registra-sticky-group .timer-bar{
     position:static; margin:0 -12px 12px; top:auto;
+  }
+  /* Barra "Aggiorna scheda"/"Salva come nuova versione" sempre raggiungibile
+     mentre si scorre l'elenco dei giorni (31/08/2026, terzo giro): stesso
+     pattern sticky di .registra-sticky-group qui sopra, ma ancorata in
+     basso invece che in alto. z-index sotto ai 200 di .day-accordion[open]
+     apposta, per restare dietro l'editor a schermo intero di un giorno. */
+  .scheda-editor-sticky-actions{
+    position:sticky; bottom:0; z-index:60; background:var(--bg);
+    margin:14px -12px -12px; padding:10px 12px calc(10px + env(safe-area-inset-bottom, 0px));
+    box-shadow:0 -8px 16px -8px rgba(23,21,15,0.08);
   }
   .btn.top-action-btn{
     flex:0 0 auto; display:inline-flex; align-items:center; gap:5px;
@@ -1005,8 +1020,18 @@
      del troncamento tipo "Panca Pi…"), muscoli e tecnica speciale diventano
      due tendine chiuse di default (riassunto in una riga, si aprono solo se
      serve modificarle) invece di stare sempre spiegate per intero. */
+  /* 31/08/2026 (quarto giro, richiesta estetica): sfondo caldo tenue
+     (var(--surface2)) invece di bianco puro identico alla card che lo
+     contiene (.workoutEditCard, .card) — solo il bordo separava le due,
+     ora ogni esercizio si stacca visivamente come "card dentro la card". */
   .exercise-edit-block{margin-bottom:12px; padding:12px;
-    background:var(--surface); border:1px solid var(--border); border-radius:12px;}
+    background:var(--surface2); border:1px solid var(--border); border-radius:14px;}
+  /* i campi dentro sono già var(--surface2) di default (stesso tono della
+     card qui sopra): su questo sfondo si perderebbero, quindi qui restano
+     bianchi per staccarsi dalla card che li contiene invece che dalla
+     pagina. */
+  .exercise-edit-block input, .exercise-edit-block select{background:var(--surface);}
+  .exercise-edit-block input:focus, .exercise-edit-block select:focus{background:var(--surface);}
   .exercise-edit-block:has(.superset-chip){border-left:3px solid var(--accent);}
   .exercise-edit-top{display:flex; align-items:center; gap:8px; margin-bottom:8px;}
   .exercise-edit-num{flex:0 0 auto; width:20px; height:20px; border-radius:50%;

@@ -349,22 +349,31 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
       <span class="home-scheda-vedi">Vedi <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg></span>
     </button>
 
+    <!-- 31/08/2026 (quarto giro, richiesta estetica esplicita): "Obiettivo
+         settimanale" e "Serie attiva" erano un'unica card larga con barra e
+         anello affiancati — ora sono due card compatte affiancate, per
+         coerenza con lo stile a card (angoli e ombra di .card, var(--r-lg)/
+         var(--shadow-sm)) usato nel resto dell'app. Nessun id toccato: solo
+         nuovi contenitori attorno agli stessi elementi di sempre. -->
     <div class="home-goal-card">
-      <div class="home-goal-left">
+      <div class="home-stat-card home-goal-left">
         <div class="home-goal-label">OBIETTIVO SETTIMANALE</div>
         <div class="home-goal-num"><span id="homeGoalFatti">0</span><span class="home-goal-num-dim"> / <span id="homeGoalTotali">0</span></span></div>
         <div class="home-goal-sub">allenamenti completati</div>
         <div class="home-goal-bar"><div class="home-goal-bar-fill" id="homeGoalFill" style="width:0%"></div></div>
       </div>
-      <div class="home-streak-ring">
-        <svg viewBox="0 0 80 80" class="home-streak-ring-svg">
-          <circle cx="40" cy="40" r="34" class="ring-track"/>
-          <circle cx="40" cy="40" r="34" class="ring-fill" id="homeStreakRing"/>
-        </svg>
-        <div class="home-streak-center">
-          <svg viewBox="0 0 24 24" fill="currentColor" class="home-streak-flame" aria-hidden="true"><path d="M12 2c1 3-3 4-3 8a3 3 0 0 0 6 0c1 1 1.5 2.5 1.5 4A6.5 6.5 0 0 1 5 14C5 8 9 6 12 2z"/></svg>
-          <div class="home-streak-num" id="homeStreakNum">0</div>
-          <div class="home-streak-label">streak</div>
+      <div class="home-stat-card home-streak-card">
+        <div class="home-goal-label">SERIE ATTIVA</div>
+        <div class="home-streak-ring">
+          <svg viewBox="0 0 80 80" class="home-streak-ring-svg">
+            <circle cx="40" cy="40" r="34" class="ring-track"/>
+            <circle cx="40" cy="40" r="34" class="ring-fill" id="homeStreakRing"/>
+          </svg>
+          <div class="home-streak-center">
+            <svg viewBox="0 0 24 24" fill="currentColor" class="home-streak-flame" aria-hidden="true"><path d="M12 2c1 3-3 4-3 8a3 3 0 0 0 6 0c1 1 1.5 2.5 1.5 4A6.5 6.5 0 0 1 5 14C5 8 9 6 12 2z"/></svg>
+            <div class="home-streak-num" id="homeStreakNum">0</div>
+            <div class="home-streak-label">streak</div>
+          </div>
         </div>
       </div>
     </div>
@@ -1312,8 +1321,20 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
         <p class="hint">Il tuo personal trainer ha bloccato la modifica della scheda. Contattalo se vuoi richiedere delle modifiche.</p>
       </div>
 
-      <button class="btn block" id="updateProgramBtn">Aggiorna scheda</button>
-      <button class="btn secondary block" id="saveNewProgramBtn" style="margin-top:9px;">Salva come nuova versione</button>
+      <!-- 31/08/2026 (terzo giro, richiesta esplicita): i due tasti di salvataggio
+           restavano in fondo a un form che può diventare lungo (più giorni,
+           più esercizi ciascuno) — bisognava scorrere fino in fondo ogni
+           volta. Incollati al fondo dello schermo mentre si scorre (stesso
+           pattern di .registra-sticky-group qui sopra, ma ancorato in basso),
+           senza toccare id/classi/logica di mostra o nascondi dei due tasti.
+           #dayEditors resta l'unico posto con l'overlay a schermo intero
+           (.day-accordion[open], z-index:200): questa barra ha z-index più
+           basso apposta, così quando un giorno è aperto resta sotto e non lo
+           copre. -->
+      <div class="scheda-editor-sticky-actions">
+        <button class="btn block" id="updateProgramBtn">Aggiorna scheda</button>
+        <button class="btn secondary block" id="saveNewProgramBtn" style="margin-top:9px;">Salva come nuova versione</button>
+      </div>
 
     </div>
     </div>
@@ -1794,11 +1815,23 @@ const TIME_BASED_EXERCISES = ["plank", "side plank"];
 // TIPI DI MISURA
 // Ogni esercizio si registra in modo diverso: ripetizioni e carico per i pesi,
 // secondi per plank e isometrie, chilometri per la corsa, e così via.
+//
+// Il passo dei campi "kg" (31/08/2026, terzo giro): era stato portato a 5
+// il 25/08 perché il massimale stimato (formula di Epley) mostrava cifre
+// con la virgola che sembravano inventate. Ma passo:5 (un intero) fa sì
+// che i telefoni mostrino la tastiera numerica SENZA punto decimale
+// (vedi inputmode più sotto, dove buildFieldsHtml() lo decide da
+// campo.passo < 1): impossibile scrivere 15,5 o 17,5 kg, pesi reali con
+// i dischi da mezzo chilo. Richiesta esplicita: l'utente deve poter
+// registrare QUALSIASI peso, è solo il numero CALCOLATO da noi (il
+// massimale stimato) che va arrotondato — non l'input. Passo tornato a
+// 0.5 qui, e recordPersonale()/il grafico più sotto ora arrotondano il
+// risultato all'intero invece che al decimale.
 // ============================================================
 const TIPI_MISURA = {
   "peso":     { nome:"Ripetizioni e carico (es. panca, squat)", breve:"rip × kg",  campi:[
                   {chiave:"reps",    etichetta:"rip.", unita:"",    passo:1},
-                  {chiave:"kg",      etichetta:"kg",   unita:"kg",  passo:5}] },
+                  {chiave:"kg",      etichetta:"kg",   unita:"kg",  passo:0.5}] },
   "corpo":    { nome:"Solo ripetizioni, a corpo libero (es. addominali, push-up)", breve:"ripetizioni", campi:[
                   {chiave:"reps",    etichetta:"rip.", unita:"",    passo:1}] },
   "tempo":    { nome:"A tempo, in secondi (es. plank breve)", breve:"secondi", campi:[
@@ -1809,16 +1842,16 @@ const TIPI_MISURA = {
                   {chiave:"seconds", etichetta:"ore", unita:"h", passo:0.25, moltiplicatore:3600}] },
   "tempopeso":{ nome:"A tempo in secondi, con carico (es. plank zavorrato)", breve:"sec × kg", campi:[
                   {chiave:"seconds", etichetta:"secondi", unita:"sec", passo:5},
-                  {chiave:"kg",      etichetta:"kg",   unita:"kg",  passo:5}] },
+                  {chiave:"kg",      etichetta:"kg",   unita:"kg",  passo:0.5}] },
   "tempopeso_min":{ nome:"A tempo in minuti, con carico (es. trasporto pesi)", breve:"min × kg", campi:[
                   {chiave:"seconds", etichetta:"minuti", unita:"min", passo:1, moltiplicatore:60},
-                  {chiave:"kg",      etichetta:"kg",   unita:"kg",  passo:5}] },
+                  {chiave:"kg",      etichetta:"kg",   unita:"kg",  passo:0.5}] },
   "distanza": { nome:"Distanza e durata (es. corsa, bici, cardio)", breve:"km + minuti", campi:[
                   {chiave:"km",      etichetta:"km",   unita:"km",  passo:0.1},
                   {chiave:"minuti",  etichetta:"min",  unita:"min", passo:1}] },
   "passi":    { nome:"Ripetizioni per lato (es. affondi, step up)", breve:"rip. per lato", campi:[
                   {chiave:"reps",    etichetta:"rip. lato", unita:"", passo:1},
-                  {chiave:"kg",      etichetta:"kg",   unita:"kg",  passo:5}] }
+                  {chiave:"kg",      etichetta:"kg",   unita:"kg",  passo:0.5}] }
 };
 const CAMPI_SERIE = ["reps","kg","seconds","km","minuti"];
 
@@ -1894,7 +1927,7 @@ function recordPersonale(prof, exName){
           const kg = parseFloat(s.kg), reps = parseFloat(s.reps);
           return (kg>0 && reps>0) ? kg*(1+reps/30) : 0;
         }));
-    if(valore>0 && (!migliore || valore>migliore.valore)) migliore = { valore: Math.round(valore*10)/10, data: l.date };
+    if(valore>0 && (!migliore || valore>migliore.valore)) migliore = { valore: Math.round(valore), data: l.date };
   });
   return migliore;
 }
@@ -9545,7 +9578,7 @@ function renderProgressTable(){
         const kg = parseFloat(s.kg), reps = parseFloat(s.reps);
         return (kg>0 && reps>0) ? kg*(1+reps/30) : 0;
       }));
-      return {date:l.date, maxVal:maxKg, setsStr, grafico: Math.round(epley*10)/10};
+      return {date:l.date, maxVal:maxKg, setsStr, grafico: Math.round(epley)};
     });
   if(rows.length===0){ container.innerHTML=""; }
   else {
