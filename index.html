@@ -890,17 +890,13 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
       <h1 id="mainTitle">Registro Allenamento</h1>
       <div class="sub" id="programLabel">Caricamento...</div>
     </div>
-    <!-- 31/08/2026: tolto il tasto "Home" (ridondante: c'è già la voce Home
-         nella barra in basso, sempre visibile) e sostituita l'emoji ⚙ con
-         un'icona coerente col resto dell'app (tutte le altre sono disegnate
-         a linee, non emoji — che tra l'altro cambiano aspetto da telefono a
-         telefono). Nessuna funzione tolta: apriImpostazioni('app') resta
-         invariata. -->
-    <div class="header-btns">
-      <button class="header-btn" id="settingsBtn" title="Impostazioni" aria-label="Impostazioni">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-      </button>
-    </div>
+    <!-- 31/08/2026 (quarto giro, segnalato con screenshot: "quel tasto che
+         non ci dovrebbe stare"): tolto anche l'ingranaggio ⚙ — Impostazioni
+         si apre già da Account (icona profilo), tenerlo anche qui era
+         ridondante. Stesso motivo per cui "Home" era già stato tolto da
+         questa intestazione. apriImpostazioni('app') resta come funzione
+         (usata con altre provenienze, es. dalle notifiche), solo senza più
+         questo pulsante che la richiamava. -->
   </div>
   </div>
   <div class="pulse" id="weekPulse"></div>
@@ -7483,7 +7479,6 @@ document.getElementById('setLivelloAttivita').addEventListener('change', functio
   if(typeof modalitaOnline === 'function' && modalitaOnline()) inviaOnline();
 });
 
-document.getElementById('settingsBtn').addEventListener('click', ()=>apriImpostazioni('app'));
 document.getElementById('autoSkipToggle').addEventListener('change', (e)=>{
   const prof = loggedInProfile();
   if(!prof) return;
