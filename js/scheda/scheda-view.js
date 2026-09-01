@@ -49,14 +49,18 @@ function renderSchedaView(){
       ${statiHtml}
     </div>`;
 
+  // 01/09/2026 (richiesta esplicita): si apre SOLO il giorno di oggi, se oggi
+  // è previsto un allenamento — prima, nei giorni senza allenamento previsto
+  // (idxOggi===-1), si apriva comunque il primo giorno della scheda (es. "A ·
+  // Petto+Dorso") come se toccasse quello. Nessun giorno "di riserva" aperto:
+  // tutto chiuso a tendina quando oggi non tocca niente.
   const idxOggi = p.days.findIndex(d=>d.weekday===oggiWd);
-  const idxAperto = idxOggi >= 0 ? idxOggi : 0;
   const giorniHtml = p.days.map((d,i)=>{
     const eOggi = d.weekday === oggiWd;
     const cat = d.categoria && CATEGORIE_ALLENAMENTO[d.categoria];
     const nEx = d.exercises.length;
     return `
-    <details class="day-editor day-view-accordion"${i===idxAperto ? ' open' : ''}>
+    <details class="day-editor day-view-accordion"${i===idxOggi ? ' open' : ''}>
       <summary>
         <div class="letter">${d.key}</div>
         <div class="day-name-block">

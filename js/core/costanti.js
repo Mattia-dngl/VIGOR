@@ -61,41 +61,52 @@ const VOLUME_THRESHOLDS = { low: 8, high: 20 }; // <8 basso, 8-20 ottimale, >20 
 
 // ============================================================
 // RISCALDAMENTO SUGGERITO (01/09/2026, richiesta esplicita): niente da
-// costruire a mano in scheda — in Registra proponiamo 2-3 movimenti leggeri
+// costruire a mano in scheda — in Registra proponiamo dei movimenti leggeri
 // scelti dai gruppi muscolari REALMENTE coinvolti quel giorno (ex.muscles di
 // ogni esercizio, stessa tassonomia del grafico Volume), non da una sezione
-// separata da compilare. Un movimento per gruppo, nell'ordine in cui i gruppi
-// compaiono nella scheda, fino a un massimo di 3 per non appesantire l'avvio
-// dell'allenamento; se il giorno non ha ancora nessun muscolo taggato (schede
-// vecchie, o "Allenamento libero" prima di scegliere un esercizio) si propone
-// un riscaldamento cardio generico.
+// separata da compilare. Almeno 4 voci (un movimento per gruppo, poi un
+// secondo giro sugli stessi gruppi se non bastano), fino a un massimo di 5
+// per non appesantire l'avvio dell'allenamento; se il giorno non ha ancora
+// nessun muscolo taggato (schede vecchie, o "Allenamento libero" prima di
+// scegliere un esercizio) si propone un riscaldamento cardio generico.
+// Ogni voce porta anche "rec" (recupero fra una voce e l'altra, in secondi):
+// volutamente breve — è riscaldamento, non la scheda vera — mai oltre i 20".
 // ============================================================
 const RISCALDAMENTO_PER_GRUPPO = {
-  "Petto":        [{n:"Croci leggere a vuoto", target:"10 rip."}, {n:"Rotazioni delle braccia", target:"20 rip."}],
-  "Schiena":      [{n:"Cat-cow", target:"30 sec"}, {n:"Face pull leggero (o slancio braccia indietro)", target:"12 rip."}],
-  "Spalle":       [{n:"Rotazioni delle spalle", target:"30 sec"}, {n:"Alzate laterali a vuoto", target:"12 rip."}],
-  "Bicipiti":     [{n:"Curl a vuoto", target:"12 rip."}, {n:"Rotazioni dei polsi", target:"20 rip."}],
-  "Tricipiti":    [{n:"Push-up lenti sulle ginocchia", target:"8 rip."}, {n:"Rotazioni delle braccia", target:"20 rip."}],
-  "Quadricipiti": [{n:"Squat a corpo libero", target:"12 rip."}, {n:"Affondi leggeri", target:"10 rip. per lato"}],
-  "Femorali":     [{n:"Slanci gamba avanti/indietro", target:"10 rip. per lato"}, {n:"Affondi leggeri", target:"10 rip. per lato"}],
-  "Glutei":       [{n:"Glute bridge", target:"15 rip."}, {n:"Squat a corpo libero", target:"12 rip."}],
-  "Polpacci":     [{n:"Calf raise a corpo libero", target:"15 rip."}, {n:"Camminata sulle punte", target:"30 sec"}],
-  "Core/Addome":  [{n:"Cat-cow", target:"30 sec"}, {n:"Plank leggero", target:"20 sec"}]
+  "Petto":        [{n:"Croci leggere a vuoto", target:"10 rip.", rec:15}, {n:"Rotazioni delle braccia", target:"20 rip.", rec:10}, {n:"Push-up lenti sulle ginocchia", target:"6 rip.", rec:15}],
+  "Schiena":      [{n:"Cat-cow", target:"30 sec", rec:10}, {n:"Face pull leggero (o slancio braccia indietro)", target:"12 rip.", rec:15}, {n:"Superman a corpo libero", target:"10 rip.", rec:15}],
+  "Spalle":       [{n:"Rotazioni delle spalle", target:"30 sec", rec:10}, {n:"Alzate laterali a vuoto", target:"12 rip.", rec:15}, {n:"Circonduzioni con le braccia tese", target:"20 rip.", rec:10}],
+  "Bicipiti":     [{n:"Curl a vuoto", target:"12 rip.", rec:10}, {n:"Rotazioni dei polsi", target:"20 rip.", rec:10}, {n:"Dead hang leggero alla sbarra", target:"15 sec", rec:15}],
+  "Tricipiti":    [{n:"Push-up lenti sulle ginocchia", target:"8 rip.", rec:15}, {n:"Rotazioni delle braccia", target:"20 rip.", rec:10}, {n:"Estensioni a vuoto sopra la testa", target:"12 rip.", rec:15}],
+  "Quadricipiti": [{n:"Squat a corpo libero", target:"12 rip.", rec:15}, {n:"Affondi leggeri", target:"10 rip. per lato", rec:15}, {n:"Slanci gamba avanti", target:"10 rip. per lato", rec:10}],
+  "Femorali":     [{n:"Slanci gamba avanti/indietro", target:"10 rip. per lato", rec:10}, {n:"Affondi leggeri", target:"10 rip. per lato", rec:15}, {n:"Stacco rumeno a corpo libero", target:"10 rip.", rec:15}],
+  "Glutei":       [{n:"Glute bridge", target:"15 rip.", rec:15}, {n:"Squat a corpo libero", target:"12 rip.", rec:15}, {n:"Slanci laterali gamba", target:"10 rip. per lato", rec:10}],
+  "Polpacci":     [{n:"Calf raise a corpo libero", target:"15 rip.", rec:10}, {n:"Camminata sulle punte", target:"30 sec", rec:10}, {n:"Saltelli leggeri sul posto", target:"20 sec", rec:15}],
+  "Core/Addome":  [{n:"Cat-cow", target:"30 sec", rec:10}, {n:"Plank leggero", target:"20 sec", rec:15}, {n:"Bird dog", target:"10 rip. per lato", rec:15}]
 };
-const RISCALDAMENTO_GENERICO = [{n:"Salto della corda", target:"2 min"}, {n:"Camminata veloce", target:"3 min"}];
+const RISCALDAMENTO_GENERICO = [
+  {n:"Salto della corda", target:"2 min", rec:20}, {n:"Camminata veloce", target:"3 min", rec:15},
+  {n:"Mobilità delle spalle", target:"20 rip.", rec:10}, {n:"Squat a corpo libero", target:"12 rip.", rec:15}
+];
 
 function suggerisciRiscaldamento(day){
   const gruppi = [];
   (day && day.exercises || []).forEach(ex=>{
     gruppiDaMuscoli(ex.muscles).forEach(g=>{ if(!gruppi.includes(g)) gruppi.push(g); });
   });
+  const MIN = 4, MAX = 5;
   const scelti = [];
-  gruppi.forEach(g=>{
-    if(scelti.length>=3) return;
-    const opz = RISCALDAMENTO_PER_GRUPPO[g];
-    if(opz && opz[0] && !scelti.some(s=>s.n===opz[0].n)) scelti.push(opz[0]);
+  const provaAggiungi = v => { if(scelti.length<MAX && v && !scelti.some(s=>s.n===v.n)) scelti.push(v); };
+  // primo giro: un movimento a testa per ogni gruppo coinvolto
+  gruppi.forEach(g=> provaAggiungi((RISCALDAMENTO_PER_GRUPPO[g]||[])[0]));
+  // se non bastano per il minimo, un secondo (poi terzo) movimento sugli stessi gruppi
+  [1,2].forEach(indiceVariante=>{
+    if(scelti.length>=MIN) return;
+    gruppi.forEach(g=>{ if(scelti.length<MIN) provaAggiungi((RISCALDAMENTO_PER_GRUPPO[g]||[])[indiceVariante]); });
   });
-  return scelti.length ? scelti : RISCALDAMENTO_GENERICO.slice(0,2);
+  // ultima risorsa: cardio generico, per i giorni senza (o con pochi) gruppi taggati
+  if(scelti.length<MIN) RISCALDAMENTO_GENERICO.forEach(v=> provaAggiungi(v));
+  return scelti.length ? scelti : RISCALDAMENTO_GENERICO.slice(0, MIN);
 }
 
 // Esercizi comuni da palestra -> gruppi muscolari coinvolti (checked automaticamente alla selezione,
