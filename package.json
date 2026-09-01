@@ -10,8 +10,8 @@
     "test": "node --test test/*.test.js"
   },
   "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "author": "Mattia D'Angelo",
+  "license": "UNLICENSED",
   "devDependencies": {
     "jsdom": "^30.0.1"
   }
