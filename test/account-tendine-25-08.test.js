@@ -207,10 +207,12 @@ test('Glossario resta raggiungibile direttamente da Account (non è finito dentr
   window.close();
 });
 
-test('"Messaggi" resta un bottone che apre una schermata a sé (eccezione dichiarata: è una chat vera)', async () => {
+test('"Messaggi" si apre dall\'icona accanto all\'ingranaggio nell\'header di Account (01/09/2026: la vecchia riga a sé è stata tolta)', async () => {
   const { window, document } = await loadApp();
-  const btn = document.getElementById('acctVaiMessaggi');
-  assert.ok(btn);
+  const btn = document.getElementById('acctVaiMessaggiBtn');
+  assert.ok(btn, 'deve esistere il bottone icona Messaggi nell\'header');
   assert.equal(btn.tagName, 'BUTTON');
+  assert.ok(btn.closest('.settings-head-actions'), 'deve stare accanto a #openSettingsBtn');
+  assert.equal(document.getElementById('acctVaiMessaggi'), null, 'la vecchia riga a sé non deve più esistere');
   window.close();
 });

@@ -20,10 +20,14 @@ function nomeDi(riga){ return (riga && (riga.nome_pubblico || riga.nome)) || 'Se
 // mentre stai usando l'app: senza questo, te ne accorgeresti solo chiudendo e riaprendo.
 let _canaleMioProfilo = null;
 // ============================================================
-// MESSAGGI (chat PT ↔ cliente): un messaggio per volta, in tempo reale,
-// legati a un rapporto_id (la stessa tabella usata per scheda/dieta/PT).
+// MESSAGGI: un messaggio per volta, in tempo reale. Un "canale" è o un
+// rapporto_id (chat PT ↔ cliente, come sempre) o un chat_id (chat libere
+// multi-partecipante, nuove — vedi js/account/messaggi.js per come si
+// aprono/creano). Le funzioni qui sotto restano le stesse per entrambi,
+// distinguendo solo su quale colonna filtrare.
 // ============================================================
-let _msgRapportoId = null, _msgAltroId = null, _msgAltroNome = '';
+let _msgRapportoId = null, _msgChatId = null, _msgAltroId = null, _msgAltroNome = '';
+let _msgTipo = 'rapporto'; // 'rapporto' | 'chat'
 let _messaggi = [];
 let _canaleMessaggi = null;
 
@@ -31,26 +35,33 @@ function inizialiDi(nome){
   return (nome||'?').trim().split(/\s+/).slice(0,2).map(p=>p[0]).join('').toUpperCase();
 }
 
-async function apriMessaggi(rapportoId, altroId, altroNome){
+function _colonnaCanaleMsg(){ return _msgTipo === 'chat' ? 'chat_id' : 'rapporto_id'; }
+function _idCanaleMsgAttivo(){ return _msgTipo === 'chat' ? _msgChatId : _msgRapportoId; }
+
+// tipo: 'rapporto' (default, invariato per tutte le chiamate esistenti) o 'chat'.
+async function apriMessaggi(id, altroId, altroNome, tipo){
   if(!sb || !utenteOnline){ toast("Serve la connessione per i messaggi."); return; }
-  _msgRapportoId = rapportoId; _msgAltroId = altroId; _msgAltroNome = altroNome;
+  _msgTipo = tipo === 'chat' ? 'chat' : 'rapporto';
+  _msgRapportoId = _msgTipo === 'rapporto' ? id : null;
+  _msgChatId = _msgTipo === 'chat' ? id : null;
+  _msgAltroId = altroId; _msgAltroNome = altroNome;
   document.getElementById('msgAvatar').textContent = inizialiDi(altroNome);
   document.getElementById('msgNomeAltro').textContent = altroNome;
   document.getElementById('msgCorpo').innerHTML = '<p class="hint" style="text-align:center; margin-top:20px;">Carico i messaggi…</p>';
   document.getElementById('messaggiOverlay').classList.add('show');
   document.getElementById('msgTestoInput').value = '';
   await caricaMessaggi();
-  ascoltaMessaggi(rapportoId);
+  ascoltaMessaggi(id, _msgTipo);
 }
 function chiudiMessaggi(){
   document.getElementById('messaggiOverlay').classList.remove('show');
   if(_canaleMessaggi){ sb.removeChannel(_canaleMessaggi); _canaleMessaggi = null; }
-  _msgRapportoId = null; _msgAltroId = null; _messaggi = [];
+  _msgRapportoId = null; _msgChatId = null; _msgAltroId = null; _messaggi = []; _msgTipo = 'rapporto';
 }
 
 async function caricaMessaggi(){
   const { data, error } = await sb.from('messaggi').select('*')
-    .eq('rapporto_id', _msgRapportoId).order('creato_il', { ascending:true });
+    .eq(_colonnaCanaleMsg(), _idCanaleMsgAttivo()).order('creato_il', { ascending:true });
   if(error){ document.getElementById('msgCorpo').innerHTML = `<p class="hint" style="text-align:center;">Non riesco a caricare i messaggi.</p>`; return; }
   _messaggi = data || [];
   renderMessaggi();
@@ -77,13 +88,14 @@ function renderMessaggi(){
 async function segnaMessaggiLetti(){
   const daSegnare = _messaggi.filter(m=>m.mittente_id !== utenteOnline.id && !m.letto);
   if(daSegnare.length === 0) return;
-  await sb.from('messaggi').update({ letto:true }).eq('rapporto_id', _msgRapportoId).neq('mittente_id', utenteOnline.id);
+  await sb.from('messaggi').update({ letto:true }).eq(_colonnaCanaleMsg(), _idCanaleMsgAttivo()).neq('mittente_id', utenteOnline.id);
 }
 
-function ascoltaMessaggi(rapportoId){
+function ascoltaMessaggi(id, tipo){
+  const colonna = tipo === 'chat' ? 'chat_id' : 'rapporto_id';
   if(_canaleMessaggi) sb.removeChannel(_canaleMessaggi);
-  _canaleMessaggi = sb.channel(`messaggi-${rapportoId}`)
-    .on('postgres_changes', { event:'INSERT', schema:'public', table:'messaggi', filter:`rapporto_id=eq.${rapportoId}` }, payload=>{
+  _canaleMessaggi = sb.channel(`messaggi-${tipo}-${id}`)
+    .on('postgres_changes', { event:'INSERT', schema:'public', table:'messaggi', filter:`${colonna}=eq.${id}` }, payload=>{
       if(_messaggi.some(m=>m.id === payload.new.id)) return;
       _messaggi.push(payload.new);
       renderMessaggi();
@@ -95,11 +107,12 @@ function ascoltaMessaggi(rapportoId){
 async function inviaMessaggioTesto(){
   const input = document.getElementById('msgTestoInput');
   const testo = input.value.trim();
-  if(!testo || !_msgRapportoId) return;
+  const idCanale = _idCanaleMsgAttivo();
+  if(!testo || !idCanale) return;
   input.value = '';
-  const { error } = await sb.from('messaggi').insert({
-    rapporto_id: _msgRapportoId, mittente_id: utenteOnline.id, testo, tipo:'testo'
-  });
+  const riga = { mittente_id: utenteOnline.id, testo, tipo:'testo' };
+  riga[_colonnaCanaleMsg()] = idCanale;
+  const { error } = await sb.from('messaggi').insert(riga);
   if(error){ toast("Messaggio non inviato: riprova."); input.value = testo; }
 }
 // avviso "automatico" nella chat quando scheda/dieta di qualcuno viene aggiornata,
