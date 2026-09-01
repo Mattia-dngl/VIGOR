@@ -1113,6 +1113,7 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
       <div class="timer-elapsed-head">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2" stroke-linecap="round" stroke-linejoin="round"/></svg>
         Cronometro allenamento
+        <span class="atempo-badge" id="atempoBadge" style="display:none;">⏱ a tempo</span>
       </div>
       <div class="timer-elapsed-body">
         <div class="timer-elapsed-ring">
@@ -1126,19 +1127,6 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
           <p class="timer-elapsed-title">Allenamento in corso</p>
           <p class="timer-elapsed-sub">Si ferma da solo quando registri.</p>
         </div>
-      </div>
-      <!-- 01/09/2026: interruttore "allenamento a tempo" — se acceso, segnare
-           una serie come fatta (vedi .set-fatta-btn in ogni riga) fa partire da
-           solo il timer di recupero qui sopra (#timerBar) con i secondi della
-           scheda (ex.recupero), invece di doverlo avviare a mano ogni volta.
-           Si blocca (non editabile) dalla prima serie segnata fatta di questo
-           allenamento: vedi bloccaAllenamentoATempoSeServe() in registra.js. -->
-      <div class="timer-atempo-row" id="timerATempoRow">
-        <div class="timer-atempo-txt">
-          <b>Allenamento a tempo</b>
-          <span id="timerATempoSub">Recupero cronometrato tra le serie</span>
-        </div>
-        <input type="checkbox" id="allenamentoATempoChk" aria-label="Allenamento a tempo">
       </div>
     </div>
 
@@ -1819,6 +1807,31 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
       <button class="btn block" id="creaEsConferma" style="margin-top:16px;">Crea e usa questo esercizio</button>
       <p class="hint" style="margin-top:8px;">Resta anche nei tuoi esercizi personali, lo ritrovi da Impostazioni.</p>
     </div>
+  </div>
+</div>
+
+<!-- 01/09/2026 (richiesta esplicita, ricalca il mockup approvato): popup
+     "Prima di iniziare" — si apre alla scelta di un giorno vero di scheda
+     (non "Saltato" né "Allenamento libero", vedi buildExerciseForm()), chiede
+     una sola volta se attivare il recupero cronometrato tra le serie, poi si
+     blocca per tutta la sessione: vedi confermaAllenamentoATempo() in
+     registra.js. Nessun tasto per chiuderla senza scegliere, di proposito. -->
+<div class="mp-overlay atempo-overlay" id="atempoOverlay">
+  <div class="mp-modal atempo-modal">
+    <h3>Prima di iniziare</h3>
+    <p class="atempo-sub" id="atempoSub"></p>
+    <div class="atempo-row">
+      <div class="atempo-txt">
+        <b>Allenamento a tempo</b>
+        <span>Recupero cronometrato tra le serie</span>
+      </div>
+      <label class="atempo-switch">
+        <input type="checkbox" id="atempoSwitchChk">
+        <span class="atempo-switch-slider"></span>
+      </label>
+    </div>
+    <p class="hint atempo-hint">Una volta iniziato, questa scelta non si può più cambiare per questa sessione.</p>
+    <button type="button" class="btn block" id="atempoIniziaBtn">Inizia allenamento</button>
   </div>
 </div>
 
