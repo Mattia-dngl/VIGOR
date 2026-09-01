@@ -488,6 +488,13 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
         <button type="button" class="acct-gear-btn" id="openSettingsBtn" aria-label="Impostazioni" title="Impostazioni">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg>
         </button>
+        <!-- Icona Messaggi accanto all'ingranaggio (richiesta esplicita,
+             01/09/2026): apre la lista chat in stile WhatsApp
+             (#messaggiHomeOverlay, vedi js/account/messaggi.js). Sostituisce
+             il vecchio bottone a riga #acctVaiMessaggi, tolto. -->
+        <button type="button" class="acct-gear-btn" id="acctVaiMessaggiBtn" aria-label="Messaggi" title="Messaggi">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a8.4 8.4 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.7a8.4 8.4 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.4 8.4 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5Z"/></svg>
+        </button>
       </div>
     </div>
 
@@ -503,6 +510,20 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
       <div class="acct-name" id="acctHeaderName">—</div>
       <div class="acct-email" id="acctHeaderEmail">—</div>
       <div class="acct-badge" id="acctHeaderBadge"></div>
+    </div>
+
+    <!-- Informazioni importanti (redesign 01/09/2026): la card abbonamento
+         è stata spostata qui, subito sotto l'header, perché è l'informazione
+         che più ha bisogno di essere vista subito (prima era sotto il
+         profilo, quindi facile da perdere). Stessi id di sempre
+         (#abbonamentoBadge/#abbonamentoScadenzaMostrata/#abbonamentoHint):
+         renderAbbonamento() in account.js resta invariata nella logica,
+         aggiunge solo una classe di stato alla card per il tono colore. -->
+    <div class="settings-subhead" style="margin-top:18px;">Informazioni importanti</div>
+    <div class="card acct-highlight-card" id="acctAbbonamentoCard" style="margin-top:8px;">
+      <span class="membership-badge" id="abbonamentoBadge" style="display:none;"></span>
+      <div class="dato-riga"><span>Scadenza abbonamento</span><b id="abbonamentoScadenzaMostrata">—</b></div>
+      <p class="hint" id="abbonamentoHint" style="margin-top:6px;"></p>
     </div>
 
     <div class="settings-subhead" style="margin-top:18px;">Il tuo profilo</div>
@@ -539,20 +560,6 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
         <option value="molto_intenso">Molto intenso — esercizio quotidiano + lavoro fisico</option>
       </select>
       <p class="hint" style="margin-top:14px;">Password, privacy e le altre opzioni sono in <b>Impostazioni</b> (icona ⚙ in alto).</p>
-    </div>
-
-    <!-- Segnaposto per una funzione futura (31/08/2026, quarto giro): oggi
-         nessuna palestra è collegata all'app, quindi non c'è ancora nessuna
-         scadenza reale da mostrare — la card lo dice chiaramente invece di
-         restare vuota o nascosta. Il campo profilo (abbonamentoScadenza,
-         vedi dati-default.js/stato.js) esiste già: appena una palestra lo
-         imposterà, questa stessa card mostrerà data e badge di stato senza
-         bisogno di altre modifiche (vedi renderAbbonamento() in account.js). -->
-    <div class="settings-subhead" style="margin-top:18px;">Abbonamento</div>
-    <div class="card" id="acctAbbonamentoCard" style="margin-top:8px;">
-      <span class="membership-badge" id="abbonamentoBadge" style="display:none;"></span>
-      <div class="dato-riga"><span>Scadenza abbonamento</span><b id="abbonamentoScadenzaMostrata">—</b></div>
-      <p class="hint" id="abbonamentoHint" style="margin-top:6px;"></p>
     </div>
 
     <!-- Da qui in giù: solo le funzioni più usate restano a vista sulla
@@ -601,12 +608,6 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
         </div>
       </div>
     </details>
-
-    <button type="button" class="acct-row-link" id="acctVaiMessaggi">
-      <div class="acct-row-icon chat"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a8.4 8.4 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.7a8.4 8.4 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.4 8.4 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5Z"/></svg></div>
-      <div class="acct-row-body"><div class="acct-row-title">Messaggi</div><div class="acct-row-sub">La chat col tuo PT o coi tuoi clienti</div></div>
-      <div class="acct-row-chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg></div>
-    </button>
 
     <button type="button" class="btn ghost block" id="homeEsciBtn" style="margin-top:16px;">Esci dall'app</button>
   </div>
@@ -854,15 +855,46 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
   </div>
 </div>
 
-<div class="mp-overlay" id="sceltaConversazioneOverlay">
-  <div class="mp-modal" style="max-width:420px;">
-    <div class="mp-head">
-      <h3>Con chi vuoi parlare?</h3>
-      <button class="mp-close" id="sceltaConversazioneChiudi" type="button" aria-label="Chiudi">&#10005;</button>
+<!-- Messaggi — schermata elenco, stile WhatsApp (redesign 01/09/2026): al
+     posto del vecchio "Con chi vuoi parlare?" (sceltaConversazioneOverlay,
+     mostrato solo con più di una conversazione), ora è sempre questa la
+     prima cosa che si vede toccando l'icona chat in Account — elenco di
+     tutte le chat (sia quelle col PT/i clienti, legate a un rapporto, sia
+     le nuove chat libere multi-partecipante) con anteprima dell'ultimo
+     messaggio. Vedi js/account/messaggi.js. -->
+<div id="messaggiHomeOverlay">
+  <div class="msg-head">
+    <button type="button" class="msg-back" id="messaggiHomeChiudiBtn" aria-label="Chiudi">←</button>
+    <div class="msg-head-testo"><div class="msg-head-nome">Messaggi</div></div>
+    <button type="button" class="msg-nuova-btn" id="messaggiHomeNuovaBtn" aria-label="Nuova chat" title="Nuova chat">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+    </button>
+  </div>
+  <div class="chat-elenco" id="elencoChatCorpo"></div>
+</div>
+
+<!-- Messaggi — nuova chat: ricerca utenti e selezione partecipanti. In
+     futuro (nota a schermo) l'elenco sarà limitato ai soli utenti della
+     palestra di appartenenza — oggi mostra chiunque abbia un account
+     approvato, non essendoci ancora nessuna palestra collegata. -->
+<div id="nuovaChatOverlay">
+  <div class="msg-head">
+    <button type="button" class="msg-back" id="nuovaChatChiudiBtn" aria-label="Chiudi">←</button>
+    <div class="msg-head-testo">
+      <div class="msg-head-nome">Nuova chat</div>
+      <div class="msg-head-sotto">Scegli i partecipanti</div>
     </div>
-    <div style="padding:14px 16px; overflow-y:auto;">
-      <div id="elencoConversazioni"></div>
-    </div>
+  </div>
+  <div style="padding:10px 16px 4px;">
+    <input type="text" id="nuovaChatCerca" placeholder="Cerca per nome" autocomplete="off">
+  </div>
+  <div class="nuova-chat-nota">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5.5M12 8v.01"/></svg>
+    <p>Presto: l'elenco mostrerà solo i soci e i trainer della tua palestra.</p>
+  </div>
+  <div class="nuova-chat-elenco" id="nuovaChatCorpo"></div>
+  <div class="nuova-chat-footer">
+    <button type="button" class="btn block" id="creaChatBtn" disabled>Crea chat</button>
   </div>
 </div>
 
@@ -1747,6 +1779,7 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
 <script src="js/account/account.js"></script>
 <script src="js/pt/pt-collegamento.js"></script>
 <script src="js/pt/pt-area.js"></script>
+<script src="js/account/messaggi.js"></script>
 <script src="js/onboarding/recupero-codici.js"></script>
 <script src="js/sistema/offline-sistema.js"></script>
 <script src="js/esercizi/esercizi-video.js"></script>

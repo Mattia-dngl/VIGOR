@@ -194,7 +194,7 @@ function apriAccountPanel(){
   // server con cui parlare. "Password e sicurezza" invece vive ora dentro
   // Impostazioni e resta sempre raggiungibile (online o offline mostra
   // internamente il blocco giusto — vedi il 'toggle' di #accPrivacy).
-  document.getElementById('acctVaiMessaggi').style.display = utenteOnline ? 'flex' : 'none';
+  document.getElementById('acctVaiMessaggiBtn').style.display = utenteOnline ? 'flex' : 'none';
 }
 
 // Segnaposto per una funzione futura: oggi nessuna palestra è collegata
@@ -206,11 +206,13 @@ function renderAbbonamento(lp){
   const badge = document.getElementById('abbonamentoBadge');
   const valore = document.getElementById('abbonamentoScadenzaMostrata');
   const hint = document.getElementById('abbonamentoHint');
+  const card = document.getElementById('acctAbbonamentoCard');
   const scadenza = lp && lp.abbonamentoScadenza;
   if(!scadenza){
     badge.style.display = 'none';
     valore.textContent = '—';
     hint.textContent = "Non ancora collegato: appena la tua palestra lo attiva, qui vedrai in automatico quando scade il tuo abbonamento.";
+    card.className = 'card acct-highlight-card';
     return;
   }
   const giorni = giorniDaOggi(scadenza);
@@ -219,12 +221,15 @@ function renderAbbonamento(lp){
   if(giorni !== null && giorni > 0){
     badge.className = 'membership-badge low'; badge.textContent = 'Scaduto';
     hint.textContent = "Il tuo abbonamento è scaduto: parla con la tua palestra per rinnovarlo.";
+    card.className = 'card acct-highlight-card stato-low';
   } else if(giorni !== null && giorni > -7){
     badge.className = 'membership-badge warn'; badge.textContent = 'In scadenza';
     hint.textContent = "Sta per scadere: rinnovalo per continuare ad allenarti senza interruzioni.";
+    card.className = 'card acct-highlight-card stato-warn';
   } else {
     badge.className = 'membership-badge ok'; badge.textContent = 'Attivo';
     hint.textContent = "Il tuo abbonamento è attivo.";
+    card.className = 'card acct-highlight-card stato-ok';
   }
 }
 
@@ -342,45 +347,11 @@ document.getElementById('accGlossario').addEventListener('toggle', function(){
   if(this.open) renderGlossario();
 });
 
-async function apriMessaggiGenerico(){
-  if(!utenteOnline){ toast("Disponibile solo con un account online."); return; }
-  const mie = (_rapporti||[]).filter(r => r.stato === 'attivo');
-  if(mie.length === 0){
-    toast("Nessuna conversazione: serve un Personal Trainer che ti segue, o un cliente che segui.");
-    return;
-  }
-  const altriIds = mie.map(r => r.cliente_id === utenteOnline.id ? r.pt_id : r.cliente_id);
-  const { data, error } = await sb.from('profili').select('id,nome,nome_pubblico,email').in('id', altriIds);
-  if(error){ toast("Non riesco ad aprire i messaggi: " + error.message); return; }
-  const persone = mie.map(r=>{
-    const altroId = r.cliente_id === utenteOnline.id ? r.pt_id : r.cliente_id;
-    return { rapportoId: r.id, altroId, profilo: (data||[]).find(p=>p.id===altroId) };
-  }).filter(x=>x.profilo);
-
-  if(persone.length === 1){
-    const p = persone[0];
-    apriMessaggi(p.rapportoId, p.altroId, nomeDi(p.profilo));
-    return;
-  }
-  const box = document.getElementById('elencoConversazioni');
-  box.innerHTML = persone.map(p=>`
-    <div class="pt-riga">
-      <div class="info"><div class="nome">${nomeDi(p.profilo)}</div><div class="meta">${p.profilo.email||''}</div></div>
-      <div class="azioni"><button class="ok" data-vai="${p.rapportoId}">Apri</button></div>
-    </div>`).join('');
-  box.querySelectorAll('[data-vai]').forEach(b=>b.addEventListener('click', ()=>{
-    const p = persone.find(x=>x.rapportoId === b.dataset.vai);
-    document.getElementById('sceltaConversazioneOverlay').classList.remove('show');
-    apriMessaggi(p.rapportoId, p.altroId, nomeDi(p.profilo));
-  }));
-  document.getElementById('sceltaConversazioneOverlay').classList.add('show');
-}
-document.getElementById('acctVaiMessaggi').addEventListener('click', apriMessaggiGenerico);
-document.getElementById('sceltaConversazioneChiudi').addEventListener('click', ()=>
-  document.getElementById('sceltaConversazioneOverlay').classList.remove('show'));
-document.getElementById('sceltaConversazioneOverlay').addEventListener('click', e=>{
-  if(e.target.id === 'sceltaConversazioneOverlay') e.currentTarget.classList.remove('show');
-});
+// L'elenco chat vero e proprio (sia rapporti PT↔cliente sia chat libere)
+// vive in js/account/messaggi.js (apriMessaggiHome/apriNuovaChat), caricato
+// dopo questo file: il riferimento va quindi risolto al momento del click,
+// non alla registrazione del listener (stesso motivo di ()=>apriImpostazioni(...) sopra).
+document.getElementById('acctVaiMessaggiBtn').addEventListener('click', ()=>apriMessaggiHome());
 
 // ---------- Privacy e Sicurezza (solo account online: password vera + eliminazione account) ----------
 // Ora è una tendina dentro Account: aggiorno l'email mostrata e ripulisco
