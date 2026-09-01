@@ -1230,6 +1230,10 @@
   .autocomplete-item:active{background:var(--surface2);}
   .remove-x, .dropset-remove{background:none; border:none; color:var(--text-faint); font-size:17px; cursor:pointer; padding:0 4px;}
   .day-editor{background:var(--surface); box-shadow:var(--shadow-sm); border:none; border-radius:var(--r-md); padding:14px 15px; margin-bottom:10px;}
+  /* separa "Rimuovi giorno" dai due bottoni di aggiunta esercizio sopra,
+     stesso motivo dei divisori altrove: senza, sembrava un'unica azione
+     con "Scegli dal corpo"/"Aggiungi dall'elenco" (01/09/2026). */
+  .day-editor-danger{margin-top:18px; padding-top:16px; border-top:1px solid var(--border);}
   .day-editor-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;}
   .day-editor-head .letter{width:23px; height:23px; min-width:23px; border-radius:5px; background:var(--accent); color:#fff;
     display:flex; align-items:center; justify-content:center; text-align:center; line-height:1;

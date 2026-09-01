@@ -161,19 +161,26 @@ document.querySelectorAll('.mp-viewtoggle button').forEach(btn=>{
 document.getElementById('freeAddExBtn').addEventListener('click', ()=>{
   openMusclePicker("Aggiungi all'allenamento di oggi", freeAddExercise);
 });
-// Elenco esercizi da aggiungere a mano nell'allenamento libero: stesso elenco
-// dell'editor scheda (personali + di base), ma qui in un pannello con ricerca,
-// invece di una tendina nativa (poco leggibile e difficile da rifinire).
-function apriListaEserciziLibero(){
+// Elenco esercizi da scegliere da un pannello con ricerca, invece di una
+// tendina nativa (poco leggibile e difficile da rifinire). Usato sia
+// dall'allenamento libero ("Aggiungi dall'elenco") sia dall'editor scheda
+// (stesso identico modal, callback diversa a seconda di dove finisce
+// l'esercizio scelto).
+let listaEserciziOnPick = freeAddExercise;
+function apriListaEsercizi(onPick){
+  listaEserciziOnPick = onPick || freeAddExercise;
   document.getElementById('esListaCerca').value = '';
-  renderListaEserciziLibero('');
+  renderListaEsercizi('');
   document.getElementById('esListaOverlay').classList.add('show');
   setTimeout(()=>document.getElementById('esListaCerca').focus(), 150);
+}
+function apriListaEserciziLibero(){
+  apriListaEsercizi(freeAddExercise);
 }
 function chiudiListaEserciziLibero(){
   document.getElementById('esListaOverlay').classList.remove('show');
 }
-function renderListaEserciziLibero(filtro){
+function renderListaEsercizi(filtro){
   const box = document.getElementById('esListaRisultati');
   const lp = activeProfile();
   const q = (filtro||'').trim().toLowerCase();
@@ -207,17 +214,17 @@ function renderListaEserciziLibero(filtro){
       const nome = riga.dataset.nome;
       chiudiListaEserciziLibero();
       const muscoli = getExerciseMuscles(nome);
-      freeAddExercise({ n: nome, g: (muscoli && muscoli[0]) ? muscoli[0] : null });
+      listaEserciziOnPick({ n: nome, g: (muscoli && muscoli[0]) ? muscoli[0] : null });
     });
   });
   box.querySelectorAll('.es-lista-riga[data-crea]').forEach(riga=>{
     riga.addEventListener('click', ()=>{
       chiudiListaEserciziLibero();
-      apriCreaEsercizio('', (ex)=>{ freeAddExercise({ n: ex.n, g: ex.g }); });
+      apriCreaEsercizio('', (ex)=>{ listaEserciziOnPick({ n: ex.n, g: ex.g }); });
     });
   });
 }
-document.getElementById('esListaCerca').addEventListener('input', e=>renderListaEserciziLibero(e.target.value));
+document.getElementById('esListaCerca').addEventListener('input', e=>renderListaEsercizi(e.target.value));
 document.getElementById('esListaClose').addEventListener('click', chiudiListaEserciziLibero);
 document.getElementById('freeAddExManualeBtn2').addEventListener('click', apriListaEserciziLibero);
 // 31/08/2026: il vecchio #freeDelExBtn globale ("Togli esercizio", legato a
