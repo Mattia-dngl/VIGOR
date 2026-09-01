@@ -73,8 +73,8 @@ function renderSchedaView(){
           return `<div class="day-view-ex">
             <div class="day-view-ex-nome"><span class="day-view-ex-num">${ei+1}</span>${ex.name}${etichettaTecnica(ex,d)}</div>
             <div class="day-view-ex-stats">
-              <span>${ex.sets}×${ex.reps}</span>
-              ${ex.recupero ? `<span>⏱ ${ex.recupero}s recupero</span>` : ''}
+              <span>${descriviTargetSerie(ex)}</span>
+              ${ex.recupero && ex.supersetCon==null ? `<span>⏱ ${ex.recupero}s recupero</span>` : ''}
               <a href="${escapeAttr(vi.url)}" data-ex-name="${escapeAttr(ex.name)}" class="video-link">▶ video</a>
             </div>
             ${ex.note ? `<div class="day-view-ex-note exercise-note">📌 ${ex.note}</div>` : ''}

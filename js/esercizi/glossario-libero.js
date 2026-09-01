@@ -47,7 +47,7 @@ function glRenderList(list, titolo){
       <div class="gloss-tags">
         <span class="mp-tag">${ex.g}</span>
         ${ex.slugs.map(s=>`<span class="mp-tag zone">${ZONE_LABEL[s]||s}</span>`).join('')}
-        ${ex.tempo?'<span class="mp-tag time">a tempo</span>':''}
+        ${(ex.tipo && ex.tipo.indexOf('tempo')===0) || ex.tempo?'<span class="mp-tag time">a tempo</span>':''}
         <a class="mp-video" href="${escapeAttr(getExerciseVideoInfo(ex.n).url)}" data-ex-name="${escapeAttr(ex.n)}">▶ Video</a>
         <button type="button" class="mp-video-gestisci" data-gestisci="${escapeAttr(ex.n)}" title="Scegli quale video usare">⋯</button>
       </div>
