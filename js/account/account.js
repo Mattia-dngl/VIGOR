@@ -108,6 +108,7 @@ function apriImpostazioni(provenienza){
   _impostazioniProvenienza = provenienza;
   renderImpostazioniInline();
   renderAmministrazione();
+  aggiornaVisibilitaEliminaAccount();
   const acc = document.getElementById('accImpostazioni');
   if(acc){ acc.open = true; if(acc.scrollIntoView) acc.scrollIntoView({behavior:'smooth', block:'start'}); }
 }
@@ -129,6 +130,7 @@ function chiudiSettingsPanel(){
 }
 document.getElementById('openSettingsBtn').addEventListener('click', ()=>apriImpostazioni('account'));
 document.getElementById('closeSettingsBtn').addEventListener('click', chiudiSettingsPanel);
+document.getElementById('settingsBackBtn').addEventListener('click', chiudiSettingsPanel);
 // Riempie i campi della tendina Impostazioni: usata sia da apriImpostazioni()
 // (ingranaggio ⚙, notifiche) sia dal 'toggle' della tendina stessa quando la
 // si apre toccandola direttamente dentro Account.
@@ -179,6 +181,7 @@ function apriAccountPanel(){
   document.getElementById('setAltezza').value = lp.altezza || '';
   document.getElementById('setLivelloAttivita').value = lp.livelloAttivita || 'moderato';
   renderEtaCalcolata();
+  toggleDatiProfilo(true); // riparte sempre dalla vista compatta, non dal modulo aperto
   renderAbbonamento(lp);
 
   document.getElementById('acctAvatarInitials').textContent = inizialiNome(lp.name);
@@ -195,6 +198,7 @@ function apriAccountPanel(){
   // Impostazioni e resta sempre raggiungibile (online o offline mostra
   // internamente il blocco giusto — vedi il 'toggle' di #accPrivacy).
   document.getElementById('acctVaiMessaggiBtn').style.display = utenteOnline ? 'flex' : 'none';
+  if(typeof aggiornaPuntinoMessaggi === 'function') aggiornaPuntinoMessaggi();
 }
 
 // Segnaposto per una funzione futura: oggi nessuna palestra è collegata
@@ -203,35 +207,39 @@ function apriAccountPanel(){
 // parte (gestione PT/admin, non ancora costruita), la stessa card mostrerà
 // da sola data e badge di stato senza bisogno di altre modifiche qui.
 function renderAbbonamento(lp){
-  const badge = document.getElementById('abbonamentoBadge');
-  const valore = document.getElementById('abbonamentoScadenzaMostrata');
+  const titolo = document.getElementById('abbonamentoTitolo');
   const hint = document.getElementById('abbonamentoHint');
   const card = document.getElementById('acctAbbonamentoCard');
+  const rinnovaBtn = document.getElementById('abbonamentoRinnovaBtn');
   const scadenza = lp && lp.abbonamentoScadenza;
   if(!scadenza){
-    badge.style.display = 'none';
-    valore.textContent = '—';
+    titolo.textContent = 'Abbonamento';
     hint.textContent = "Non ancora collegato: appena la tua palestra lo attiva, qui vedrai in automatico quando scade il tuo abbonamento.";
     card.className = 'card acct-highlight-card';
+    rinnovaBtn.style.display = 'none';
     return;
   }
   const giorni = giorniDaOggi(scadenza);
-  valore.textContent = formatDate(scadenza);
-  badge.style.display = 'inline-block';
+  const data = formatDate(scadenza);
   if(giorni !== null && giorni > 0){
-    badge.className = 'membership-badge low'; badge.textContent = 'Scaduto';
-    hint.textContent = "Il tuo abbonamento è scaduto: parla con la tua palestra per rinnovarlo.";
+    titolo.textContent = 'Abbonamento scaduto';
+    hint.textContent = `Scaduto il ${data}: parla con la tua palestra per rinnovarlo.`;
     card.className = 'card acct-highlight-card stato-low';
+    rinnovaBtn.style.display = 'inline-flex';
   } else if(giorni !== null && giorni > -7){
-    badge.className = 'membership-badge warn'; badge.textContent = 'In scadenza';
-    hint.textContent = "Sta per scadere: rinnovalo per continuare ad allenarti senza interruzioni.";
+    titolo.textContent = 'Abbonamento in scadenza';
+    hint.textContent = `Scade il ${data}: rinnovalo per continuare ad allenarti senza interruzioni.`;
     card.className = 'card acct-highlight-card stato-warn';
+    rinnovaBtn.style.display = 'inline-flex';
   } else {
-    badge.className = 'membership-badge ok'; badge.textContent = 'Attivo';
-    hint.textContent = "Il tuo abbonamento è attivo.";
+    titolo.textContent = 'Abbonamento attivo';
+    hint.textContent = `Valido fino al ${data}.`;
     card.className = 'card acct-highlight-card stato-ok';
+    rinnovaBtn.style.display = 'none';
   }
 }
+document.getElementById('abbonamentoRinnovaBtn').addEventListener('click', ()=>
+  toast("Contatta la tua palestra per rinnovare l'abbonamento."));
 
 // Icona chat riusata al posto dell'emoji 💬 nei bottoni "Messaggi", per restare
 // coerenti con lo stile a icone SVG del resto dell'app.
@@ -293,6 +301,29 @@ document.getElementById('acctAvatarFile').addEventListener('change', function(e)
   };
   reader.readAsDataURL(file);
 });
+// Vista compatta "Sesso/Età/Altezza/Attività" sopra il modulo vero (redesign
+// 01/09/2026): il modulo (#acctDatiForm) e i suoi campi/listener restano
+// esattamente quelli di sempre (js/ui/profile-gate.js) — qui solo si
+// mostra/nasconde e si tiene sincronizzata la vista di sola lettura.
+let _acctDatiInEdit = false;
+function aggiornaVistaDatiProfilo(lp){
+  document.getElementById('vistaSesso').textContent = lp.sesso === 'donna' ? 'Donna' : (lp.sesso === 'uomo' ? 'Uomo' : '—');
+  document.getElementById('vistaEta').textContent = document.getElementById('setEtaCalcolata').textContent || '—';
+  document.getElementById('vistaAltezza').textContent = lp.altezza ? `${lp.altezza} cm` : '—';
+  const opzione = document.getElementById('setLivelloAttivita').selectedOptions[0];
+  document.getElementById('vistaAttivita').textContent = opzione ? opzione.textContent.split(' — ')[0] : '—';
+}
+function toggleDatiProfilo(forzaVista){
+  _acctDatiInEdit = forzaVista === true ? false : !_acctDatiInEdit;
+  document.getElementById('acctDatiForm').style.display = _acctDatiInEdit ? 'block' : 'none';
+  document.getElementById('acctDatiVista').style.display = _acctDatiInEdit ? 'none' : 'block';
+  if(!_acctDatiInEdit){
+    const lp = loggedInProfile();
+    if(lp) aggiornaVistaDatiProfilo(lp);
+  }
+}
+document.getElementById('acctDatiEditBtn').addEventListener('click', ()=>toggleDatiProfilo());
+
 function chiudiAccountPanel(){
   document.getElementById('accountPanel').style.display = 'none';
   document.body.classList.remove('account-aperto');
@@ -359,16 +390,23 @@ document.getElementById('acctVaiMessaggiBtn').addEventListener('click', ()=>apri
 document.getElementById('accPrivacy').addEventListener('toggle', function(){
   if(!this.open) return;
   const online = !!utenteOnline;
-  // Online: password vera gestita da Supabase, si cambia col link via email
-  // (+ elimina account, che richiede un server). Offline: il profilo locale
-  // ha una password propria (accountOldPw/New/New2, ex "Nome e password"),
-  // niente server con cui parlare per eliminare l'account da qui.
+  // Online: password vera gestita da Supabase, si cambia col link via email.
+  // Offline: il profilo locale ha una password propria (accountOldPw/New/New2,
+  // ex "Nome e password"). "Elimina account" (#pwEliminaBlock) vive ora fuori
+  // da questo accordion — vedi aggiornaVisibilitaEliminaAccount() sotto —
+  // ma resta legata alla stessa condizione (richiede un server).
   document.getElementById('pwOnlineBlock').style.display = online ? '' : 'none';
-  document.getElementById('pwEliminaBlock').style.display = online ? '' : 'none';
   document.getElementById('pwOfflineBlock').style.display = online ? 'none' : '';
   document.getElementById('privacyEmailMostrata').textContent = (utenteOnline && utenteOnline.email) || (loggedInProfile()||{}).email || '—';
   document.getElementById('privacyPwEsito').style.display = 'none';
+  aggiornaVisibilitaEliminaAccount();
 });
+// #pwEliminaBlock (card "Elimina il mio account") è ora una card a sé in fondo
+// a Impostazioni, non più nascosta dentro "Password e sicurezza": va quindi
+// aggiornata anche solo aprendo Impostazioni, non solo aprendo quella tendina.
+function aggiornaVisibilitaEliminaAccount(){
+  document.getElementById('pwEliminaBlock').style.display = utenteOnline ? '' : 'none';
+}
 
 document.getElementById('privacyCambiaPwBtn').addEventListener('click', async ()=>{
   const el = document.getElementById('privacyPwEsito');
@@ -528,7 +566,7 @@ async function dopoAccessoOnline(){
     applicaDatiOnline();
     // la card per l'area riservata compare solo a chi è Personal Trainer
     document.getElementById('homePTBtn').style.display = sonoPT() ? 'flex' : 'none';
-    caricaRapporti().then(()=>{ renderMioPT(); aggiornaCampanellaHome(); }).catch(()=>{});
+    caricaRapporti().then(()=>{ renderMioPT(); aggiornaCampanellaHome(); aggiornaPuntinoMessaggi(); }).catch(()=>{});
     ascoltaMioProfilo();
     document.documentElement.classList.remove('avvio');
     nascondiCloudGate();

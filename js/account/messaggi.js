@@ -16,6 +16,7 @@
 // ============================================================
 let _elencoChatCache = [];
 let _nuovaChatUtenti = [];
+let _nuovaChatVisibili = [];
 let _nuovaChatSelezionati = new Set();
 
 function formatOraChat(iso){
@@ -31,6 +32,7 @@ function formatOraChat(iso){
 
 async function apriMessaggiHome(){
   document.getElementById('messaggiHomeOverlay').classList.add('show');
+  document.getElementById('messaggiHomeCerca').value = '';
   const box = document.getElementById('elencoChatCorpo');
   if(!utenteOnline){
     box.innerHTML = '<p class="hint" style="text-align:center; margin-top:20px;">Disponibile solo con un account online.</p>';
@@ -42,6 +44,38 @@ async function apriMessaggiHome(){
 }
 function chiudiMessaggiHome(){
   document.getElementById('messaggiHomeOverlay').classList.remove('show');
+  aggiornaPuntinoMessaggi();
+}
+document.getElementById('messaggiHomeCerca').addEventListener('input', e=>{
+  const q = e.target.value.trim().toLowerCase();
+  const filtrati = q ? _elencoChatCache.filter(c=>c.titolo.toLowerCase().includes(q)) : _elencoChatCache;
+  renderElencoChat(filtrati);
+});
+
+// Puntino non letti sull'icona Messaggi in Account (header): riusa lo stesso
+// elenco "chi mi riguarda" della campanella Home (idRapportiRilevanti, in
+// home.js) + le chat libere di cui faccio parte.
+async function aggiornaPuntinoMessaggi(){
+  const dot = document.getElementById('acctMessaggiPuntino');
+  if(!dot) return;
+  if(!sb || !utenteOnline){ dot.style.display = 'none'; return; }
+  try{
+    let nonLetti = 0;
+    const idRapporti = (typeof idRapportiRilevanti === 'function') ? idRapportiRilevanti() : [];
+    if(idRapporti.length){
+      const { count } = await sb.from('messaggi').select('id', {count:'exact', head:true})
+        .in('rapporto_id', idRapporti).eq('letto', false).neq('mittente_id', utenteOnline.id);
+      nonLetti += count || 0;
+    }
+    const { data: mieChat } = await sb.from('chat_partecipanti').select('chat_id').eq('utente_id', utenteOnline.id);
+    const idChat = [...new Set((mieChat||[]).map(x=>x.chat_id))];
+    if(idChat.length){
+      const { count } = await sb.from('messaggi').select('id', {count:'exact', head:true})
+        .in('chat_id', idChat).eq('letto', false).neq('mittente_id', utenteOnline.id);
+      nonLetti += count || 0;
+    }
+    dot.style.display = nonLetti > 0 ? 'block' : 'none';
+  }catch(e){ console.error(e); }
 }
 
 // Costruisce l'elenco unificato: conversazioni PT↔cliente (rapporti attivi)
@@ -146,6 +180,7 @@ async function apriNuovaChat(){
   document.getElementById('nuovaChatOverlay').classList.add('show');
   document.getElementById('nuovaChatCerca').value = '';
   _nuovaChatSelezionati = new Set();
+  renderNuovaChatChips();
   aggiornaBottoneCreaChat();
   const box = document.getElementById('nuovaChatCorpo');
   box.innerHTML = '<p class="hint" style="text-align:center; margin-top:20px;">Carico gli utenti…</p>';
@@ -159,6 +194,7 @@ function chiudiNuovaChat(){
 }
 
 function renderNuovaChatLista(utenti){
+  _nuovaChatVisibili = utenti;
   const box = document.getElementById('nuovaChatCorpo');
   if(utenti.length === 0){
     box.innerHTML = '<p class="hint" style="text-align:center; margin-top:20px;">Nessun utente trovato.</p>';
@@ -183,6 +219,31 @@ function renderNuovaChatLista(utenti){
       if(_nuovaChatSelezionati.has(id)) _nuovaChatSelezionati.delete(id);
       else _nuovaChatSelezionati.add(id);
       renderNuovaChatLista(utenti);
+      renderNuovaChatChips();
+      aggiornaBottoneCreaChat();
+    });
+  });
+}
+
+// Riga di "chip" con i partecipanti già scelti, sopra l'elenco — toccare la
+// x rimuove la persona dalla selezione senza dover ritrovarla nell'elenco.
+function renderNuovaChatChips(){
+  const wrap = document.getElementById('nuovaChatChips');
+  const ids = Array.from(_nuovaChatSelezionati);
+  if(ids.length === 0){ wrap.style.display = 'none'; wrap.innerHTML = ''; return; }
+  wrap.style.display = 'flex';
+  wrap.innerHTML = ids.map(id=>{
+    const u = _nuovaChatUtenti.find(x=>x.id===id);
+    const nome = u ? (u.nome_pubblico || u.nome || 'Senza nome') : '—';
+    return `<button type="button" class="chip" data-id="${id}">${escapeAttr(nome)}
+      <span class="chip-x"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></span>
+    </button>`;
+  }).join('');
+  wrap.querySelectorAll('[data-id]').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      _nuovaChatSelezionati.delete(el.dataset.id);
+      renderNuovaChatLista(_nuovaChatVisibili);
+      renderNuovaChatChips();
       aggiornaBottoneCreaChat();
     });
   });

@@ -6,6 +6,8 @@ async function renderAmministrazioneOnline(){
   const card = document.getElementById('cardAmministrazione');
   const amministratore = sonoAmministratore();
   if(card) card.style.display = amministratore ? 'block' : 'none';
+  const subhead = document.getElementById('settingsSubheadAmm');
+  if(subhead) subhead.style.display = amministratore ? 'block' : 'none';
   if(!amministratore || !sb) return;
 
   // online l'ingresso è protetto dall'account: la vecchia password d'invito non serve.
@@ -145,6 +147,8 @@ function renderAmministrazione(){
   const amministratore = sonoAmministratore();
 
   card.style.display = amministratore ? 'block' : 'none';
+  const subhead = document.getElementById('settingsSubheadAmm');
+  if(subhead) subhead.style.display = amministratore ? 'block' : 'none';
   if(!amministratore) return;
 
   document.getElementById('statoIngresso').textContent =

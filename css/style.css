@@ -448,12 +448,28 @@
   .membership-badge.warn{background:rgba(177,121,10,0.14); color:var(--warn);}
   .membership-badge.low{background:rgba(221,69,38,0.12); color:var(--accent);}
   /* Card "Informazioni importanti" in Account (redesign 01/09/2026): stesso
-     .card di sempre, con un tono di sfondo che riprende lo stato calcolato
-     da renderAbbonamento() — nessun bordo/accento a sinistra, solo un
-     leggero tint del colore di stato su tutta la card. */
+     .card di sempre, riga icona + testo (niente bordo/accento a sinistra),
+     con un tint di sfondo che riprende lo stato calcolato da
+     renderAbbonamento() — icona e titolo seguono lo stesso colore. */
+  .acct-highlight-card{display:flex; gap:12px; align-items:flex-start;}
+  .acct-highlight-card .alert-icon{width:40px; height:40px; border-radius:13px; background:var(--text-faint);
+    display:flex; align-items:center; justify-content:center; flex:0 0 auto;}
+  .acct-highlight-card .alert-icon svg{width:19px; height:19px;}
+  .acct-highlight-card .alert-title{font-family:var(--font-display); font-weight:700; font-size:14px; color:var(--text);}
+  .acct-highlight-card .alert-sub{font-size:12px; line-height:1.45; color:var(--text-dim); margin:3px 0 0;}
   .acct-highlight-card.stato-low{background:var(--accent-soft); border-color:var(--accent-dim);}
+  .acct-highlight-card.stato-low .alert-icon{background:var(--accent);}
+  .acct-highlight-card.stato-low .alert-title{color:var(--accent-2);}
   .acct-highlight-card.stato-warn{background:#fbf0dd; border-color:rgba(177,121,10,0.25);}
+  .acct-highlight-card.stato-warn .alert-icon{background:var(--warn);}
+  .acct-highlight-card.stato-warn .alert-title{color:var(--warn);}
   .acct-highlight-card.stato-ok{background:#e3f7ea; border-color:rgba(31,157,99,0.25);}
+  .acct-highlight-card.stato-ok .alert-icon{background:var(--ok);}
+  .acct-highlight-card.stato-ok .alert-title{color:var(--ok);}
+  /* Icona Messaggi nell'header di Account: tinta accent per farla notare
+     accanto all'ingranaggio (richiesta esplicita) + puntino non letti
+     (aggiornaPuntinoMessaggi() in js/account/messaggi.js). */
+  .acct-gear-btn.acct-gear-btn-accent{background:var(--accent-soft); border-color:var(--accent-soft); color:var(--accent-2);}
   .admin-gym-row{border-bottom:1px solid var(--border); padding:12px 0;}
   .admin-gym-row:last-child{border-bottom:none;}
   .admin-gym-top{display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;}
@@ -715,6 +731,11 @@
     color:#fff; display:flex; align-items:center; justify-content:center; box-shadow:var(--shadow-accent);
     cursor:pointer; flex:0 0 auto; margin-left:auto;}
   .msg-nuova-btn svg{width:18px; height:18px;}
+  .chat-cerca-wrap{margin:4px 16px 8px; display:flex; align-items:center; gap:8px; background:var(--surface2);
+    border-radius:999px; padding:9px 14px;}
+  .chat-cerca-wrap svg{width:15px; height:15px; color:var(--text-faint); flex:0 0 auto;}
+  .chat-cerca-wrap input{flex:1; border:none; background:none; font-size:13px; color:var(--text); outline:none; padding:0;}
+  .chat-cerca-wrap input::placeholder{color:var(--text-faint);}
 
   .chat-elenco{flex:1; overflow-y:auto; display:flex; flex-direction:column;}
   .chat-riga{display:flex; align-items:center; gap:12px; padding:12px 16px; border-bottom:1px solid var(--border);
@@ -738,6 +759,12 @@
   .nuova-chat-nota{margin:8px 16px 4px; display:flex; gap:9px; background:var(--diet-soft); border-radius:14px; padding:11px 13px;}
   .nuova-chat-nota svg{width:15px; height:15px; color:var(--diet); flex:0 0 auto; margin-top:1px;}
   .nuova-chat-nota p{margin:0; font-size:11px; line-height:1.45; color:#0c5c6e;}
+  .nuova-chat-chips{margin:12px 16px 0; display:flex; gap:8px; flex-wrap:wrap;}
+  .chip{display:flex; align-items:center; gap:6px; background:var(--accent-soft); color:var(--accent-2);
+    border-radius:999px; padding:5px 6px 5px 10px; font-size:11.5px; font-weight:700; border:none; cursor:pointer;}
+  .chip .chip-x{width:16px; height:16px; border-radius:50%; background:rgba(255,48,24,0.18);
+    display:flex; align-items:center; justify-content:center; flex:0 0 auto;}
+  .chip .chip-x svg{width:8px; height:8px;}
   .nuova-chat-elenco{flex:1; overflow-y:auto; padding:6px 8px;}
   .nuova-chat-riga{display:flex; align-items:center; gap:12px; padding:9px 8px; border-radius:16px; width:100%;
     background:none; border:none; text-align:left; cursor:pointer;}
@@ -2018,6 +2045,17 @@
   .acct-badge{display:none; align-items:center; gap:4px; background:var(--accent-soft); color:#c8380f;
     font-family:var(--font-display); font-weight:700; font-size:9.5px; padding:4px 10px; border-radius:var(--r-pill);
     margin-top:8px; letter-spacing:.02em; position:relative;}
+
+  /* Vista compatta dei dati anagrafici in "Il tuo profilo" (redesign
+     01/09/2026): griglia a due colonne in sola lettura, con la matita che
+     apre il modulo vero (#acctDatiForm, campi invariati). */
+  .acct-dati-vista{position:relative;}
+  .grid2{display:grid; grid-template-columns:1fr 1fr; gap:16px 14px;}
+  .field-label{font-size:10px; text-transform:uppercase; letter-spacing:0.05em; color:var(--text-faint); font-weight:700;}
+  .field-val{font-family:var(--font-display); font-weight:700; font-size:14px; color:var(--text); margin-top:4px;}
+  .edit-fab{position:absolute; top:-4px; right:0; width:28px; height:28px; border-radius:50%; background:var(--surface2);
+    border:none; display:flex; align-items:center; justify-content:center; color:var(--text-dim); cursor:pointer;}
+  .edit-fab svg{width:13px; height:13px;}
   .acct-badge.show{display:inline-flex;}
 
   details.acct-row{background:var(--surface); border-radius:var(--r-lg); box-shadow:var(--shadow-sm);

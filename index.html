@@ -492,8 +492,9 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
              01/09/2026): apre la lista chat in stile WhatsApp
              (#messaggiHomeOverlay, vedi js/account/messaggi.js). Sostituisce
              il vecchio bottone a riga #acctVaiMessaggi, tolto. -->
-        <button type="button" class="acct-gear-btn" id="acctVaiMessaggiBtn" aria-label="Messaggi" title="Messaggi">
+        <button type="button" class="acct-gear-btn acct-gear-btn-accent msg-apri-btn" id="acctVaiMessaggiBtn" aria-label="Messaggi" title="Messaggi">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a8.4 8.4 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.7a8.4 8.4 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.4 8.4 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5Z"/></svg>
+          <span class="msg-puntino" id="acctMessaggiPuntino" style="display:none;"></span>
         </button>
       </div>
     </div>
@@ -521,9 +522,14 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
          aggiunge solo una classe di stato alla card per il tono colore. -->
     <div class="settings-subhead" style="margin-top:18px;">Informazioni importanti</div>
     <div class="card acct-highlight-card" id="acctAbbonamentoCard" style="margin-top:8px;">
-      <span class="membership-badge" id="abbonamentoBadge" style="display:none;"></span>
-      <div class="dato-riga"><span>Scadenza abbonamento</span><b id="abbonamentoScadenzaMostrata">—</b></div>
-      <p class="hint" id="abbonamentoHint" style="margin-top:6px;"></p>
+      <div class="alert-icon" id="abbonamentoIconaWrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3v3M17 3v3M4 9h16M5 6h14a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1Z"/></svg>
+      </div>
+      <div style="flex:1; min-width:0;">
+        <div class="alert-title" id="abbonamentoTitolo">Abbonamento</div>
+        <p class="alert-sub" id="abbonamentoHint"></p>
+        <button type="button" class="btn ghost" id="abbonamentoRinnovaBtn" style="display:none;">Rinnova abbonamento</button>
+      </div>
     </div>
 
     <div class="settings-subhead" style="margin-top:18px;">Il tuo profilo</div>
@@ -534,7 +540,25 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
       <input type="text" id="accountNameInput">
       <button class="btn secondary block" id="saveAccountNameBtn" style="margin-top:8px;">Salva nome</button>
 
-      <label style="margin-top:18px;">Sesso</label>
+      <!-- Dati anagrafici: vista compatta a griglia di default (redesign
+           01/09/2026, per coerenza col resto della schermata "informativa"),
+           coi campi veri e propri — invariati, stessi id/listener di sempre
+           in js/ui/profile-gate.js — dietro la matita. Vedi
+           aggiornaVistaDatiProfilo()/toggleDatiProfilo() in account.js. -->
+      <div class="acct-dati-vista" id="acctDatiVista" style="margin-top:20px;">
+        <div class="grid2">
+          <div><div class="field-label">Sesso</div><div class="field-val" id="vistaSesso">—</div></div>
+          <div><div class="field-label">Età</div><div class="field-val" id="vistaEta">—</div></div>
+          <div><div class="field-label">Altezza</div><div class="field-val" id="vistaAltezza">—</div></div>
+          <div><div class="field-label">Attività</div><div class="field-val" id="vistaAttivita">—</div></div>
+        </div>
+        <button type="button" class="edit-fab" id="acctDatiEditBtn" aria-label="Modifica dati" title="Modifica">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+        </button>
+      </div>
+
+      <div id="acctDatiForm" style="display:none; margin-top:16px;">
+      <label>Sesso</label>
       <div class="seg-toggle" id="setSesso">
         <button type="button" class="seg-btn" data-val="uomo">Uomo</button>
         <button type="button" class="seg-btn" data-val="donna">Donna</button>
@@ -559,6 +583,8 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
         <option value="intenso">Intenso — esercizio 6-7 giorni a settimana</option>
         <option value="molto_intenso">Molto intenso — esercizio quotidiano + lavoro fisico</option>
       </select>
+      </div>
+
       <p class="hint" style="margin-top:14px;">Password, privacy e le altre opzioni sono in <b>Impostazioni</b> (icona ⚙ in alto).</p>
     </div>
 
@@ -622,14 +648,23 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
 <div id="settingsPanel" style="display:none;">
   <div class="settings-inner">
     <div class="settings-head">
+      <button type="button" class="acct-gear-btn" id="settingsBackBtn" aria-label="Indietro" title="Indietro">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      </button>
       <h1>Impostazioni</h1>
       <button class="switch-user" id="closeSettingsBtn">✕ Chiudi</button>
     </div>
 
+    <!-- Gerarchia a gruppi con etichetta (redesign 01/09/2026): stesse identiche
+         tendine di sempre (nessun id/comportamento toccato), solo raggruppate
+         sotto un'etichetta .settings-subhead per categoria, e "Elimina account"
+         spostata fuori da "Password e sicurezza" in una card pericolo a sé in
+         fondo (sempre visibile, non più nascosta dentro un accordion). -->
+    <div class="settings-subhead" style="margin-top:14px;">Sicurezza e account</div>
     <details class="card details-card acct-row" id="accPrivacy" style="margin-top:8px;">
       <summary>
         <div class="acct-row-icon privacy"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2 4 5v6c0 5 3.4 8.9 8 11 4.6-2.1 8-6 8-11V5l-8-3Z"/></svg></div>
-        <div class="acct-row-body"><div class="acct-row-title">Password e sicurezza</div><div class="acct-row-sub">Cambia password, elimina account</div></div>
+        <div class="acct-row-body"><div class="acct-row-title">Password e sicurezza</div><div class="acct-row-sub">Cambia password, codice di recupero</div></div>
         <div class="acct-row-chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></div>
       </summary>
       <div class="details-body">
@@ -668,16 +703,11 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
             </div>
           </div>
         </div>
-
-        <div class="card" id="pwEliminaBlock" style="margin-top:12px; border:1px solid var(--accent);">
-          <h3 style="color:var(--accent);">Elimina il mio account</h3>
-          <p class="hint">Cancella per sempre il tuo account, la scheda, la dieta, lo storico allenamenti e le conversazioni. Non si torna indietro.</p>
-          <button class="btn danger block" id="privacyEliminaBtn" style="margin-top:10px;">Elimina il mio account</button>
-        </div>
       </div>
     </details>
 
-    <details class="card details-card acct-row" id="accImpostazioni" style="margin-top:10px;">
+    <div class="settings-subhead" style="margin-top:22px;">Allenamento</div>
+    <details class="card details-card acct-row" id="accImpostazioni" style="margin-top:8px;">
       <summary>
         <div class="acct-row-icon dark"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg></div>
         <div class="acct-row-body"><div class="acct-row-title">Allenamento e dati</div><div class="acct-row-sub">Timer, promemoria, esercizi personali</div></div>
@@ -789,7 +819,8 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
       </div>
     </details>
 
-    <details class="card details-card acct-row" id="accAssistenza" style="margin-top:10px;">
+    <div class="settings-subhead" style="margin-top:22px;">Supporto</div>
+    <details class="card details-card acct-row" id="accAssistenza" style="margin-top:8px;">
       <summary>
         <div class="acct-row-icon help"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.8.4-1 .7-1 1.7"/><path d="M12 17.5h.01"/></svg></div>
         <div class="acct-row-body"><div class="acct-row-title">Assistenza</div><div class="acct-row-sub">Un problema o un suggerimento?</div></div>
@@ -804,7 +835,8 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
       </div>
     </details>
 
-    <details class="card details-card acct-row" id="cardAmministrazione" style="margin-top:10px; display:none;">
+    <div class="settings-subhead" id="settingsSubheadAmm" style="margin-top:22px; display:none;">Amministrazione</div>
+    <details class="card details-card acct-row" id="cardAmministrazione" style="margin-top:8px; display:none;">
       <summary>
         <div class="acct-row-icon admin"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2 4 5v6c0 5 3.4 8.9 8 11 4.6-2.1 8-6 8-11V5l-8-3Z"/></svg></div>
         <div class="acct-row-body"><div class="acct-row-title">Gestione dell'app</div><div class="acct-row-sub">Richieste, PT, profili attivi</div></div>
@@ -852,6 +884,18 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
         </details>
       </div>
     </details>
+
+    <!-- Elimina account: spostata fuori da "Password e sicurezza" (era
+         #pwEliminaBlock dentro #accPrivacy), ora una card pericolo sempre
+         visibile in fondo — stessi identici id/testo/pulsante di sempre,
+         stessa logica online/offline in account.js (aggiornaVisibilitaEliminaAccount). -->
+    <div class="card" id="pwEliminaBlock" style="margin-top:16px; border:1px solid var(--accent);">
+      <h3 style="color:var(--accent);">Elimina il mio account</h3>
+      <p class="hint">Cancella per sempre il tuo account, la scheda, la dieta, lo storico allenamenti e le conversazioni. Non si torna indietro.</p>
+      <button class="btn danger block" id="privacyEliminaBtn" style="margin-top:10px;">Elimina il mio account</button>
+    </div>
+
+    <div class="hint" style="margin-top:18px; text-align:center;">VIGOR — Registro allenamento</div>
   </div>
 </div>
 
@@ -869,6 +913,10 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
     <button type="button" class="msg-nuova-btn" id="messaggiHomeNuovaBtn" aria-label="Nuova chat" title="Nuova chat">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
     </button>
+  </div>
+  <div class="chat-cerca-wrap">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+    <input type="text" id="messaggiHomeCerca" placeholder="Cerca una chat" autocomplete="off">
   </div>
   <div class="chat-elenco" id="elencoChatCorpo"></div>
 </div>
@@ -892,6 +940,7 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5.5M12 8v.01"/></svg>
     <p>Presto: l'elenco mostrerà solo i soci e i trainer della tua palestra.</p>
   </div>
+  <div class="nuova-chat-chips" id="nuovaChatChips" style="display:none;"></div>
   <div class="nuova-chat-elenco" id="nuovaChatCorpo"></div>
   <div class="nuova-chat-footer">
     <button type="button" class="btn block" id="creaChatBtn" disabled>Crea chat</button>
