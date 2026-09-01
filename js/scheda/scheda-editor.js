@@ -228,11 +228,16 @@ function renderDayEditors(){
         <p class="hint" style="margin-top:2px;">Compare come etichetta sulla card del giorno in Storico.</p>
         <label>Esercizi</label>
         <div class="ex-list" data-di="${di}"></div>
-        <div style="display:flex; gap:6px; flex-wrap:wrap; margin-top:6px;">
-          <button class="btn" data-di="${di}" data-action="pick-ex" style="margin-top:0; flex:1 1 190px;">Scegli dal corpo</button>
-          <button class="btn ghost" data-di="${di}" data-action="add-ex" style="margin-top:0; flex:1 1 140px;">+ Riga vuota</button>
+        <button class="btn block" data-di="${di}" data-action="pick-ex" style="margin-top:10px;">Scegli dal corpo</button>
+        <div class="free-actions-row">
+          <button type="button" class="free-chip-btn aggiungi" data-di="${di}" data-action="add-list">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6.5h11M9 12h11M9 17.5h11"/><path d="M4 6.5h.01M4 12h.01M4 17.5h.01"/></svg>
+            Aggiungi dall'elenco
+          </button>
         </div>
-        <button class="btn danger block" data-di="${di}" data-action="remove-day" style="margin-top:14px;">Rimuovi giorno</button>
+        <div class="day-editor-danger">
+          <button class="btn danger block" data-di="${di}" data-action="remove-day">Rimuovi giorno</button>
+        </div>
       </div>
     `;
     wrap.appendChild(box);
@@ -257,11 +262,14 @@ function renderDayEditors(){
       aggiornaRiepilogoGiorno(di);
     });
   }));
-  wrap.querySelectorAll('[data-action="add-ex"]').forEach(btn=>btn.addEventListener('click', e=>{
-    const di = e.target.dataset.di;
-    editingDays[di].exercises.push({name:"", sets:3, reps:"10", muscles:[], recupero: null});
-    renderExerciseEditors(di);
-    aggiornaRiepilogoGiorno(di);
+  wrap.querySelectorAll('[data-action="add-list"]').forEach(btn=>btn.addEventListener('click', ()=>{
+    const di = btn.dataset.di;
+    apriListaEsercizi((ex)=>{
+      const muscoli = getExerciseMuscles(ex.n);
+      editingDays[di].exercises.push({name: ex.n, sets: 3, reps: "10", muscles: muscoli ? [...muscoli] : (ex.g ? [ex.g] : []), recupero: null});
+      renderExerciseEditors(di);
+      aggiornaRiepilogoGiorno(di);
+    });
   }));
 }
 // Tabella "serie principale + tappe" nell'editor scheda:
