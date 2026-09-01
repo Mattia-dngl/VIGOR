@@ -2209,3 +2209,103 @@
   /* Scomposizione nutrienti per alimento (31/08/2026: prima si vedevano solo
      le kcal del subtotale della card, non per singolo alimento). */
   .meal-card-food-nutr{font-size:11px; color:var(--text-faint); margin-top:2px;}
+
+  /* ============================================================
+     REDESIGN "Scheda" — vista, editor (Modifica/Nuova scheda) e Registra
+     (01/09/2026, con la skill ui-ux-pro-max). Blocco aggiunto in fondo al
+     foglio apposta, senza toccare una sola riga di quanto già scritto sopra:
+     diversi test leggono css/style.css e cercano per intero regole precise
+     scritte nei restyling precedenti (es. .day-accordion[open], .day-view-body,
+     body.scheda-editor-aperto/.registra-aperto #navTabsGlobale) — modificarle
+     sul posto le avrebbe rotte. Qui si aggiungono solo dichiarazioni nuove
+     (stesse classi, proprietà in più) o regole con selettori nuovi: feedback
+     di interazione dove mancava, focus da tastiera sempre visibile, aree di
+     tocco minime (WCAG 24px) sui pulsanti-testo troppo sottili, e qualche
+     accento in più per far risaltare la card del programma attivo e il
+     cronometro di un allenamento in corso. Nessun ID/classe è stato tolto o
+     rinominato: solo CSS, il contratto DOM usato da JS e test resta identico. */
+
+  /* ---- feedback di interazione: press/hover coerenti ovunque mancassero ---- */
+  .btn, .seg-btn, .chip, .muscle-chip, .icon-btn-round, .btn-nuova-scheda,
+  .day-select, .free-chip-btn, .ex-remove-btn, .remove-x, .dropset-remove,
+  .tecnica-extra-btn, .video-link, .add-set, .day-accordion > summary,
+  .day-view-accordion > summary, .exercise-edit-block, .dropset-add,
+  .acct-gear-btn, .cal-nav-btn, .storico-menu-btn, .mp-add {
+    transition: transform .12s ease, box-shadow .15s ease, background-color .15s ease, border-color .15s ease, opacity .15s ease;
+  }
+  .btn:active, .seg-btn:active, .chip:active, .muscle-chip:active,
+  .icon-btn-round:active, .btn-nuova-scheda:active, .free-chip-btn:active,
+  .day-view-accordion > summary:active, .day-accordion > summary:active,
+  .ex-remove-btn:active {
+    transform: scale(.97);
+  }
+  .btn:disabled, .btn[disabled]{ opacity:.5; box-shadow:none; cursor:default; transform:none; }
+
+  /* ---- focus da tastiera sempre visibile (mai tolto, solo aggiunto) ---- */
+  .btn:focus-visible, .seg-btn:focus-visible, .chip:focus-visible, .muscle-chip:focus-visible,
+  .icon-btn-round:focus-visible, .btn-nuova-scheda:focus-visible, .day-select:focus-visible,
+  .free-chip-btn:focus-visible, .day-accordion > summary:focus-visible,
+  .day-view-accordion > summary:focus-visible, .ex-remove-btn:focus-visible,
+  .remove-x:focus-visible, .dropset-remove:focus-visible, .video-link:focus-visible,
+  .add-set:focus-visible, .tecnica-extra-btn:focus-visible{
+    outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px;
+  }
+  input:focus-visible, select:focus-visible, textarea:focus-visible{
+    box-shadow: 0 0 0 3px var(--accent-soft);
+  }
+
+  /* ---- aree di tocco minime sui pulsanti-testo (WCAG 24×24 CSS px) ---- */
+  .tecnica-extra-btn{ padding:6px 0; min-height:24px; display:inline-flex; align-items:center; }
+  .add-set{ padding:7px 0; min-height:24px; display:inline-flex; align-items:center; }
+  .remove-x, .dropset-remove{ display:inline-flex; align-items:center; justify-content:center; min-width:24px; min-height:24px; }
+  .set-row input{ padding:9px 10px; font-size:14px; }
+
+  /* ---- Scheda in sola lettura: la card del programma attivo si nota di più ---- */
+  .scheda-info-card{ position:relative; }
+  .scheda-info-card::before{
+    content:""; position:absolute; top:0; left:0; right:0; height:4px; background:var(--grad-accent);
+  }
+  .scheda-badge-attivo{ display:inline-flex; align-items:center; gap:5px; }
+  .scheda-badge-attivo::before{ content:""; width:5px; height:5px; border-radius:50%; background:#1f9d55; }
+  .scheda-progress-fill{ transition: width .4s ease; }
+  .day-view-accordion, .day-accordion{ transition: box-shadow .15s ease; }
+  .day-view-accordion[open], .day-accordion[open]{ box-shadow: var(--shadow-md); }
+  @media(hover:hover){
+    .day-view-accordion > summary:hover, .day-accordion > summary:hover{ background: var(--surface2); }
+  }
+  .day-view-body .btn.block{ box-shadow: var(--shadow-accent); }
+
+  /* ---- Editor (Nuova/Modifica scheda): il blocco esercizio in modifica risalta ---- */
+  .exercise-edit-block:focus-within{
+    background: var(--surface); border-color: var(--accent-dim);
+    box-shadow: 0 0 0 1px var(--accent-dim) inset;
+  }
+  .exercise-edit-block:focus-within .exercise-edit-num{
+    background: var(--accent); border-color: var(--accent); color: #fff;
+  }
+  .dropset-box{ transition: background-color .15s ease; }
+
+  /* ---- Registra: cronometro allenamento con un accenno di "diretta" ---- */
+  .timer-elapsed-ring{ position:relative; }
+  .timer-elapsed-ring::after{
+    content:""; position:absolute; inset:-4px; border-radius:50%;
+    border:1px solid var(--accent); opacity:0; pointer-events:none;
+    animation: vigor-live-ring 2.6s ease-out infinite;
+  }
+  @keyframes vigor-live-ring{
+    0%{ opacity:.45; transform:scale(.92); }
+    75%,100%{ opacity:0; transform:scale(1.18); }
+  }
+  .exercise-block{ transition: background-color .15s ease; }
+  .exercise-block:focus-within{ background: rgba(255,75,43,0.03); }
+
+  /* ---- rispetto di chi preferisce meno movimento ---- */
+  @media (prefers-reduced-motion: reduce){
+    .btn, .seg-btn, .chip, .muscle-chip, .icon-btn-round, .btn-nuova-scheda,
+    .day-select, .free-chip-btn, .ex-remove-btn, .remove-x, .dropset-remove,
+    .day-accordion > summary, .day-view-accordion > summary, .exercise-edit-block,
+    .scheda-progress-fill, .day-view-accordion, .day-accordion, .exercise-block{
+      transition: none !important;
+    }
+    .timer-elapsed-ring::after{ animation: none !important; display: none; }
+  }
