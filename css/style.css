@@ -877,28 +877,42 @@
   details.details-card[open] > summary{border-bottom:1px solid var(--border);}
   details.details-card .details-body{padding:12px 13px 13px;}
 
-  /* Tendina "Piano alimentare assegnato dal PT" (31/08/2026, Fase 3): a
-     differenza di .details-card, questa non vive già dentro un'altra
-     card — è la card stessa, di modo che il contenuto (le card esistenti
-     di vedi/modifica piano, invariate) non finisca annidato dentro un'altra
-     card doppia. Richiusa di default: prima occupava sempre spazio in
-     fondo a Dieta anche per chi non ha (o non guarda spesso) un piano PT. */
-  .diet-plan-toggle{margin:4px 0 18px;}
-  .diet-plan-toggle > summary{
-    list-style:none; cursor:pointer; user-select:none; position:relative;
-    display:flex; flex-direction:column; gap:2px;
-    padding:14px 34px 14px 16px; background:var(--surface); border:1px solid var(--border);
-    border-radius:var(--r-md); box-shadow:var(--shadow-sm);
-    font-family:var(--font-display); font-weight:700; font-size:13px; color:var(--diet);
-  }
+  /* "Piano alimentare assegnato dal PT" (01/09/2026, redesign "Evoluzione"
+     approvato dall'utente): non è più un accordion che si apre in pagina —
+     chiusa è una card sempre a vista con due pulsanti diretti ("Vedi
+     settimana" / "Modifica"), aperta diventa una finestra a schermo intero,
+     stessa tecnica già in uso per un giorno aperto della scheda (vedi
+     .day-accordion[open] più sotto). Dentro non cambia nulla: stesso motore
+     nascosto .seg-btn[data-segd], stessi dietPlanViewBlock/dietPlanEditBlock,
+     stesso dietPlanEditBlockAnchor per l'editor inline del PT — qui si
+     ridisegna solo il contenitore, mai la logica. */
+  .diet-plan-toggle{margin:4px 0 18px; background:var(--surface); border-radius:var(--r-lg);
+    box-shadow:var(--shadow-md); padding:20px 20px 18px;}
+  .diet-plan-toggle > summary{list-style:none; user-select:none;}
   .diet-plan-toggle > summary::-webkit-details-marker{display:none;}
-  .diet-plan-toggle > summary::before{
-    content:"›"; position:absolute; right:15px; top:50%; transform:translateY(-50%) rotate(0deg);
-    color:var(--text-faint); font-size:18px; transition:transform .15s;
-  }
-  .diet-plan-toggle[open] > summary::before{transform:translateY(-50%) rotate(90deg);}
-  .diet-plan-toggle > summary .hint{color:var(--text-dim); font-weight:400; margin-top:2px;}
+  .dpt-closed-row{display:flex; flex-direction:column; gap:14px;}
+  .dpt-closed-text{display:flex; flex-direction:column; gap:3px;}
+  .dpt-closed-text .hint{margin:0;}
+  .dpt-closed-actions{display:flex; gap:10px;}
+  .dpt-closed-actions .btn{margin-top:0; flex:1; padding:11px 14px; font-size:12.5px; cursor:pointer;}
+  .dpt-closed-actions .btn.secondary{border-color:var(--diet); color:var(--diet);}
+  .dpt-open-row{display:none; align-items:center; justify-content:space-between;}
+  .dpt-open-title{font-family:var(--font-display); font-weight:800; font-size:16px; color:var(--diet);}
+  .dpt-close-x{width:34px; height:34px; border-radius:12px; border:1px solid var(--border);
+    display:flex; align-items:center; justify-content:center; font-size:19px; line-height:1;
+    color:var(--text-dim); cursor:pointer; flex:0 0 auto;}
   .diet-plan-toggle .details-body{padding-top:14px;}
+
+  .diet-plan-toggle[open]{position:fixed; inset:0; z-index:200; margin:0; border-radius:0;
+    background:var(--bg); box-shadow:none; padding:0; overflow-y:auto; -webkit-overflow-scrolling:touch;}
+  .diet-plan-toggle[open] > summary{
+    position:fixed; top:0; left:0; right:0; z-index:1; background:var(--bg);
+    padding:16px 20px; border-bottom:1px solid var(--border); cursor:pointer;
+  }
+  .diet-plan-toggle[open] .dpt-closed-row{display:none;}
+  .diet-plan-toggle[open] .dpt-open-row{display:flex;}
+  .diet-plan-toggle[open] .details-body{padding:80px 16px 40px;}
+  body.dieta-window-aperta{overflow:hidden;}
 
   /* ---------- RESPONSIVE: TABLET ---------- */
   @media (min-width:680px){
@@ -2137,6 +2151,16 @@
   .macro-dot{width:9px; height:9px; border-radius:50%; flex:0 0 auto;}
   .macro-row-label{font-size:11.5px; color:var(--text-dim); flex:1;}
   .macro-row-val{font-family:var(--font-display); font-weight:800; font-size:12px; color:var(--text);}
+
+  /* 01/09/2026 (redesign "Evoluzione", bozza approvata): stesso dato di
+     .macro-row, ma qui in Dieta lo mostro come pillole in riga sotto
+     l'anello invece che righe impilate — più compatto, tutto il blocco
+     kcal+macro si legge in un colpo d'occhio. .macro-row resta invariata,
+     la riusa anche Home (#homeDietaOggiBody) così com'è. */
+  .macro-pill-row{display:flex; flex-wrap:wrap; gap:6px;}
+  .macro-pill{display:flex; align-items:center; gap:5px; background:var(--surface2); border-radius:var(--r-pill); padding:5px 10px;}
+  .macro-pill-dot{width:7px; height:7px; border-radius:50%; flex:0 0 auto;}
+  .macro-pill-val{font-family:var(--font-display); font-weight:700; font-size:10.5px; color:var(--text);}
 
   /* Acqua (31/08/2026, Fase 3): funzionalità nuova, nessun dato preesistente da riusare. */
   .water-row{display:flex; align-items:center; justify-content:space-between; gap:10px;

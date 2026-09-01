@@ -6,6 +6,17 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
     btn.classList.add('active');
     document.getElementById('view-'+btn.dataset.tab).classList.add('active');
+    // 01/09/2026: "Piano alimentare assegnato dal PT" ora è una finestra a
+    // schermo intero (vedi .diet-plan-toggle[open]) — lasciarla aperta
+    // mentre si cambia tab la nasconderebbe (la sezione Dieta passa a
+    // display:none) senza però sbloccare lo scroll della pagina sotto,
+    // stesso problema già risolto per i giorni della scheda con
+    // giorno-fullscreen-aperto. La richiudo appena si esce da Dieta.
+    if(btn.dataset.tab!=='diet'){
+      const pianoPT = document.getElementById('pianoPTDetails');
+      if(pianoPT && pianoPT.open) pianoPT.open = false;
+      document.body.classList.remove('dieta-window-aperta');
+    }
     if(btn.dataset.tab==='log' && !_bozzaPronta) ripristinaBozza();
     aggiornaVisibilitaTimer();
     if(btn.dataset.tab==='diet'){ renderMealDiary(); renderDietPlanView(); renderDietEditForm(); segnaVistaCliente('dieta'); }
@@ -192,12 +203,15 @@ document.querySelectorAll('.seg-btn[data-segd]').forEach(btn=>{
     document.getElementById('dietPlanViewBlock').style.display = isView ? 'block':'none';
     document.getElementById('dietPlanEditBlock').style.display = isView ? 'none':'block';
     if(!isView) applyDietEditFormVisibility();
-    // 31/08/2026: questi tasti ora vivono dentro la tendina richiusa
-    // "Piano alimentare assegnato dal PT" — toccarli (o farli toccare da
-    // codice, es. iniziaModificaPT) deve aprirla, altrimenti il contenuto
-    // cambierebbe fuori dalla vista.
+    // 31/08/2026: questi tasti vivono dentro "Piano alimentare assegnato dal
+    // PT" — toccarli (o farli toccare da codice, es. modificaComePT) deve
+    // aprirla, altrimenti il contenuto cambierebbe fuori dalla vista. Dal
+    // 01/09/2026 quella finestra è a schermo intero (non più un accordion in
+    // pagina): aggiorno anche il titolo mostrato nella barra in alto.
     const det = btn.closest('details');
     if(det) det.open = true;
+    const dptTitle = document.getElementById('dptOpenTitle');
+    if(dptTitle) dptTitle.textContent = isView ? 'Piano della settimana' : 'Modifica dieta';
   });
 });
 
