@@ -1529,6 +1529,23 @@
     font-size:16px; font-weight:600; letter-spacing:.03em; color:var(--text-dim); margin-bottom:18px;}
   .lock-dot{width:10px; height:10px; border-radius:3px; background:var(--accent);}
 
+  /* Accesso con Google (cloudGate) — bottone bianco "outline" secondo le linee
+     guida di branding Google (mai colorato come i nostri CTA arancioni: deve
+     restare riconoscibile e neutro), logo multicolore ufficiale a 4 colori. */
+  .btn-google{
+    width:100%; display:flex; align-items:center; justify-content:center; gap:10px;
+    background:var(--surface); color:var(--text); border:1.5px solid var(--border);
+    border-radius:var(--r-md); padding:12px 16px; font-family:var(--font-display);
+    font-weight:700; font-size:13.5px; letter-spacing:0.005em; cursor:pointer;
+    box-shadow:var(--shadow-sm); transition:box-shadow .15s, border-color .15s, transform .05s;
+  }
+  .btn-google svg{width:19px; height:19px; flex:0 0 auto;}
+  .btn-google:hover{border-color:var(--text-faint); box-shadow:var(--shadow-md);}
+  .btn-google:active{transform:scale(.98);}
+  .auth-divider{display:flex; align-items:center; gap:10px; margin:18px 0; color:var(--text-faint);
+    font-size:11px; letter-spacing:0.04em; text-transform:uppercase; font-family:var(--font-display);}
+  .auth-divider::before, .auth-divider::after{content:""; flex:1; height:1px; background:var(--border);}
+
   /* Schermata "account bloccato" — copre tutto, sempre sopra ogni altra
      cosa (avvio, gate, o app già aperta): vedi mostraAccountBloccatoOverlay. */
   #accountBloccatoOverlay{position:fixed; inset:0; z-index:700; background:rgba(23,21,15,.55);
