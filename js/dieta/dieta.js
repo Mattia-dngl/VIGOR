@@ -501,9 +501,11 @@ function renderKcalRing(prof, date){
   }
 
   if(totalsEl) totalsEl.innerHTML = `
-    <div class="macro-row"><span class="macro-dot" style="background:var(--diet);"></span><span class="macro-row-label">Proteine</span><span class="macro-row-val">${Math.round(totals.p)} g</span></div>
-    <div class="macro-row"><span class="macro-dot" style="background:var(--accent);"></span><span class="macro-row-label">Carboidrati</span><span class="macro-row-val">${Math.round(totals.c)} g</span></div>
-    <div class="macro-row"><span class="macro-dot" style="background:#f0b429;"></span><span class="macro-row-label">Grassi</span><span class="macro-row-val">${Math.round(totals.f)} g</span></div>
+    <div class="macro-pill-row">
+      <div class="macro-pill"><span class="macro-pill-dot" style="background:var(--diet);"></span><span class="macro-pill-val">P ${Math.round(totals.p)} g</span></div>
+      <div class="macro-pill"><span class="macro-pill-dot" style="background:var(--accent);"></span><span class="macro-pill-val">C ${Math.round(totals.c)} g</span></div>
+      <div class="macro-pill"><span class="macro-pill-dot" style="background:#f0b429;"></span><span class="macro-pill-val">G ${Math.round(totals.f)} g</span></div>
+    </div>
     ${hasUnknown ? '<div class="hint" style="margin-top:8px;">Alcuni alimenti scritti liberamente non hanno dati nutrizionali: i totali potrebbero essere incompleti.</div>' : ''}
   `;
 }
@@ -606,6 +608,31 @@ function renderHistory(){
     });
   }
   renderProgressSelect();
+}
+
+// ============================================================
+// PIANO ALIMENTARE DEL PT — apertura come finestra (01/09/2026, redesign
+// "Evoluzione" approvato dall'utente): non più un accordion in pagina, i
+// due pulsanti qui sotto aprono #pianoPTDetails a schermo intero (vedi CSS
+// .diet-plan-toggle[open], stessa tecnica di .day-accordion[open] già
+// usata in Scheda) scegliendo vedi/modifica con lo stesso motore nascosto
+// di sempre (.seg-btn[data-segd] — invariato, ci clicca sopra anche
+// modificaComePT() per il PT). Il tasto × dentro la finestra chiude tramite
+// il normale toggle nativo di <summary> (nessun listener necessario).
+// ============================================================
+document.getElementById('dietVediSettimanaBtn')?.addEventListener('click', (e)=>{
+  e.preventDefault();
+  document.querySelector('.seg-btn[data-segd="view"]').click();
+});
+document.getElementById('dietModificaSettimanaBtn')?.addEventListener('click', (e)=>{
+  e.preventDefault();
+  document.querySelector('.seg-btn[data-segd="edit"]').click();
+});
+const pianoPTDetailsEl = document.getElementById('pianoPTDetails');
+if(pianoPTDetailsEl){
+  pianoPTDetailsEl.addEventListener('toggle', ()=>{
+    document.body.classList.toggle('dieta-window-aperta', pianoPTDetailsEl.open);
+  });
 }
 
 // ============================================================

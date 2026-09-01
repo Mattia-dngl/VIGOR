@@ -1292,7 +1292,22 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
          vedi/modifica) invariato: stessi id, stessa logica, stesso
          meccanismo di spostamento DOM per il PT (mostraEditorDietaInlinePT). -->
     <details class="diet-plan-toggle" id="pianoPTDetails">
-      <summary>Piano alimentare assegnato dal PT<span class="hint">Vedi la settimana completa o aggiorna il piano</span></summary>
+      <summary>
+        <div class="dpt-closed-row">
+          <div class="dpt-closed-text">
+            <h2 class="scheda-titolo diet" style="font-size:15px;">Piano alimentare assegnato dal PT</h2>
+            <span class="hint">Vedi la settimana completa o aggiorna il piano</span>
+          </div>
+          <div class="dpt-closed-actions">
+            <button type="button" class="btn secondary" id="dietVediSettimanaBtn">Vedi settimana</button>
+            <button type="button" class="btn diet-btn" id="dietModificaSettimanaBtn">Modifica</button>
+          </div>
+        </div>
+        <div class="dpt-open-row">
+          <span class="dpt-open-title" id="dptOpenTitle">Piano della settimana</span>
+          <span class="dpt-close-x" aria-label="Chiudi">×</span>
+        </div>
+      </summary>
       <div class="details-body">
         <!-- Vedi/Modifica ora pilotati dalla stessa coppia matita/freccia di
              Scheda (31/08/2026, richiesta esplicita: rendere questo blocco
