@@ -81,8 +81,10 @@ test('Impostazioni/Privacy/Assistenza sono <details> dentro #settingsPanel, chiu
     assert.equal(el.open, false, `#${id} deve essere chiusa di default`);
     assert.ok(el.closest('#settingsPanel'), `#${id} deve stare dentro #settingsPanel`);
   });
-  // accImpostazioni viene aperta automaticamente da apriImpostazioni().
+  // 01/09/2026: accImpostazioni non si apre più da sola (richiesta esplicita:
+  // tutto chiuso a tendina arrivando in Impostazioni, si apre solo quello che tocchi).
   const acc = document.getElementById('accImpostazioni');
+  assert.equal(acc.open, false, 'anche "Allenamento e dati" deve restare chiusa di default');
   assert.ok(acc.closest('#settingsPanel'));
   // Le vecchie schermate a sé indipendenti non esistono.
   ['privacySicurezzaPanel','assistenzaPanel'].forEach(id=>{
@@ -105,7 +107,7 @@ test('l\'icona ⚙ apre Impostazioni come schermata a sé (non più dentro Accou
   assert.equal(document.getElementById('accountPanel').style.display, 'none', 'Account deve nascondersi dietro Impostazioni');
   assert.ok(document.getElementById('timerDurataInput'), 'il contenuto di Impostazioni è presente');
   assert.ok(document.getElementById('promemoriaCard'));
-  await run(window, `document.getElementById('closeSettingsBtn').click();`);
+  await run(window, `document.getElementById('settingsBackBtn').click();`);
   assert.equal(document.getElementById('settingsPanel').style.display, 'none', 'chiudendo, Impostazioni si richiude');
   assert.equal(document.getElementById('accountPanel').style.display, 'block', 'e si torna ad Account (da cui si era aperta con l\'ingranaggio)');
   await new Promise(r => setTimeout(r, 30));
@@ -122,8 +124,8 @@ test('apriImpostazioni("app") (ingranaggio ⚙ dentro Scheda/Registra/Dieta) apr
     apriImpostazioni('app');
   `);
   assert.equal(document.getElementById('settingsPanel').style.display, 'block', 'apre Impostazioni');
-  assert.equal(document.getElementById('accImpostazioni').open, true, 'la tendina Allenamento e dati si apre da sola');
-  await run(window, `document.getElementById('closeSettingsBtn').click();`);
+  assert.equal(document.getElementById('accImpostazioni').open, false, 'nessuna tendina si apre da sola, nemmeno arrivando dall\'ingranaggio dentro Scheda/Registra/Dieta');
+  await run(window, `document.getElementById('settingsBackBtn').click();`);
   assert.equal(document.getElementById('appRoot').style.display, 'block', 'chiudendo torna alla schermata di prima (Scheda), non a Home o Account');
   assert.equal(document.getElementById('settingsPanel').style.display, 'none');
   await new Promise(r => setTimeout(r, 30));
@@ -139,7 +141,7 @@ test('apriImpostazioni("home") (es. da una notifica) apre Impostazioni, e chiude
     apriImpostazioni('home');
   `);
   assert.equal(document.getElementById('settingsPanel').style.display, 'block');
-  await run(window, `document.getElementById('closeSettingsBtn').click();`);
+  await run(window, `document.getElementById('settingsBackBtn').click();`);
   assert.equal(document.getElementById('homeScreen').style.display, 'block', 'chiudendo torna in Home');
   await new Promise(r => setTimeout(r, 30));
   window.close();
