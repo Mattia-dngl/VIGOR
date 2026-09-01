@@ -1709,12 +1709,22 @@
   #accountBloccatoOverlay{position:fixed; inset:0; z-index:700; background:rgba(23,21,15,.55);
     backdrop-filter:blur(2px); display:none; align-items:center; justify-content:center; padding:24px;}
   #accountBloccatoOverlay.show{display:flex;}
-  .blocco-account-cerchio{width:min(320px, 84vw); aspect-ratio:1; border-radius:50%;
-    background:var(--surface); box-shadow:var(--shadow-lg); display:flex; flex-direction:column;
-    align-items:center; justify-content:center; text-align:center; padding:34px; gap:9px;}
-  .blocco-account-icona{font-size:38px; line-height:1;}
-  .blocco-account-cerchio h2{font-size:15.5px; margin:2px 0 0; line-height:1.35;}
-  .blocco-account-cerchio p{font-size:12.5px; color:var(--text-dim); margin:0; line-height:1.4;}
+  .blocco-account-card{width:min(340px, 90vw); border-radius:var(--r-lg); background:var(--surface);
+    box-shadow:var(--shadow-lg); display:flex; flex-direction:column; align-items:center;
+    text-align:center; padding:30px 26px; gap:4px;}
+  .blocco-account-icona{width:60px; height:60px; border-radius:50%; background:var(--accent-soft);
+    color:var(--accent); display:flex; align-items:center; justify-content:center; margin-bottom:10px;}
+  .blocco-account-card h2{font-size:19px; margin:0 0 8px;}
+  .blocco-account-desc{font-size:13px; color:var(--text-dim); margin:0; line-height:1.5;}
+  .blocco-account-divider{width:100%; height:1px; background:var(--border); margin:18px 0;}
+  .blocco-account-info{display:flex; align-items:flex-start; gap:9px; text-align:left; font-size:12px;
+    color:var(--text-dim); line-height:1.5; margin-bottom:20px;}
+  .blocco-account-info-icona{flex:0 0 auto; width:16px; height:16px; border-radius:50%;
+    border:1.4px solid var(--text-faint); color:var(--text-faint); font-size:10.5px; font-style:italic;
+    font-family:Georgia,serif; display:flex; align-items:center; justify-content:center; margin-top:1px;}
+  .blocco-account-cta{border-radius:var(--r-pill); display:flex; align-items:center; justify-content:center;
+    gap:9px; text-decoration:none;}
+  .blocco-account-secondario{margin-top:12px; color:var(--accent); font-weight:600; text-decoration:none;}
 
   .pmail{display:block; font-family:'Inter',sans-serif; font-size:11px; color:var(--text-faint);
     font-weight:400; text-transform:none; letter-spacing:0; margin-top:2px;}
