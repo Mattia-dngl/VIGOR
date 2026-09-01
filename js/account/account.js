@@ -513,13 +513,20 @@ async function dopoAccessoOnline(){
     if(error) throw error;
 
     if(!data){
-      // prima volta su questo account: creo la riga (parte non approvata)
+      // prima volta su questo account: creo la riga (parte non approvata).
+      // Con l'accesso Google user_metadata non ha "nome" (il campo che
+      // usiamo per la registrazione via email) ma "full_name"/"name" e una
+      // foto in "avatar_url"/"picture": li uso se ci sono, invece di lasciare
+      // sempre il prefisso dell'email come nome.
+      const meta = utenteOnline.user_metadata || {};
+      const datiIniziali = profiloVuotoPerCloud();
+      datiIniziali.avatarUrl = meta.avatar_url || meta.picture || null;
       const nuova = {
         id: utenteOnline.id,
         email: utenteOnline.email,
-        nome: (utenteOnline.user_metadata && utenteOnline.user_metadata.nome) || utenteOnline.email.split('@')[0],
+        nome: meta.nome || meta.full_name || meta.name || utenteOnline.email.split('@')[0],
         approvato: (utenteOnline.email || '').toLowerCase() === EMAIL_AMMINISTRATORE,
-        dati: profiloVuotoPerCloud()
+        dati: datiIniziali
       };
       const res = await sb.from('profili').insert(nuova).select().maybeSingle();
       if(res.error) throw res.error;
@@ -652,6 +659,27 @@ function traduciErrore(m){
 
 document.getElementById('cloudVaiRegistra').addEventListener('click', ()=>mostraCloudGate('registra'));
 document.getElementById('cloudVaiAccedi').addEventListener('click', ()=>mostraCloudGate('accedi'));
+
+// ---------- accesso con Google ----------
+// signInWithOAuth manda il browser sulla pagina di consenso Google e poi
+// torna qui: il resto (lettura della sessione, creazione del profilo la
+// prima volta) lo gestisce già avvioOnline()/dopoAccessoOnline() come per
+// l'email — a quella logica non serve sapere con quale metodo si è entrati.
+async function iniziaAccessoGoogle(){
+  document.getElementById('cloudErr').style.display = 'none';
+  try{
+    const { error } = await sb.auth.signInWithOAuth({
+      provider: 'google',
+      options:{ redirectTo: location.origin + location.pathname }
+    });
+    if(error) mostraErroreAccesso(error.message);
+  }catch(e){
+    console.error(e);
+    mostraErroreAccesso(e && e.message);
+  }
+}
+document.getElementById('googleAccediBtn').addEventListener('click', iniziaAccessoGoogle);
+document.getElementById('googleRegBtn').addEventListener('click', iniziaAccessoGoogle);
 
 document.getElementById('cloudEntraBtn').addEventListener('click', async ()=>{
   const email = document.getElementById('cloudEmail').value.trim().toLowerCase();
