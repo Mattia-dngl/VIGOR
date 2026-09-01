@@ -474,7 +474,18 @@ async function avvioOnline(){
     return true;
   }
   try{
-    const { data } = await sb.auth.getSession();
+    // Timeout di sicurezza come in dopoAccessoOnline(): getSession() non ha mai
+    // un limite proprio, e tornando da un accesso con Google può restare
+    // appesa (es. lucchetto tra schede rimasto bloccato) lasciando la persona
+    // a fissare "Connessione…" per sempre, senza errore né tasto per uscirne —
+    // lo stesso identico problema già risolto per la lettura del profilo, ma
+    // qui a monte, prima ancora di sapere chi è l'utente.
+    let _timeoutId;
+    const { data } = await Promise.race([
+      sb.auth.getSession(),
+      new Promise((_, rifiuta) => { _timeoutId = setTimeout(()=>rifiuta(new Error('Tempo scaduto: il server non risponde. Controlla la connessione e riprova.')), 15000); })
+    ]);
+    clearTimeout(_timeoutId);
     if(data && data.session){
       utenteOnline = data.session.user;
       await dopoAccessoOnline();
@@ -485,6 +496,7 @@ async function avvioOnline(){
     console.error(e);
     mostraStatoSync('offline', 'senza rete');
     mostraCloudGate('accedi');
+    mostraErroreAccesso((e && e.message) || 'Qualcosa non ha funzionato. Riprova.');
   }
   return true;
 }

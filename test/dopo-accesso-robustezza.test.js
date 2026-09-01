@@ -66,6 +66,66 @@ test('dopoAccessoOnline: se la chiamata di rete non risponde affatto, dopo il ti
   window.close();
 }, 20000);
 
+// Stesso identico problema del 25/08/2026, ma un passo prima: dopoAccessoOnline()
+// sa già chi è l'utente quando parte (gli arriva già pronto), ma per saperlo
+// avvioOnline() deve prima aspettare sb.auth.getSession() — e QUELLA chiamata
+// non aveva nessun timeout. Scoperto il 01/09/2026 testando di nuovo il blocco
+// di un account, stavolta tornando da un accesso con Google (redirect a pagina
+// intera): getSession() può restare appesa (es. un lucchetto tra schede del
+// browser rimasto bloccato) lasciando la persona sulla schermata "Connessione…"
+// mostrata all'avvio, senza mai arrivare a dopoAccessoOnline() — quindi anche
+// senza mai vedere né la schermata di blocco né alcun errore.
+test('avvioOnline: se sb.auth.getSession() non risponde affatto, dopo il timeout si torna al login (non resta su "Connessione…" per sempre)', async () => {
+  const { window, document } = await loadApp();
+  await run(window, `
+    iniziaSupabase = function(){
+      sb = { auth: { getSession(){ return new Promise(()=>{}); } } }; // non si risolve mai
+      return true;
+    };
+  `);
+  const promessa = run(window, `return avvioOnline();`);
+  await new Promise(res => setTimeout(res, 15600));
+  await promessa;
+  assert.equal(document.getElementById('cloudCaricamento').style.display, 'none',
+    'non deve restare sulla schermata "Connessione…"');
+  assert.equal(document.getElementById('cloudAccedi').style.display, 'block',
+    'deve tornare al login, dove l\'errore è visibile');
+  assert.equal(document.getElementById('cloudErr').style.display, 'block');
+  assert.match(document.getElementById('cloudErr').textContent, /Tempo scaduto/);
+  window.close();
+}, 20000);
+
+test('avvioOnline: con una sessione valida, continua verso dopoAccessoOnline() come prima', async () => {
+  const { window, document } = await loadApp();
+  await run(window, `
+    iniziaSupabase = function(){
+      sb = {
+        auth: { getSession(){ return Promise.resolve({ data:{ session:{ user:{ id:'u1', email:'ok@test.it' } } } }); } },
+        from(table){
+          if(table === 'profili'){
+            return { select(){ return this; },
+              eq(){ return { maybeSingle(){ return Promise.resolve({
+                data: { id:'u1', email:'ok@test.it', approvato:true, bloccato:false, nome:'Ok',
+                  dati: Object.assign(newProfile('Ok','ok@test.it','x',true), {measurements:[]}) },
+                error:null
+              }); } }; } };
+          }
+          if(table === 'rapporti_pt'){
+            return { select(){ return this; }, or(){ return Promise.resolve({ data:[], error:null }); } };
+          }
+          return { select(){return this;}, eq(){return this;} };
+        },
+        channel(){ return { on(){ return this; }, subscribe(){ return this; } }; },
+        removeChannel(){}
+      };
+      return true;
+    };
+    await avvioOnline();
+  `);
+  assert.equal(document.getElementById('cloudGate').style.display, 'none', 'con una sessione valida il gate deve chiudersi');
+  window.close();
+});
+
 test('dopoAccessoOnline: un login online normale (senza errori) continua a funzionare come prima', async () => {
   const { window, document } = await loadApp();
   await run(window, `
