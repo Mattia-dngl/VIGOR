@@ -363,6 +363,16 @@
      SCHEDA — toggle Scheda/Storico in cima (riusa .seg-toggle/.seg-btn esistenti)
      ============================================================ */
   #programStoricoBlock{display:none;}
+  /* Su tablet/desktop lo Storico (calendario + riepilogo + liste) restava
+     largo quanto .app-shell (fino a 1280px): un solo pallino di 32px perso
+     in celle enormi del calendario, "si vede malissimo" (segnalato
+     01/09/2026). A differenza di Scheda/Dieta qui non c'è nessuna griglia
+     multi-colonna da preservare (#programStoricoBlock non contiene
+     #dayEditors/#programView, che vivono nel div fratello sopra) — stesso
+     trattamento già usato per Impostazioni/Account/Home (.settings-inner,
+     max-width:640px, sempre attivo: sotto i 640px non ha effetto perché
+     .app-shell/main sono già più stretti). */
+  #programStoricoBlock{width:100%; max-width:640px; margin-left:auto; margin-right:auto;}
 
 
   /* ============================================================
@@ -947,6 +957,11 @@
     }
     .pulse{gap:10px;}
     .row{gap:14px;}
+    /* Celle del calendario più larghe (card ora ferma a 640px invece di
+       crescere con .app-shell, vedi #programStoricoBlock sopra): il pallino
+       di 32px restava piccolo e sparso dentro celle comunque più ampie di
+       quelle da telefono, quindi cresce un po' con loro. */
+    .cal-day-nuovo .num{width:40px; height:40px; font-size:14px;}
     #profileGate .gate-inner{max-width:480px;}
   }
 
