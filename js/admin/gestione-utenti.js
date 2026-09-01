@@ -74,9 +74,10 @@ async function renderAmministrazioneOnline(){
   }));
   boxAttesa.querySelectorAll('[data-rifiuta]').forEach(b=>b.addEventListener('click', ()=>{
     const p = data.find(x=>x.id===b.dataset.rifiuta);
-    customConfirm(`Rifiutare la richiesta di ${p.email}? Il suo profilo verrà eliminato.`, async ()=>{
-      const { error } = await sb.from('profili').delete().eq('id', p.id);
-      toast(error ? ("Non riuscito: " + error.message) : "Richiesta rifiutata");
+    customConfirm(`Rifiutare la richiesta di ${p.email}? Account e profilo vengono eliminati del tutto: se in futuro rifà l'accesso (anche con Google), riparte da zero.`, async ()=>{
+      const { data: res, error } = await sb.functions.invoke('elimina-account', { body: { userId: p.id } });
+      const erroreVero = error || (res && res.error);
+      toast(erroreVero ? ("Non riuscito: " + (error ? error.message : res.error)) : "Richiesta rifiutata");
       renderAmministrazioneOnline();
     });
   }));
@@ -129,9 +130,10 @@ async function renderAmministrazioneOnline(){
   }));
   wrap.querySelectorAll('[data-canc]').forEach(b=>b.addEventListener('click', ()=>{
     const p = data.find(x=>x.id===b.dataset.canc);
-    customConfirm(`Eliminare il profilo di ${p.email} con tutti i suoi ${conteggio(p)} allenamenti? Non si torna indietro.`, async ()=>{
-      const { error } = await sb.from('profili').delete().eq('id', p.id);
-      toast(error ? ("Non riuscito: " + error.message) : "Profilo eliminato");
+    customConfirm(`Eliminare l'account di ${p.email} con tutti i suoi ${conteggio(p)} allenamenti? Viene cancellato anche l'accesso: se in futuro rifà il login (anche con Google), riparte da zero come un account nuovo. Non si torna indietro.`, async ()=>{
+      const { data: res, error } = await sb.functions.invoke('elimina-account', { body: { userId: p.id } });
+      const erroreVero = error || (res && res.error);
+      toast(erroreVero ? ("Non riuscito: " + (error ? error.message : res.error)) : "Account eliminato");
       renderAmministrazioneOnline();
     });
   }));
