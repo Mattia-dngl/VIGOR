@@ -17,7 +17,15 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
       if(pianoPT && pianoPT.open) pianoPT.open = false;
       document.body.classList.remove('dieta-window-aperta');
     }
-    if(btn.dataset.tab==='log' && !_bozzaPronta) ripristinaBozza();
+    if(btn.dataset.tab==='log'){
+      if(!_bozzaPronta) ripristinaBozza();
+      // il giorno di oggi può essere già stato scelto in automatico in
+      // sottofondo (renderAll() al login, per il promemoria in Home): il
+      // popup "Prima di iniziare" era rimasto in sospeso fino a questo punto,
+      // adesso che la schermata è davvero questa lo mostra — vedi
+      // mostraPopupAllenamentoATempo() in registra.js.
+      if(typeof aggiornaPopupATempoInSospeso === 'function') aggiornaPopupATempoInSospeso();
+    }
     aggiornaVisibilitaTimer();
     if(btn.dataset.tab==='diet'){ renderMealDiary(); renderDietPlanView(); renderDietEditForm(); segnaVistaCliente('dieta'); }
     if(btn.dataset.tab==='history'){ renderHistory(); renderVolume(); renderMeasurements(); }

@@ -63,15 +63,48 @@ function aggiornaBadgeATempo(){
 // sola volta se attivare il recupero cronometrato tra le serie — confermando
 // con "Inizia allenamento" la scelta si blocca per tutta la sessione, niente
 // tasto per chiuderla senza scegliere. Non per "Allenamento libero" (non ha
-// una lista fissa di esercizi finché non ne scegli almeno uno).
+// una lista fissa di esercizi finché non ne scegli almeno uno): lì compare
+// solo se, cambiando idea, si sceglie comunque un giorno vero della scheda
+// dalla tendina "Che giorno hai fatto?".
+//
+// Deve comparire quando si ENTRA DAVVERO in Registra, non prima: renderAll()
+// chiama renderDayChoices() già al login (per il promemoria in Home) e quello
+// sceglie da solo il giorno di oggi se previsto — senza questo controllo il
+// popup spunterebbe sopra la Home, prima ancora di aver aperto Registra.
+// aggiornaPopupATempoInSospeso() (richiamata dal tab "log", vedi tabs-header.js)
+// lo mostra appena la schermata diventa davvero quella giusta.
+let _popupATempoInSospeso = false;
+function registraEVisibileOra(){
+  // #view-log parte "active" già nell'HTML grezzo (è la sotto-scheda di
+  // default dentro #appRoot quando lo si apre), quindi da sola non basta:
+  // #appRoot resta display:none finché non si esce davvero da Home/Account
+  // (vedi showAppRoot()) — serve entrambe vere per dire "l'utente sta
+  // guardando Registra adesso", non solo "se aprissi Scheda, sarebbe questa
+  // la sotto-scheda".
+  const appRoot = document.getElementById('appRoot');
+  const viewLog = document.getElementById('view-log');
+  return !!appRoot && appRoot.style.display !== 'none' && !!viewLog && viewLog.classList.contains('active');
+}
 function mostraPopupAllenamentoATempo(day){
   if(day.key === 'LIBERO' || _allenamentoATempoBloccato) return;
+  if(!registraEVisibileOra()){
+    _popupATempoInSospeso = true;
+    return;
+  }
   const overlay = document.getElementById('atempoOverlay');
   if(!overlay) return;
   document.getElementById('atempoSub').textContent =
     `${day.key} · ${day.name} · ${day.exercises.length} esercizi`;
   document.getElementById('atempoSwitchChk').checked = _allenamentoATempo;
   overlay.classList.add('show');
+}
+function aggiornaPopupATempoInSospeso(){
+  if(!_popupATempoInSospeso) return;
+  _popupATempoInSospeso = false;
+  if(!selectedDayKey || selectedDayKey==='SKIP' || selectedDayKey==='LIBERO') return;
+  const p = activeProgram();
+  const day = p && p.days.find(d=>d.key===selectedDayKey);
+  if(day) mostraPopupAllenamentoATempo(day);
 }
 document.getElementById('atempoIniziaBtn').addEventListener('click', ()=>{
   _allenamentoATempo = document.getElementById('atempoSwitchChk').checked;
