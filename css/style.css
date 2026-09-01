@@ -130,6 +130,11 @@
   #settingsPanel .settings-inner, #accountPanel .settings-inner, #homeScreen .settings-inner{width:100%; max-width:640px; margin:0 auto;}
   .settings-head{display:flex; justify-content:space-between; align-items:center;}
   .settings-head h1{font-size:19px;}
+  /* 01/09/2026: Impostazioni ha solo il tasto Indietro (tolto "✕ Chiudi",
+     ridondante: facevano la stessa cosa) — con justify-content:space-between
+     e un solo bottone il titolo finiva spinto tutto a destra invece di
+     restargli accanto, come già in Registra (.scheda-header-row). */
+  #settingsPanel .settings-head{justify-content:flex-start; gap:12px;}
 
   /* Home: schermata con cui entri, da qui vai verso le varie parti dell'app */
   .home-topbar{display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;}
@@ -1858,7 +1863,7 @@
     border:1px solid var(--border); background:var(--surface2); color:var(--text-faint);
     font-size:11px; cursor:pointer; line-height:1; flex:0 0 auto;}
 
-  .slot-timer{display:grid; grid-template-columns:repeat(4, 1fr); gap:8px;}
+  .slot-timer{display:grid; grid-template-columns:repeat(3, 1fr); gap:8px;}   /* 3 scorciatoie, non più 4 */
   .slot-timer .slot{display:flex; flex-direction:column; gap:4px;}
   .slot-timer input{margin:0; padding:10px 6px; text-align:center; font-family:'Roboto Mono',monospace;
     font-size:14px;}

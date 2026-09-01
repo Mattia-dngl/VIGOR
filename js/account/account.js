@@ -100,6 +100,10 @@ function aggiornaNavGlobale(attivo){
 // tornare: 'account' = si torna ad Account (ci si è arrivati con
 // l'ingranaggio ⚙ lì dentro), 'app' = torna alla schermata di app da cui si
 // è aperta Impostazioni, altrimenti si torna in Home.
+// 01/09/2026 (richiesta esplicita): non apre più da sola "Allenamento e dati"
+// — arrivando qui si vedono tutte le sezioni chiuse a tendina, si apre solo
+// quella che tocchi tu. renderImpostazioniInline() qui sotto riempie comunque
+// subito i suoi campi, quindi sono pronti anche se non è ancora aperta.
 function apriImpostazioni(provenienza){
   document.getElementById('homeScreen').style.display = 'none';
   document.getElementById('appRoot').style.display = 'none';
@@ -109,8 +113,6 @@ function apriImpostazioni(provenienza){
   renderImpostazioniInline();
   renderAmministrazione();
   aggiornaVisibilitaEliminaAccount();
-  const acc = document.getElementById('accImpostazioni');
-  if(acc){ acc.open = true; if(acc.scrollIntoView) acc.scrollIntoView({behavior:'smooth', block:'start'}); }
 }
 // Chiude #settingsPanel tornando a dove si è aperta (vedi apriImpostazioni).
 function chiudiSettingsPanel(){
@@ -129,7 +131,6 @@ function chiudiSettingsPanel(){
   mostraHome();
 }
 document.getElementById('openSettingsBtn').addEventListener('click', ()=>apriImpostazioni('account'));
-document.getElementById('closeSettingsBtn').addEventListener('click', chiudiSettingsPanel);
 document.getElementById('settingsBackBtn').addEventListener('click', chiudiSettingsPanel);
 // Riempie i campi della tendina Impostazioni: usata sia da apriImpostazioni()
 // (ingranaggio ⚙, notifiche) sia dal 'toggle' della tendina stessa quando la

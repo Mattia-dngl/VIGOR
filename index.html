@@ -652,7 +652,6 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
       </button>
       <h1>Impostazioni</h1>
-      <button class="switch-user" id="closeSettingsBtn">✕ Chiudi</button>
     </div>
 
     <!-- Gerarchia a gruppi con etichetta (redesign 01/09/2026): stesse identiche
@@ -714,14 +713,19 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
         <div class="acct-row-chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></div>
       </summary>
       <div class="details-body">
-        <details class="card details-card" style="margin-top:0;">
+        <!-- 01/09/2026 (richiesta esplicita): tolto lo stile "card" per ogni
+             singola voce (sembravano pillole separate, poco leggibili) — ora
+             un unico contenitore con bordo sottile, righe divise da una linea
+             e freccina a destra (stesso linguaggio già usato in "Gestione
+             dell'app", vedi .admin-sub/.admin-sub-body). -->
+        <details class="admin-sub" style="margin-top:0;">
           <summary>Timer di recupero</summary>
-          <div class="details-body">
+          <div class="admin-sub-body">
             <p class="hint">Il tempo che parte in automatico premendo "Avvia".</p>
             <label>Durata predefinita (secondi)</label>
             <input type="number" id="timerDurataInput" min="10" max="900" step="5" inputmode="numeric">
 
-            <label style="margin-top:18px;">I 4 tasti rapidi del timer</label>
+            <label style="margin-top:18px;">I 3 tasti rapidi del timer</label>
             <p class="hint" style="margin:0 0 8px;">Scrivi i secondi che vuoi e premi Salva.</p>
             <div class="slot-timer" id="slotTimer"></div>
             <button class="btn block" id="salvaScorciatoieBtn" style="margin-top:10px;">Salva i tasti rapidi</button>
@@ -735,9 +739,9 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
           </div>
         </details>
 
-        <details class="card details-card" style="margin-top:10px;">
+        <details class="admin-sub">
           <summary>Sicurezza dei dati</summary>
-          <div class="details-body">
+          <div class="admin-sub-body">
             <p class="hint">I tuoi allenamenti stanno solo su questo telefono.</p>
             <div class="dato-riga"><span>Protezione dalla cancellazione</span><b id="statoPersistenza">—</b></div>
             <div class="dato-riga"><span>Spazio occupato</span><b id="statoSpazio">—</b></div>
@@ -746,9 +750,9 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
           </div>
         </details>
 
-        <details class="card details-card" id="promemoriaCard" style="margin-top:10px; display:none;">
+        <details class="admin-sub" id="promemoriaCard" style="display:none;">
           <summary>Promemoria allenamento</summary>
-          <div class="details-body">
+          <div class="admin-sub-body">
             <p class="hint">Un avviso sul telefono nei giorni in cui la scheda prevede un allenamento e non hai ancora registrato nulla. Arriva anche ad app chiusa, come un messaggio.</p>
             <label style="display:flex; align-items:center; gap:9px; margin-top:10px; cursor:pointer;">
               <input type="checkbox" id="promemoriaToggle" style="width:auto; margin:0;">
@@ -758,9 +762,9 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
           </div>
         </details>
 
-        <details class="card details-card" style="margin-top:10px;">
+        <details class="admin-sub">
           <summary>Giorni saltati</summary>
-          <div class="details-body">
+          <div class="admin-sub-body">
             <p class="hint">Se un giorno previsto dalla scheda passa senza che tu registri nulla, viene segnato da solo come saltato — così lo storico e le statistiche restano veritieri. Puoi sempre eliminare o correggere una registrazione automatica dallo Storico.</p>
             <label style="display:flex; align-items:center; gap:9px; margin-top:10px; cursor:pointer;">
               <input type="checkbox" id="autoSkipToggle" style="width:auto; margin:0;">
@@ -772,9 +776,9 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
         <div class="settings-subhead" style="margin-top:22px;">Esercizi</div>
         <p class="sub" id="exSectionsIntro" style="margin-top:2px;"></p>
 
-        <details class="card details-card" id="addExCard" style="margin-top:8px;">
+        <details class="admin-sub" id="addExCard" style="margin-top:8px;">
           <summary>Aggiungi esercizio</summary>
-          <div class="details-body">
+          <div class="admin-sub-body">
             <p class="hint">Utile per macchinari specifici della tua palestra. Una volta aggiunto compare nella tendina "Nome esercizio" in Scheda → Modifica, visibile solo al tuo account.</p>
             <label>Nome esercizio</label>
             <input type="text" id="customExName" placeholder="Es. Leg press orizzontale">
@@ -792,14 +796,14 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
           </div>
         </details>
 
-        <details class="card details-card" id="myExCard" style="margin-top:10px;">
+        <details class="admin-sub" id="myExCard">
           <summary>I tuoi esercizi personalizzati</summary>
-          <div class="details-body"><div id="customExList"></div></div>
+          <div class="admin-sub-body"><div id="customExList"></div></div>
         </details>
 
-        <details class="card details-card" id="baseExCard" style="margin-top:10px; display:none;">
+        <details class="admin-sub" id="baseExCard" style="display:none;">
           <summary>Esercizi di base (<span id="baseExCount"></span>)</summary>
-          <div class="details-body">
+          <div class="admin-sub-body">
             <p class="hint">Esporta l'elenco in Excel, incolla i link ai video e reimportalo: compariranno ovunque l'esercizio è mostrato.</p>
             <div class="row" style="margin-bottom:12px;">
               <button class="btn secondary block" id="exportExVideosBtn">⬇ Esporta link video (Excel)</button>
