@@ -114,64 +114,87 @@ async function renderAreaPT(){
   const richieste = miei.filter(r => r.stato === 'in_attesa');
   const attivi = miei.filter(r => r.stato === 'attivo');
 
-  document.getElementById('ptSottotitolo').textContent =
-    attivi.length === 0 ? "Nessuna persona seguita"
-    : attivi.length === 1 ? "1 persona seguita" : `${attivi.length} persone seguite`;
-  document.getElementById('ptContaRichieste').textContent = richieste.length ? `(${richieste.length})` : '';
-
   // persone seguite — caricate una volta sola e riusate sia dalla vista d'insieme
   // ("cose da guardare oggi") sia dall'elenco clienti qui sotto.
   const profiliAttivi = attivi.length ? await Promise.all(attivi.map(r=>leggiProfilo(r.cliente_id))) : [];
+  const segnali = profiliAttivi.map(p => p ? segnaliPT(p) : null);
 
-  // ---- vista d'insieme: "cose da guardare oggi" ----
-  const boxOggi = document.getElementById('ptOggi');
   const fermi = [];
   const scaduti = [];
   attivi.forEach((r,i)=>{
-    const p = profiliAttivi[i];
+    const p = profiliAttivi[i], s = segnali[i];
     if(!p) return;
-    const s = segnaliPT(p);
     if(s.fermoDaTroppo) fermi.push({r, p, s});
     if(s.scadenzaPassata) scaduti.push({r, p, s});
   });
   const totaleOggi = richieste.length + fermi.length + scaduti.length;
+  const attiviQuestaSettimana = segnali.filter(s => s && !s.fermoDaTroppo).length;
+
+  document.getElementById('ptSottotitolo').textContent =
+    (attivi.length === 0 ? "Nessuna persona seguita"
+      : attivi.length === 1 ? "1 persona seguita" : `${attivi.length} persone seguite`)
+    + (totaleOggi ? ` · ${totaleOggi === 1 ? '1 cosa' : totaleOggi + ' cose'} da guardare oggi` : '');
+  document.getElementById('ptContaRichieste').textContent = richieste.length ? `(${richieste.length})` : '';
   document.getElementById('ptContaOggi').textContent = totaleOggi ? `(${totaleOggi})` : '';
+
+  // ---- header: i numeri chiave a colpo d'occhio, invece di solo un titolo ----
+  document.getElementById('ptHeroStats').innerHTML = `
+    <div class="pth-chip"><b>${attivi.length}</b><span>Seguiti</span></div>
+    <div class="pth-chip${richieste.length ? ' accent' : ''}"><b>${richieste.length}</b><span>Richieste</span></div>
+    <div class="pth-chip"><b>${attiviQuestaSettimana}</b><span>Attivi questa settimana</span></div>`;
+
+  // ---- vista d'insieme: "cose da guardare oggi" come striscia di alert
+  // colorati per tipo (non più una card con elenco puntato) ----
+  const boxOggi = document.getElementById('ptOggi');
   if(totaleOggi === 0){
-    boxOggi.innerHTML = '<div class="empty" style="padding:12px 0;">Tutto in ordine: nessuna richiesta in sospeso, nessuno fermo da troppo e nessun piano scaduto ✓</div>';
+    boxOggi.innerHTML = '<div class="pt-empty-banner">Tutto in ordine: nessuna richiesta in sospeso, nessuno fermo da troppo e nessun piano scaduto ✓</div>';
   } else {
-    const rigaCliente = (voce, meta, azione)=>`<div class="pt-riga">
-        <div class="pt-avatar">${avatarContentHtml(nomeDi(voce.p), (voce.p.dati||{}).avatarUrl)}</div>
-        <div class="info"><div class="nome">${nomeDi(voce.p)}</div>
-          <div class="meta"><b class="warn">${meta}</b></div></div>
-        <div class="azioni"><button class="ok" data-apri-oggi="${voce.r.cliente_id}">${azione}</button></div>
-      </div>`;
-    boxOggi.innerHTML =
-      (richieste.length ? `<div class="hint" style="margin:0 0 4px;">Richieste in sospeso</div>` : '') +
-      (richieste.length ? `<div class="pt-riga"><div class="info"><div class="meta">${richieste.length===1?'1 richiesta da accettare o rifiutare':`${richieste.length} richieste da accettare o rifiutare`} — vedi sotto</div></div></div>` : '') +
-      (fermi.length ? `<div class="hint" style="margin:14px 0 4px;">Fermi da ${SOGLIA_INATTIVITA_PT_GIORNI}+ giorni</div>` : '') +
-      fermi.map(v=>rigaCliente(v, v.s.giorniFermo===null ? 'non si è ancora allenato' : `fermo da ${v.s.giorniFermo} giorni`, 'Apri')).join('') +
-      (scaduti.length ? `<div class="hint" style="margin:14px 0 4px;">Piano scaduto</div>` : '') +
-      scaduti.map(v=>rigaCliente(v, `scheda "${v.s.scheda.name}" scaduta il ${formatDate(v.s.scheda.scadenza)}`, 'Apri')).join('');
+    const alertCard = (tipo, label, nome, meta, attrs)=>`<button type="button" class="pt-alert-card ${tipo}" ${attrs}>
+        <div class="head"><span class="dot"></span><span class="lab">${label}</span></div>
+        <div class="nome">${nome}</div>
+        <div class="desc">${meta}</div>
+        <div class="link">Apri →</div>
+      </button>`;
+    const cards = [];
+    if(richieste.length){
+      cards.push(`<button type="button" class="pt-alert-card accent" data-vai-richieste="1">
+          <div class="head"><span class="dot"></span><span class="lab">RICHIESTE</span></div>
+          <div class="nome">${richieste.length}</div>
+          <div class="desc">${richieste.length===1?'richiesta da accettare o rifiutare':'richieste da accettare o rifiutare'}</div>
+          <div class="link">Vedi sotto ↓</div>
+        </button>`);
+    }
+    fermi.forEach(v=>cards.push(alertCard('warn', 'FERMO', nomeDi(v.p),
+      v.s.giorniFermo===null ? 'non si è ancora allenato' : `fermo da ${v.s.giorniFermo} giorni`,
+      `data-apri-oggi="${v.r.cliente_id}"`)));
+    scaduti.forEach(v=>cards.push(alertCard('danger', 'SCADUTO', nomeDi(v.p),
+      `scheda "${v.s.scheda.name}" scaduta il ${formatDate(v.s.scheda.scadenza)}`,
+      `data-apri-oggi="${v.r.cliente_id}"`)));
+    boxOggi.innerHTML = `<div class="pt-scroll-row">${cards.join('')}</div>`;
     boxOggi.querySelectorAll('[data-apri-oggi]').forEach(b=>b.addEventListener('click', ()=>apriCliente(b.dataset.apriOggi)));
+    const vaiRichieste = boxOggi.querySelector('[data-vai-richieste]');
+    if(vaiRichieste) vaiRichieste.addEventListener('click', ()=>{
+      document.getElementById('ptRichiesteCard').scrollIntoView({behavior:'smooth', block:'start'});
+    });
   }
 
-  // richieste ricevute
+  // richieste ricevute — carosello di card persona invece di un elenco impilato
   const boxR = document.getElementById('ptRichieste');
   if(richieste.length === 0){
     boxR.innerHTML = '<div class="empty" style="padding:12px 0;">Nessuna richiesta in sospeso.</div>';
   } else {
     const profili = await Promise.all(richieste.map(r=>leggiProfilo(r.cliente_id)));
-    boxR.innerHTML = richieste.map((r,i)=>{
+    boxR.innerHTML = `<div class="pt-scroll-row">${richieste.map((r,i)=>{
       const p = profili[i] || {};
-      return `<div class="pt-riga">
+      return `<div class="pt-req-card">
         <div class="pt-avatar">${avatarContentHtml(nomeDi(p), (p.dati||{}).avatarUrl)}</div>
-        <div class="info"><div class="nome">${nomeDi(p)}</div>
-          <div class="meta">${p.email||''} · richiesta del ${formatDate((r.richiesto_il||'').slice(0,10))}</div></div>
-        <div class="azioni">
-          <button class="ok" data-accetta="${r.id}">Accetta</button>
-          <button class="pericolo" data-rifiuta-r="${r.id}">Rifiuta</button>
+        <div><div class="nome">${nomeDi(p)}</div>
+          <div class="meta">richiesta del ${formatDate((r.richiesto_il||'').slice(0,10))}</div></div>
+        <div class="pt-req-btns">
+          <button type="button" class="pt-icon-btn ok" data-accetta="${r.id}" aria-label="Accetta ${nomeDi(p)}">✓</button>
+          <button type="button" class="pt-icon-btn no" data-rifiuta-r="${r.id}" aria-label="Rifiuta ${nomeDi(p)}">✕</button>
         </div></div>`;
-    }).join('');
+    }).join('')}</div>`;
     boxR.querySelectorAll('[data-accetta]').forEach(b=>b.addEventListener('click', async ()=>{
       const { error } = await sb.from('rapporti_pt').update({ stato:'attivo' }).eq('id', b.dataset.accetta);
       toast(error ? ("Non riuscito: " + error.message) : "Ora segui questa persona ✓");
@@ -186,31 +209,67 @@ async function renderAreaPT(){
     }));
   }
 
-  // persone seguite
+  // persone seguite — griglia a due colonne; chi ha bisogno di attenzione
+  // oggi (fermo o scheda scaduta) riceve una card a piena larghezza invece
+  // di una riga identica alle altre.
   const boxC = document.getElementById('ptClienti');
   if(attivi.length === 0){
     boxC.innerHTML = '<div class="empty" style="padding:12px 0;">Non segui ancora nessuno. Le richieste che ricevi compaiono qui sopra.</div>';
     return;
   }
   const profili = profiliAttivi;
-  boxC.innerHTML = attivi.map((r,i)=>{
-    const p = profili[i] || {};
+
+  function freshnessDi(s){
+    const frac = s.giorniFermo === null ? 0.06 : Math.max(0.08, 1 - s.giorniFermo / (s.fermoDaTroppo ? 14 : 7));
+    const colore = s.fermoDaTroppo ? 'var(--accent)' : (s.giorniFermo <= 2 ? 'var(--ok)' : 'var(--warn)');
+    return { pct: Math.round(frac*100), colore };
+  }
+
+  function schedaCard(r, p, s){
     const d = p.dati || {};
     const allen = (d.logs||[]).filter(l=>l.status==='registrato').length;
-    const ultimo = (d.logs||[]).filter(l=>l.status==='registrato').map(l=>l.date).sort().pop();
     const permessi = [r.puo_scheda ? 'scheda' : null, r.puo_dieta ? 'dieta' : null].filter(Boolean);
-    return `<div class="pt-riga">
-      <div class="pt-avatar">${avatarContentHtml(nomeDi(p), d.avatarUrl)}</div>
-      <div class="info">
-        <div class="nome">${nomeDi(p)}</div>
-        <div class="meta">${allen} allenamenti${ultimo ? ' · ultimo il ' + formatDate(ultimo) : ''}
-          · ${permessi.length ? 'puoi modificare: ' + permessi.join(' e ') : 'sola lettura'}</div>
-      </div>
-      <div class="azioni">
-        <button class="ok" data-apri="${r.cliente_id}">Apri</button>
-        <button class="pericolo" data-chiudi="${r.id}">Termina</button>
-      </div></div>`;
-  }).join('');
+    const permLabel = permessi.length ? 'Modifichi ' + permessi.join(' e ') : 'Sola lettura';
+    const fr = freshnessDi(s);
+    return `<div class="pt-client-wrap">
+        <button type="button" class="pt-client-card" data-apri="${r.cliente_id}">
+          <div class="pt-avatar">${avatarContentHtml(nomeDi(p), d.avatarUrl)}</div>
+          <div><div class="nome">${nomeDi(p)}</div><div class="meta">${allen} allenamenti</div></div>
+          <div class="pt-fresh"><i style="width:${fr.pct}%; background:${fr.colore};"></i></div>
+          <span class="pt-perm-chip">${permLabel}</span>
+        </button>
+        <button type="button" class="pt-termina-link" data-chiudi="${r.id}">Termina rapporto</button>
+      </div>`;
+  }
+
+  function spotlightCard(r, p, s){
+    const d = p.dati || {};
+    const fr = freshnessDi(s);
+    const motivi = [];
+    if(s.fermoDaTroppo) motivi.push(s.giorniFermo===null ? 'non si è ancora allenato' : `fermo da ${s.giorniFermo} giorni`);
+    if(s.scadenzaPassata) motivi.push('scheda scaduta');
+    return `<div class="pt-client-wrap spotlight">
+        <button type="button" class="pt-spotlight" data-apri="${r.cliente_id}">
+          <div class="pt-avatar pt-avatar-lg">${avatarContentHtml(nomeDi(p), d.avatarUrl)}</div>
+          <div class="info">
+            <div class="nome">${nomeDi(p)}</div>
+            <div class="status">${motivi.join(' · ')}</div>
+            <div class="pt-fresh"><i style="width:${fr.pct}%; background:${fr.colore};"></i></div>
+          </div>
+          <span class="pt-spotlight-btn">Apri</span>
+        </button>
+        <button type="button" class="pt-termina-link" data-chiudi="${r.id}">Termina rapporto</button>
+      </div>`;
+  }
+
+  const righe = attivi.map((r,i)=>({r, p: profili[i]||{}, s: segnali[i]})).filter(v=>v.p && v.p.id);
+  const inEvidenza = righe.filter(v=>v.s.fermoDaTroppo || v.s.scadenzaPassata);
+  const normali = righe.filter(v=>!(v.s.fermoDaTroppo || v.s.scadenzaPassata));
+
+  boxC.innerHTML = `<div class="pt-client-grid">
+      ${inEvidenza.map(v=>spotlightCard(v.r, v.p, v.s)).join('')}
+      ${normali.map(v=>schedaCard(v.r, v.p, v.s)).join('')}
+    </div>`;
 
   boxC.querySelectorAll('[data-apri]').forEach(b=>b.addEventListener('click', ()=>apriCliente(b.dataset.apri)));
   boxC.querySelectorAll('[data-chiudi]').forEach(b=>b.addEventListener('click', ()=>{
@@ -279,9 +338,11 @@ function renderDettaglioPT(sezione){
     box.innerHTML = `
       <div class="card">
         <h3>Come sta andando</h3>
-        <div class="dato-riga"><span>Allenamenti registrati</span><b>${logs.length}</b></div>
-        <div class="dato-riga"><span>Giorni saltati</span><b>${saltati}</b></div>
-        <div class="dato-riga"><span>Ultimo allenamento</span><b>${ultimo ? formatDate(ultimo.date) : '—'}</b></div>
+        <div class="pt-riepilogo-stats">
+          <div class="pt-riepilogo-stat"><b>${logs.length}</b><span>Allenamenti</span></div>
+          <div class="pt-riepilogo-stat"><b>${saltati}</b><span>Saltati</span></div>
+          <div class="pt-riepilogo-stat"><b>${ultimo ? formatDate(ultimo.date) : '—'}</b><span>Ultimo</span></div>
+        </div>
         <div class="dato-riga"><span>Scheda attiva</span><b>${prog ? prog.name : 'nessuna'}</b></div>
         ${primoPeso && ultimoPeso ? `<div class="dato-riga"><span>Peso</span><b>${primoPeso.weight} → ${ultimoPeso.weight} kg</b></div>` : ''}
       </div>
