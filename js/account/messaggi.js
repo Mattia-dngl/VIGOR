@@ -166,7 +166,11 @@ function renderElencoChat(elenco){
   box.querySelectorAll('[data-i]').forEach(el=>{
     el.addEventListener('click', ()=>{
       const c = elenco[parseInt(el.dataset.i)];
-      chiudiMessaggiHome();
+      // Non chiudo #messaggiHomeOverlay: resta aperto SOTTO la chat (stessa
+      // posizione nel markup, quindi già impilata sotto #messaggiOverlay),
+      // così tornando indietro dalla chat (chiudiMessaggi() in
+      // pt-collegamento.js) si ritrova la lista, non Account (bug segnalato
+      // 01/09/2026).
       apriMessaggi(c.id, c.altroId, c.titolo, c.tipo);
     });
   });
@@ -265,8 +269,9 @@ async function creaNuovaChat(){
   const titolo = partecipanti.length === 1
     ? nomeDi(primoAltro)
     : partecipanti.map(id=>nomeDi(_nuovaChatUtenti.find(u=>u.id===id))).join(', ');
+  // Chiudo solo "Nuova chat": #messaggiHomeOverlay resta aperto sotto,
+  // stesso motivo del click su una riga esistente (vedi renderElencoChat).
   chiudiNuovaChat();
-  chiudiMessaggiHome();
   apriMessaggi(chatId, partecipanti[0], titolo, 'chat');
 }
 

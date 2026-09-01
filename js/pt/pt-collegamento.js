@@ -57,6 +57,13 @@ function chiudiMessaggi(){
   document.getElementById('messaggiOverlay').classList.remove('show');
   if(_canaleMessaggi){ sb.removeChannel(_canaleMessaggi); _canaleMessaggi = null; }
   _msgRapportoId = null; _msgChatId = null; _msgAltroId = null; _messaggi = []; _msgTipo = 'rapporto';
+  // Se la chat era stata aperta dalla lista Messaggi (rimasta sotto, mai
+  // chiusa — vedi js/account/messaggi.js), tornandone fuori si deve vedere
+  // di nuovo quella lista, non quel che c'era ancora più sotto (es. Account)
+  // — bug segnalato 01/09/2026. La ricarico anche, così anteprima/non letti
+  // sono aggiornati con l'ultima chat appena letta.
+  const home = document.getElementById('messaggiHomeOverlay');
+  if(home && home.classList.contains('show') && typeof apriMessaggiHome === 'function') apriMessaggiHome();
 }
 
 async function caricaMessaggi(){

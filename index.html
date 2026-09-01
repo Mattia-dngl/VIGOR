@@ -583,6 +583,10 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
         <option value="intenso">Intenso — esercizio 6-7 giorni a settimana</option>
         <option value="molto_intenso">Molto intenso — esercizio quotidiano + lavoro fisico</option>
       </select>
+      <!-- La matita che apre questo modulo sta dentro #acctDatiVista, che
+           qui è nascosta: senza un tasto proprio non ci sarebbe più modo di
+           tornare alla vista compatta (bug segnalato 01/09/2026). -->
+      <button type="button" class="btn secondary block" id="acctDatiFattoBtn" style="margin-top:16px;">Fatto</button>
       </div>
 
       <p class="hint" style="margin-top:14px;">Password, privacy e le altre opzioni sono in <b>Impostazioni</b> (icona ⚙ in alto).</p>

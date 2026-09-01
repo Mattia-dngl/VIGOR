@@ -109,8 +109,11 @@ function apriImpostazioni(provenienza){
   renderImpostazioniInline();
   renderAmministrazione();
   aggiornaVisibilitaEliminaAccount();
-  const acc = document.getElementById('accImpostazioni');
-  if(acc){ acc.open = true; if(acc.scrollIntoView) acc.scrollIntoView({behavior:'smooth', block:'start'}); }
+  // 01/09/2026 (richiesta esplicita): entrando in Impostazioni non si apre
+  // più automaticamente "Allenamento e dati" — tutte le tendine restano
+  // chiuse finché non è la persona a toccarle. renderImpostazioniInline()
+  // sopra continua comunque a riempirla in anticipo (non costa nulla), così
+  // se la si apre a mano il contenuto è già pronto.
 }
 // Chiude #settingsPanel tornando a dove si è aperta (vedi apriImpostazioni).
 function chiudiSettingsPanel(){
@@ -323,6 +326,7 @@ function toggleDatiProfilo(forzaVista){
   }
 }
 document.getElementById('acctDatiEditBtn').addEventListener('click', ()=>toggleDatiProfilo());
+document.getElementById('acctDatiFattoBtn').addEventListener('click', ()=>toggleDatiProfilo(true));
 
 function chiudiAccountPanel(){
   document.getElementById('accountPanel').style.display = 'none';

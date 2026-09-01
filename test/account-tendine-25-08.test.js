@@ -81,8 +81,9 @@ test('Impostazioni/Privacy/Assistenza sono <details> dentro #settingsPanel, chiu
     assert.equal(el.open, false, `#${id} deve essere chiusa di default`);
     assert.ok(el.closest('#settingsPanel'), `#${id} deve stare dentro #settingsPanel`);
   });
-  // accImpostazioni viene aperta automaticamente da apriImpostazioni().
+  // 01/09/2026: accImpostazioni non si apre più da sola (vedi il test dedicato più sotto).
   const acc = document.getElementById('accImpostazioni');
+  assert.equal(acc.open, false, '#accImpostazioni deve essere chiusa di default anche lei');
   assert.ok(acc.closest('#settingsPanel'));
   // Le vecchie schermate a sé indipendenti non esistono.
   ['privacySicurezzaPanel','assistenzaPanel'].forEach(id=>{
@@ -122,7 +123,7 @@ test('apriImpostazioni("app") (ingranaggio ⚙ dentro Scheda/Registra/Dieta) apr
     apriImpostazioni('app');
   `);
   assert.equal(document.getElementById('settingsPanel').style.display, 'block', 'apre Impostazioni');
-  assert.equal(document.getElementById('accImpostazioni').open, true, 'la tendina Allenamento e dati si apre da sola');
+  assert.equal(document.getElementById('accImpostazioni').open, false, '01/09/2026: nessuna tendina si apre più da sola entrando in Impostazioni');
   await run(window, `document.getElementById('closeSettingsBtn').click();`);
   assert.equal(document.getElementById('appRoot').style.display, 'block', 'chiudendo torna alla schermata di prima (Scheda), non a Home o Account');
   assert.equal(document.getElementById('settingsPanel').style.display, 'none');
