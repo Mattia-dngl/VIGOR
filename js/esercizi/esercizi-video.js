@@ -357,12 +357,17 @@ function ripristinaBozza(){
   // ogni volta che riapri l'app durante un allenamento in corso la durata
   // registrata alla fine ripartirebbe da zero.
   _logIniziatoAlle = b.iniziatoAlle || _logIniziatoAlle;
-  // stessa idea di _logIniziatoAlle qui sopra: selectDay le aveva già
-  // azzerate, qui le rimetto com'erano quando è stata salvata la bozza —
-  // altrimenti riaprire l'app a metà allenamento sbloccherebbe di nuovo
-  // l'interruttore "allenamento a tempo" già bloccato.
+  // stessa idea di _logIniziatoAlle qui sopra: selectDay (dentro buildExerciseForm,
+  // vedi mostraPopupAllenamentoATempo) le aveva già azzerate e nel frattempo ha
+  // pure riaperto il popup "Prima di iniziare" — qui rimetto la scelta com'era
+  // quando è stata salvata la bozza, e se era già bloccata richiudo il popup:
+  // altrimenti riaprire l'app a metà allenamento lo farebbe ripresentare da capo.
   _allenamentoATempo = !!b.allenamentoATempo;
   _allenamentoATempoBloccato = !!b.allenamentoATempoBloccato;
+  if(_allenamentoATempoBloccato){
+    const overlay = document.getElementById('atempoOverlay');
+    if(overlay) overlay.classList.remove('show');
+  }
   if(typeof aggiornaCronometroAllenamento === 'function') aggiornaCronometroAllenamento();
 
   // rimetto i valori digitati, aggiungendo le serie extra create al momento

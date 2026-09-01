@@ -49,32 +49,37 @@ function aggiornaCronometroAllenamento(){
   const c = 2*Math.PI*46;
   ringFill.style.strokeDasharray = String(c);
   ringFill.style.strokeDashoffset = String(c*(1-pct/100));
-  aggiornaToggleATempo();
+  aggiornaBadgeATempo();
 }
 
-// Rispecchia _allenamentoATempo/_allenamentoATempoBloccato sull'interruttore:
-// chiamata da aggiornaCronometroAllenamento() (già in tick ogni secondo mentre
-// la card è visibile) così non serve richiamarla a parte da ogni punto che
-// tocca quelle due variabili.
-function aggiornaToggleATempo(){
-  const chk = document.getElementById('allenamentoATempoChk');
-  const sub = document.getElementById('timerATempoSub');
-  if(!chk || !sub) return;
-  chk.checked = _allenamentoATempo;
-  chk.disabled = _allenamentoATempoBloccato;
-  sub.textContent = _allenamentoATempoBloccato
-    ? "Bloccato per questo allenamento"
-    : "Recupero cronometrato tra le serie";
+// Piccola spia read-only nella card del cronometro: la scelta si fa nel
+// popup (mostraPopupAllenamentoATempo), qui c'è solo da mostrarla o no.
+function aggiornaBadgeATempo(){
+  const badge = document.getElementById('atempoBadge');
+  if(badge) badge.style.display = _allenamentoATempo ? 'inline-flex' : 'none';
 }
-// Si blocca alla PRIMA serie segnata fatta di questo allenamento (con
-// l'interruttore acceso o spento non importa): evita un recupero tracciato a
-// metà seduta e non tracciato dopo, che renderebbe inutile confrontare i
-// riposi fatti davvero con quelli previsti dalla scheda.
-function bloccaAllenamentoATempoSeServe(){
-  if(_allenamentoATempoBloccato) return;
+// Popup "Prima di iniziare" (01/09/2026, ricalca il mockup approvato
+// dall'utente): si apre alla scelta di un giorno vero di scheda, chiede una
+// sola volta se attivare il recupero cronometrato tra le serie — confermando
+// con "Inizia allenamento" la scelta si blocca per tutta la sessione, niente
+// tasto per chiuderla senza scegliere. Non per "Allenamento libero" (non ha
+// una lista fissa di esercizi finché non ne scegli almeno uno).
+function mostraPopupAllenamentoATempo(day){
+  if(day.key === 'LIBERO' || _allenamentoATempoBloccato) return;
+  const overlay = document.getElementById('atempoOverlay');
+  if(!overlay) return;
+  document.getElementById('atempoSub').textContent =
+    `${day.key} · ${day.name} · ${day.exercises.length} esercizi`;
+  document.getElementById('atempoSwitchChk').checked = _allenamentoATempo;
+  overlay.classList.add('show');
+}
+document.getElementById('atempoIniziaBtn').addEventListener('click', ()=>{
+  _allenamentoATempo = document.getElementById('atempoSwitchChk').checked;
   _allenamentoATempoBloccato = true;
-  aggiornaToggleATempo();
-}
+  document.getElementById('atempoOverlay').classList.remove('show');
+  aggiornaBadgeATempo();
+  salvaBozza();
+});
 // Fa partire il timer di recupero già esistente (timerAvvia(), lo stesso del
 // bottone "Avvia" manuale) con i secondi impostati sull'esercizio in scheda —
 // solo se l'allenamento è "a tempo", l'esercizio ha un recupero impostato, e
@@ -88,20 +93,16 @@ function avviaRecuperoSeATtempo(exName){
   document.getElementById('timerApri').classList.remove('show');
   document.getElementById('timerBar').classList.add('show');
 }
-document.getElementById('allenamentoATempoChk').addEventListener('change', e=>{
-  if(_allenamentoATempoBloccato){ e.target.checked = _allenamentoATempo; return; }
-  _allenamentoATempo = e.target.checked;
-  salvaBozza();
-});
 
-// "Allenamento a tempo" (01/09/2026, richiesta esplicita): interruttore scelto
-// a inizio allenamento — se acceso, segnare una serie come fatta (vedi
-// .set-fatta-btn in addSetRow) fa partire da solo il timer di recupero
-// (timerAvvia(), già usato a mano da sempre) con i secondi di ex.recupero
-// della scheda, invece di lasciare quel campo puramente decorativo. Si blocca
-// (non più modificabile) dalla prima serie segnata fatta di QUESTA sessione,
-// così non resta un recupero tracciato a metà e non tracciato dopo — vedi
-// bloccaAllenamentoATempoSeServe(). Persistito nella bozza come _logIniziatoAlle.
+// "Allenamento a tempo" (01/09/2026, richiesta esplicita): scelta fatta una
+// volta sola nel popup "Prima di iniziare" (mostraPopupAllenamentoATempo) —
+// se acceso, segnare una serie come fatta (vedi .set-fatta-btn in addSetRow)
+// fa partire da solo il timer di recupero (timerAvvia(), già usato a mano da
+// sempre) con i secondi di ex.recupero della scheda, invece di lasciare quel
+// campo puramente decorativo. _allenamentoATempoBloccato diventa vera appena
+// il popup viene confermato e resta così per tutta la sessione: niente modo
+// di tornare indietro, così non si mescolano riposi cronometrati e non in
+// uno stesso allenamento. Persistito nella bozza come _logIniziatoAlle.
 let _allenamentoATempo = false;
 let _allenamentoATempoBloccato = false;
 let _exerciseByName = {};   // nome esercizio -> oggetto scheda del giorno in corso, per leggere ex.recupero/ex.supersetCon dal tasto "fatta"
@@ -320,6 +321,7 @@ document.getElementById('riscaldamentoSaltaBtn').addEventListener('click', ()=>{
 });
 
 function buildExerciseForm(day){
+  mostraPopupAllenamentoATempo(day);
   renderRiscaldamentoSuggerito(day);
   document.getElementById('exerciseFormTitle').textContent = day.key + " · " + day.name;
   const list = document.getElementById('exerciseFormList');
@@ -527,18 +529,14 @@ function addSetRow(exName, tappa, isFineRound){
     });
   });
   // Segna la serie come fatta: unico trigger del recupero automatico
-  // (Task "allenamento a tempo") — vedi avviaRecuperoSeATtempo(). Bloccare
-  // l'interruttore qui, non alla prima cifra scritta, perché è QUESTO il
-  // gesto che dice "questa serie è davvero finita", non un valore ancora in
-  // corso di digitazione.
+  // (Task "allenamento a tempo") — vedi avviaRecuperoSeATtempo(). La scelta
+  // "a tempo" è già bloccata dal popup "Prima di iniziare" molto prima che
+  // si arrivi qui, non serve più bloccarla da questo tasto.
   row.querySelector('.set-fatta-btn').addEventListener('click', ()=>{
     row.classList.toggle('fatta');
     const fatta = row.classList.contains('fatta');
     currentSetInputs[exName][idx]._fatta = fatta;
-    if(fatta){
-      bloccaAllenamentoATempoSeServe();
-      if(fineRound) avviaRecuperoSeATtempo(exName);
-    }
+    if(fatta && fineRound) avviaRecuperoSeATtempo(exName);
     salvaBozza();
   });
 }
