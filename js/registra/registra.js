@@ -341,7 +341,10 @@ function renderRiscaldamentoSuggerito(day){
   const list = document.getElementById('riscaldamentoList');
   list.innerHTML = voci.map((v,i)=>`
     <div class="riscaldamento-item" data-i="${i}">
-      <div class="ri-txt"><span class="ri-nome">${escapeAttr(v.n)}</span><span class="ri-target">${escapeAttr(v.target)}</span></div>
+      <div class="ri-txt">
+        <span class="ri-nome">${escapeAttr(v.n)}</span>
+        <span class="ri-target">${escapeAttr(v.target)}${v.rec ? ` · ⏱ ${v.rec}s recupero` : ''}</span>
+      </div>
       <button type="button" class="ri-fatto-btn" aria-label="Segna fatto" title="Segna fatto">✓</button>
     </div>`).join('');
   list.querySelectorAll('.ri-fatto-btn').forEach(btn=>{
@@ -404,7 +407,12 @@ function buildExerciseForm(day){
         <button type="button" class="tecnica-extra-btn" data-libidx="${i}" data-azione="aggiungi">+ Aggiungi ${ex.dropset.tipo==='restpause'?'rest-pause':'drop'}</button>
         ${ex.dropset.drops.length>1 ? `<button type="button" class="tecnica-extra-btn rimuovi" data-libidx="${i}" data-azione="rimuovi">− Rimuovi ultimo</button>` : ''}
       </div>` : ''}` : '';
-    block.innerHTML = `<div class="exercise-name">${ex.name}<span class="target">(target: ${descriviTargetSerie(ex)})</span>
+    // Recupero (01/09/2026, richiesta esplicita): non si vedeva da nessuna
+    // parte in Registra, solo nella scheda. Niente badge se è la prima metà
+    // di un superset (lì non c'è pausa, vedi supersetEditorHtml in scheda-editor.js).
+    const recuperoBadge = (ex.recupero && ex.supersetCon==null)
+      ? `<span class="ex-recupero-badge">⏱ ${ex.recupero}s recupero</span>` : '';
+    block.innerHTML = `<div class="exercise-name">${ex.name}<span class="target">(target: ${descriviTargetSerie(ex)})</span>${recuperoBadge}
         <a href="${escapeAttr(videoInfo.url)}" data-ex-name="${escapeAttr(ex.name)}" class="video-link" style="margin-left:8px;">▶ Video</a>
         ${rimuoviBtn}</div>
       ${supersetBadge}

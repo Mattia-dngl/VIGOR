@@ -364,7 +364,10 @@ function impostazioniTimer(){
   const t = dove.timer;
   if(typeof t.durata !== 'number') t.durata = 90;
   if(typeof t.suono !== 'boolean') t.suono = true;
-  if(!Array.isArray(t.scorciatoie) || t.scorciatoie.length !== 4) t.scorciatoie = [60, 90, 120, 180];
+  // 3 scorciatoie, non più 4 (01/09/2026, richiesta esplicita): con 4 pulsanti
+  // più "Avvia"/"×" la barra del timer non ci stava in una schermata di
+  // telefono, l'ultimo veniva tagliato a metà sotto "Avvia".
+  if(!Array.isArray(t.scorciatoie) || t.scorciatoie.length !== 3) t.scorciatoie = [60, 90, 120];
   return t;
 }
 function renderScorciatoieTimer(){
@@ -704,7 +707,7 @@ document.getElementById('salvaScorciatoieBtn').addEventListener('click', ()=>{
 });
 document.getElementById('ripristinaScorciatoieBtn').addEventListener('click', ()=>{
   const t = impostazioniTimer();
-  t.scorciatoie = [60, 90, 120, 180];
+  t.scorciatoie = [60, 90, 120];
   save();
   renderScorciatoieTimer();
   renderImpostazioniTimer();

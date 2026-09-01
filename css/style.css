@@ -1151,6 +1151,8 @@
 
   .exercise-name{font-family:var(--font-display); font-size:13px; letter-spacing:0.02em; margin-bottom:6px;}
   .target{color:var(--text-faint); font-size:11px; margin-left:5px; text-transform:none; letter-spacing:0;}
+  .ex-recupero-badge{color:var(--accent); font-size:11px; margin-left:8px; text-transform:none;
+    letter-spacing:0; font-family:'Roboto Mono',monospace;}
   .set-row{display:flex; align-items:center; gap:6px; margin-bottom:5px;}
   .set-row .set-num{width:18px; color:var(--text-faint); font-size:11px; font-family:'Roboto Mono',monospace;}
   .set-row input{padding:6px 9px; font-size:13.5px;}
