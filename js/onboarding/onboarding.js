@@ -128,7 +128,7 @@ function mpRenderList(list, titolo){
         <div class="mp-ex-desc">${ex.d}</div>
         <div class="mp-ex-tags">
           <span class="mp-tag">${ex.g}</span>
-          ${ex.tempo?'<span class="mp-tag time">a tempo</span>':''}
+          ${(ex.tipo && ex.tipo.indexOf('tempo')===0) || ex.tempo?'<span class="mp-tag time">a tempo</span>':''}
           <a class="mp-video" href="${escapeAttr(getExerciseVideoInfo(ex.n).url)}" data-ex-name="${escapeAttr(ex.n)}">▶ Video</a>
         <button type="button" class="mp-video-gestisci" data-gestisci="${escapeAttr(ex.n)}" title="Scegli quale video usare">⋯</button>
         </div>

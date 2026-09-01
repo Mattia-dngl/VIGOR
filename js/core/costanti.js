@@ -59,6 +59,45 @@ function gruppiDaMuscoli(lista){
 }
 const VOLUME_THRESHOLDS = { low: 8, high: 20 }; // <8 basso, 8-20 ottimale, >20 alto
 
+// ============================================================
+// RISCALDAMENTO SUGGERITO (01/09/2026, richiesta esplicita): niente da
+// costruire a mano in scheda — in Registra proponiamo 2-3 movimenti leggeri
+// scelti dai gruppi muscolari REALMENTE coinvolti quel giorno (ex.muscles di
+// ogni esercizio, stessa tassonomia del grafico Volume), non da una sezione
+// separata da compilare. Un movimento per gruppo, nell'ordine in cui i gruppi
+// compaiono nella scheda, fino a un massimo di 3 per non appesantire l'avvio
+// dell'allenamento; se il giorno non ha ancora nessun muscolo taggato (schede
+// vecchie, o "Allenamento libero" prima di scegliere un esercizio) si propone
+// un riscaldamento cardio generico.
+// ============================================================
+const RISCALDAMENTO_PER_GRUPPO = {
+  "Petto":        [{n:"Croci leggere a vuoto", target:"10 rip."}, {n:"Rotazioni delle braccia", target:"20 rip."}],
+  "Schiena":      [{n:"Cat-cow", target:"30 sec"}, {n:"Face pull leggero (o slancio braccia indietro)", target:"12 rip."}],
+  "Spalle":       [{n:"Rotazioni delle spalle", target:"30 sec"}, {n:"Alzate laterali a vuoto", target:"12 rip."}],
+  "Bicipiti":     [{n:"Curl a vuoto", target:"12 rip."}, {n:"Rotazioni dei polsi", target:"20 rip."}],
+  "Tricipiti":    [{n:"Push-up lenti sulle ginocchia", target:"8 rip."}, {n:"Rotazioni delle braccia", target:"20 rip."}],
+  "Quadricipiti": [{n:"Squat a corpo libero", target:"12 rip."}, {n:"Affondi leggeri", target:"10 rip. per lato"}],
+  "Femorali":     [{n:"Slanci gamba avanti/indietro", target:"10 rip. per lato"}, {n:"Affondi leggeri", target:"10 rip. per lato"}],
+  "Glutei":       [{n:"Glute bridge", target:"15 rip."}, {n:"Squat a corpo libero", target:"12 rip."}],
+  "Polpacci":     [{n:"Calf raise a corpo libero", target:"15 rip."}, {n:"Camminata sulle punte", target:"30 sec"}],
+  "Core/Addome":  [{n:"Cat-cow", target:"30 sec"}, {n:"Plank leggero", target:"20 sec"}]
+};
+const RISCALDAMENTO_GENERICO = [{n:"Salto della corda", target:"2 min"}, {n:"Camminata veloce", target:"3 min"}];
+
+function suggerisciRiscaldamento(day){
+  const gruppi = [];
+  (day && day.exercises || []).forEach(ex=>{
+    gruppiDaMuscoli(ex.muscles).forEach(g=>{ if(!gruppi.includes(g)) gruppi.push(g); });
+  });
+  const scelti = [];
+  gruppi.forEach(g=>{
+    if(scelti.length>=3) return;
+    const opz = RISCALDAMENTO_PER_GRUPPO[g];
+    if(opz && opz[0] && !scelti.some(s=>s.n===opz[0].n)) scelti.push(opz[0]);
+  });
+  return scelti.length ? scelti : RISCALDAMENTO_GENERICO.slice(0,2);
+}
+
 // Esercizi comuni da palestra -> gruppi muscolari coinvolti (checked automaticamente alla selezione,
 // poi modificabile a mano: utile se un macchinario specifico della tua palestra lavora anche altro).
 const EXERCISE_MUSCLE_MAP = {
@@ -180,7 +219,6 @@ function tipoMisura(nome){
   if(state.baseExerciseTipi && state.baseExerciseTipi[n]) return state.baseExerciseTipi[n];
   const lib = (typeof libFind === 'function') ? libFind(n) : null;
   if(lib && lib.tipo) return lib.tipo;
-  if(lib && lib.tempo) return "tempo";
   if(/\bplank\b|\bwall sit\b|\bhollow\b|\bdead hang\b|isometri|hold\b/.test(n)) return "tempo";
   if(/corsa|corri|tapis|camminat|bici|cyclette|ellittic|vogatore|nuoto|salto della corda/.test(n)) return "distanza";
   if(/affond|bulgar|split squat|step up|kickback|alzate laterali al cavo|un braccio|gamba singola/.test(n)) return "passi";
@@ -188,6 +226,31 @@ function tipoMisura(nome){
   return "peso";
 }
 function campiDi(nome){ return (TIPI_MISURA[tipoMisura(nome)] || TIPI_MISURA.peso).campi; }
+
+// Etichetta e valore di partenza del campo "target" nell'editor scheda
+// (Serie/Rip.), adattati al vero tipo dell'esercizio invece del fisso
+// "Rip."/10 di sempre — un plank deve chiedere secondi, non ripetizioni.
+function etichettaCampoPrincipale(nome){
+  const c = campiDi(nome)[0];
+  const et = c ? c.etichetta : 'rip.';
+  return et.charAt(0).toUpperCase() + et.slice(1);
+}
+function defaultTargetFor(nome){
+  const t = tipoMisura(nome);
+  if(t==='tempo' || t==='tempopeso') return '30';
+  if(t==='tempo_min' || t==='tempopeso_min' || t==='tempo_ore') return '1';
+  if(t==='distanza') return '2';
+  return '10';
+}
+// Riepilogo "3×10"/"3×30 sec" ecc. usato in vista scheda, editor, Registra e
+// area PT: stessa unità del vero tipo dell'esercizio invece del sempre muto
+// "3×10" che non diceva se erano ripetizioni, secondi o chilometri.
+function descriviTargetSerie(ex){
+  if(!ex) return '';
+  const c = campiDi(ex.name)[0];
+  const unita = (c && c.unita) ? ' '+c.unita : '';
+  return `${ex.sets||0}×${ex.reps||''}${unita}`;
+}
 
 // converto fra il valore "vero" salvato (sempre in secondi, per non rompere storico/grafici)
 // e quello mostrato nel campo (secondi, minuti o ore, secondo il tipo dell'esercizio)

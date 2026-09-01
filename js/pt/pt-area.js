@@ -383,7 +383,7 @@ function renderDettaglioPT(sezione){
           ${(prog.days||[]).map(g=>`
             <div class="pt-scheda-ro">
               <b>${g.key} · ${g.name}</b> <span class="hint">${g.weekday || 'senza giorno fisso'}</span>
-              ${(g.exercises||[]).map(e=>`<div class="hint" style="margin-top:4px;">${e.name} — ${e.sets}×${e.reps}${etichettaTecnica(e,g)}</div>${e.note?`<div class="exercise-note" style="margin:2px 0 4px 10px;">📌 ${escapeAttr(e.note)}</div>`:''}`).join('')}
+              ${(g.exercises||[]).map(e=>`<div class="hint" style="margin-top:4px;">${e.name} — ${descriviTargetSerie(e)}${etichettaTecnica(e,g)}</div>${e.note?`<div class="exercise-note" style="margin:2px 0 4px 10px;">📌 ${escapeAttr(e.note)}</div>`:''}`).join('')}
             </div>`).join('')}
         `}
       </div>

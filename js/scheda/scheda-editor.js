@@ -257,7 +257,7 @@ function renderDayEditors(){
   wrap.querySelectorAll('[data-action="pick-ex"]').forEach(btn=>btn.addEventListener('click', e=>{
     const di = e.target.dataset.di;
     openMusclePicker("Aggiungi esercizio al giorno " + editingDays[di].key, (ex)=>{
-      editingDays[di].exercises.push({name: ex.n, sets: 3, reps: ex.tempo ? "30-45 sec" : "10", muscles: [ex.g], recupero: null});
+      editingDays[di].exercises.push({name: ex.n, sets: 3, reps: defaultTargetFor(ex.n), muscles: [ex.g], recupero: null});
       renderExerciseEditors(di);
       aggiornaRiepilogoGiorno(di);
     });
@@ -266,7 +266,7 @@ function renderDayEditors(){
     const di = btn.dataset.di;
     apriListaEsercizi((ex)=>{
       const muscoli = getExerciseMuscles(ex.n);
-      editingDays[di].exercises.push({name: ex.n, sets: 3, reps: "10", muscles: muscoli ? [...muscoli] : (ex.g ? [ex.g] : []), recupero: null});
+      editingDays[di].exercises.push({name: ex.n, sets: 3, reps: defaultTargetFor(ex.n), muscles: muscoli ? [...muscoli] : (ex.g ? [ex.g] : []), recupero: null});
       renderExerciseEditors(di);
       aggiornaRiepilogoGiorno(di);
     });
@@ -280,6 +280,7 @@ function dropsetEditorHtml(di, ei, ex){
   const drops = (ex.dropset && ex.dropset.drops) || [];
   const opzioniRiduzione = [10,15,20,25,30,35,40,50];
   const nomeTappa = tipo==='restpause' ? 'Rest-pause' : 'Drop';
+  const unita = etichettaCampoPrincipale(ex.name).toLowerCase();
   return `
     <div class="dropset-box">
       <div class="dropset-stage">
@@ -287,7 +288,7 @@ function dropsetEditorHtml(di, ei, ex){
         <div class="dropset-body">
           <div class="dropset-label">Serie principale</div>
           <div class="dropset-fields">
-            <span class="dropset-val">${ex.sets || 0} serie × ${escapeAttr(ex.reps||'')} rip.</span>
+            <span class="dropset-val">${ex.sets || 0} serie × ${escapeAttr(ex.reps||'')} ${unita}</span>
           </div>
         </div>
       </div>
@@ -297,7 +298,6 @@ function dropsetEditorHtml(di, ei, ex){
           <div class="dropset-body">
             <div class="dropset-label">${nomeTappa} ${dj+1}</div>
             <div class="dropset-fields">
-              <input type="number" class="small dropset-reps" placeholder="rip." value="${escapeAttr(d.reps!=null?d.reps:'')}" data-di="${di}" data-ei="${ei}" data-dj="${dj}">
               ${tipo==='restpause'
                 ? `<span class="dropset-val" style="flex:1;">stesso peso, pausa breve</span>`
                 : `<select class="dropset-riduzione" data-di="${di}" data-ei="${ei}" data-dj="${dj}">
@@ -309,8 +309,8 @@ function dropsetEditorHtml(di, ei, ex){
         </div>`).join('')}
       <button type="button" class="btn ghost block dropset-add" data-di="${di}" data-ei="${ei}" style="margin-top:2px;">+ Aggiungi ${nomeTappa.toLowerCase()}</button>
       <p class="hint" style="margin:8px 0 0;">${tipo==='restpause'
-        ? 'Le tappe successive si eseguono con una pausa di 10-15 secondi, allo stesso peso, per allungare la serie.'
-        : "Le tappe successive vengono eseguite senza pausa dopo la serie principale, riducendo il peso della percentuale indicata rispetto alla tappa precedente."}</p>
+        ? 'Le tappe successive si eseguono con una pausa di 10-15 secondi, allo stesso peso, per allungare la serie. Peso e ripetizioni si calcolano da soli in Registra, in base alla serie principale.'
+        : `Le tappe successive vengono eseguite senza pausa dopo la serie principale, riducendo il peso della percentuale indicata rispetto alla tappa precedente. Le ${unita} di ogni tappa si calcolano da sole in Registra, in base a quelle della serie principale.`}</p>
     </div>`;
 }
 
@@ -328,7 +328,7 @@ function supersetEditorHtml(di, ei, ex, day){
       <select class="superset-select" data-di="${di}" data-ei="${ei}">
         ${altri.map(o=>`<option value="${o.idx}" ${String(o.idx)===String(ex.supersetCon)?'selected':''}>${escapeAttr(o.nome)}</option>`).join('')}
       </select>
-      <p class="hint" style="margin-top:8px;">Farai una serie di questo esercizio, poi subito una di <b>${escapeAttr(scelto?scelto.nome:'quello abbinato')}</b>, senza pausa tra i due — poi riposo, e si ripete.</p>
+      <p class="hint" style="margin-top:8px;">Farai una serie di questo esercizio, poi subito una di <b>${escapeAttr(scelto?scelto.nome:'quello abbinato')}</b>, senza pausa tra i due — poi riposo, e si ripete. Il recupero si imposta su <b>${escapeAttr(scelto?scelto.nome:'quello abbinato')}</b>, che chiude la coppia: qui sopra non c'è più il campo, perché tra i due non c'è pausa.</p>
     </div>`;
 }
 
@@ -389,8 +389,10 @@ function renderExerciseEditors(di){
       ${chipSuperset}
       <div class="exercise-edit-row">
         <div class="ex-field"><span class="ex-field-label">Serie</span><input type="number" class="small" placeholder="serie" value="${ex.sets}" data-di="${di}" data-ei="${ei}" data-field="sets"></div>
-        <div class="ex-field"><span class="ex-field-label">Rip.</span><input type="text" class="small" placeholder="rip." value="${escapeAttr(ex.reps)}" data-di="${di}" data-ei="${ei}" data-field="reps"></div>
-        <div class="ex-field"><span class="ex-field-label">Rec. (s)</span><input type="number" class="small rec" placeholder="facolt." title="Recupero in secondi (facoltativo)" min="0" step="5" value="${ex.recupero!=null?ex.recupero:''}" data-di="${di}" data-ei="${ei}" data-field="recupero"></div>
+        <div class="ex-field"><span class="ex-field-label">${etichettaCampoPrincipale(ex.name)}</span><input type="text" class="small" placeholder="${etichettaCampoPrincipale(ex.name).toLowerCase()}" value="${escapeAttr(ex.reps)}" data-di="${di}" data-ei="${ei}" data-field="reps"></div>
+        ${ex.supersetCon!=null
+          ? `<div class="ex-field"><span class="ex-field-label">Rec. (s)</span><span class="ex-field-static" title="In superset non c'è pausa tra questo esercizio e quello abbinato: imposta il recupero sull'esercizio abbinato, che chiude la coppia.">nessuno</span></div>`
+          : `<div class="ex-field"><span class="ex-field-label">Rec. (s)</span><input type="number" class="small rec" placeholder="facolt." title="Recupero in secondi (facoltativo)" min="0" step="5" value="${ex.recupero!=null?ex.recupero:''}" data-di="${di}" data-ei="${ei}" data-field="recupero"></div>`}
       </div>
       <input type="text" class="ex-note-input" placeholder="Nota per l'allenamento (facoltativa) — es. presa larga, attenzione alla spalla…" value="${escapeAttr(ex.note||'')}" data-di="${di}" data-ei="${ei}" data-field="note">
       <details class="ex-sub-details">
@@ -443,7 +445,7 @@ function renderExerciseEditors(di){
       // ridisegnare tutto: altrimenti perderesti il focus mentre stai scrivendo
       if((field==='reps'||field==='sets') && ex.dropset){
         const val = e.target.closest('.exercise-edit-block').querySelector('.dropset-val');
-        if(val) val.textContent = `${ex.sets || 0} serie × ${ex.reps||''} rip.`;
+        if(val) val.textContent = `${ex.sets || 0} serie × ${ex.reps||''} ${etichettaCampoPrincipale(ex.name).toLowerCase()}`;
       }
     });
   });
@@ -461,9 +463,9 @@ function renderExerciseEditors(di){
       scollegaSuperset(giorno, parseInt(ei));   // parto sempre pulito: stacco un eventuale superset esistente
       delete ex.dropset;
       if(tecnica === 'dropset'){
-        ex.dropset = { tipo:'dropset', drops: [{ reps: '8', riduzione: 25 }] };
+        ex.dropset = { tipo:'dropset', drops: [{ riduzione: 25 }] };
       } else if(tecnica === 'restpause'){
-        ex.dropset = { tipo:'restpause', drops: [{ reps: '6', riduzione: 0 }] };
+        ex.dropset = { tipo:'restpause', drops: [{ riduzione: 0 }] };
       } else if(tecnica === 'superset'){
         // di default abbino l'esercizio subito dopo (o, se è l'ultimo, quello subito
         // prima): è l'abbinamento più naturale, non sempre il primo della lista
@@ -485,7 +487,7 @@ function renderExerciseEditors(di){
     btn.addEventListener('click', e=>{
       const {di, ei} = e.target.dataset;
       const tipo = editingDays[di].exercises[ei].dropset.tipo;
-      editingDays[di].exercises[ei].dropset.drops.push({ reps: tipo==='restpause'?'6':'8', riduzione: tipo==='restpause'?0:25 });
+      editingDays[di].exercises[ei].dropset.drops.push({ riduzione: tipo==='restpause'?0:25 });
       renderExerciseEditors(di);
     });
   });
@@ -496,12 +498,6 @@ function renderExerciseEditors(di){
       ex.dropset.drops.splice(dj,1);
       if(ex.dropset.drops.length===0) delete ex.dropset;
       renderExerciseEditors(di);
-    });
-  });
-  list.querySelectorAll('.dropset-reps').forEach(inp=>{
-    inp.addEventListener('input', e=>{
-      const {di, ei, dj} = e.target.dataset;
-      editingDays[di].exercises[ei].dropset.drops[dj].reps = e.target.value;
     });
   });
   list.querySelectorAll('.dropset-riduzione').forEach(sel=>{
@@ -848,7 +844,7 @@ function renderProgramDetailHtml(p){
       </div>
       ${d.exercises.map(ex=>{
         const vi = getExerciseVideoInfo(ex.name);
-        return `<div class="hint">• ${ex.name} — ${ex.sets}×${ex.reps}${etichettaTecnica(ex,d)} <a href="${escapeAttr(vi.url)}" data-ex-name="${escapeAttr(ex.name)}" class="video-link">▶</a></div>
+        return `<div class="hint">• ${ex.name} — ${descriviTargetSerie(ex)}${etichettaTecnica(ex,d)} <a href="${escapeAttr(vi.url)}" data-ex-name="${escapeAttr(ex.name)}" class="video-link">▶</a></div>
           ${ex.note ? `<div class="exercise-note" style="margin:2px 0 6px 14px;">📌 ${escapeAttr(ex.note)}</div>` : ''}`;
       }).join('')}
     </div>`).join('');

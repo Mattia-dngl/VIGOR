@@ -49,7 +49,63 @@ function aggiornaCronometroAllenamento(){
   const c = 2*Math.PI*46;
   ringFill.style.strokeDasharray = String(c);
   ringFill.style.strokeDashoffset = String(c*(1-pct/100));
+  aggiornaToggleATempo();
 }
+
+// Rispecchia _allenamentoATempo/_allenamentoATempoBloccato sull'interruttore:
+// chiamata da aggiornaCronometroAllenamento() (già in tick ogni secondo mentre
+// la card è visibile) così non serve richiamarla a parte da ogni punto che
+// tocca quelle due variabili.
+function aggiornaToggleATempo(){
+  const chk = document.getElementById('allenamentoATempoChk');
+  const sub = document.getElementById('timerATempoSub');
+  if(!chk || !sub) return;
+  chk.checked = _allenamentoATempo;
+  chk.disabled = _allenamentoATempoBloccato;
+  sub.textContent = _allenamentoATempoBloccato
+    ? "Bloccato per questo allenamento"
+    : "Recupero cronometrato tra le serie";
+}
+// Si blocca alla PRIMA serie segnata fatta di questo allenamento (con
+// l'interruttore acceso o spento non importa): evita un recupero tracciato a
+// metà seduta e non tracciato dopo, che renderebbe inutile confrontare i
+// riposi fatti davvero con quelli previsti dalla scheda.
+function bloccaAllenamentoATempoSeServe(){
+  if(_allenamentoATempoBloccato) return;
+  _allenamentoATempoBloccato = true;
+  aggiornaToggleATempo();
+}
+// Fa partire il timer di recupero già esistente (timerAvvia(), lo stesso del
+// bottone "Avvia" manuale) con i secondi impostati sull'esercizio in scheda —
+// solo se l'allenamento è "a tempo", l'esercizio ha un recupero impostato, e
+// non è la prima metà di un superset (lì non c'è pausa: si passa subito al
+// partner, vedi supersetEditorHtml).
+function avviaRecuperoSeATtempo(exName){
+  if(!_allenamentoATempo) return;
+  const ex = _exerciseByName[exName];
+  if(!ex || ex.supersetCon!=null || !ex.recupero) return;
+  timerAvvia(ex.recupero);
+  document.getElementById('timerApri').classList.remove('show');
+  document.getElementById('timerBar').classList.add('show');
+}
+document.getElementById('allenamentoATempoChk').addEventListener('change', e=>{
+  if(_allenamentoATempoBloccato){ e.target.checked = _allenamentoATempo; return; }
+  _allenamentoATempo = e.target.checked;
+  salvaBozza();
+});
+
+// "Allenamento a tempo" (01/09/2026, richiesta esplicita): interruttore scelto
+// a inizio allenamento — se acceso, segnare una serie come fatta (vedi
+// .set-fatta-btn in addSetRow) fa partire da solo il timer di recupero
+// (timerAvvia(), già usato a mano da sempre) con i secondi di ex.recupero
+// della scheda, invece di lasciare quel campo puramente decorativo. Si blocca
+// (non più modificabile) dalla prima serie segnata fatta di QUESTA sessione,
+// così non resta un recupero tracciato a metà e non tracciato dopo — vedi
+// bloccaAllenamentoATempoSeServe(). Persistito nella bozza come _logIniziatoAlle.
+let _allenamentoATempo = false;
+let _allenamentoATempoBloccato = false;
+let _exerciseByName = {};   // nome esercizio -> oggetto scheda del giorno in corso, per leggere ex.recupero/ex.supersetCon dal tasto "fatta"
+let _riscaldamentoNascosto = false;   // "Salta" preme una volta, resta nascosto per il resto di questo allenamento
 
 let selectedDayKey = null;
 // Durata dell'allenamento (Storico, 15° giro): quando scegli un giorno vero (non
@@ -127,6 +183,7 @@ function renderDayChoices(){
   info.className = 'info-banner';
   info.textContent = scheduled ? `Di ${wd} è previsto: ${scheduled.key} · ${scheduled.name}` : `${wd} non è un giorno previsto dalla scheda.`;
 
+  document.getElementById('riscaldamentoCard').style.display='none';
   document.getElementById('exerciseFormCard').style.display='none';
   document.getElementById('notesCard').style.display='none';
   document.getElementById('saveLogBtn').style.display='none';
@@ -172,6 +229,12 @@ function selectDay(key){
   // rompere quel percorso.
   if(key === "SKIP"){ _logIniziatoAlle = null; }
   else { _logIniziatoAlle = new Date().toISOString(); }
+  // stesso discorso di _logIniziatoAlle qui sopra: riparte azzerato a ogni
+  // scelta di giorno, e chi deve riprendere una bozza in corso (ripristinaBozza)
+  // lo sovrascrive subito dopo con quanto salvato.
+  _allenamentoATempo = false;
+  _allenamentoATempoBloccato = false;
+  _riscaldamentoNascosto = false;
   if(typeof aggiornaCronometroAllenamento === 'function') aggiornaCronometroAllenamento();
 
   const p = activeProgram();
@@ -186,6 +249,7 @@ function selectDay(key){
     document.getElementById('freeEmptyHint').style.display='none';
     info.className = 'info-banner';
     info.innerHTML = `<span class="status-badge skip">Saltato</span> Nessun esercizio da registrare per questo giorno.`;
+    document.getElementById('riscaldamentoCard').style.display='none';
     document.getElementById('exerciseFormCard').style.display='none';
     document.getElementById('notesCard').style.display='block';
     document.getElementById('saveLogBtn').style.display='block';
@@ -226,15 +290,47 @@ function selectDay(key){
   document.getElementById('saveLogBtn').style.display='block';
 }
 
+// Riscaldamento suggerito (01/09/2026): niente da compilare in scheda, si
+// calcola da solo dai gruppi muscolari già taggati sugli esercizi del giorno
+// (vedi suggerisciRiscaldamento() in costanti.js). Solo per giorni veri della
+// scheda: "Allenamento libero" non ha una lista fissa di gruppi finché non
+// scegli almeno un esercizio, quindi lì la card resta nascosta.
+function renderRiscaldamentoSuggerito(day){
+  const card = document.getElementById('riscaldamentoCard');
+  if(!card) return;
+  if(day.key === 'LIBERO' || _riscaldamentoNascosto){ card.style.display = 'none'; return; }
+  const voci = suggerisciRiscaldamento(day);
+  if(!voci.length){ card.style.display = 'none'; return; }
+  card.style.display = 'block';
+  document.getElementById('riscaldamentoSub').textContent =
+    "In base ai gruppi muscolari di oggi — solo una guida, non entra nell'allenamento registrato.";
+  const list = document.getElementById('riscaldamentoList');
+  list.innerHTML = voci.map((v,i)=>`
+    <div class="riscaldamento-item" data-i="${i}">
+      <div class="ri-txt"><span class="ri-nome">${escapeAttr(v.n)}</span><span class="ri-target">${escapeAttr(v.target)}</span></div>
+      <button type="button" class="ri-fatto-btn" aria-label="Segna fatto" title="Segna fatto">✓</button>
+    </div>`).join('');
+  list.querySelectorAll('.ri-fatto-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{ btn.closest('.riscaldamento-item').classList.toggle('fatto'); });
+  });
+}
+document.getElementById('riscaldamentoSaltaBtn').addEventListener('click', ()=>{
+  _riscaldamentoNascosto = true;
+  document.getElementById('riscaldamentoCard').style.display = 'none';
+});
+
 function buildExerciseForm(day){
+  renderRiscaldamentoSuggerito(day);
   document.getElementById('exerciseFormTitle').textContent = day.key + " · " + day.name;
   const list = document.getElementById('exerciseFormList');
   list.innerHTML = "";
   currentSetInputs = {};
   _dropsetPerEsercizio = {};
+  _exerciseByName = {};
 
   day.exercises.forEach((ex, i)=>{
     currentSetInputs[ex.name] = [];
+    _exerciseByName[ex.name] = ex;
     const block = document.createElement('div');
     block.className='exercise-block';
     block.dataset.exIndex = i;
@@ -273,7 +369,7 @@ function buildExerciseForm(day){
         <button type="button" class="tecnica-extra-btn" data-libidx="${i}" data-azione="aggiungi">+ Aggiungi ${ex.dropset.tipo==='restpause'?'rest-pause':'drop'}</button>
         ${ex.dropset.drops.length>1 ? `<button type="button" class="tecnica-extra-btn rimuovi" data-libidx="${i}" data-azione="rimuovi">− Rimuovi ultimo</button>` : ''}
       </div>` : ''}` : '';
-    block.innerHTML = `<div class="exercise-name">${ex.name}<span class="target">(target: ${ex.sets}×${ex.reps})</span>
+    block.innerHTML = `<div class="exercise-name">${ex.name}<span class="target">(target: ${descriviTargetSerie(ex)})</span>
         <a href="${escapeAttr(videoInfo.url)}" data-ex-name="${escapeAttr(ex.name)}" class="video-link" style="margin-left:8px;">▶ Video</a>
         ${rimuoviBtn}</div>
       ${supersetBadge}
@@ -300,9 +396,9 @@ function buildExerciseForm(day){
         scollegaSuperset(FREE_DAY, i);   // riparto sempre pulito, come nell'editor scheda
         delete ex.dropset;
         if(tecnica === 'dropset'){
-          ex.dropset = { tipo:'dropset', drops: [{ reps:'8', riduzione:25 }] };
+          ex.dropset = { tipo:'dropset', drops: [{ riduzione:25 }] };
         } else if(tecnica === 'restpause'){
-          ex.dropset = { tipo:'restpause', drops: [{ reps:'6', riduzione:0 }] };
+          ex.dropset = { tipo:'restpause', drops: [{ riduzione:0 }] };
         } else if(tecnica === 'superset'){
           const valido = j => j>=0 && j<FREE_DAY.exercises.length && j!==i && FREE_DAY.exercises[j] && FREE_DAY.exercises[j].name;
           let partner = null;
@@ -324,7 +420,7 @@ function buildExerciseForm(day){
         if(!ex || !ex.dropset || !ex.dropset.drops) return;
         const tipo = ex.dropset.tipo;
         if(btn.dataset.azione === 'aggiungi'){
-          ex.dropset.drops.push({ reps: tipo==='restpause'?'6':'8', riduzione: tipo==='restpause'?0:25 });
+          ex.dropset.drops.push({ riduzione: tipo==='restpause'?0:25 });
         } else if(ex.dropset.drops.length>1){
           ex.dropset.drops.pop();
         }
@@ -390,10 +486,17 @@ function buildExerciseForm(day){
 // diversi test) ma ora è un blocco normale nel flusso della pagina, non più
 // position:absolute — vedi css/style.css.
 
-function addSetRow(exName, tappa){
+// isFineRound: questa riga chiude un round (nessun'altra tappa la segue) —
+// vera di default per una serie semplice (tappa non passata), false per la
+// principale e le tappe intermedie di un dropset/rest-pause, vera per la
+// sua ultima tappa (vedi buildDropsetRound). Decide se segnarla "fatta" fa
+// partire il recupero (avviaRecuperoSeATtempo): a metà di un dropset non c'è
+// pausa da cronometrare, solo dopo l'ultima tappa del round.
+function addSetRow(exName, tappa, isFineRound){
   const container = document.querySelector(`.sets-container[data-ex="${CSS.escape(exName)}"]`);
   const idx = currentSetInputs[exName].length;
   const campi = campiDi(exName);
+  const fineRound = isFineRound !== undefined ? isFineRound : (typeof tappa !== 'number');
 
   const vuota = {};
   campi.forEach(c=>{ vuota[c.chiave] = ''; });
@@ -413,7 +516,8 @@ function addSetRow(exName, tappa){
             placeholder="${c.etichetta}" data-ex="${escapeAttr(exName)}" data-idx="${idx}"
             data-field="${c.chiave}"${campi.length === 1 ? ' style="flex:1;"' : ''}>
      ${c.unita ? `<span class="x">${c.unita}</span>` : ''}`).join('');
-  row.innerHTML = `<span class="set-num">${idx+1}</span>${pezzi}`;
+  row.innerHTML = `<span class="set-num">${idx+1}</span>${pezzi}
+     <button type="button" class="set-fatta-btn" aria-label="Segna serie completata" title="Segna serie completata">✓</button>`;
 
   container.appendChild(row);
   row.querySelectorAll('input').forEach(inp=>{
@@ -421,6 +525,21 @@ function addSetRow(exName, tappa){
       currentSetInputs[inp.dataset.ex][inp.dataset.idx][inp.dataset.field] = valoreDaCampo(inp.dataset.ex, inp.dataset.field, inp.value);
       salvaBozza();
     });
+  });
+  // Segna la serie come fatta: unico trigger del recupero automatico
+  // (Task "allenamento a tempo") — vedi avviaRecuperoSeATtempo(). Bloccare
+  // l'interruttore qui, non alla prima cifra scritta, perché è QUESTO il
+  // gesto che dice "questa serie è davvero finita", non un valore ancora in
+  // corso di digitazione.
+  row.querySelector('.set-fatta-btn').addEventListener('click', ()=>{
+    row.classList.toggle('fatta');
+    const fatta = row.classList.contains('fatta');
+    currentSetInputs[exName][idx]._fatta = fatta;
+    if(fatta){
+      bloccaAllenamentoATempoSeServe();
+      if(fineRound) avviaRecuperoSeATtempo(exName);
+    }
+    salvaBozza();
   });
 }
 
@@ -471,16 +590,18 @@ function buildDropsetRound(exName, numeroRound, dropset, targetReps){
   const container = document.querySelector(`.sets-container[data-ex="${CSS.escape(exName)}"]`);
   const target = parseInt(targetReps, 10);
 
-  addSetRow(exName, 0);
+  // false: la principale non chiude mai il round, seguono sempre le tappe
+  addSetRow(exName, 0, false);
   let rigaPrec = container.lastElementChild;
   rigaPrec.classList.add('drop-row', 'drop-row-main');
   etichettaRiga(rigaPrec, `Serie ${numeroRound} · Principale`);
   let kgPrec = rigaPrec.querySelector('[data-field="kg"]');
   const repsPrincipale = rigaPrec.querySelector('[data-field="reps"]');
   const righeDrop = [];   // {repsInput, idx} di ogni tappa, per il ricalcolo ripetizioni qui sotto
+  const drops = dropset.drops || [];
 
-  (dropset.drops||[]).forEach((drop, dj)=>{
-    addSetRow(exName, dj+1);
+  drops.forEach((drop, dj)=>{
+    addSetRow(exName, dj+1, dj === drops.length-1);   // solo l'ultima tappa chiude il round
     const riga = container.lastElementChild;
     riga.classList.add('drop-row');
     const nomeTappa = dropset.tipo==='restpause' ? `Rest-pause ${dj+1}` : `Drop ${dj+1} (-${drop.riduzione||0}%)`;
@@ -593,6 +714,9 @@ document.getElementById('saveLogBtn').addEventListener('click', ()=>{
   currentSetInputs = {};
   selectedDayKey = null;
   _logIniziatoAlle = null;
+  _allenamentoATempo = false;
+  _allenamentoATempoBloccato = false;
+  _riscaldamentoNascosto = false;
   save();
   toast("Allenamento salvato ✓");
   if(nuoviRecord.length > 0){
@@ -605,6 +729,7 @@ document.getElementById('saveLogBtn').addEventListener('click', ()=>{
     setTimeout(()=>toast(messaggioRecord), 2500);
   }
   document.getElementById('bozzaBanner').style.display = 'none';
+  document.getElementById('riscaldamentoCard').style.display = 'none';
   document.getElementById('exerciseFormCard').style.display = 'none';
   document.getElementById('notesCard').style.display = 'none';
   document.getElementById('saveLogBtn').style.display = 'none';

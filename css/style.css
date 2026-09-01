@@ -1027,6 +1027,32 @@
   .timer-elapsed-title{margin:0; font-family:var(--font-display); font-weight:700; font-size:13.5px; color:var(--text);}
   .timer-elapsed-sub{margin:3px 0 0; font-size:11.5px; color:var(--text-dim); line-height:1.4;}
 
+  .timer-atempo-row{display:flex; align-items:center; justify-content:space-between; gap:10px;
+    margin-top:12px; padding-top:12px; border-top:1px solid var(--border);}
+  .timer-atempo-txt{display:flex; flex-direction:column; gap:2px; min-width:0;}
+  .timer-atempo-txt b{font-family:var(--font-display); font-size:12.5px;}
+  .timer-atempo-txt span{font-size:11px; color:var(--text-dim); line-height:1.4;}
+  #allenamentoATempoChk{flex:0 0 auto; width:20px; height:20px;}
+  #allenamentoATempoChk:disabled{opacity:.5;}
+
+  .riscaldamento-card{border-left:3px solid var(--warn);}
+  .riscaldamento-head{display:flex; align-items:center; justify-content:space-between; gap:8px;}
+  .riscaldamento-head h3{margin:0; font-size:14px; color:var(--warn);}
+  .riscaldamento-salta{background:none; border:none; color:var(--text-faint); font-size:12px;
+    cursor:pointer; padding:4px 0; text-decoration:underline;}
+  .riscaldamento-item{display:flex; align-items:center; justify-content:space-between; gap:10px;
+    padding:9px 0; border-top:1px solid var(--border);}
+  .riscaldamento-item:first-child{border-top:none;}
+  .ri-txt{display:flex; flex-direction:column; gap:1px; min-width:0;}
+  .ri-nome{font-size:13px; font-weight:600;}
+  .ri-target{font-size:11px; color:var(--text-faint); font-family:'Roboto Mono',monospace;}
+  .ri-fatto-btn{flex:0 0 auto; width:26px; height:26px; border-radius:50%; border:1px solid var(--border);
+    background:var(--surface2); color:var(--text-faint); font-size:13px; cursor:pointer; padding:0;
+    display:flex; align-items:center; justify-content:center;}
+  .riscaldamento-item.fatto{opacity:.55;}
+  .riscaldamento-item.fatto .ri-nome{text-decoration:line-through;}
+  .riscaldamento-item.fatto .ri-fatto-btn{background:var(--ok); border-color:var(--ok); color:#fff;}
+
   /* ---------- card "Data allenamento" in Registra ---------- */
   .datacard-top{display:flex; align-items:center; gap:12px;}
   .data-badge{
@@ -1119,6 +1145,11 @@
   .set-row .set-num.drop-row-label{width:auto; white-space:nowrap; color:var(--accent);
     font-family:var(--font-display); font-size:10.5px; letter-spacing:.02em; margin-right:2px;}
   .set-row input.drop-kg-auto{color:var(--accent); font-family:'Roboto Mono',monospace;}
+  .set-fatta-btn{flex:0 0 auto; width:26px; height:26px; border-radius:50%; border:1px solid var(--border);
+    background:var(--surface2); color:var(--text-faint); font-size:13px; cursor:pointer; padding:0;
+    display:flex; align-items:center; justify-content:center;}
+  .set-row.fatta{opacity:.65;}
+  .set-row.fatta .set-fatta-btn{background:var(--ok); border-color:var(--ok); color:#fff;}
   .status-badge{display:inline-block; font-size:10px; padding:2px 8px; border-radius:11px;
     text-transform:uppercase; letter-spacing:0.03em; font-family:var(--font-display);}
   .status-badge.ok{background:rgba(31,157,99,0.14); color:var(--ok);}
@@ -1170,6 +1201,8 @@
   .ex-field-label{font-size:9.5px; font-weight:700; letter-spacing:.03em; text-transform:uppercase;
     color:var(--text-faint); font-family:var(--font-display);}
   .ex-field input{width:100%; box-sizing:border-box;}
+  .ex-field-static{width:100%; box-sizing:border-box; padding:6px 8px; border:1px dashed var(--border);
+    border-radius:8px; font-size:12px; color:var(--text-faint); font-style:italic;}
   .ex-note-input{width:100%; box-sizing:border-box; margin-top:2px; padding:8px 10px;
     font-size:12px; color:var(--text-dim);}
   /* 31/08/2026 (quarto giro, richiesta esplicita): "troppo scatolate" —

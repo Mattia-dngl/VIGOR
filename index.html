@@ -1127,6 +1127,19 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
           <p class="timer-elapsed-sub">Si ferma da solo quando registri.</p>
         </div>
       </div>
+      <!-- 01/09/2026: interruttore "allenamento a tempo" — se acceso, segnare
+           una serie come fatta (vedi .set-fatta-btn in ogni riga) fa partire da
+           solo il timer di recupero qui sopra (#timerBar) con i secondi della
+           scheda (ex.recupero), invece di doverlo avviare a mano ogni volta.
+           Si blocca (non editabile) dalla prima serie segnata fatta di questo
+           allenamento: vedi bloccaAllenamentoATempoSeServe() in registra.js. -->
+      <div class="timer-atempo-row" id="timerATempoRow">
+        <div class="timer-atempo-txt">
+          <b>Allenamento a tempo</b>
+          <span id="timerATempoSub">Recupero cronometrato tra le serie</span>
+        </div>
+        <input type="checkbox" id="allenamentoATempoChk" aria-label="Allenamento a tempo">
+      </div>
     </div>
 
 
@@ -1153,6 +1166,21 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
          che si stava guardando nel carosello" (concetto che senza carosello
          non esiste più), ogni riquadro ha ora il proprio tasto di rimozione
          (vedi buildExerciseForm). -->
+  <!-- Riscaldamento suggerito (01/09/2026): calcolato da suggerisciRiscaldamento()
+       nei gruppi muscolari già taggati sugli esercizi del giorno — niente da
+       compilare in scheda. Solo per i giorni veri della scheda (non "Saltato"
+       né "Allenamento libero", che non ha una lista fissa di gruppi finché
+       non scegli almeno un esercizio). Puramente una guida per chi si
+       allena: le voci segnate "fatta" non vengono salvate nel log. -->
+  <div class="card riscaldamento-card" id="riscaldamentoCard" style="display:none; margin-top:12px;">
+      <div class="riscaldamento-head">
+        <h3>🔥 Riscaldamento suggerito</h3>
+        <button type="button" class="riscaldamento-salta" id="riscaldamentoSaltaBtn">Salta</button>
+      </div>
+      <p class="hint" id="riscaldamentoSub" style="margin:2px 0 10px;"></p>
+      <div id="riscaldamentoList"></div>
+    </div>
+
   <div class="card" id="exerciseFormCard" style="display:none; margin-top:12px;">
       <h3 id="exerciseFormTitle" class="exercise-list-title">Esercizi</h3>
       <div class="exercise-list" id="exerciseFormList"></div>

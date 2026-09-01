@@ -300,7 +300,9 @@ function salvaBozza(){
     serie: JSON.parse(JSON.stringify(currentSetInputs)),
     note: note,
     quando: new Date().toISOString(),
-    iniziatoAlle: _logIniziatoAlle
+    iniziatoAlle: _logIniziatoAlle,
+    allenamentoATempo: _allenamentoATempo,
+    allenamentoATempoBloccato: _allenamentoATempoBloccato
   };
   save();
 }
@@ -312,8 +314,12 @@ function pulisciBozza(silenzioso){
   FREE_DAY.exercises = [];
   selectedDayKey = null;
   _logIniziatoAlle = null;
+  _allenamentoATempo = false;
+  _allenamentoATempoBloccato = false;
+  _riscaldamentoNascosto = false;
   document.getElementById('logNotes').value = "";
   document.getElementById('bozzaBanner').style.display = 'none';
+  document.getElementById('riscaldamentoCard').style.display = 'none';
   document.getElementById('exerciseFormCard').style.display = 'none';
   document.getElementById('notesCard').style.display = 'none';
   document.getElementById('saveLogBtn').style.display = 'none';
@@ -351,6 +357,12 @@ function ripristinaBozza(){
   // ogni volta che riapri l'app durante un allenamento in corso la durata
   // registrata alla fine ripartirebbe da zero.
   _logIniziatoAlle = b.iniziatoAlle || _logIniziatoAlle;
+  // stessa idea di _logIniziatoAlle qui sopra: selectDay le aveva già
+  // azzerate, qui le rimetto com'erano quando è stata salvata la bozza —
+  // altrimenti riaprire l'app a metà allenamento sbloccherebbe di nuovo
+  // l'interruttore "allenamento a tempo" già bloccato.
+  _allenamentoATempo = !!b.allenamentoATempo;
+  _allenamentoATempoBloccato = !!b.allenamentoATempoBloccato;
   if(typeof aggiornaCronometroAllenamento === 'function') aggiornaCronometroAllenamento();
 
   // rimetto i valori digitati, aggiungendo le serie extra create al momento
@@ -366,6 +378,12 @@ function ripristinaBozza(){
         const inp = document.querySelector(`.exercise-block input[data-ex="${CSS.escape(nome)}"][data-idx="${i}"][data-field="${f}"]`);
         if(inp) inp.value = mostraValoreCampo(nome, f, s[f]);
       });
+      if(s._fatta && currentSetInputs[nome][i]){
+        currentSetInputs[nome][i]._fatta = true;
+        const inpAny = document.querySelector(`.exercise-block input[data-ex="${CSS.escape(nome)}"][data-idx="${i}"]`);
+        const riga = inpAny && inpAny.closest('.set-row');
+        if(riga) riga.classList.add('fatta');
+      }
     });
   });
   document.getElementById('logNotes').value = b.note || "";
