@@ -661,7 +661,11 @@ function traduciErrore(m){
   // cambio password) non va mai mostrato così com'è: nessuno capirebbe cosa
   // fare. Meglio un messaggio generico ma comprensibile, con cui si può
   // comunque riprovare.
-  const sembraErroreTecnico = !t || /is not an object|is not a function|evaluating|undefined is not|cannot read propert|null is not|object object|\bnan\b/.test(t);
+  // "can't find variable"/"is not defined" (segnalato il 01/09/2026: dopo un
+  // login corretto, un errore nel caricamento di un file dell'app arrivava
+  // qui e sembrava un errore di password sbagliata) sono ReferenceError
+  // grezzi con lo stesso identico problema.
+  const sembraErroreTecnico = !t || /is not an object|is not a function|evaluating|undefined is not|cannot read propert|null is not|object object|\bnan\b|can't find variable|is not defined/.test(t);
   if(sembraErroreTecnico) return "Qualcosa non ha funzionato. Riprova tra poco.";
   return m;
 }
