@@ -175,9 +175,16 @@ function activeProgram(){
 function customConfirm(message, onConfirm){
   const overlay = document.createElement('div');
   overlay.className = 'custom-confirm-overlay';
+  // message può contenere nome/email di un profilo (es. "Eliminare 'X'?"):
+  // sempre solo testo, mai HTML vero — va quindi escapato prima di finire in
+  // innerHTML, altrimenti un nome tipo "<img src=x onerror=...>" scelto in
+  // fase di registrazione verrebbe eseguito qui invece che mostrato come
+  // testo (bug di sicurezza trovato in revisione, 01/09/2026). "\n" resta
+  // supportato per gli a-capo voluti nei messaggi (prima erano collassati
+  // in uno spazio solo dall'HTML, ora si vedono davvero).
   overlay.innerHTML = `
     <div class="custom-confirm-box">
-      <p>${message}</p>
+      <p>${escapeAttr(message).replace(/\n/g,'<br>')}</p>
       <div class="custom-confirm-actions">
         <button class="btn secondary" id="customConfirmCancel">Annulla</button>
         <button class="btn danger" id="customConfirmOk">Conferma</button>

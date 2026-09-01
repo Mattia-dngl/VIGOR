@@ -220,10 +220,20 @@ test('Piano alimentare assegnato dal PT: passare a "Modifica" apre la tendina in
 
 test('"Oggi dovresti mangiare" (piano del PT per oggi) resta sempre a vista, fuori dalla tendina', async () => {
   const { window, document } = await loadApp();
+  // Bug trovato in revisione: il piano va messo sul giorno della settimana
+  // di OGGI (renderTodayDietPlan legge new Date().getDay()), non su un nome
+  // fisso come "Lunedì" — altrimenti il test passa o fallisce a seconda di
+  // che giorno della settimana gira davvero, invece di verificare sempre lo
+  // stesso comportamento (stessa causa del test corretto in
+  // banner-stato-registra-31-08.test.js).
+  const oggi = ["Domenica","Lunedì","Martedì","Mercoledì","Giovedì","Venerdì","Sabato"][new Date().getDay()];
+  const dietaOggi = {};
+  dietaOggi[oggi] = { libera:false, colazione:'Uova e avena', pranzo:'Pollo e riso', spuntino:'', cena:'' };
+  const profiloDiOggi = profiloConDati({ programs:[{ id:'p1', name:'La mia scheda', createdAt:'2026-01-01', archivedAt:null, scadenza:null,
+    days:[{key:'A', name:'Giorno A', weekday:oggi, exercises:[]}],
+    dietInfo:{}, diet:dietaOggi }] });
   await run(window, `
-    const profilo = ${JSON.stringify(profiloConDati({ programs:[{ id:'p1', name:'La mia scheda', createdAt:'2026-01-01', archivedAt:null, scadenza:null,
-      days:[{key:'A', name:'Giorno A', weekday:'Lunedì', exercises:[]}],
-      dietInfo:{}, diet:{ Lunedì:{ libera:false, colazione:'Uova e avena', pranzo:'Pollo e riso', spuntino:'', cena:'' } } }] }))};
+    const profilo = ${JSON.stringify(profiloDiOggi)};
     state.profiles = [profilo]; activeProfileId = 'io';
     mostraHome();
     vaiA('diet');

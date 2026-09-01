@@ -531,7 +531,23 @@ function formatDateLungo(iso){
   const [y,m,d] = iso.split('-');
   return `${parseInt(d,10)} ${MESI[parseInt(m,10)-1]} ${y}`;
 }
-function escapeAttr(s){ return String(s==null ? "" : s).replace(/"/g,'&quot;'); }
+// Escape HTML completo: usata sia dentro attributi (`data-x="${escapeAttr(x)}"`)
+// sia come contenuto testuale (`<div>${escapeAttr(x)}</div>`) in tutto il resto
+// del codice — deve quindi neutralizzare TUTTI i caratteri speciali, non solo
+// le virgolette. Bug trovato in revisione (01/09/2026): prima sostituiva solo
+// `"`, quindi ovunque fosse usata per inserire testo (nomi di esercizi, note,
+// messaggi di chat PT↔cliente, nomi dei giorni della scheda...) un valore
+// contenente `<script>` o `<img onerror=...>` veniva eseguito invece che
+// mostrato come testo — un vero HTML/script injection salvabile da chiunque
+// scrivesse in uno di questi campi, non solo in fase di login/registrazione.
+function escapeAttr(s){
+  return String(s==null ? "" : s)
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;')
+    .replace(/'/g,'&#39;');
+}
 
 // Applica il nome/logo da brand.js a tutti i punti dove compare — se manca il
 // file, o manca un valore, resta quello scritto qui sotto di riserva.

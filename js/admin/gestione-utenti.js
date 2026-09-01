@@ -42,8 +42,8 @@ async function renderAmministrazioneOnline(){
   boxAttesa.innerHTML = attesa.length === 0
     ? '<div class="empty" style="padding:14px 0;">Nessuna richiesta in sospeso.</div>'
     : attesa.map(p=>`<div class="riga-profilo attesa">
-        <div class="info"><div class="nome">${p.nome || '(senza nome)'}</div>
-          <div class="mail">${p.email}</div></div>
+        <div class="info"><div class="nome">${escapeAttr(p.nome) || '(senza nome)'}</div>
+          <div class="mail">${escapeAttr(p.email)}</div></div>
         <div class="azioni">
           <button class="approva" data-appr="${p.id}">Approva</button>
           <button class="pericolo" data-rifiuta="${p.id}">Rifiuta</button>
@@ -53,8 +53,8 @@ async function renderAmministrazioneOnline(){
   wrap.innerHTML = attivi.map(p=>{
     const suo = p.id === (utenteOnline && utenteOnline.id);
     return `<div class="riga-profilo">
-      <div class="info"><div class="nome">${p.nome || '(senza nome)'}${suo?' (tu)':''}</div>
-        <div class="mail">${p.email} · ${conteggio(p)} allenamenti</div></div>
+      <div class="info"><div class="nome">${escapeAttr(p.nome) || '(senza nome)'}${suo?' (tu)':''}</div>
+        <div class="mail">${escapeAttr(p.email)} · ${conteggio(p)} allenamenti</div></div>
       <div class="azioni">
         <button data-pt="${p.id}" class="${p.is_pt?'ok':''}">${p.is_pt ? 'Togli PT' : 'Rendi PT'}</button>
         <button data-reset="${p.id}">Reimposta password</button>
@@ -107,9 +107,9 @@ async function renderAmministrazioneOnline(){
       const attesa = suoi.filter(r=>r.stato === 'in_attesa').length;
       return `<div class="riga-profilo">
         <div class="info">
-          <div class="nome">${t.nome || t.email}<span class="pt-badge">PT</span></div>
+          <div class="nome">${escapeAttr(t.nome) || escapeAttr(t.email)}<span class="pt-badge">PT</span></div>
           <div class="mail">${attivi.length} seguiti${attesa ? ' · ' + attesa + ' in attesa' : ''}${
-            attivi.length ? '<br>' + attivi.map(r=>perNome[r.cliente_id] || '?').join(', ') : ''}</div>
+            attivi.length ? '<br>' + attivi.map(r=>escapeAttr(perNome[r.cliente_id]) || '?').join(', ') : ''}</div>
         </div></div>`;
     }).join('');
   }
@@ -182,8 +182,8 @@ function renderAmministrazione(){
       const q = quando ? `${String(quando.getDate()).padStart(2,'0')}/${String(quando.getMonth()+1).padStart(2,'0')} alle ${String(quando.getHours()).padStart(2,'0')}:${String(quando.getMinutes()).padStart(2,'0')}` : '';
       return `<div class="riga-profilo attesa">
         <div class="info">
-          <div class="nome">${p.name}</div>
-          <div class="mail">${p.email || 'nessuna email'}${q ? ' · richiesta del ' + q : ''}</div>
+          <div class="nome">${escapeAttr(p.name)}</div>
+          <div class="mail">${escapeAttr(p.email) || 'nessuna email'}${q ? ' · richiesta del ' + q : ''}</div>
         </div>
         <div class="azioni">
           <button class="approva" data-appr="${p.id}">Approva</button>
@@ -219,8 +219,8 @@ function renderAmministrazione(){
     const allen = (p.logs||[]).filter(l=>l.status==='registrato').length;
     return `<div class="riga-profilo">
       <div class="info">
-        <div class="nome">${p.name}${suo?' (tu)':''}</div>
-        <div class="mail">${p.email || 'nessuna email'} · ${allen} allenamenti</div>
+        <div class="nome">${escapeAttr(p.name)}${suo?' (tu)':''}</div>
+        <div class="mail">${escapeAttr(p.email) || 'nessuna email'} · ${allen} allenamenti</div>
       </div>
       <div class="azioni">
         <button data-reset="${p.id}">Reimposta password</button>
