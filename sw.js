@@ -5,7 +5,7 @@
 // l'app se ne accorge da sola e si aggiorna in automatico (vedi
 // js/sistema/offline-sistema.js), senza bisogno che nessuno tocchi nulla.
 // ============================================================
-const VERSIONE = "vigor-v89";
+const VERSIONE = "vigor-v90";
 
 const DA_TENERE = [
   "./",
@@ -38,6 +38,8 @@ const DA_TENERE = [
   "./js/dieta/dieta.js",
   "./js/scheda/scheda-view.js",
   "./js/scheda/scheda-editor.js",
+  "./js/vendor/supabase.js",
+  "./js/vendor/591.supabase.js",
   "./js/init.js",
   "./manifest.webmanifest",
   "./assets/icons/icon-192.png",
@@ -49,8 +51,8 @@ const DA_TENERE = [
 
 // librerie e caratteri presi da internet: li conservo al primo avvio con rete,
 // così grafici, esportazione Excel e font funzionano anche offline
+// (Supabase non è più qui: è servita in locale, vedi js/vendor/ e DA_TENERE)
 const DA_TENERE_ESTERNI = [
-  "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js",
   "https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js",
   "https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js",
   "https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600;700&family=Roboto+Mono:wght@400;500;700&display=swap"

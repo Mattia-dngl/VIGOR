@@ -35,8 +35,10 @@ function buildHtml(){
   // le tre <script src="https://cdn...">: sostituite da stub, in ordine di apparizione
   html = html.replace(/<script src="js\/config\.js"><\/script>/, `<script>${STUB_LIBS}</script>`);
   html = html.replace(/<script src="js\/brand\.js"><\/script>/, `<script>${readFile('js/brand.js')}</script>`);
-  html = html.replace(/<script src="https:\/\/cdn\.jsdelivr\.net[^"]*"><\/script>\s*<script src="https:\/\/cdnjs[^"]*chart[^"]*"><\/script>\s*<script src="https:\/\/cdnjs[^"]*xlsx[^"]*"><\/script>/i, '');
-  html = html.replace(/<script src="https:\/\/cdn\.jsdelivr\.net[^"]*"><\/script>/i, '');
+  // libreria Supabase: servita da js/vendor/supabase.js (non più dal CDN), ma
+  // qui resta stubbata come le altre — i test non chiamano mai davvero
+  // supabase.createClient(), sostituiscono direttamente `sb` a mano.
+  html = html.replace(/<script src="js\/vendor\/supabase\.js"><\/script>/, '');
   html = html.replace(/<script src="https:\/\/cdnjs[^"]*chart[^"]*"><\/script>/i, '');
   html = html.replace(/<script src="https:\/\/cdnjs[^"]*xlsx[^"]*"><\/script>/i, '');
   html = html.replace(/<script src="js\/corpo\.js"><\/script>/, `<script>${readFile('js/corpo.js')}</script>`);
