@@ -5,7 +5,7 @@
 // larghezza + testo permessi + 2 interruttori + tasto "Termina rapporto").
 // Ora resta sempre a vista solo una riga compatta (avatar + nome + badge
 // "ti segue" + data + tasto tondo Messaggi) più una riga permessi altrettanto
-// compatta (due interruttori piccoli + un link "Termina rapporto").
+// compatta (due interruttori piccoli).
 //
 // 31/08/2026 (stesso giorno, seconda modifica): la primissima versione di
 // questa card metteva permessi e "Termina rapporto" dietro una <details>
@@ -14,6 +14,11 @@
 // mi convincono molto". Tolta la <details>: tutto resta SEMPRE a vista, ma
 // nella riga compatta descritta sopra invece che nella forma ingombrante di
 // prima. Nessuna funzione tolta, solo riorganizzata due volte di fila.
+//
+// 02/09/2026 (terza modifica): "Termina rapporto" era un link testuale
+// proprio accanto agli interruttori dei permessi — troppo facile da toccare
+// per sbaglio. Spostato sotto "Compila" come vero bottone (#chiudiRapportoBtn
+// resta lo stesso id) in una riga propria, staccata da un bordo.
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const { loadApp, run } = require('./helpers/loadApp.js');

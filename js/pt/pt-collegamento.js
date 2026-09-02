@@ -216,9 +216,11 @@ async function renderMioPT(){
     // nascondeva permessi e "Termina rapporto" dietro una <details>: tolta
     // su richiesta esplicita dell'utente ("non mi convincono molto" proprio
     // riferito a questa) — restano sempre a vista ma in una riga compatta
-    // (due interruttori piccoli + un link testuale), non più nella forma
-    // ingombrante di prima (2 righe intere + un bottone a tutta larghezza).
-    // Nessuna funzione tolta.
+    // (due interruttori piccoli), non più nella forma ingombrante di prima
+    // (2 righe intere + un bottone a tutta larghezza).
+    // "Termina rapporto" (02/09/2026): era un link testuale accanto ai
+    // permessi, troppo facile da toccare per sbaglio. Spostato in fondo,
+    // sotto "Compila", come vero bottone separato da un bordo.
     box.innerHTML = `
       <div class="pt-riga pt-riga-compatta">
         <div class="pt-avatar">${avatarContentHtml(nomeDi(pt), (pt.dati||{}).avatarUrl)}</div>
@@ -240,7 +242,6 @@ async function renderMioPT(){
           <span class="interruttore interruttore-sm"><input type="checkbox" id="permDieta" ${attivo.puo_dieta?'checked':''}><span></span></span>
           Dieta
         </label>
-        <button type="button" class="pt-termina-mini" id="chiudiRapportoBtn">Termina rapporto</button>
       </div>
       ${attivo.checkin_attivo ? (()=>{
           // Cadenza decisa dal PT per QUESTO rapporto (attivo.checkin_cadenza_settimane):
@@ -252,7 +253,10 @@ async function renderMioPT(){
             <span class="pt-checkin-label">${dovuto ? '🔔 Check-in da fare' : `Check-in ogni ${n} settiman${n===1?'a':'e'}`}</span>
             <button type="button" class="btn ghost" id="apriCheckinBtn" style="margin-top:0; padding:6px 12px; font-size:11.5px;">Compila</button>
           </div>`;
-        })() : ''}`;
+        })() : ''}
+      <div class="pt-termina-riga">
+        <button type="button" class="pt-termina-btn" id="chiudiRapportoBtn">Termina rapporto</button>
+      </div>`;
 
     document.getElementById('permScheda').addEventListener('change', e=>cambiaPermesso(attivo.id, 'puo_scheda', e.target.checked));
     document.getElementById('permDieta').addEventListener('change', e=>cambiaPermesso(attivo.id, 'puo_dieta', e.target.checked));
