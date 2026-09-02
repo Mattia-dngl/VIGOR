@@ -1293,7 +1293,8 @@
   .autocomplete-item{padding:10px 12px; font-size:13.5px; cursor:pointer; border-bottom:1px solid var(--border); color:var(--text);}
   .autocomplete-item:last-child{border-bottom:none;}
   .autocomplete-item:active{background:var(--surface2);}
-  .remove-x, .dropset-remove{background:none; border:none; color:var(--text-faint); font-size:17px; cursor:pointer; padding:0 4px;}
+  .remove-x, .dropset-remove, .set-remove-btn{background:none; border:none; color:var(--text-faint); font-size:17px; cursor:pointer; padding:0 4px;}
+  .set-remove-btn{flex:0 0 auto;}
   .day-editor{background:var(--surface); box-shadow:var(--shadow-sm); border:none; border-radius:var(--r-md); padding:14px 15px; margin-bottom:10px;}
   /* separa "Rimuovi giorno" dai due bottoni di aggiunta esercizio sopra,
      stesso motivo dei divisori altrove: senza, sembrava un'unica azione
@@ -2310,7 +2311,7 @@
 
   /* ---- feedback di interazione: press/hover coerenti ovunque mancassero ---- */
   .btn, .seg-btn, .chip, .muscle-chip, .icon-btn-round, .btn-nuova-scheda,
-  .day-select, .free-chip-btn, .ex-remove-btn, .remove-x, .dropset-remove,
+  .day-select, .free-chip-btn, .ex-remove-btn, .remove-x, .dropset-remove, .set-remove-btn,
   .tecnica-extra-btn, .video-link, .add-set, .day-accordion > summary,
   .day-view-accordion > summary, .exercise-edit-block, .dropset-add,
   .acct-gear-btn, .cal-nav-btn, .storico-menu-btn, .mp-add {
@@ -2329,7 +2330,7 @@
   .icon-btn-round:focus-visible, .btn-nuova-scheda:focus-visible, .day-select:focus-visible,
   .free-chip-btn:focus-visible, .day-accordion > summary:focus-visible,
   .day-view-accordion > summary:focus-visible, .ex-remove-btn:focus-visible,
-  .remove-x:focus-visible, .dropset-remove:focus-visible, .video-link:focus-visible,
+  .remove-x:focus-visible, .dropset-remove:focus-visible, .set-remove-btn:focus-visible, .video-link:focus-visible,
   .add-set:focus-visible, .tecnica-extra-btn:focus-visible{
     outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px;
   }
@@ -2340,7 +2341,7 @@
   /* ---- aree di tocco minime sui pulsanti-testo (WCAG 24×24 CSS px) ---- */
   .tecnica-extra-btn{ padding:6px 0; min-height:24px; display:inline-flex; align-items:center; }
   .add-set{ padding:7px 0; min-height:24px; display:inline-flex; align-items:center; }
-  .remove-x, .dropset-remove{ display:inline-flex; align-items:center; justify-content:center; min-width:24px; min-height:24px; }
+  .remove-x, .dropset-remove, .set-remove-btn{ display:inline-flex; align-items:center; justify-content:center; min-width:24px; min-height:24px; }
   .set-row input{ padding:9px 10px; font-size:14px; }
 
   /* ---- Scheda in sola lettura: la card del programma attivo si nota di più ---- */
@@ -2385,7 +2386,7 @@
   /* ---- rispetto di chi preferisce meno movimento ---- */
   @media (prefers-reduced-motion: reduce){
     .btn, .seg-btn, .chip, .muscle-chip, .icon-btn-round, .btn-nuova-scheda,
-    .day-select, .free-chip-btn, .ex-remove-btn, .remove-x, .dropset-remove,
+    .day-select, .free-chip-btn, .ex-remove-btn, .remove-x, .dropset-remove, .set-remove-btn,
     .day-accordion > summary, .day-view-accordion > summary, .exercise-edit-block,
     .scheda-progress-fill, .day-view-accordion, .day-accordion, .exercise-block{
       transition: none !important;

@@ -567,6 +567,12 @@ function addSetRow(exName, tappa, isFineRound){
 
   const row = document.createElement('div');
   row.className = 'set-row';
+  row.dataset.idx = idx;
+  // Una riga "di round" (main o drop/rest-pause di un dropset, creata da
+  // buildDropsetRound con tappa un numero) non si toglie da qui: la sua
+  // struttura è gestita dalla "Tecnica speciale" (aggiungi/rimuovi tappa),
+  // non ha senso avere anche un tasto × indipendente su ogni riga.
+  const diRound = typeof tappa === 'number';
   const pezzi = campi.map((c, i)=>
     `${i > 0 ? '<span class="x">×</span>' : ''}
      <input type="number" inputmode="${c.passo < 1 ? 'decimal' : 'numeric'}" step="${c.passo}"
@@ -574,7 +580,8 @@ function addSetRow(exName, tappa, isFineRound){
             data-field="${c.chiave}"${campi.length === 1 ? ' style="flex:1;"' : ''}>
      ${c.unita ? `<span class="x">${c.unita}</span>` : ''}`).join('');
   row.innerHTML = `<span class="set-num">${idx+1}</span>${pezzi}
-     <button type="button" class="set-fatta-btn" aria-label="Segna serie completata" title="Segna serie completata">✓</button>`;
+     <button type="button" class="set-fatta-btn" aria-label="Segna serie completata" title="Segna serie completata">✓</button>
+     ${diRound ? '' : '<button type="button" class="set-remove-btn" aria-label="Togli questa serie" title="Togli questa serie">×</button>'}`;
 
   container.appendChild(row);
   row.querySelectorAll('input').forEach(inp=>{
@@ -587,13 +594,51 @@ function addSetRow(exName, tappa, isFineRound){
   // (Task "allenamento a tempo") — vedi avviaRecuperoSeATtempo(). La scelta
   // "a tempo" è già bloccata dal popup "Prima di iniziare" molto prima che
   // si arrivi qui, non serve più bloccarla da questo tasto.
+  // L'indice si legge da row.dataset.idx (non dalla variabile "idx" chiusa
+  // qui sopra): dopo aver tolto una serie precedente con rimuoviSetRow()
+  // quell'attributo viene aggiornato, la variabile "idx" catturata alla
+  // creazione invece resterebbe quella vecchia e scriverebbe sulla serie sbagliata.
   row.querySelector('.set-fatta-btn').addEventListener('click', ()=>{
     row.classList.toggle('fatta');
     const fatta = row.classList.contains('fatta');
-    currentSetInputs[exName][idx]._fatta = fatta;
+    currentSetInputs[exName][parseInt(row.dataset.idx)]._fatta = fatta;
     if(fatta && fineRound) avviaRecuperoSeATtempo(exName);
     salvaBozza();
   });
+  const removeBtn = row.querySelector('.set-remove-btn');
+  if(removeBtn) removeBtn.addEventListener('click', ()=>rimuoviSetRow(exName, row));
+  aggiornaVisibilitaRimuoviSet(exName);
+}
+
+// Toglie UNA serie normale (richiesta esplicita: "seleziono un esercizio, mi
+// inserisce 3 serie di default, come faccio a farne solo 1?"). Resta sempre
+// almeno una serie — vedi aggiornaVisibilitaRimuoviSet, che nasconde il
+// tasto quando ne rimane solo una.
+function rimuoviSetRow(exName, row){
+  if(currentSetInputs[exName].length <= 1) return;
+  const idxTolto = parseInt(row.dataset.idx);
+  currentSetInputs[exName].splice(idxTolto, 1);
+  const container = row.parentElement;
+  row.remove();
+  // le righe dopo quella tolta slittano di una posizione: rinumero sia il
+  // testo (1,2,3…) sia gli attributi da cui gli altri listener leggono
+  // l'indice giusto (data-idx sulla riga e su ogni suo input).
+  Array.from(container.children).forEach((r, i)=>{
+    r.dataset.idx = i;
+    const num = r.querySelector('.set-num');
+    if(num) num.textContent = i+1;
+    r.querySelectorAll('input[data-idx]').forEach(inp=>{ inp.dataset.idx = i; });
+  });
+  salvaBozza();
+  aggiornaVisibilitaRimuoviSet(exName);
+}
+// Con una sola serie rimasta non ha senso poterla togliere: nasconde il
+// tasto invece di lasciarlo lì a non fare nulla.
+function aggiornaVisibilitaRimuoviSet(exName){
+  const container = document.querySelector(`.sets-container[data-ex="${CSS.escape(exName)}"]`);
+  if(!container) return;
+  const soloUna = currentSetInputs[exName].length <= 1;
+  container.querySelectorAll('.set-remove-btn').forEach(b=>{ b.style.display = soloUna ? 'none' : ''; });
 }
 
 // Ripartisce le ripetizioni "rimaste da fare" (target dell'esercizio meno
