@@ -29,12 +29,50 @@
     (document.body || document.documentElement).appendChild(b);
   }
   window.addEventListener('error', function(e){
+    // Un errore di caricamento risorsa (uno <script src> bloccato o irraggiungibile
+    // — CDN, ad-blocker, rete che filtra un dominio) non ha message/filename e
+    // arriva SOLO in fase di cattura, non in bubbling: per questo il listener
+    // qui sotto è registrato con "true" come terzo argomento.
+    if(e && e.target && e.target !== window && e.target.tagName){
+      mostraErroreGlobale('Risorsa non caricata: <' + e.target.tagName.toLowerCase() + '> ' + (e.target.src || e.target.href || '?'));
+      return;
+    }
     mostraErroreGlobale((e.message || 'Errore sconosciuto') + '\n' + (e.filename || '') + ':' + (e.lineno || '?') + ':' + (e.colno || '?'));
-  });
+  }, true);
   window.addEventListener('unhandledrejection', function(e){
     var r = e.reason;
     mostraErroreGlobale('Promise non gestita: ' + ((r && (r.stack || r.message)) || String(r)));
   });
+
+  // Rete di sicurezza ANCORA più a monte: se dopo 20 secondi si è ancora sulla
+  // schermata "Connessione…" mostrata all'avvio (nessun errore intercettato
+  // sopra, nessuna schermata successiva raggiunta), il sospetto più concreto
+  // è una versione vecchia della pagina o del Service Worker rimasta bloccata
+  // sul dispositivo — capitato davvero il 01-02/09/2026: nessuna correzione
+  // arrivava a un telefono di test nonostante fosse già online, e neanche
+  // dopo aver toccato "Aggiorna" nel banner di aggiornamento. Qui la persona
+  // non deve fare nient'altro: si ripulisce tutto da sola una volta sola
+  // (mai in loop, vedi il controllo su sessionStorage) e si ricarica.
+  setTimeout(function(){
+    try{
+      var schermo = document.getElementById('cloudCaricamento');
+      if(!schermo || schermo.style.display !== 'block') return; // già andati oltre, tutto bene
+      if(sessionStorage.getItem('vigorPuliziaForzataFatta') === '1') return; // già tentato in questa sessione, non rientrare in loop
+      sessionStorage.setItem('vigorPuliziaForzataFatta', '1');
+      var pulizie = [];
+      if('serviceWorker' in navigator){
+        pulizie.push(navigator.serviceWorker.getRegistrations().then(function(regs){
+          return Promise.all(regs.map(function(r){ return r.unregister(); }));
+        }));
+      }
+      if('caches' in window){
+        pulizie.push(caches.keys().then(function(nomi){
+          return Promise.all(nomi.map(function(n){ return caches.delete(n); }));
+        }));
+      }
+      Promise.all(pulizie).catch(function(){}).then(function(){ location.reload(); });
+    }catch(e){}
+  }, 20000);
 })();
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
