@@ -4,6 +4,39 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
 <title>Registro Allenamento</title>
+<script>
+// Rete di sicurezza DI PRIMO LIVELLO, registrata prima di qualunque altro
+// script dell'app: cattura ANCHE gli errori che nessun try/catch nostro può
+// vedere — un errore di sintassi o un ReferenceError durante il caricamento
+// di uno qualunque dei file JS più sotto interrompe silenziosamente quello
+// script, lasciando la persona bloccata sulla schermata "Connessione…"
+// mostrata subito dopo, SENZA che il .catch() dentro init.js (che vede solo
+// gli errori dentro la catena avvioOnline/dopoAccessoOnline) possa accorgersene.
+// Qui mostro il messaggio vero in un banner che non dipende da nessun altro
+// file (niente CSS/JS esterno), così funziona anche se tutto il resto è rotto.
+(function(){
+  var mostrato = false;
+  function mostraErroreGlobale(testo){
+    if(mostrato) return; // il primo errore è quasi sempre quello che conta
+    mostrato = true;
+    var b = document.createElement('div');
+    b.style.cssText = 'position:fixed; inset:0; z-index:99999; background:#fff; color:#1a1a1a; '
+      + 'font-family:sans-serif; padding:24px; overflow:auto; font-size:14px; line-height:1.5;';
+    b.innerHTML = '<b style="font-size:16px;">Si è verificato un errore imprevisto durante il caricamento.</b>'
+      + '<p style="white-space:pre-wrap; word-break:break-word; background:#f3f4f6; padding:12px; border-radius:8px;">'
+      + testo.replace(/&/g,'&amp;').replace(/</g,'&lt;') + '</p>'
+      + '<button onclick="location.reload()" style="padding:12px 20px; font-size:14px; border-radius:10px; border:none; background:#ff4b2b; color:#fff; font-weight:700;">Ricarica</button>';
+    (document.body || document.documentElement).appendChild(b);
+  }
+  window.addEventListener('error', function(e){
+    mostraErroreGlobale((e.message || 'Errore sconosciuto') + '\n' + (e.filename || '') + ':' + (e.lineno || '?') + ':' + (e.colno || '?'));
+  });
+  window.addEventListener('unhandledrejection', function(e){
+    var r = e.reason;
+    mostraErroreGlobale('Promise non gestita: ' + ((r && (r.stack || r.message)) || String(r)));
+  });
+})();
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Roboto+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <script src="js/config.js"></script>
