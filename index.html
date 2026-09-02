@@ -117,14 +117,28 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
         <span>Continua con Google</span>
       </button>
       <div class="auth-divider">oppure con email</div>
-      <label>Nome</label>
-      <input type="text" id="regNome" placeholder="Es. Mattia">
-      <label>Email</label>
-      <input type="email" id="regEmail" placeholder="tu@email.com" autocomplete="email" spellcheck="false">
-      <label>Password</label>
-      <input type="password" id="regPw" placeholder="Almeno 8 caratteri" autocomplete="new-password">
+
+      <!-- Registrazione in due passi (01/09/2026): prima solo l'email, poi
+           nome e password — invece di tre campi tutti insieme. regEmail
+           resta lo stesso input in entrambi i casi, solo nascosto/mostrato
+           spostandolo tra i due blocchi: il valore non si perde passando
+           da un passo all'altro. -->
+      <div id="regStep1">
+        <label>Email</label>
+        <input type="email" id="regEmail" placeholder="tu@email.com" autocomplete="email" spellcheck="false">
+        <button class="btn block" id="regContinuaBtn" style="margin-top:14px;">Continua</button>
+      </div>
+
+      <div id="regStep2" style="display:none;">
+        <label>Nome</label>
+        <input type="text" id="regNome" placeholder="Es. Mattia">
+        <label>Password</label>
+        <input type="password" id="regPw" placeholder="Almeno 8 caratteri" autocomplete="new-password">
+        <button class="btn block" id="regBtn" style="margin-top:14px;">Registrati</button>
+        <button class="link-btn" id="regTornaEmailBtn" style="margin-top:10px;">← Cambia email</button>
+      </div>
+
       <div class="hint" id="regErr" style="color:var(--accent); display:none; margin-top:6px;"></div>
-      <button class="btn block" id="regBtn" style="margin-top:14px;">Registrati</button>
       <button class="link-btn" id="cloudVaiAccedi" style="margin-top:12px;">Hai già un account? Accedi</button>
     </div>
 
@@ -1895,6 +1909,7 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
 <script src="js/esercizi/glossario-libero.js"></script>
 <script src="js/ui/profile-gate.js"></script>
 <script src="js/ui/tabs-header.js"></script>
+<script src="js/ui/campo-password.js"></script>
 <script src="js/registra/registra.js"></script>
 <script src="js/storico/storico.js"></script>
 <script src="js/dieta/dieta.js"></script>

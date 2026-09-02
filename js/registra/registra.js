@@ -379,6 +379,19 @@ function buildExerciseForm(day){
            <button type="button" class="riporta-btn" data-riporta="${escapeAttr(ex.name)}">riporta</button></div>`
       : `<div class="ultima-volta vuota">Prima volta che registri questo esercizio.</div>`;
     const nota = ex.note ? `<div class="exercise-note">📌 ${escapeAttr(ex.note)}</div>` : '';
+    // Progressione automatica (01/09/2026): se il PT ne ha impostata una su
+    // questo esercizio, mostro il peso calcolato per la settimana in corso
+    // — solo un suggerimento, il cliente registra comunque il peso che vuole.
+    // Il controllo su ex.progressione PRIMA di chiamare activeProgram() non è
+    // solo un'ottimizzazione: buildExerciseForm() viene chiamata anche con
+    // profili "minimi" senza affatto un array `programs` (es. costruendo a
+    // mano un giorno per un test, o in scenari difensivi) — chiamare
+    // activeProgram() lì manderebbe in crash l'intera schermata per un
+    // suggerimento che comunque non ci sarebbe da mostrare.
+    const pesoSuggerito = (ex.progressione && ex.progressione.attiva)
+      ? pesoProgressivo(ex, activeProgram()) : null;
+    const rigaProg = pesoSuggerito!=null
+      ? `<div class="progressione-suggerita">📈 Suggerito questa settimana: <b>${pesoSuggerito} kg</b></div>` : '';
     const partnerIdx = ex.supersetCon!=null ? ex.supersetCon : chiMiHaAbbinato(day, i);
     const partner = (partnerIdx!=null && partnerIdx>=0) ? day.exercises[partnerIdx] : null;
     const supersetBadge = partner ? `<div class="superset-badge">⚡ Superset con <b>${escapeAttr(partner.name)}</b>
@@ -417,6 +430,7 @@ function buildExerciseForm(day){
         ${rimuoviBtn}</div>
       ${supersetBadge}
       ${nota}
+      ${rigaProg}
       ${rigaPrec}
       ${tecnicaPicker}
       <div class="sets-container" data-ex="${escapeAttr(ex.name)}"></div>

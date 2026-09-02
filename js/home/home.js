@@ -10,6 +10,9 @@ function mostraCloudGate(quale){
   g.style.display = 'flex';
   document.getElementById('cloudAccedi').style.display     = quale === 'accedi'      ? 'block':'none';
   document.getElementById('cloudRegistra').style.display   = quale === 'registra'    ? 'block':'none';
+  // Registrazione in due passi (01/09/2026): ogni volta che si apre "Registrati"
+  // si riparte sempre dal passo 1 (email), mai a metà di un tentativo precedente.
+  if(quale === 'registra' && typeof resetRegistrazioneStep1 === 'function') resetRegistrazioneStep1();
   document.getElementById('cloudAttesa').style.display     = quale === 'attesa'      ? 'block':'none';
   document.getElementById('cloudCaricamento').style.display= quale === 'caricamento' ? 'block':'none';
   document.getElementById('cloudRecovery').style.display   = quale === 'recovery'    ? 'block':'none';

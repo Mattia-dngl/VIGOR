@@ -211,4 +211,18 @@ const EX_LIB = [
   {n:"Calf raise alla macchina", g:"Polpacci", slugs:["calves"], d:"Sollevamento sulle punte con pad sulle spalle. Carichi elevati in sicurezza.", v:"https://www.muscleandstrength.com/exercises/standing-machine-calf-raise"},
   {n:"Crunch con sovraccarico", tipo:"corpo", g:"Core/Addome", slugs:["abs"], d:"Crunch tenendo un disco al petto: permette di progredire quando il corpo libero non basta più.", v:"https://www.muscleandstrength.com/exercises/weighted-crunch.html"},
   {n:"Crunch ai cavi in piedi", tipo:"corpo", g:"Core/Addome", slugs:["abs"], d:"Crunch al cavo alto restando in piedi. Alternativa a quello in ginocchio.", v:"https://www.muscleandstrength.com/exercises/standing-cable-crunch.html"},
+
+  // ---------- CARDIO (01/09/2026) — usano il tipo "distanza" (già esistente
+  // nel modello dati, campiDi/TIPI_MISURA in js/core/costanti.js: chiede km +
+  // minuti invece di ripetizioni x kg). Il tipo "distanza" c'era già (lo
+  // riconosceva anche da solo il nome scritto a mano in tipoMisura()), e
+  // "Salto della corda" era già in libreria (vedi sezione Polpacci più sopra)
+  // — mancavano solo gli altri cardio più comuni: chi voleva registrare una
+  // corsa doveva scriverla a mano invece di sceglierla come ogni altro esercizio.
+  {n:"Corsa", tipo:"distanza", g:"Polpacci", slugs:["calves","quadriceps"], d:"Corsa all'aperto o su tapis roulant. Registra distanza percorsa e minuti impiegati."},
+  {n:"Camminata veloce", tipo:"distanza", g:"Polpacci", slugs:["calves"], d:"Camminata a ritmo sostenuto, all'aperto o su tapis roulant."},
+  {n:"Bici / Cyclette", tipo:"distanza", g:"Quadricipiti", slugs:["quadriceps"], d:"Bici all'aperto o cyclette in palestra. Registra distanza e minuti."},
+  {n:"Ellittica", tipo:"distanza", g:"Quadricipiti", slugs:["quadriceps","calves"], d:"Ellittica in palestra: lavoro cardio a basso impatto sulle articolazioni."},
+  {n:"Vogatore", tipo:"distanza", g:"Schiena", slugs:["upper-back","lower-back"], d:"Vogatore (rowing machine): cardio che coinvolge anche schiena e gambe."},
+  {n:"Nuoto", tipo:"distanza", g:"Schiena", slugs:["upper-back"], d:"Nuoto in piscina o acque libere. Registra distanza e minuti nuotati."},
 ];

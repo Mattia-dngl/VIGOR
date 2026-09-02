@@ -224,11 +224,16 @@ test('editor esercizio: "Muscoli coinvolti" e "Tecnica speciale" sono tendine ch
     renderDayEditors();
   `);
   const dettagli = document.querySelectorAll('.ex-list[data-di="0"] .ex-sub-details');
-  assert.equal(dettagli.length, 2, 'devono esserci due tendine: Muscoli coinvolti e Tecnica speciale');
+  // Terza tendina "Progressione automatica" (01/09/2026): "Panca Piana" ha un
+  // campo kg (tipo "peso"), quindi la riceve — vedi progressione-automatica-pt.test.js
+  // per la copertura completa di quella tendina.
+  assert.equal(dettagli.length, 3, 'devono esserci tre tendine: Muscoli coinvolti, Tecnica speciale e Progressione automatica');
   assert.equal(dettagli[0].open, false, '"Muscoli coinvolti" chiusa di default');
   assert.equal(dettagli[1].open, false, '"Tecnica speciale" chiusa di default se nessuna tecnica è attiva');
+  assert.equal(dettagli[2].open, false, '"Progressione automatica" chiusa di default se non attiva');
   assert.equal(dettagli[0].querySelector('.ex-sub-riassunto').textContent, 'Petto, Tricipiti');
   assert.equal(dettagli[1].querySelector('.ex-sub-riassunto').textContent, 'Nessuna');
+  assert.equal(dettagli[2].querySelector('.ex-sub-riassunto').textContent, 'Nessuna');
   window.close();
 });
 

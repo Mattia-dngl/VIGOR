@@ -263,6 +263,32 @@ function descriviTargetSerie(ex){
   return `${ex.sets||0}×${ex.reps||''}${unita}`;
 }
 
+// Progressione automatica (01/09/2026, richiesta esplicita): il PT può
+// impostare su un esercizio ex.progressione = { attiva, base, incremento,
+// unita: 'kg'|'percento' } (vedi editor in scheda-editor.js). Il peso
+// "suggerito" per la settimana in corso si calcola da ex.progressione e da
+// quante settimane sono passate da quando è iniziata la scheda (stessa
+// formula già usata per "Settimana X di Y" in scheda-view.js), sempre — non
+// si ferma se il cliente non ha completato le serie previste una settimana
+// (scelta esplicita: la regola del PT vale comunque, non dipende da quanto
+// il cliente è riuscito a fare). Il cliente resta comunque libero di
+// registrare un peso diverso: è un suggerimento, non un vincolo.
+function pesoProgressivo(ex, programma){
+  const p = ex && ex.progressione;
+  if(!p || !p.attiva || !programma) return null;
+  const riferimento = programma.dataInizio || programma.createdAt;
+  if(!riferimento) return null;
+  const base = parseFloat(p.base);
+  if(!isFinite(base)) return null;
+  const incremento = parseFloat(p.incremento) || 0;
+  const ms = Date.now() - new Date(riferimento + 'T00:00:00').getTime();
+  const settimane = Math.max(0, Math.floor(ms / 604800000));
+  const valore = p.unita === 'percento'
+    ? base * (1 + (incremento/100) * settimane)
+    : base + incremento * settimane;
+  return Math.round(valore * 2) / 2;   // arrotonda al mezzo kg, come il passo dei campi "kg" altrove
+}
+
 // converto fra il valore "vero" salvato (sempre in secondi, per non rompere storico/grafici)
 // e quello mostrato nel campo (secondi, minuti o ore, secondo il tipo dell'esercizio)
 function moltiplicatoreCampo(nome, chiave){
