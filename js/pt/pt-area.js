@@ -1,3 +1,5 @@
+const ICONA_SCARICA_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="M7.5 10.5 12 15l4.5-4.5"/><path d="M4 20h16"/></svg>';
+
 // ---------- scelta del trainer ----------
 document.getElementById('chiediPTBtn').addEventListener('click', async ()=>{
   const box = document.getElementById('elencoPT');
@@ -467,6 +469,7 @@ function renderDettaglioPT(sezione){
               return `<div class="pt-scheda-ro checkin-post">
                   <button type="button" class="checkin-post-foto" data-foto-idx="${i}"><img src="${c.fotoUrl}" alt="Foto progresso del ${formatDate(c.data)}"></button>
                   <div class="checkin-post-caption">${didascalia}</div>
+                  <a class="checkin-post-scarica" href="${c.fotoUrl}" download="check-in-${c.data}.jpg" title="Scarica la foto originale" aria-label="Scarica la foto" onclick="event.stopPropagation()">${ICONA_SCARICA_SVG}</a>
                 </div>`;
             }).join('')}`}
       </div>`;
@@ -477,7 +480,7 @@ function renderDettaglioPT(sezione){
     box.querySelectorAll('.checkin-post-foto').forEach(btn=>{
       const c = checkins[parseInt(btn.dataset.fotoIdx)];
       const didascalia = `${formatDate(c.data)}${c.peso!=null ? ' · ' + c.peso + ' kg' : ''}`;
-      btn.addEventListener('click', ()=>apriFotoIngrandita(c.fotoUrl, didascalia));
+      btn.addEventListener('click', ()=>apriFotoIngrandita(c.fotoUrl, didascalia, `check-in-${c.data}.jpg`));
     });
   }
 }
@@ -485,12 +488,17 @@ function renderDettaglioPT(sezione){
 // Foto di un check-in a schermo intero (dallo storico, lato PT): prima la
 // foto non si vedeva affatto lì, solo la scritta "foto allegata". A
 // differenza della card quadrata (ritagliata 1:1, in stile "post") qui si
-// vede la foto intera, con una didascalia opzionale sotto (data/peso).
-function apriFotoIngrandita(url, didascalia){
+// vede la foto intera, con una didascalia opzionale sotto (data/peso) e un
+// tasto per scaricarla (stessa foto della miniatura: qui la si vede solo
+// più comoda a schermo intero, per la qualità piena conviene scaricarla).
+function apriFotoIngrandita(url, didascalia, nomeFile){
   document.getElementById('fotoIngranditaImg').src = url;
   const cap = document.getElementById('fotoIngranditaCaption');
   cap.textContent = didascalia || '';
   cap.style.display = didascalia ? 'block' : 'none';
+  const scarica = document.getElementById('fotoIngranditaScarica');
+  scarica.href = url;
+  scarica.setAttribute('download', nomeFile || 'foto-check-in.jpg');
   document.getElementById('fotoIngranditaOverlay').classList.add('show');
 }
 function chiudiFotoIngrandita(){
@@ -498,6 +506,7 @@ function chiudiFotoIngrandita(){
   // niente src="" (vedi commento in checkin-cliente.js): removeAttribute evita
   // che il browser la interpreti come "carica la pagina corrente come immagine".
   document.getElementById('fotoIngranditaImg').removeAttribute('src');
+  document.getElementById('fotoIngranditaScarica').removeAttribute('href');
 }
 document.getElementById('fotoIngranditaChiudi').addEventListener('click', chiudiFotoIngrandita);
 document.getElementById('fotoIngranditaOverlay').addEventListener('click', e=>{
