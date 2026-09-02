@@ -1,28 +1,15 @@
 // FUNZIONAMENTO OFFLINE E AGGIORNAMENTI
 // ============================================================
-// Aggiornamento sempre automatico, mai in mano alla persona: prima c'era un
-// banner "È disponibile una versione aggiornata" con un tasto da toccare, ma
-// una correzione pubblicata restava così invisibile finché qualcuno non se
-// ne accorgeva e cliccava — capitato davvero il 01-02/09/2026, con più
-// correzioni di fila che non arrivavano su un telefono di test proprio per
-// questo. sw.js chiama già da solo skipWaiting()/clients.claim() appena una
-// versione nuova è pronta: qui basta ricaricare in automatico non appena
-// prende il controllo (evento "controllerchange"), una sola volta, per far
-// sì che ogni aggiornamento pubblicato arrivi davvero su ogni dispositivo.
+// sw.js chiama già da solo skipWaiting()/clients.claim() appena una
+// versione nuova è pronta: qui basta registrarlo. Niente ricaricamento
+// forzato quando cambia versione (provato e tolto il 02/09/2026: durante
+// una serie ravvicinata di correzioni pubblicate, ogni riapertura innescava
+// un ricaricamento automatico — fastidioso mentre si sta usando l'app). La
+// versione nuova prende comunque il controllo da sola in background; verrà
+// usata dal prossimo avvio naturale dell'app.
 if('serviceWorker' in navigator && location.protocol.startsWith('http')){
   window.addEventListener('load', ()=>{
-    navigator.serviceWorker.register('sw.js').then(reg=>{
-      let ricaricoGiaFatto = false;
-      navigator.serviceWorker.addEventListener('controllerchange', ()=>{
-        if(ricaricoGiaFatto) return;
-        ricaricoGiaFatto = true;
-        location.reload();
-      });
-      // controllo se c'è una versione nuova a ogni riapertura
-      document.addEventListener('visibilitychange', ()=>{
-        if(document.visibilityState === 'visible') reg.update().catch(()=>{});
-      });
-    }).catch(err=>console.warn('offline non attivo:', err));
+    navigator.serviceWorker.register('sw.js').catch(err=>console.warn('offline non attivo:', err));
   });
 }
 

@@ -43,45 +43,6 @@
     var r = e.reason;
     mostraErroreGlobale('Promise non gestita: ' + ((r && (r.stack || r.message)) || String(r)));
   });
-
-  // Rete di sicurezza ANCORA più a monte: se dopo 20 secondi si è ancora sulla
-  // schermata "Connessione…" mostrata all'avvio (nessun errore intercettato
-  // sopra, nessuna schermata successiva raggiunta), il sospetto più concreto
-  // è una versione vecchia della pagina o del Service Worker rimasta bloccata
-  // sul dispositivo — capitato davvero il 01-02/09/2026: nessuna correzione
-  // arrivava a un telefono di test nonostante fosse già online, e neanche
-  // dopo aver toccato "Aggiorna" nel banner di aggiornamento. Qui la persona
-  // non deve fare nient'altro: si ripulisce tutto da sola una volta sola
-  // (mai in loop, vedi il controllo su sessionStorage) e si ricarica.
-  setTimeout(function(){
-    try{
-      var schermo = document.getElementById('cloudCaricamento');
-      if(!schermo || schermo.style.display !== 'block') return; // già andati oltre, tutto bene
-      // Segnale SEMPRE visibile appena si arriva qui, indipendentemente da cosa
-      // succede dopo: se non vedi mai comparire questo testo, il problema non è
-      // qui dentro — vuol dire che il timer stesso non arriva mai a scattare
-      // (JS bloccato più a monte), non che la pulizia fallisca in silenzio.
-      var txt = document.getElementById('cloudCaricaTxt');
-      if(sessionStorage.getItem('vigorPuliziaForzataFatta') === '1'){
-        if(txt) txt.textContent = "Ci sto mettendo più del previsto. Ho già provato a ripulire la cache in questa sessione senza risultato: il problema non è la cache.";
-        return; // non rientrare in loop di ricaricamenti
-      }
-      if(txt) txt.textContent = "Ci sto mettendo più del previsto: pulisco e ricarico tra un attimo…";
-      sessionStorage.setItem('vigorPuliziaForzataFatta', '1');
-      var pulizie = [];
-      if('serviceWorker' in navigator){
-        pulizie.push(navigator.serviceWorker.getRegistrations().then(function(regs){
-          return Promise.all(regs.map(function(r){ return r.unregister(); }));
-        }));
-      }
-      if('caches' in window){
-        pulizie.push(caches.keys().then(function(nomi){
-          return Promise.all(nomi.map(function(n){ return caches.delete(n); }));
-        }));
-      }
-      Promise.all(pulizie).catch(function(){}).then(function(){ location.reload(); });
-    }catch(e){}
-  }, 20000);
 })();
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">

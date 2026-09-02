@@ -449,28 +449,12 @@ document.getElementById('privacyEliminaBtn').addEventListener('click', ()=>{
 // (#accAssistenza), non serve altro JS per aprirla/chiuderla.
 
 // ---------- ingresso ----------
-// Aggiorna il testo sulla schermata "Connessione…" mostrata all'avvio, SOLO
-// se è quella ancora visibile (altrimenti scriverebbe su un testo che
-// l'utente non sta guardando). Tracciato passo-passo aggiunto il 02/09/2026
-// per un caricamento infinito rimasto invisibile a lungo nonostante tutti i
-// timeout di sicurezza già in campo: prima si sapeva solo CHE si era
-// bloccati, non DOVE — ora ogni passo aggiorna questo testo, così la
-// prossima volta che qualcuno resta bloccato il testo stesso dice a che
-// punto esatto della catena di accesso si è fermato.
-function segnaPassoAvvio(testo){
-  const el = document.getElementById('cloudCaricaTxt');
-  const schermo = document.getElementById('cloudCaricamento');
-  if(el && schermo && schermo.style.display === 'block') el.textContent = testo;
-}
-
 async function avvioOnline(){
-  segnaPassoAvvio("Preparo il client Supabase…");
   if(!iniziaSupabase()){
     document.getElementById('cloudCaricaTxt').textContent = "Configurazione non valida: controlla config.js.";
     document.getElementById('cloudRiprova').style.display = 'block';
     return false;
   }
-  segnaPassoAvvio("Client pronto. Controllo eventuali link di conferma/recupero…");
   mostraStatoSync('sincronizzo', 'controllo…');
   // tornando dal link di conferma email o dal link "password dimenticata" l'indirizzo
   // contiene dei parametri: dopo averli usati (supabase-js li legge da solo) li tolgo,
@@ -496,7 +480,6 @@ async function avvioOnline(){
     // a fissare "Connessione…" per sempre, senza errore né tasto per uscirne —
     // lo stesso identico problema già risolto per la lettura del profilo, ma
     // qui a monte, prima ancora di sapere chi è l'utente.
-    segnaPassoAvvio("Controllo se hai già una sessione attiva (sb.auth.getSession)…");
     let _timeoutId;
     const { data } = await Promise.race([
       sb.auth.getSession(),
@@ -504,7 +487,6 @@ async function avvioOnline(){
     ]);
     clearTimeout(_timeoutId);
     if(data && data.session){
-      segnaPassoAvvio("Sessione trovata: carico il tuo profilo…");
       utenteOnline = data.session.user;
       await dopoAccessoOnline();
     } else {
@@ -543,7 +525,6 @@ async function dopoAccessoOnline(){
     // ma sotto al campo email della schermata di login — che però non era
     // quella visibile in quel momento, quindi restava invisibile e la
     // persona vedeva "Connessione…" per sempre.
-    segnaPassoAvvio("Leggo il tuo profilo dal server (tabella profili)…");
     let _timeoutId;
     const risposta = await Promise.race([
       sb.from('profili').select('*').eq('id', utenteOnline.id).maybeSingle(),
@@ -552,7 +533,6 @@ async function dopoAccessoOnline(){
     clearTimeout(_timeoutId);
     const { data, error } = risposta;
     if(error) throw error;
-    segnaPassoAvvio("Profilo ricevuto: preparo l'app…");
 
     if(!data){
       // prima volta su questo account: creo la riga (parte non approvata).
@@ -579,6 +559,13 @@ async function dopoAccessoOnline(){
 
     if(!rigaOnline.approvato){
       if(rigaOnline.bloccato){
+        // Il messaggio compare SUBITO qui, sulla stessa schermata "Connessione…"
+        // mostrata all'avvio — non solo nella schermata dedicata (mostraAccountBloccatoOverlay,
+        // sotto): così è visibile anche se qualcos'altro più avanti nell'app
+        // (dopo questo punto) dovesse impuntarsi, dato che questo controllo
+        // avviene PRIMA di portare i dati dentro il motore locale dell'app.
+        const testo = document.getElementById('cloudCaricaTxt');
+        if(testo) testo.textContent = "Sembra che il tuo account sia stato bloccato. Contatta lo staff per maggiori informazioni.";
         mostraAccountBloccatoOverlay({ testoAzione:'Esci', suAzione: async ()=>{
           if(_canaleMioProfilo){ sb.removeChannel(_canaleMioProfilo); _canaleMioProfilo = null; }
           await sb.auth.signOut();
@@ -597,27 +584,20 @@ async function dopoAccessoOnline(){
 
     // porto i dati online dentro il motore locale dell'app
     applicaDatiOnline();
-    segnaPassoAvvio("Dati applicati: controllo Personal Trainer…");
     // la card per l'area riservata compare solo a chi è Personal Trainer
     document.getElementById('homePTBtn').style.display = sonoPT() ? 'flex' : 'none';
     caricaRapporti().then(()=>{ renderMioPT(); aggiornaCampanellaHome(); aggiornaPuntinoMessaggi(); }).catch(()=>{});
     ascoltaMioProfilo();
-    segnaPassoAvvio("In ascolto sul profilo: tolgo la schermata di connessione…");
     document.documentElement.classList.remove('avvio');
     nascondiCloudGate();
-    segnaPassoAvvio("Controllo giorni saltati…");
     controllaSaltati(true);
-    segnaPassoAvvio("Preparo tutte le schermate (renderAll)…");
     renderAll();
-    segnaPassoAvvio("Preparo il timer…");
     _timerDurata = impostazioniTimer().durata;
     renderScorciatoieTimer();
-    segnaPassoAvvio("Controllo bozze in sospeso…");
     _bozzaPronta = false;
     if(ripristinaBozza()) toast("Ripresa la registrazione lasciata a metà");
     _bozzaPronta = true;
     mostraStatoSync('ok', 'sincronizzato');
-    segnaPassoAvvio("Fatto: apro la Home…");
     // Chi è Personal Trainer entra direttamente nella sua area riservata:
     // non è un utente come gli altri, non deve passare dalla home normale
     // (da lì può comunque tornare alla propria home col tasto "Torna Home").
@@ -643,7 +623,6 @@ function profiloVuotoPerCloud(){
 
 function applicaDatiOnline(){
   const dati = normalizzaProfilo(rigaOnline.dati || profiloVuotoPerCloud());
-  segnaPassoAvvio("Profilo normalizzato: applico i dati…");
   dati.id = rigaOnline.id;
   dati.name = rigaOnline.nome || dati.name || 'Io';
   dati.email = rigaOnline.email;
@@ -651,18 +630,7 @@ function applicaDatiOnline(){
   state.profiles = [dati];
   activeProfileId = dati.id;
   actingProfileId = null;
-  // Diagnostica temporanea (02/09/2026): il blocco arrivava fino a "Profilo
-  // ricevuto" e si fermava, senza mai raggiungere il passo successivo — qui
-  // dentro non c'è nessuna chiamata di rete, quindi il sospetto più concreto
-  // è salvaLocale() (JSON.stringify + localStorage.setItem su TUTTO `state`,
-  // non solo sul profilo appena arrivato: su un dispositivo di test può
-  // contenere ben altro, es. video/esercizi personalizzati accumulati).
-  // Il numero di caratteri qui sotto conferma o esclude la dimensione come causa.
-  let taglia = '?';
-  try{ taglia = JSON.stringify(state).length; }catch(e){ taglia = 'errore: ' + e.message; }
-  segnaPassoAvvio("Salvo in locale (" + taglia + " caratteri)…");
   salvaLocale();
-  segnaPassoAvvio("Salvato in locale.");
 }
 
 // ---------- salvataggio ----------
