@@ -88,7 +88,13 @@
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Roboto+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <script src="js/config.js"></script>
 <script src="js/brand.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<!-- Libreria Supabase servita in locale (non più dal CDN jsdelivr): sospettato
+     essere la causa reale del caricamento infinito segnalato il 02/09/2026 —
+     su quel dispositivo/rete jsdelivr.net non rispondeva mai (né errore né
+     successo), lasciando attendiLibreria() ad aspettare invano. File preso
+     da node_modules/@supabase/supabase-js@2.45.4/dist/umd/ (non minificato,
+     jsdelivr minifica al volo lato server: qui non serve). -->
+<script src="js/vendor/supabase.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <link rel="stylesheet" href="css/style.css">
