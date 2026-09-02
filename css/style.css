@@ -1999,13 +1999,22 @@
   .interruttore-sm{width:32px; height:19px;}
   .interruttore-sm span::before{width:13px; height:13px; left:3px; top:3px;}
   .interruttore-sm input:checked + span::before{transform:translateX(13px);}
-  .pt-termina-mini{margin-left:auto; background:none; border:none; padding:2px 0; font-size:11.5px;
-    color:var(--text-faint); text-decoration:underline; cursor:pointer; font-family:inherit;}
-  .pt-termina-mini:hover{color:var(--accent);}
   .pt-checkin-riga{display:flex; align-items:center; justify-content:space-between; gap:10px;
     padding:10px 0 0; border-top:1px solid var(--border);}
   .pt-checkin-label{font-size:12px; color:var(--text-dim);}
   .pt-checkin-riga.dovuto .pt-checkin-label{color:var(--accent); font-weight:600;}
+  /* "Termina rapporto" (02/09/2026): prima era un link testuale sottolineato
+     accanto agli interruttori dei permessi — troppo facile da toccare per
+     sbaglio proprio lì in mezzo. Spostato sotto "Compila", come bottone vero
+     (non un link) con bordo proprio e un margine sopra: staccato quanto
+     basta da non essere toccato per errore insieme al resto, ma non isolato
+     in una sezione a parte. */
+  .pt-termina-riga{display:flex; justify-content:flex-end; margin-top:12px;
+    padding:10px 0 0; border-top:1px solid var(--border);}
+  .pt-termina-btn{background:none; border:1px solid var(--accent-dim,#f0b8a9); border-radius:8px;
+    padding:6px 14px; font-size:11.5px; font-weight:600; color:var(--accent);
+    cursor:pointer; font-family:inherit;}
+  .pt-termina-btn:hover{background:var(--accent); color:#fff;}
   .pt-riga .info{flex:1; min-width:150px;}
   .pt-riga .nome{font-family:var(--font-display); font-size:14px;}
   .pt-riga .meta{font-size:11.5px; color:var(--text-faint); margin-top:2px;}

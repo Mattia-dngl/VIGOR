@@ -12,7 +12,12 @@ function apriCheckinCompilazione(){
   const ultimoPeso = prof ? ultimoPesoRegistrato(prof) : null;
   document.getElementById('checkinPeso').value = ultimoPeso ? ultimoPeso.weight : '';
   document.getElementById('checkinFotoAnteprima').style.display = 'none';
-  document.getElementById('checkinFotoAnteprima').querySelector('img').src = '';
+  // niente src="" qui: un <img src=""> viene interpretato dal browser come
+  // "carica l'URL della pagina corrente", che fallisce a decodificarsi come
+  // immagine e scatena il listener globale di errore risorsa in index.html
+  // (mostrava "Risorsa non caricata: <img> .../index.html" a tutta pagina
+  // ogni volta che si apriva il check-in). removeAttribute evita il problema.
+  document.getElementById('checkinFotoAnteprima').querySelector('img').removeAttribute('src');
   _checkinFotoDataUrl = null;
   document.querySelectorAll('#checkinSensazioneToggle .seg-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById('checkinNota').value = '';
