@@ -1493,9 +1493,13 @@
     display:flex; flex-direction:column; align-items:center; gap:10px;}
   .foto-ingrandita-box img{display:block; max-width:92vw; max-height:78vh; border-radius:var(--r-lg);
     box-shadow:var(--shadow-lg);}
-  .foto-ingrandita-chiudi{position:absolute; top:-14px; right:-14px; background:rgba(15,18,23,.55);
-    color:#fff; backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px); box-shadow:var(--shadow-md);}
-  .foto-ingrandita-chiudi:hover{background:rgba(15,18,23,.75); color:#fff;}
+  .foto-ingrandita-chiudi, .foto-ingrandita-scarica{position:absolute; top:-14px;
+    background:rgba(15,18,23,.55); color:#fff; text-decoration:none; font-size:14px;
+    display:flex; align-items:center; justify-content:center;
+    backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px); box-shadow:var(--shadow-md);}
+  .foto-ingrandita-chiudi:hover, .foto-ingrandita-scarica:hover{background:rgba(15,18,23,.75); color:#fff;}
+  .foto-ingrandita-chiudi{right:-14px;}
+  .foto-ingrandita-scarica{right:34px;}
   .foto-ingrandita-caption{color:#fff; font-size:13px; font-weight:600; text-align:center;
     text-shadow:0 1px 3px rgba(0,0,0,.4);}
 
@@ -2092,16 +2096,25 @@
   .checkin-grafico-box{background:var(--surface2); border-radius:10px; padding:10px 12px 8px; margin-bottom:12px;}
   .checkin-grafico-box svg{width:100%; height:56px; display:block;}
   .checkin-grafico-legenda{display:flex; justify-content:space-between; font-size:10.5px; color:var(--text-faint); margin-top:2px;}
-  /* Voce dello storico check-in CON foto (lato PT): una vera card "post" in
-     stile social — foto quadrata a bordo pieno in cima, didascalia (data,
-     peso, sensazione, nota) sotto — al posto della vecchia scritta
+  /* Voce dello storico check-in CON foto (lato PT): la card "post" quadrata
+     a piena larghezza (foto in cima, didascalia sotto) rendeva la miniatura
+     morbida/sfocata sugli schermi retina, oltre a occupare tanto spazio
+     verticale per voce. Ora è una riga sola — piccola miniatura, didascalia
+     accanto, tasto per scaricare la foto originale (così chi vuole vederla
+     a piena qualità la salva ed è lo schermo/visore foto a mostrarla, non
+     l'anteprima ritagliata qui dentro) — invece della vecchia scritta
      "📷 foto allegata" che non mostrava mai la foto vera. Le voci senza
      foto restano il semplice .pt-scheda-ro testuale di prima. */
-  .checkin-post{padding:0; overflow:hidden;}
-  .checkin-post-foto{display:block; width:100%; aspect-ratio:1/1; padding:0; margin:0;
-    border:none; cursor:pointer; background:var(--surface);}
+  .checkin-post{display:flex; align-items:center; gap:10px;}
+  .checkin-post-foto{display:block; width:52px; height:52px; flex:0 0 auto; padding:0; margin:0;
+    border:none; border-radius:10px; overflow:hidden; cursor:pointer; background:var(--surface);}
   .checkin-post-foto img{width:100%; height:100%; object-fit:cover; display:block;}
-  .checkin-post-caption{padding:11px 14px 13px;}
+  .checkin-post-caption{flex:1; min-width:0;}
+  .checkin-post-scarica{flex:0 0 auto; width:32px; height:32px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center; color:var(--text-dim);
+    background:var(--surface); border:1px solid var(--border); transition:background .15s, color .15s;}
+  .checkin-post-scarica svg{width:16px; height:16px;}
+  .checkin-post-scarica:hover{background:var(--accent-soft,#fdeae5); color:var(--accent);}
 
   /* ---- redesign 01/09/2026: la vista d'insieme del PT (oggi/richieste/
      clienti) usava tre card bianche identiche impilate — stesso titolo,
