@@ -306,6 +306,18 @@ function checkinDovuto(rapporto, checkins){
   const scadenza = prossimoCheckinScadenza(rapporto, checkins);
   return !!scadenza && scadenza <= new Date().toISOString().slice(0,10);
 }
+// Istante di invio di un check-in: i più vecchi (prima di questo campo) non
+// hanno creatoIl, solo la data del giorno — li tratto come "mezzanotte di
+// quel giorno" così restano comunque ordinabili insieme ai più recenti.
+function checkinCreatoIl(c){
+  return (c && c.creatoIl) || (c && c.data ? c.data + 'T00:00:00.000Z' : '1970-01-01T00:00:00.000Z');
+}
+// Il check-in più recente per davvero (per istante di invio, non solo per
+// giorno): usato per capire se il PT ne ha già visto uno nuovo (notifiche).
+function checkinPiuRecente(checkins){
+  if(!checkins || !checkins.length) return null;
+  return checkins.slice().sort((a,b)=> checkinCreatoIl(b).localeCompare(checkinCreatoIl(a)))[0];
+}
 
 // converto fra il valore "vero" salvato (sempre in secondi, per non rompere storico/grafici)
 // e quello mostrato nel campo (secondi, minuti o ore, secondo il tipo dell'esercizio)

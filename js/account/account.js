@@ -353,6 +353,7 @@ document.getElementById('homeEsciBtn').addEventListener('click', async ()=>{
     document.body.classList.remove('account-aperto');
     if(modalitaOnline() && sb){
       if(_canaleMioProfilo){ sb.removeChannel(_canaleMioProfilo); _canaleMioProfilo = null; }
+      fermaAscoltoNotificheRealtime();
       await sb.auth.signOut();
       utenteOnline = null; rigaOnline = null;
       activeProfileId = null;
@@ -568,6 +569,7 @@ async function dopoAccessoOnline(){
         if(testo) testo.textContent = "Sembra che il tuo account sia stato bloccato. Contatta lo staff per maggiori informazioni.";
         mostraAccountBloccatoOverlay({ testoAzione:'Esci', suAzione: async ()=>{
           if(_canaleMioProfilo){ sb.removeChannel(_canaleMioProfilo); _canaleMioProfilo = null; }
+          fermaAscoltoNotificheRealtime();
           await sb.auth.signOut();
           utenteOnline = null; rigaOnline = null;
           mostraCloudGate('accedi');
@@ -586,7 +588,7 @@ async function dopoAccessoOnline(){
     applicaDatiOnline();
     // la card per l'area riservata compare solo a chi è Personal Trainer
     document.getElementById('homePTBtn').style.display = sonoPT() ? 'flex' : 'none';
-    caricaRapporti().then(()=>{ renderMioPT(); aggiornaCampanellaHome(); aggiornaPuntinoMessaggi(); }).catch(()=>{});
+    caricaRapporti().then(()=>{ renderMioPT(); aggiornaCampanellaHome(); aggiornaPuntinoMessaggi(); ascoltaNotificheRealtime(); }).catch(()=>{});
     ascoltaMioProfilo();
     document.documentElement.classList.remove('avvio');
     nascondiCloudGate();
@@ -860,6 +862,7 @@ document.getElementById('recoveryBtn').addEventListener('click', async ()=>{
 document.getElementById('cloudRiprova').addEventListener('click', ()=>location.reload());
 document.getElementById('cloudEsci').addEventListener('click', async ()=>{
   if(_canaleMioProfilo){ sb.removeChannel(_canaleMioProfilo); _canaleMioProfilo = null; }
+  fermaAscoltoNotificheRealtime();
   await sb.auth.signOut();
   utenteOnline = null; rigaOnline = null;
   mostraCloudGate('accedi');

@@ -62,12 +62,18 @@ document.getElementById('checkinFotoFile').addEventListener('change', function(e
       _checkinFotoDataUrl = canvas.toDataURL('image/jpeg', 0.75);
       const anteprima = document.getElementById('checkinFotoAnteprima');
       anteprima.querySelector('img').src = _checkinFotoDataUrl;
-      anteprima.style.display = 'block';
+      anteprima.style.display = 'flex';
     };
     img.onerror = function(){ toast("Non riesco a leggere questa immagine."); };
     img.src = ev.target.result;
   };
   reader.readAsDataURL(file);
+});
+document.getElementById('checkinFotoRimuovi').addEventListener('click', ()=>{
+  _checkinFotoDataUrl = null;
+  const anteprima = document.getElementById('checkinFotoAnteprima');
+  anteprima.querySelector('img').removeAttribute('src');
+  anteprima.style.display = 'none';
 });
 
 document.getElementById('checkinInviaBtn').addEventListener('click', ()=>{
@@ -84,7 +90,7 @@ document.getElementById('checkinInviaBtn').addEventListener('click', ()=>{
   }
   if(!prof.checkins) prof.checkins = [];
   prof.checkins.push({
-    id: uid(), data: new Date().toISOString().slice(0,10),
+    id: uid(), data: new Date().toISOString().slice(0,10), creatoIl: new Date().toISOString(),
     peso, fotoUrl: _checkinFotoDataUrl, sensazione, nota
   });
   save();
