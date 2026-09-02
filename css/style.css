@@ -1155,8 +1155,8 @@
   .exercise-block:first-child{ border-top:none; }
   .exercise-name{position:relative;}
   .ex-remove-btn{
-    position:absolute; top:-2px; right:0; width:26px; height:26px;
-    display:flex; align-items:center; justify-content:center;
+    width:26px; height:26px; margin-left:2px; vertical-align:middle;
+    display:inline-flex; align-items:center; justify-content:center;
     border:none; border-radius:50%; background:none; color:var(--text-faint);
     cursor:pointer; padding:0;
   }
