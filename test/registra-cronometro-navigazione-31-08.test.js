@@ -68,6 +68,11 @@ test('"Registra allenamento" dal menu del "+" riporta alla scelta del giorno se 
     const profilo = ${JSON.stringify(profiloConDati())};
     state.profiles = [profilo]; activeProfileId = 'io';
     mostraHome();
+    // Data fissa (un lunedì, diverso dal Mercoledì di Giorno A): altrimenti
+    // "tornare al placeholder" può fallire il giorno in cui gira davvero il
+    // test, se per caso è proprio un mercoledì (successo con lo stesso bug
+    // già corretto altrove — vedi banner-stato-registra-31-08.test.js).
+    document.getElementById('logDate').value = '2026-01-05';
     document.getElementById('fabOptLibero').click();
   `);
   let r = await run(window, `return { selezionato: selectedDayKey };`);
@@ -93,6 +98,7 @@ test('"Registra allenamento" chiede conferma prima di abbandonare un Allenamento
     const profilo = ${JSON.stringify(profiloConDati())};
     state.profiles = [profilo]; activeProfileId = 'io';
     mostraHome();
+    document.getElementById('logDate').value = '2026-01-05';
     document.getElementById('fabOptLibero').click();
     const prof = activeProfile();
     prof.bozzaLog = { programId: prof.programs[0].id, dayKey:'LIBERO',

@@ -263,6 +263,32 @@ function descriviTargetSerie(ex){
   return `${ex.sets||0}×${ex.reps||''}${unita}`;
 }
 
+// Progressione automatica (01/09/2026, richiesta esplicita): il PT può
+// impostare su un esercizio ex.progressione = { attiva, base, incremento,
+// unita: 'kg'|'percento' } (vedi editor in scheda-editor.js). Il peso
+// "suggerito" per la settimana in corso si calcola da ex.progressione e da
+// quante settimane sono passate da quando è iniziata la scheda (stessa
+// formula già usata per "Settimana X di Y" in scheda-view.js), sempre — non
+// si ferma se il cliente non ha completato le serie previste una settimana
+// (scelta esplicita: la regola del PT vale comunque, non dipende da quanto
+// il cliente è riuscito a fare). Il cliente resta comunque libero di
+// registrare un peso diverso: è un suggerimento, non un vincolo.
+function pesoProgressivo(ex, programma){
+  const p = ex && ex.progressione;
+  if(!p || !p.attiva || !programma) return null;
+  const riferimento = programma.dataInizio || programma.createdAt;
+  if(!riferimento) return null;
+  const base = parseFloat(p.base);
+  if(!isFinite(base)) return null;
+  const incremento = parseFloat(p.incremento) || 0;
+  const ms = Date.now() - new Date(riferimento + 'T00:00:00').getTime();
+  const settimane = Math.max(0, Math.floor(ms / 604800000));
+  const valore = p.unita === 'percento'
+    ? base * (1 + (incremento/100) * settimane)
+    : base + incremento * settimane;
+  return Math.round(valore * 2) / 2;   // arrotonda al mezzo kg, come il passo dei campi "kg" altrove
+}
+
 // converto fra il valore "vero" salvato (sempre in secondi, per non rompere storico/grafici)
 // e quello mostrato nel campo (secondi, minuti o ore, secondo il tipo dell'esercizio)
 function moltiplicatoreCampo(nome, chiave){
@@ -531,7 +557,23 @@ function formatDateLungo(iso){
   const [y,m,d] = iso.split('-');
   return `${parseInt(d,10)} ${MESI[parseInt(m,10)-1]} ${y}`;
 }
-function escapeAttr(s){ return String(s==null ? "" : s).replace(/"/g,'&quot;'); }
+// Escape HTML completo: usata sia dentro attributi (`data-x="${escapeAttr(x)}"`)
+// sia come contenuto testuale (`<div>${escapeAttr(x)}</div>`) in tutto il resto
+// del codice — deve quindi neutralizzare TUTTI i caratteri speciali, non solo
+// le virgolette. Bug trovato in revisione (01/09/2026): prima sostituiva solo
+// `"`, quindi ovunque fosse usata per inserire testo (nomi di esercizi, note,
+// messaggi di chat PT↔cliente, nomi dei giorni della scheda...) un valore
+// contenente `<script>` o `<img onerror=...>` veniva eseguito invece che
+// mostrato come testo — un vero HTML/script injection salvabile da chiunque
+// scrivesse in uno di questi campi, non solo in fase di login/registrazione.
+function escapeAttr(s){
+  return String(s==null ? "" : s)
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;')
+    .replace(/'/g,'&#39;');
+}
 
 // Applica il nome/logo da brand.js a tutti i punti dove compare — se manca il
 // file, o manca un valore, resta quello scritto qui sotto di riserva.

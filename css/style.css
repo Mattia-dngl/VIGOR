@@ -979,6 +979,15 @@
     padding:10px 12px; border-radius:var(--r-sm); font-size:14px; font-family:'Inter',sans-serif;
   }
   input:focus, select:focus, textarea:focus{outline:none; border-color:var(--accent); background:var(--surface);}
+  /* Icona "occhio" mostra/nascondi password (js/ui/campo-password.js avvolge
+     ogni input[type=password] in questo contenitore a runtime). */
+  .pw-wrap{position:relative;}
+  .pw-wrap input{padding-right:40px !important;}
+  .pw-toggle-btn{position:absolute; right:2px; top:50%; transform:translateY(-50%);
+    width:34px; height:34px; display:flex; align-items:center; justify-content:center;
+    background:none; border:none; padding:0; margin:0; cursor:pointer; color:var(--text-dim);}
+  .pw-toggle-btn svg{width:19px; height:19px;}
+  .pw-toggle-btn:hover{color:var(--text);}
   input[type=date]{-webkit-appearance:none; appearance:none; min-width:0; max-width:100%; display:block;}
   input[type=date]::-webkit-date-and-time-value{text-align:left; margin:0; min-width:0;}
   input[type=date]::-webkit-datetime-edit{max-width:100%;}
@@ -1608,6 +1617,10 @@
   .exercise-note{font-size:12px; color:var(--text); background:rgba(214,148,40,.12);
     border-left:3px solid var(--warn, #b1790a); border-radius:6px; padding:7px 10px;
     margin-bottom:8px; line-height:1.4;}
+  .progressione-suggerita{font-size:12px; color:var(--text); background:rgba(31,177,95,.1);
+    border-left:3px solid var(--ok, #1fb15f); border-radius:6px; padding:7px 10px;
+    margin-bottom:8px; line-height:1.4;}
+  .progressione-suggerita b{font-family:'Roboto Mono',monospace;}
   .superset-badge{font-size:12px; color:var(--text); background:var(--accent-soft);
     border-left:3px solid var(--accent); border-radius:6px; padding:7px 10px;
     margin-bottom:8px; line-height:1.4; display:flex; align-items:center; gap:8px; flex-wrap:wrap;}

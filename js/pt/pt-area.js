@@ -14,7 +14,7 @@ document.getElementById('chiediPTBtn').addEventListener('click', async ()=>{
   }
   box.innerHTML = disponibili.map(p=>`
     <div class="pt-riga">
-      <div class="info"><div class="nome">${nomeDi(p)}</div><div class="meta">${p.email}</div></div>
+      <div class="info"><div class="nome">${escapeAttr(nomeDi(p))}</div><div class="meta">${escapeAttr(p.email)}</div></div>
       <div class="azioni"><button class="ok" data-chiedi="${p.id}">Chiedi</button></div>
     </div>`).join('');
   box.querySelectorAll('[data-chiedi]').forEach(b=>b.addEventListener('click', async ()=>{
@@ -151,8 +151,8 @@ async function renderAreaPT(){
   } else {
     const alertCard = (tipo, label, nome, meta, attrs)=>`<button type="button" class="pt-alert-card ${tipo}" ${attrs}>
         <div class="head"><span class="dot"></span><span class="lab">${label}</span></div>
-        <div class="nome">${nome}</div>
-        <div class="desc">${meta}</div>
+        <div class="nome">${escapeAttr(nome)}</div>
+        <div class="desc">${escapeAttr(meta)}</div>
         <div class="link">Apri →</div>
       </button>`;
     const cards = [];
@@ -188,11 +188,11 @@ async function renderAreaPT(){
       const p = profili[i] || {};
       return `<div class="pt-req-card">
         <div class="pt-avatar">${avatarContentHtml(nomeDi(p), (p.dati||{}).avatarUrl)}</div>
-        <div><div class="nome">${nomeDi(p)}</div>
+        <div><div class="nome">${escapeAttr(nomeDi(p))}</div>
           <div class="meta">richiesta del ${formatDate((r.richiesto_il||'').slice(0,10))}</div></div>
         <div class="pt-req-btns">
-          <button type="button" class="pt-icon-btn ok" data-accetta="${r.id}" aria-label="Accetta ${nomeDi(p)}">✓</button>
-          <button type="button" class="pt-icon-btn no" data-rifiuta-r="${r.id}" aria-label="Rifiuta ${nomeDi(p)}">✕</button>
+          <button type="button" class="pt-icon-btn ok" data-accetta="${r.id}" aria-label="Accetta ${escapeAttr(nomeDi(p))}">✓</button>
+          <button type="button" class="pt-icon-btn no" data-rifiuta-r="${r.id}" aria-label="Rifiuta ${escapeAttr(nomeDi(p))}">✕</button>
         </div></div>`;
     }).join('')}</div>`;
     boxR.querySelectorAll('[data-accetta]').forEach(b=>b.addEventListener('click', async ()=>{
@@ -234,7 +234,7 @@ async function renderAreaPT(){
     return `<div class="pt-client-wrap">
         <button type="button" class="pt-client-card" data-apri="${r.cliente_id}">
           <div class="pt-avatar">${avatarContentHtml(nomeDi(p), d.avatarUrl)}</div>
-          <div><div class="nome">${nomeDi(p)}</div><div class="meta">${allen} allenamenti</div></div>
+          <div><div class="nome">${escapeAttr(nomeDi(p))}</div><div class="meta">${allen} allenamenti</div></div>
           <div class="pt-fresh"><i style="width:${fr.pct}%; background:${fr.colore};"></i></div>
           <span class="pt-perm-chip">${permLabel}</span>
         </button>
@@ -252,8 +252,8 @@ async function renderAreaPT(){
         <button type="button" class="pt-spotlight" data-apri="${r.cliente_id}">
           <div class="pt-avatar pt-avatar-lg">${avatarContentHtml(nomeDi(p), d.avatarUrl)}</div>
           <div class="info">
-            <div class="nome">${nomeDi(p)}</div>
-            <div class="status">${motivi.join(' · ')}</div>
+            <div class="nome">${escapeAttr(nomeDi(p))}</div>
+            <div class="status">${escapeAttr(motivi.join(' · '))}</div>
             <div class="pt-fresh"><i style="width:${fr.pct}%; background:${fr.colore};"></i></div>
           </div>
           <span class="pt-spotlight-btn">Apri</span>

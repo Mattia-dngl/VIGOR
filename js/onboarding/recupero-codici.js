@@ -101,6 +101,22 @@ document.getElementById('recuperoBtn').addEventListener('click', ()=>{
   document.getElementById('recuperoBox').style.display = 'none';
   document.getElementById('pwDimenticataBtn').textContent = "Password dimenticata?";
   toast("Password reimpostata ✓");
+  // Il codice di recupero prova solo che sei il proprietario del profilo:
+  // non deve scavalcare un blocco o un'approvazione ancora in sospeso,
+  // altrimenti basterebbe "Password dimenticata?" per aggirarli entrambi
+  // (stessi controlli già fatti in trySubmitPassword()).
+  if(prof.bloccato){
+    mostraAccountBloccatoOverlay({ testoAzione:'Torna alla lista profili', suAzione: ()=>{
+      pendingProfileId = null;
+      showGateSelectView();
+    }});
+    return;
+  }
+  if(!prof.approvato){
+    showGateSelectView();
+    toast("Account non ancora approvato da chi gestisce l'app. Riprova più tardi.");
+    return;
+  }
   enterProfile(prof.id);
 });
 

@@ -16,8 +16,8 @@ function renderProfileGate(){
       el.className='profile-chip';
       const amm = (p.email||'').toLowerCase() === EMAIL_AMMINISTRATORE;
       const attesa = !p.approvato;
-      el.innerHTML = `<button type="button" class="pname-btn">${p.name}${amm?' <span class="badge-amm">admin</span>':''}${attesa?' <span class="badge-attesa">in attesa</span>':''}
-          ${p.email?`<span class="pmail">${p.email}</span>`:''}</button>
+      el.innerHTML = `<button type="button" class="pname-btn">${escapeAttr(p.name)}${amm?' <span class="badge-amm">admin</span>':''}${attesa?' <span class="badge-attesa">in attesa</span>':''}
+          ${p.email?`<span class="pmail">${escapeAttr(p.email)}</span>`:''}</button>
         <button type="button" class="delete-profile">Elimina</button>`;
       el.querySelector('.pname-btn').addEventListener('click', ()=>askPasswordFor(p.id));
       el.querySelector('.delete-profile').addEventListener('click', ()=>{

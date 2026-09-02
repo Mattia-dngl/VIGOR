@@ -734,14 +734,49 @@ document.getElementById('cloudEntraBtn').addEventListener('click', async ()=>{
   }
 });
 
+// ---------- Registrazione in due passi (01/09/2026) ----------
+// Passo 1: solo email. Passo 2: nome + password. resetRegistrazioneStep1()
+// è richiamata da mostraCloudGate('registra') (vedi js/home/home.js) così
+// riaprendo "Registrati" si riparte sempre da capo.
+function resetRegistrazioneStep1(){
+  document.getElementById('regStep1').style.display = 'block';
+  document.getElementById('regStep2').style.display = 'none';
+  document.getElementById('regErr').style.display = 'none';
+  document.getElementById('regEmail').value = '';
+  document.getElementById('regNome').value = '';
+  document.getElementById('regPw').value = '';
+}
+document.getElementById('regContinuaBtn').addEventListener('click', ()=>{
+  const email = document.getElementById('regEmail').value.trim().toLowerCase();
+  const err = document.getElementById('regErr');
+  if(!emailValida(email)){ err.textContent = "Inserisci un'email valida."; err.style.display='block'; return; }
+  err.style.display = 'none';
+  document.getElementById('regStep1').style.display = 'none';
+  document.getElementById('regStep2').style.display = 'block';
+  document.getElementById('regNome').focus();
+});
+document.getElementById('regTornaEmailBtn').addEventListener('click', ()=>{
+  document.getElementById('regErr').style.display = 'none';
+  document.getElementById('regStep2').style.display = 'none';
+  document.getElementById('regStep1').style.display = 'block';
+  document.getElementById('regEmail').focus();
+});
+
 document.getElementById('regBtn').addEventListener('click', async ()=>{
   const nome = document.getElementById('regNome').value.trim();
   const email = document.getElementById('regEmail').value.trim().toLowerCase();
   const pw = document.getElementById('regPw').value;
   const err = document.getElementById('regErr');
   err.style.display = 'none';
+  if(!emailValida(email)){
+    // l'email non dovrebbe più poter essere invalida qui (già controllata al
+    // passo 1), ma se lo fosse si torna al passo giusto invece di mostrare
+    // un errore senza permettere di correggerlo.
+    document.getElementById('regTornaEmailBtn').click();
+    err.textContent = "Inserisci un'email valida."; err.style.display='block';
+    return;
+  }
   if(!nome){ err.textContent = "Inserisci il tuo nome."; err.style.display='block'; return; }
-  if(!emailValida(email)){ err.textContent = "Inserisci un'email valida."; err.style.display='block'; return; }
   if(pw.length < 8){ err.textContent = "La password deve avere almeno 8 caratteri."; err.style.display='block'; return; }
   try{
     // l'email di conferma deve riportare esattamente a questa pagina, altrimenti si finisce su un 404

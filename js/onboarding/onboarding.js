@@ -768,12 +768,23 @@ function ultimaPrestazione(nomeEsercizio, escludiData){
   }
   return null;
 }
+// Passo in minuti/km (es. 6.5 -> "6:30") a partire dai minuti/km grezzi.
+function formatPasso(minutiPerKm){
+  if(!isFinite(minutiPerKm) || minutiPerKm <= 0) return '';
+  const min = Math.floor(minutiPerKm);
+  const sec = Math.round((minutiPerKm - min) * 60);
+  return `${min}:${String(sec).padStart(2,'0')}`;
+}
 function descriviSerie(serie, nomeEsercizio, dropset){
   const descriviUna = s => {
     if(s.km || s.minuti){
       const a = s.km ? s.km + ' km' : '';
       const b = s.minuti ? s.minuti + "'" : '';
-      return [a,b].filter(Boolean).join(' in ');
+      // Passo (min/km), solo se ci sono entrambi i valori e la distanza è
+      // positiva: è il dato che chi corre guarda per davvero, non solo
+      // "quanti km in quanti minuti" — es. "5 km in 30' (6:00 /km)".
+      const passo = (s.km && s.minuti && s.km > 0) ? formatPasso(s.minuti / s.km) : '';
+      return [a,b].filter(Boolean).join(' in ') + (passo ? ` (${passo} /km)` : '');
     }
     if(s.seconds){
       const m = nomeEsercizio ? moltiplicatoreCampo(nomeEsercizio, 'seconds') : 1;

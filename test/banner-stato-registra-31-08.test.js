@@ -59,9 +59,13 @@ test('Registra: "Come da programma" mostra il banner in tono positivo (verde)', 
     mostraHome();
     document.getElementById('fabRegistraBtn').click();
     document.getElementById('fabOptAllenamento').click();
+    // Data fissa (un lunedì) invece di "oggi": altrimenti il giorno previsto
+    // dipende da che giorno della settimana è quando gira il test (bug trovato
+    // in revisione — vedi il commento nel test successivo).
+    document.getElementById('logDate').value = '2026-01-05';
     renderDayChoices();
   `);
-  // 31/08/2026: Lunedì è previsto Giorno A, che viene selezionato in automatico
+  // 2026-01-05 è un lunedì: previsto Giorno A, selezionato in automatico
   const banner = document.getElementById('statusInfo');
   assert.ok(banner.classList.contains('esito-positivo'), 'il giorno previsto dal programma deve avere il tono positivo, non quello neutro/di errore');
   window.close();
@@ -75,6 +79,14 @@ test('Registra: scegliendo un giorno diverso da quello previsto, il banner passa
     mostraHome();
     document.getElementById('fabRegistraBtn').click();
     document.getElementById('fabOptAllenamento').click();
+    // Stessa data fissa del test precedente (un lunedì, previsto Giorno A):
+    // scegliendo 'B' qui sotto è SEMPRE diverso da quello previsto, a
+    // prescindere da che giorno della settimana gira davvero il test.
+    // Bug trovato in revisione: prima questo test usava "oggi" (via
+    // renderDayChoices() senza logDate fissato), quindi falliva ogni volta
+    // che "oggi" cadeva di martedì (il giorno di Giorno B) — il test
+    // scambiava per un bug dell'app quello che era solo un suo stesso difetto.
+    document.getElementById('logDate').value = '2026-01-05';
     renderDayChoices();
     selectDay('B');
   `);

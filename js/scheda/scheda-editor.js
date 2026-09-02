@@ -366,6 +366,38 @@ function renderExerciseEditors(di){
     if(ex.supersetCon!=null) return 'Superset';
     return 'Nessuna';
   }
+  function riassuntoProgressione(ex){
+    if(!ex.progressione || !ex.progressione.attiva) return 'Nessuna';
+    const unita = ex.progressione.unita === 'percento' ? '%' : 'kg';
+    return `+${ex.progressione.incremento||0}${unita}/settimana`;
+  }
+  // Solo per esercizi che hanno un campo "kg" (peso, tempo con carico, ecc.):
+  // non ha senso proporre una progressione di peso su un esercizio a corpo
+  // libero o a tempo puro.
+  function haCampoKg(ex){ return campiDi(ex.name).some(c=>c.chiave==='kg'); }
+  function progressioneEditorHtml(di, ei, ex){
+    const p = ex.progressione || {};
+    return `
+    <div class="dropset-box">
+      <label class="checkbox-row" style="margin-top:0;">
+        <input type="checkbox" class="prog-attiva" data-di="${di}" data-ei="${ei}" ${p.attiva?'checked':''}>
+        Aumenta da sola ogni settimana
+      </label>
+      ${p.attiva ? `
+        <div class="exercise-edit-row" style="margin-top:8px;">
+          <div class="ex-field"><span class="ex-field-label">Peso di partenza</span><input type="number" class="small prog-base" step="0.5" min="0" placeholder="kg" value="${p.base??''}" data-di="${di}" data-ei="${ei}"></div>
+          <div class="ex-field"><span class="ex-field-label">Aumento/settimana</span><input type="number" class="small prog-incremento" step="0.5" min="0" value="${p.incremento??''}" data-di="${di}" data-ei="${ei}"></div>
+          <div class="ex-field"><span class="ex-field-label">Unità</span>
+            <select class="small prog-unita" data-di="${di}" data-ei="${ei}">
+              <option value="kg" ${p.unita!=='percento'?'selected':''}>kg</option>
+              <option value="percento" ${p.unita==='percento'?'selected':''}>%</option>
+            </select>
+          </div>
+        </div>
+        <p class="hint" style="margin-top:8px;">Il peso suggerito sale da solo ogni settimana da quando è iniziata la scheda (Data inizio, qui sopra), sempre — anche se in una settimana non completi tutte le serie previste. Il cliente lo vede come consiglio in Registra: resta comunque libero di usare un peso diverso.</p>
+      ` : ''}
+    </div>`;
+  }
   function riassuntoMuscoli(ex){
     const m = ex.muscles || [];
     return m.length ? m.join(', ') : 'nessuno';
@@ -412,6 +444,11 @@ function renderExerciseEditors(di){
         ${ex.dropset ? dropsetEditorHtml(di, ei, ex) : ''}
         ${ex.supersetCon!=null ? supersetEditorHtml(di, ei, ex, day) : ''}
       </details>
+      ${haCampoKg(ex) ? `
+      <details class="ex-sub-details" ${ex.progressione && ex.progressione.attiva ? 'open' : ''}>
+        <summary><span class="ex-sub-titolo">Progressione automatica</span><span class="ex-sub-riassunto">${riassuntoProgressione(ex)}</span></summary>
+        ${progressioneEditorHtml(di, ei, ex)}
+      </details>` : ''}
     </div>`;
   }).join('');
 
@@ -504,6 +541,32 @@ function renderExerciseEditors(di){
     sel.addEventListener('change', e=>{
       const {di, ei, dj} = e.target.dataset;
       editingDays[di].exercises[ei].dropset.drops[dj].riduzione = parseInt(e.target.value)||0;
+    });
+  });
+  list.querySelectorAll('.prog-attiva').forEach(chk=>{
+    chk.addEventListener('change', e=>{
+      const {di, ei} = e.target.dataset;
+      const ex = editingDays[di].exercises[ei];
+      ex.progressione = Object.assign({ base:null, incremento:null, unita:'kg' }, ex.progressione, { attiva: e.target.checked });
+      renderExerciseEditors(di);
+    });
+  });
+  list.querySelectorAll('.prog-base').forEach(inp=>{
+    inp.addEventListener('input', e=>{
+      const {di, ei} = e.target.dataset;
+      editingDays[di].exercises[ei].progressione.base = e.target.value==='' ? null : parseFloat(e.target.value);
+    });
+  });
+  list.querySelectorAll('.prog-incremento').forEach(inp=>{
+    inp.addEventListener('input', e=>{
+      const {di, ei} = e.target.dataset;
+      editingDays[di].exercises[ei].progressione.incremento = e.target.value==='' ? null : parseFloat(e.target.value);
+    });
+  });
+  list.querySelectorAll('.prog-unita').forEach(sel=>{
+    sel.addEventListener('change', e=>{
+      const {di, ei} = e.target.dataset;
+      editingDays[di].exercises[ei].progressione.unita = e.target.value;
     });
   });
   list.querySelectorAll('.superset-select').forEach(sel=>{
