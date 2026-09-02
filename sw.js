@@ -5,7 +5,7 @@
 // l'app se ne accorge da sola e si aggiorna in automatico (vedi
 // js/sistema/offline-sistema.js), senza bisogno che nessuno tocchi nulla.
 // ============================================================
-const VERSIONE = "vigor-v88";
+const VERSIONE = "vigor-v89";
 
 const DA_TENERE = [
   "./",
@@ -185,8 +185,15 @@ self.addEventListener("fetch", evento => {
   }
 
   if (richiesta.mode === "navigate" || url.pathname.endsWith("index.html")) {
+    // { cache: "no-store" } come per config.js qui sopra: senza, fetch() può
+    // restituire una copia della cache HTTP del browser (governata dagli
+    // header del server, tutt'altra cosa dalla Cache Storage di questo
+    // Service Worker) senza nemmeno controllare la rete — capitato davvero
+    // il 02/09/2026: un telefono restava bloccato su una pagina vecchia di
+    // giorni nonostante Service Worker e Cache Storage risultassero già
+    // aggiornati, perché "prima la rete" qui non escludeva quella cache.
     evento.respondWith(
-      fetch(richiesta)
+      fetch(richiesta, { cache: "no-store" })
         .then(risposta => {
           const copia = risposta.clone();
           caches.open(VERSIONE).then(c => c.put("./index.html", copia));
@@ -205,7 +212,7 @@ self.addEventListener("fetch", evento => {
   // qui sotto, perché quelle davvero non cambiano quasi mai.
   if (/\.(css|js)$/.test(url.pathname)) {
     evento.respondWith(
-      fetch(richiesta)
+      fetch(richiesta, { cache: "no-store" })
         .then(risposta => {
           if (risposta && risposta.ok) {
             const copia = risposta.clone();
