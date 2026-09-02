@@ -2,9 +2,10 @@
 // FitPro — funzionamento offline
 // Tiene una copia dell'app nel telefono: si apre anche senza rete.
 // Quando pubblichi una modifica, alza il numero di VERSIONE qui sotto:
-// l'app se ne accorge da sola e propone di aggiornarsi.
+// l'app se ne accorge da sola e si aggiorna in automatico (vedi
+// js/sistema/offline-sistema.js), senza bisogno che nessuno tocchi nulla.
 // ============================================================
-const VERSIONE = "vigor-v87";
+const VERSIONE = "vigor-v88";
 
 const DA_TENERE = [
   "./",
@@ -77,9 +78,6 @@ self.addEventListener("activate", evento => {
   );
 });
 
-self.addEventListener("message", evento => {
-  if (evento.data === "AGGIORNA_SUBITO") self.skipWaiting();
-});
 
 // ============================================================
 // PROMEMORIA (notifiche push): arrivano anche ad app chiusa, mandate dal
