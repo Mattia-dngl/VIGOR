@@ -289,6 +289,24 @@ function pesoProgressivo(ex, programma){
   return Math.round(valore * 2) / 2;   // arrotonda al mezzo kg, come il passo dei campi "kg" altrove
 }
 
+// Check-in periodico (01/09/2026, richiesta esplicita): la cadenza la
+// decide il PT per ciascun cliente (rapporto.checkin_cadenza_settimane, in
+// settimane), non è mai fissa per tutta l'app. La scadenza del prossimo
+// check-in si calcola dall'ultimo compilato — o, se non ce n'è ancora
+// nessuno, da quando il rapporto PT↔cliente è diventato attivo.
+function prossimoCheckinScadenza(rapporto, checkins){
+  if(!rapporto || !rapporto.checkin_attivo) return null;
+  const cadenzaGiorni = (rapporto.checkin_cadenza_settimane || 1) * 7;
+  const ultimo = (checkins||[]).slice().sort((a,b)=>b.data.localeCompare(a.data))[0];
+  const riferimento = ultimo ? ultimo.data : (rapporto.accettato_il || rapporto.richiesto_il || '').slice(0,10);
+  if(!riferimento) return null;
+  return addDaysIso(riferimento, cadenzaGiorni);
+}
+function checkinDovuto(rapporto, checkins){
+  const scadenza = prossimoCheckinScadenza(rapporto, checkins);
+  return !!scadenza && scadenza <= new Date().toISOString().slice(0,10);
+}
+
 // converto fra il valore "vero" salvato (sempre in secondi, per non rompere storico/grafici)
 // e quello mostrato nel campo (secondi, minuti o ore, secondo il tipo dell'esercizio)
 function moltiplicatoreCampo(nome, chiave){

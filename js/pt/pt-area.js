@@ -425,6 +425,80 @@ function renderDettaglioPT(sezione){
     if(puo) mostraEditorDietaInlinePT();
     segnaVistaPT('dieta');
   }
+
+  if(sezione === 'checkin'){
+    const checkins = (d.checkins || []).slice().sort((a,b)=>b.data.localeCompare(a.data));
+    box.innerHTML = `
+      <div class="card">
+        <h3>Check-in periodico</h3>
+        <p class="hint">Chiedi alla persona di aggiornarti su peso, foto e sensazioni ogni tot settimane — decide sempre lei se e quando compilarlo, tu scegli solo ogni quanto chiederglielo.</p>
+        <label class="checkbox-row" style="margin-top:10px;">
+          <input type="checkbox" id="checkinAttivoToggle" ${r.checkin_attivo?'checked':''}>
+          Attiva il check-in periodico
+        </label>
+        ${r.checkin_attivo ? `
+          <div class="ex-field" style="margin-top:10px; max-width:220px;">
+            <span class="ex-field-label">Ogni quante settimane</span>
+            <select id="checkinCadenzaSelect">
+              ${[1,2,3,4,6,8].map(n=>`<option value="${n}" ${r.checkin_cadenza_settimane===n?'selected':''}>${n} settiman${n===1?'a':'e'}</option>`).join('')}
+            </select>
+          </div>` : ''}
+      </div>
+      <div class="card">
+        <h3>Storico</h3>
+        ${!r.checkin_attivo ? '<p class="hint">Attiva il check-in qui sopra per iniziare a raccoglierlo.</p>'
+          : checkins.length===0 ? '<p class="empty">Nessun check-in ancora compilato.</p>'
+          : `${graficoPesoCheckinSvg(checkins)}${checkins.map(c=>`
+            <div class="pt-scheda-ro">
+              <div style="display:flex; justify-content:space-between; gap:10px; align-items:baseline;">
+                <b>${formatDate(c.data)}</b>
+                <span class="mono">${c.peso!=null ? c.peso+' kg' : '—'}</span>
+              </div>
+              ${c.sensazione ? `<div class="hint">Sensazione: ${c.sensazione}/5</div>` : ''}
+              ${c.nota ? `<div class="hint" style="margin-top:2px; font-style:italic;">"${escapeAttr(c.nota)}"</div>` : ''}
+              ${c.fotoUrl ? `<div class="hint" style="margin-top:2px;">📷 foto allegata</div>` : ''}
+            </div>`).join('')}`}
+      </div>`;
+    const chkAttivo = document.getElementById('checkinAttivoToggle');
+    if(chkAttivo) chkAttivo.addEventListener('change', e=>impostaCheckinCliente(r.id, { checkin_attivo: e.target.checked }));
+    const chkCadenza = document.getElementById('checkinCadenzaSelect');
+    if(chkCadenza) chkCadenza.addEventListener('change', e=>impostaCheckinCliente(r.id, { checkin_cadenza_settimane: parseInt(e.target.value)||1 }));
+  }
+}
+
+// Piccolo grafico a linea del peso dagli ultimi check-in (in ordine
+// cronologico, non del "più recente prima" usato per la lista sotto):
+// solo un colpo d'occhio, niente assi/etichette elaborate.
+function graficoPesoCheckinSvg(checkinsRecenteAPrima){
+  const punti = checkinsRecenteAPrima.filter(c=>c.peso!=null).slice(0,8).reverse();
+  if(punti.length < 2) return '';
+  const pesi = punti.map(c=>c.peso);
+  const min = Math.min(...pesi), max = Math.max(...pesi);
+  const range = (max - min) || 1;
+  const W = 300, H = 64, PAD = 6;
+  const coord = (v,i) => {
+    const x = punti.length===1 ? W/2 : PAD + (i/(punti.length-1))*(W-PAD*2);
+    const y = H - PAD - ((v-min)/range)*(H-PAD*2);
+    return [x,y];
+  };
+  const pts = punti.map((c,i)=>coord(c.peso,i));
+  const polyline = pts.map(([x,y])=>`${x.toFixed(1)},${y.toFixed(1)}`).join(' ');
+  const [ux,uy] = pts[pts.length-1];
+  return `<div class="checkin-grafico-box">
+    <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">
+      <polyline points="${polyline}" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="${ux.toFixed(1)}" cy="${uy.toFixed(1)}" r="3.5" fill="var(--accent)"/>
+    </svg>
+    <div class="checkin-grafico-legenda"><span>${punti[0].peso} kg · ${formatDate(punti[0].data)}</span><span>${punti[punti.length-1].peso} kg · ${formatDate(punti[punti.length-1].data)}</span></div>
+  </div>`;
+}
+async function impostaCheckinCliente(idRapporto, patch){
+  const { error } = await sb.from('rapporti_pt').update(patch).eq('id', idRapporto);
+  if(error){ toast("Non riuscito: " + error.message); return; }
+  Object.assign(_clienteAperto.rapporto, patch);
+  const r2 = _rapporti.find(x=>x.id===idRapporto);
+  if(r2) Object.assign(r2, patch);
+  renderDettaglioPT('checkin');
 }
 
 // ---------- modificare scheda o dieta di un cliente ----------
@@ -477,6 +551,7 @@ function mostraEditorSchedaInlinePT(){
   if(!buffer.measurements) buffer.measurements = [];
   if(!buffer.mealLogs) buffer.mealLogs = [];
   if(!buffer.waterLogs) buffer.waterLogs = [];
+  if(!buffer.checkins) buffer.checkins = [];
   if(!buffer.customFoods) buffer.customFoods = {};
 
   _clienteBuffer = buffer;
@@ -529,6 +604,7 @@ function mostraEditorDietaInlinePT(){
   if(!buffer.measurements) buffer.measurements = [];
   if(!buffer.mealLogs) buffer.mealLogs = [];
   if(!buffer.waterLogs) buffer.waterLogs = [];
+  if(!buffer.checkins) buffer.checkins = [];
   if(!buffer.customFoods) buffer.customFoods = {};
 
   _clienteBuffer = buffer;
@@ -576,6 +652,7 @@ function modificaComePT(cosa){
   if(!buffer.measurements) buffer.measurements = [];
   if(!buffer.mealLogs) buffer.mealLogs = [];
   if(!buffer.waterLogs) buffer.waterLogs = [];
+  if(!buffer.checkins) buffer.checkins = [];
   if(!buffer.customFoods) buffer.customFoods = {};
 
   _clienteBuffer = buffer;

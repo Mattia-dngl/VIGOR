@@ -241,11 +241,24 @@ async function renderMioPT(){
           Dieta
         </label>
         <button type="button" class="pt-termina-mini" id="chiudiRapportoBtn">Termina rapporto</button>
-      </div>`;
+      </div>
+      ${attivo.checkin_attivo ? (()=>{
+          // Cadenza decisa dal PT per QUESTO rapporto (attivo.checkin_cadenza_settimane):
+          // mai un valore fisso uguale per tutti — vedi prossimoCheckinScadenza() in costanti.js.
+          const lp = loggedInProfile();
+          const dovuto = checkinDovuto(attivo, lp && lp.checkins);
+          const n = attivo.checkin_cadenza_settimane || 1;
+          return `<div class="pt-checkin-riga${dovuto?' dovuto':''}">
+            <span class="pt-checkin-label">${dovuto ? '🔔 Check-in da fare' : `Check-in ogni ${n} settiman${n===1?'a':'e'}`}</span>
+            <button type="button" class="btn ghost" id="apriCheckinBtn" style="margin-top:0; padding:6px 12px; font-size:11.5px;">Compila</button>
+          </div>`;
+        })() : ''}`;
 
     document.getElementById('permScheda').addEventListener('change', e=>cambiaPermesso(attivo.id, 'puo_scheda', e.target.checked));
     document.getElementById('permDieta').addEventListener('change', e=>cambiaPermesso(attivo.id, 'puo_dieta', e.target.checked));
     document.getElementById('apriMessaggiClienteBtn').addEventListener('click', ()=>apriMessaggi(attivo.id, attivo.pt_id, nomeDi(pt)));
+    const apriCheckinBtn = document.getElementById('apriCheckinBtn');
+    if(apriCheckinBtn) apriCheckinBtn.addEventListener('click', apriCheckinCompilazione);
     document.getElementById('chiudiRapportoBtn').addEventListener('click', ()=>{
       customConfirm(`Terminare il rapporto con ${nomeDi(pt)}? Non potrà più vedere né modificare i tuoi dati. La scheda che ti ha assegnato resta tua.`,
         ()=>terminaRapporto(attivo.id));

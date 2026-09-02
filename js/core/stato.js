@@ -58,6 +58,7 @@ function normalizzaProfilo(p){
   if(!p.measurements) p.measurements = [];
   if(!p.mealLogs) p.mealLogs = [];
   if(!p.waterLogs) p.waterLogs = []; // 31/08/2026: contatore acqua, Fase 3 (dieta)
+  if(!p.checkins) p.checkins = []; // 01/09/2026: check-in periodico richiesto dal PT (peso/foto/sensazione/nota)
   if(!p.customFoods) p.customFoods = {};
   if(p.altezza === undefined) p.altezza = null;
   if(p.eta === undefined) p.eta = null;
