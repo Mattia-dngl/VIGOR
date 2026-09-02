@@ -1587,13 +1587,6 @@
   .mp-video.mio{background:rgba(31,157,99,.14); color:var(--ok);}
   .mp-video.mio:hover{background:var(--ok); color:#fff;}
 
-  .agg-banner{display:none; position:fixed; left:12px; right:12px; bottom:calc(100px + env(safe-area-inset-bottom, 0px)); z-index:360;
-    background:var(--surface); border:1px solid var(--border); border-radius:14px;
-    box-shadow:0 14px 40px -12px rgba(15,20,30,.35); padding:12px 14px;
-    align-items:center; gap:12px; font-size:13.5px;}
-  .agg-banner.show{display:flex;}
-  .agg-banner span{flex:1;}
-  .agg-banner .btn{margin-top:0; padding:9px 16px; font-size:12.5px;}
 
   .codice-box{margin-top:14px; padding:16px; background:var(--surface2); border:1px dashed var(--border);
     border-radius:10px; font-family:'Roboto Mono',monospace; font-size:21px; letter-spacing:.14em;

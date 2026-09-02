@@ -1,27 +1,22 @@
 // FUNZIONAMENTO OFFLINE E AGGIORNAMENTI
 // ============================================================
+// Aggiornamento sempre automatico, mai in mano alla persona: prima c'era un
+// banner "È disponibile una versione aggiornata" con un tasto da toccare, ma
+// una correzione pubblicata restava così invisibile finché qualcuno non se
+// ne accorgeva e cliccava — capitato davvero il 01-02/09/2026, con più
+// correzioni di fila che non arrivavano su un telefono di test proprio per
+// questo. sw.js chiama già da solo skipWaiting()/clients.claim() appena una
+// versione nuova è pronta: qui basta ricaricare in automatico non appena
+// prende il controllo (evento "controllerchange"), una sola volta, per far
+// sì che ogni aggiornamento pubblicato arrivi davvero su ogni dispositivo.
 if('serviceWorker' in navigator && location.protocol.startsWith('http')){
   window.addEventListener('load', ()=>{
     navigator.serviceWorker.register('sw.js').then(reg=>{
-      // se arriva una versione nuova, lo dico invece di cambiarla sotto i piedi
-      function proponiAggiornamento(nuovo){
-        const banner = document.getElementById('aggBanner');
-        banner.classList.add('show');
-        document.getElementById('aggBtn').onclick = ()=>{
-          banner.classList.remove('show');
-          if(nuovo) nuovo.postMessage('AGGIORNA_SUBITO');
-          setTimeout(()=>location.reload(), 300);
-        };
-      }
-      if(reg.waiting) proponiAggiornamento(reg.waiting);
-      reg.addEventListener('updatefound', ()=>{
-        const nuovo = reg.installing;
-        if(!nuovo) return;
-        nuovo.addEventListener('statechange', ()=>{
-          if(nuovo.state === 'installed' && navigator.serviceWorker.controller){
-            proponiAggiornamento(nuovo);
-          }
-        });
+      let ricaricoGiaFatto = false;
+      navigator.serviceWorker.addEventListener('controllerchange', ()=>{
+        if(ricaricoGiaFatto) return;
+        ricaricoGiaFatto = true;
+        location.reload();
       });
       // controllo se c'è una versione nuova a ogni riapertura
       document.addEventListener('visibilitychange', ()=>{
