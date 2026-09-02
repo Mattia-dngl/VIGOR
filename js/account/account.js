@@ -643,6 +643,7 @@ function profiloVuotoPerCloud(){
 
 function applicaDatiOnline(){
   const dati = normalizzaProfilo(rigaOnline.dati || profiloVuotoPerCloud());
+  segnaPassoAvvio("Profilo normalizzato: applico i dati…");
   dati.id = rigaOnline.id;
   dati.name = rigaOnline.nome || dati.name || 'Io';
   dati.email = rigaOnline.email;
@@ -650,7 +651,18 @@ function applicaDatiOnline(){
   state.profiles = [dati];
   activeProfileId = dati.id;
   actingProfileId = null;
+  // Diagnostica temporanea (02/09/2026): il blocco arrivava fino a "Profilo
+  // ricevuto" e si fermava, senza mai raggiungere il passo successivo — qui
+  // dentro non c'è nessuna chiamata di rete, quindi il sospetto più concreto
+  // è salvaLocale() (JSON.stringify + localStorage.setItem su TUTTO `state`,
+  // non solo sul profilo appena arrivato: su un dispositivo di test può
+  // contenere ben altro, es. video/esercizi personalizzati accumulati).
+  // Il numero di caratteri qui sotto conferma o esclude la dimensione come causa.
+  let taglia = '?';
+  try{ taglia = JSON.stringify(state).length; }catch(e){ taglia = 'errore: ' + e.message; }
+  segnaPassoAvvio("Salvo in locale (" + taglia + " caratteri)…");
   salvaLocale();
+  segnaPassoAvvio("Salvato in locale.");
 }
 
 // ---------- salvataggio ----------
