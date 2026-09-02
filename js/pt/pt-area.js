@@ -452,31 +452,45 @@ function renderDettaglioPT(sezione){
         <h3>Storico</h3>
         ${!r.checkin_attivo ? '<p class="hint">Attiva il check-in qui sopra per iniziare a raccoglierlo.</p>'
           : checkins.length===0 ? '<p class="empty">Nessun check-in ancora compilato.</p>'
-          : `${graficoPesoCheckinSvg(checkins)}${checkins.map((c,i)=>`
-            <div class="pt-scheda-ro">
-              <div style="display:flex; justify-content:space-between; gap:10px; align-items:baseline;">
-                <b>${formatDate(c.data)}</b>
-                <span class="mono">${c.peso!=null ? c.peso+' kg' : '—'}</span>
-              </div>
-              ${c.sensazione ? `<div class="hint">Sensazione: ${c.sensazione}/5</div>` : ''}
-              ${c.nota ? `<div class="hint" style="margin-top:2px; font-style:italic;">"${escapeAttr(c.nota)}"</div>` : ''}
-              ${c.fotoUrl ? `<button type="button" class="checkin-foto-thumb" data-foto-idx="${i}"><img src="${c.fotoUrl}" alt="Foto progresso del ${formatDate(c.data)}"></button>` : ''}
-            </div>`).join('')}`}
+          : `${graficoPesoCheckinSvg(checkins)}${checkins.map((c,i)=>{
+              // la didascalia (data/sensazione/nota) è la stessa sia che ci
+              // sia la foto sia che non ci sia: solo il contenitore cambia
+              // (card "post" quadrata con foto in cima, o riga semplice).
+              const didascalia = `
+                <div style="display:flex; justify-content:space-between; gap:10px; align-items:baseline;">
+                  <b>${formatDate(c.data)}</b>
+                  <span class="mono">${c.peso!=null ? c.peso+' kg' : '—'}</span>
+                </div>
+                ${c.sensazione ? `<div class="hint">Sensazione: ${c.sensazione}/5</div>` : ''}
+                ${c.nota ? `<div class="hint" style="margin-top:2px; font-style:italic;">"${escapeAttr(c.nota)}"</div>` : ''}`;
+              if(!c.fotoUrl) return `<div class="pt-scheda-ro">${didascalia}</div>`;
+              return `<div class="pt-scheda-ro checkin-post">
+                  <button type="button" class="checkin-post-foto" data-foto-idx="${i}"><img src="${c.fotoUrl}" alt="Foto progresso del ${formatDate(c.data)}"></button>
+                  <div class="checkin-post-caption">${didascalia}</div>
+                </div>`;
+            }).join('')}`}
       </div>`;
     const chkAttivo = document.getElementById('checkinAttivoToggle');
     if(chkAttivo) chkAttivo.addEventListener('change', e=>impostaCheckinCliente(r.id, { checkin_attivo: e.target.checked }));
     const chkCadenza = document.getElementById('checkinCadenzaSelect');
     if(chkCadenza) chkCadenza.addEventListener('change', e=>impostaCheckinCliente(r.id, { checkin_cadenza_settimane: parseInt(e.target.value)||1 }));
-    box.querySelectorAll('.checkin-foto-thumb').forEach(btn=>{
-      btn.addEventListener('click', ()=>apriFotoIngrandita(checkins[parseInt(btn.dataset.fotoIdx)].fotoUrl));
+    box.querySelectorAll('.checkin-post-foto').forEach(btn=>{
+      const c = checkins[parseInt(btn.dataset.fotoIdx)];
+      const didascalia = `${formatDate(c.data)}${c.peso!=null ? ' · ' + c.peso + ' kg' : ''}`;
+      btn.addEventListener('click', ()=>apriFotoIngrandita(c.fotoUrl, didascalia));
     });
   }
 }
 
 // Foto di un check-in a schermo intero (dallo storico, lato PT): prima la
-// foto non si vedeva affatto lì, solo la scritta "foto allegata".
-function apriFotoIngrandita(url){
+// foto non si vedeva affatto lì, solo la scritta "foto allegata". A
+// differenza della card quadrata (ritagliata 1:1, in stile "post") qui si
+// vede la foto intera, con una didascalia opzionale sotto (data/peso).
+function apriFotoIngrandita(url, didascalia){
   document.getElementById('fotoIngranditaImg').src = url;
+  const cap = document.getElementById('fotoIngranditaCaption');
+  cap.textContent = didascalia || '';
+  cap.style.display = didascalia ? 'block' : 'none';
   document.getElementById('fotoIngranditaOverlay').classList.add('show');
 }
 function chiudiFotoIngrandita(){
