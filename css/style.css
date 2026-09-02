@@ -1468,23 +1468,36 @@
     font-size:14px; color:var(--text-dim); cursor:pointer; flex:0 0 auto;}
   .mp-close:hover{background:var(--accent-soft,#fdeae5); color:var(--accent);}
 
-  /* Anteprima della foto scelta per il check-in (lato cliente): prima era un
-     <img> nudo attaccato al bottone "Aggiungi foto", ora sta in una cornice
-     centrata con un tasto per toglierla senza dover riaprire il selettore file. */
-  .checkin-foto-anteprima{position:relative; margin-top:10px; display:flex;
-    align-items:center; justify-content:center; overflow:hidden;
-    background:var(--surface2); border:1px solid var(--border); border-radius:var(--r-lg);}
-  .checkin-foto-anteprima img{display:block; width:100%; max-height:320px; object-fit:cover;}
-  .checkin-foto-rimuovi{position:absolute; top:8px; right:8px; width:30px; height:30px;
-    border-radius:50%; border:none; background:rgba(15,18,23,.55); color:#fff; font-size:12px;
-    cursor:pointer; display:flex; align-items:center; justify-content:center;}
-  .checkin-foto-rimuovi:hover{background:rgba(15,18,23,.75);}
+  /* Anteprima della foto scelta per il check-in (lato cliente): un riquadro
+     quadrato in stile "post" (Instagram-like: crop 1:1, angoli arrotondati,
+     bordo sottile, ombra leggera) invece di un <img> nudo attaccato al
+     bottone "Aggiungi foto" — così l'anteprima assomiglia già a come la
+     vedrà il PT nello storico (vedi .checkin-post più sotto). Il tasto per
+     toglierla è un cerchio "vetro" semitrasparente sopra la foto, come i
+     controlli overlay dei visori foto/social. */
+  .checkin-foto-anteprima{position:relative; margin-top:10px; overflow:hidden;
+    aspect-ratio:1/1; width:100%; border:1px solid var(--border); border-radius:var(--r-lg);
+    box-shadow:var(--shadow-sm); background:var(--surface2);}
+  .checkin-foto-anteprima img{display:block; width:100%; height:100%; object-fit:cover;}
+  .checkin-foto-rimuovi{position:absolute; top:10px; right:10px; width:32px; height:32px;
+    border-radius:50%; border:none; background:rgba(15,18,23,.45); color:#fff; font-size:13px;
+    cursor:pointer; display:flex; align-items:center; justify-content:center;
+    backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px); transition:background .15s;}
+  .checkin-foto-rimuovi:hover{background:rgba(15,18,23,.7);}
 
-  /* Foto ingrandita a schermo intero (lato PT, dallo storico check-in) */
-  .foto-ingrandita-box{position:relative; margin:auto; max-width:92vw; max-height:92vh;}
-  .foto-ingrandita-box img{display:block; max-width:92vw; max-height:92vh; border-radius:var(--r-lg);}
-  .foto-ingrandita-chiudi{position:absolute; top:-14px; right:-14px; background:var(--surface);
-    box-shadow:var(--shadow-md);}
+  /* Foto ingrandita a schermo intero (lato PT, dallo storico check-in):
+     immagine intera (mai ritagliata, a differenza della card quadrata) con
+     una didascalia in stile "post" sotto — data/peso — e lo stesso tasto
+     "vetro" della chiusura usato nell'anteprima. */
+  .foto-ingrandita-box{position:relative; margin:auto; max-width:92vw; max-height:92vh;
+    display:flex; flex-direction:column; align-items:center; gap:10px;}
+  .foto-ingrandita-box img{display:block; max-width:92vw; max-height:78vh; border-radius:var(--r-lg);
+    box-shadow:var(--shadow-lg);}
+  .foto-ingrandita-chiudi{position:absolute; top:-14px; right:-14px; background:rgba(15,18,23,.55);
+    color:#fff; backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px); box-shadow:var(--shadow-md);}
+  .foto-ingrandita-chiudi:hover{background:rgba(15,18,23,.75); color:#fff;}
+  .foto-ingrandita-caption{color:#fff; font-size:13px; font-weight:600; text-align:center;
+    text-shadow:0 1px 3px rgba(0,0,0,.4);}
 
   /* Pannello "Aggiungi esercizio" nell'allenamento libero: ricerca + elenco */
   .es-lista-risultati{overflow-y:auto; padding:8px 8px 16px; flex:1; min-height:0;}
@@ -2079,11 +2092,16 @@
   .checkin-grafico-box{background:var(--surface2); border-radius:10px; padding:10px 12px 8px; margin-bottom:12px;}
   .checkin-grafico-box svg{width:100%; height:56px; display:block;}
   .checkin-grafico-legenda{display:flex; justify-content:space-between; font-size:10.5px; color:var(--text-faint); margin-top:2px;}
-  /* Miniatura della foto in ogni voce dello storico check-in (lato PT): prima
-     c'era solo la scritta "📷 foto allegata", la foto vera non si vedeva mai. */
-  .checkin-foto-thumb{margin-top:8px; padding:0; border:none; background:none; cursor:pointer;
-    display:block; width:96px; height:96px; border-radius:10px; overflow:hidden;}
-  .checkin-foto-thumb img{width:100%; height:100%; object-fit:cover; display:block;}
+  /* Voce dello storico check-in CON foto (lato PT): una vera card "post" in
+     stile social — foto quadrata a bordo pieno in cima, didascalia (data,
+     peso, sensazione, nota) sotto — al posto della vecchia scritta
+     "📷 foto allegata" che non mostrava mai la foto vera. Le voci senza
+     foto restano il semplice .pt-scheda-ro testuale di prima. */
+  .checkin-post{padding:0; overflow:hidden;}
+  .checkin-post-foto{display:block; width:100%; aspect-ratio:1/1; padding:0; margin:0;
+    border:none; cursor:pointer; background:var(--surface);}
+  .checkin-post-foto img{width:100%; height:100%; object-fit:cover; display:block;}
+  .checkin-post-caption{padding:11px 14px 13px;}
 
   /* ---- redesign 01/09/2026: la vista d'insieme del PT (oggi/richieste/
      clienti) usava tre card bianche identiche impilate — stesso titolo,

@@ -39,9 +39,14 @@ document.querySelectorAll('#checkinSensazioneToggle .seg-btn').forEach(btn=>{
 });
 
 // Stessa idea di ridimensionamento/compressione già usata per la foto
-// profilo (js/account/account.js, acctAvatarFile): qui il lato è un po'
-// più grande (480 invece di 240) perché una foto di progresso, a differenza
-// di un avatar, si guarda anche ingrandita.
+// profilo (js/account/account.js, acctAvatarFile), ma qui il lato è molto
+// più grande (960 invece di 240): una foto profilo resta sempre piccola
+// (avatar), una foto di progresso invece si vede anche a piena larghezza
+// nell'anteprima e a schermo intero dal PT — 480px ci arrivava sfocata
+// (il browser la doveva allargare). 960px + qualità .85 + smoothing "high"
+// in fase di ridimensionamento restano nitidi anche lì, a fronte di un
+// file un po' più pesante (accettabile: un check-in a settimana, non foto
+// a raffica).
 document.getElementById('checkinFotoBtn').addEventListener('click', ()=>document.getElementById('checkinFotoFile').click());
 document.getElementById('checkinFotoFile').addEventListener('change', function(e){
   const file = e.target.files && e.target.files[0];
@@ -52,14 +57,16 @@ document.getElementById('checkinFotoFile').addEventListener('change', function(e
   reader.onload = function(ev){
     const img = new Image();
     img.onload = function(){
-      const lato = 480;
+      const lato = 960;
       const scala = Math.min(1, lato / Math.max(img.width, img.height));
       const canvas = document.createElement('canvas');
       canvas.width = Math.round(img.width * scala);
       canvas.height = Math.round(img.height * scala);
       const ctx = canvas.getContext('2d');
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
       ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-      _checkinFotoDataUrl = canvas.toDataURL('image/jpeg', 0.75);
+      _checkinFotoDataUrl = canvas.toDataURL('image/jpeg', 0.85);
       const anteprima = document.getElementById('checkinFotoAnteprima');
       anteprima.querySelector('img').src = _checkinFotoDataUrl;
       anteprima.style.display = 'flex';

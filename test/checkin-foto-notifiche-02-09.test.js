@@ -61,13 +61,14 @@ test('storico check-in (PT): mostra una miniatura vera della foto, non più solo
   await apriTabCheckin(window, rapporto, cliente);
   const html = document.getElementById('ptDettaglioCorpo').innerHTML;
   assert.doesNotMatch(html, /foto allegata/, 'non deve più mostrare solo il testo');
-  const thumb = document.querySelector('.checkin-foto-thumb img');
+  assert.ok(document.querySelector('.checkin-post'), 'la voce con foto deve usare la card "post"');
+  const thumb = document.querySelector('.checkin-post-foto img');
   assert.ok(thumb, 'deve comparire una miniatura <img> reale');
   assert.equal(thumb.getAttribute('src'), 'data:image/jpeg;base64,AAAA');
   window.close();
 });
 
-test('storico check-in (PT): toccare la miniatura apre la foto a schermo intero', async () => {
+test('storico check-in (PT): toccare la miniatura apre la foto a schermo intero, con data e peso in didascalia', async () => {
   const { window, document } = await loadApp();
   const cliente = clienteBase({ dati: { logs:[], measurements:[], checkins:[
     { id:'c1', data:'2026-09-01', creatoIl:'2026-09-01T09:00:00.000Z', peso:78.4, sensazione:null, nota:'', fotoUrl:'data:image/jpeg;base64,BBBB' }
@@ -75,9 +76,10 @@ test('storico check-in (PT): toccare la miniatura apre la foto a schermo intero'
   const rapporto = { id:'r-1', cliente_id:'cli-1', pt_id:'pt-1', stato:'attivo', checkin_attivo:true, checkin_cadenza_settimane:1 };
   await apriTabCheckin(window, rapporto, cliente);
   assert.equal(document.getElementById('fotoIngranditaOverlay').classList.contains('show'), false);
-  document.querySelector('.checkin-foto-thumb').click();
+  document.querySelector('.checkin-post-foto').click();
   assert.equal(document.getElementById('fotoIngranditaOverlay').classList.contains('show'), true);
   assert.equal(document.getElementById('fotoIngranditaImg').getAttribute('src'), 'data:image/jpeg;base64,BBBB');
+  assert.match(document.getElementById('fotoIngranditaCaption').textContent, /78\.4 kg/);
   document.getElementById('fotoIngranditaChiudi').click();
   assert.equal(document.getElementById('fotoIngranditaOverlay').classList.contains('show'), false);
   assert.equal(document.getElementById('fotoIngranditaImg').hasAttribute('src'), false);
@@ -121,6 +123,15 @@ test('check-in cliente: l\'anteprima della foto sta in una cornice con un tasto 
   assert.equal(r.valore, null);
   assert.equal(r.haSrc, false);
   window.close();
+});
+
+test('check-in cliente: la foto si cattura a risoluzione più alta e qualità JPEG più alta di prima (era sfocata)', () => {
+  const fs = require('fs');
+  const path = require('path');
+  const src = fs.readFileSync(path.join(__dirname, '..', 'js', 'pt', 'checkin-cliente.js'), 'utf8');
+  assert.match(src, /const lato = 960/, 'il lato lungo del ridimensionamento deve essere più grande di 480px');
+  assert.match(src, /toDataURL\('image\/jpeg', 0\.85\)/, 'la qualità JPEG deve essere più alta di .75');
+  assert.match(src, /imageSmoothingQuality = 'high'/, 'il downscale deve usare il filtro di qualità migliore del canvas');
 });
 
 // ---------------------------------------------------------------
