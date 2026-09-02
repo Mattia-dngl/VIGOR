@@ -125,12 +125,12 @@ test('check-in cliente: l\'anteprima della foto sta in una cornice con un tasto 
   window.close();
 });
 
-test('check-in cliente: la foto si cattura a risoluzione più alta e qualità JPEG più alta di prima (era sfocata)', () => {
+test('check-in cliente: la foto si cattura a risoluzione più alta e qualità JPEG più alta di prima (era sfocata anche da scaricata)', () => {
   const fs = require('fs');
   const path = require('path');
   const src = fs.readFileSync(path.join(__dirname, '..', 'js', 'pt', 'checkin-cliente.js'), 'utf8');
-  assert.match(src, /const lato = 960/, 'il lato lungo del ridimensionamento deve essere più grande di 480px');
-  assert.match(src, /toDataURL\('image\/jpeg', 0\.85\)/, 'la qualità JPEG deve essere più alta di .75');
+  assert.match(src, /const lato = 1920/, 'il lato lungo del ridimensionamento deve essere più grande di 960px (restava sgranata anche scaricata)');
+  assert.match(src, /toDataURL\('image\/jpeg', 0\.9\)/, 'la qualità JPEG deve essere più alta di .85');
   assert.match(src, /imageSmoothingQuality = 'high'/, 'il downscale deve usare il filtro di qualità migliore del canvas');
 });
 
