@@ -597,20 +597,27 @@ async function dopoAccessoOnline(){
 
     // porto i dati online dentro il motore locale dell'app
     applicaDatiOnline();
+    segnaPassoAvvio("Dati applicati: controllo Personal Trainer…");
     // la card per l'area riservata compare solo a chi è Personal Trainer
     document.getElementById('homePTBtn').style.display = sonoPT() ? 'flex' : 'none';
     caricaRapporti().then(()=>{ renderMioPT(); aggiornaCampanellaHome(); aggiornaPuntinoMessaggi(); }).catch(()=>{});
     ascoltaMioProfilo();
+    segnaPassoAvvio("In ascolto sul profilo: tolgo la schermata di connessione…");
     document.documentElement.classList.remove('avvio');
     nascondiCloudGate();
+    segnaPassoAvvio("Controllo giorni saltati…");
     controllaSaltati(true);
+    segnaPassoAvvio("Preparo tutte le schermate (renderAll)…");
     renderAll();
+    segnaPassoAvvio("Preparo il timer…");
     _timerDurata = impostazioniTimer().durata;
     renderScorciatoieTimer();
+    segnaPassoAvvio("Controllo bozze in sospeso…");
     _bozzaPronta = false;
     if(ripristinaBozza()) toast("Ripresa la registrazione lasciata a metà");
     _bozzaPronta = true;
     mostraStatoSync('ok', 'sincronizzato');
+    segnaPassoAvvio("Fatto: apro la Home…");
     // Chi è Personal Trainer entra direttamente nella sua area riservata:
     // non è un utente come gli altri, non deve passare dalla home normale
     // (da lì può comunque tornare alla propria home col tasto "Torna Home").
