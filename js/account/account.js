@@ -449,12 +449,28 @@ document.getElementById('privacyEliminaBtn').addEventListener('click', ()=>{
 // (#accAssistenza), non serve altro JS per aprirla/chiuderla.
 
 // ---------- ingresso ----------
+// Aggiorna il testo sulla schermata "Connessione…" mostrata all'avvio, SOLO
+// se è quella ancora visibile (altrimenti scriverebbe su un testo che
+// l'utente non sta guardando). Tracciato passo-passo aggiunto il 02/09/2026
+// per un caricamento infinito rimasto invisibile a lungo nonostante tutti i
+// timeout di sicurezza già in campo: prima si sapeva solo CHE si era
+// bloccati, non DOVE — ora ogni passo aggiorna questo testo, così la
+// prossima volta che qualcuno resta bloccato il testo stesso dice a che
+// punto esatto della catena di accesso si è fermato.
+function segnaPassoAvvio(testo){
+  const el = document.getElementById('cloudCaricaTxt');
+  const schermo = document.getElementById('cloudCaricamento');
+  if(el && schermo && schermo.style.display === 'block') el.textContent = testo;
+}
+
 async function avvioOnline(){
+  segnaPassoAvvio("Preparo il client Supabase…");
   if(!iniziaSupabase()){
     document.getElementById('cloudCaricaTxt').textContent = "Configurazione non valida: controlla config.js.";
     document.getElementById('cloudRiprova').style.display = 'block';
     return false;
   }
+  segnaPassoAvvio("Client pronto. Controllo eventuali link di conferma/recupero…");
   mostraStatoSync('sincronizzo', 'controllo…');
   // tornando dal link di conferma email o dal link "password dimenticata" l'indirizzo
   // contiene dei parametri: dopo averli usati (supabase-js li legge da solo) li tolgo,
@@ -480,6 +496,7 @@ async function avvioOnline(){
     // a fissare "Connessione…" per sempre, senza errore né tasto per uscirne —
     // lo stesso identico problema già risolto per la lettura del profilo, ma
     // qui a monte, prima ancora di sapere chi è l'utente.
+    segnaPassoAvvio("Controllo se hai già una sessione attiva (sb.auth.getSession)…");
     let _timeoutId;
     const { data } = await Promise.race([
       sb.auth.getSession(),
@@ -487,6 +504,7 @@ async function avvioOnline(){
     ]);
     clearTimeout(_timeoutId);
     if(data && data.session){
+      segnaPassoAvvio("Sessione trovata: carico il tuo profilo…");
       utenteOnline = data.session.user;
       await dopoAccessoOnline();
     } else {
@@ -525,6 +543,7 @@ async function dopoAccessoOnline(){
     // ma sotto al campo email della schermata di login — che però non era
     // quella visibile in quel momento, quindi restava invisibile e la
     // persona vedeva "Connessione…" per sempre.
+    segnaPassoAvvio("Leggo il tuo profilo dal server (tabella profili)…");
     let _timeoutId;
     const risposta = await Promise.race([
       sb.from('profili').select('*').eq('id', utenteOnline.id).maybeSingle(),
@@ -533,6 +552,7 @@ async function dopoAccessoOnline(){
     clearTimeout(_timeoutId);
     const { data, error } = risposta;
     if(error) throw error;
+    segnaPassoAvvio("Profilo ricevuto: preparo l'app…");
 
     if(!data){
       // prima volta su questo account: creo la riga (parte non approvata).
