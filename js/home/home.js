@@ -308,6 +308,8 @@ async function aggiornaCampanellaHome(){
         const d = (p && p.dati) || {};
         if(d.schedaModificataDa==='cliente' && (!d.schedaVistaPtIl || d.schedaModificataIl > d.schedaVistaPtIl)) modifichePendenti++;
         if(d.dietaModificataDa==='cliente' && (!d.dietaVistaPtIl || d.dietaModificataIl > d.dietaVistaPtIl)) modifichePendenti++;
+        const ultimoCheckin = checkinPiuRecente(d.checkins);
+        if(ultimoCheckin && (!d.checkinVistaPtIl || checkinCreatoIl(ultimoCheckin) > d.checkinVistaPtIl)) modifichePendenti++;
       }
     }
     dot.style.display = (richiestePT + approvazioni + nonLetti + modifichePendenti) > 0 ? 'block' : 'none';
@@ -397,6 +399,11 @@ async function renderNotifiche(){
       if(d.dietaModificataDa === 'cliente' && (!d.dietaVistaPtIl || d.dietaModificataIl > d.dietaVistaPtIl)){
         voci.push({ icona:'🥗', titolo:`${nomeDi(p)} ha modificato la sua dieta`, sotto:'Tocca per vederla',
           onTap: async ()=>{ chiudiNotifiche(); await apriCliente(r.cliente_id); document.querySelector('.pt-tab[data-pttab="dieta"]')?.click(); } });
+      }
+      const ultimoCheckin = checkinPiuRecente(d.checkins);
+      if(ultimoCheckin && (!d.checkinVistaPtIl || checkinCreatoIl(ultimoCheckin) > d.checkinVistaPtIl)){
+        voci.push({ icona:'📷', titolo:`${nomeDi(p)} ha inviato un check-in`, sotto: formatDate(ultimoCheckin.data),
+          onTap: async ()=>{ chiudiNotifiche(); await apriCliente(r.cliente_id); document.querySelector('.pt-tab[data-pttab="checkin"]')?.click(); } });
       }
     }
   }

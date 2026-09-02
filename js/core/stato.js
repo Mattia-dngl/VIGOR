@@ -204,6 +204,40 @@ function toast(msg){
   setTimeout(()=>t.classList.remove('show'), 2400);
 }
 
+// Notifica "attiva" per gli eventi in tempo reale (richiesta PT ricevuta,
+// check-in inviato da un cliente, PT che accetta, ecc — vedi
+// ascoltaNotificheRealtime() in js/pt/pt-collegamento.js): a differenza di
+// toast() è tappabile e porta dritti al punto giusto, non solo un avviso di
+// passaggio. testo va sempre per textContent, mai per innerHTML: può
+// contenere un nome scelto liberamente in registrazione.
+function mostraNotificaRealtime(icona, testo, onTap){
+  const el = document.createElement('button');
+  el.type = 'button';
+  el.className = 'rt-notifica';
+  const iconaEl = document.createElement('span');
+  iconaEl.className = 'rt-notifica-icona';
+  iconaEl.textContent = icona;
+  const testoEl = document.createElement('span');
+  testoEl.className = 'rt-notifica-testo';
+  testoEl.textContent = testo;
+  el.append(iconaEl, testoEl);
+  document.body.appendChild(el);
+  requestAnimationFrame(()=>el.classList.add('show'));
+  let chiusa = false;
+  const chiudi = ()=>{
+    if(chiusa) return;
+    chiusa = true;
+    el.classList.remove('show');
+    setTimeout(()=>el.remove(), 250);
+  };
+  const timer = setTimeout(chiudi, 5000);
+  el.addEventListener('click', ()=>{
+    clearTimeout(timer);
+    chiudi();
+    if(onTap) onTap();
+  });
+}
+
 
 
 // etichette delle zone anatomiche cliccabili

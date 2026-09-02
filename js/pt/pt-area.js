@@ -428,6 +428,10 @@ function renderDettaglioPT(sezione){
 
   if(sezione === 'checkin'){
     const checkins = (d.checkins || []).slice().sort((a,b)=>b.data.localeCompare(a.data));
+    // il PT ha appena guardato questa sezione: segno come vista, così le
+    // notifiche (bell/lista, vedi renderNotifiche in home.js) smettono di
+    // segnalare i check-in già visti qui.
+    segnaVistaPT('checkin');
     box.innerHTML = `
       <div class="card">
         <h3>Check-in periodico</h3>
@@ -448,7 +452,7 @@ function renderDettaglioPT(sezione){
         <h3>Storico</h3>
         ${!r.checkin_attivo ? '<p class="hint">Attiva il check-in qui sopra per iniziare a raccoglierlo.</p>'
           : checkins.length===0 ? '<p class="empty">Nessun check-in ancora compilato.</p>'
-          : `${graficoPesoCheckinSvg(checkins)}${checkins.map(c=>`
+          : `${graficoPesoCheckinSvg(checkins)}${checkins.map((c,i)=>`
             <div class="pt-scheda-ro">
               <div style="display:flex; justify-content:space-between; gap:10px; align-items:baseline;">
                 <b>${formatDate(c.data)}</b>
@@ -456,15 +460,35 @@ function renderDettaglioPT(sezione){
               </div>
               ${c.sensazione ? `<div class="hint">Sensazione: ${c.sensazione}/5</div>` : ''}
               ${c.nota ? `<div class="hint" style="margin-top:2px; font-style:italic;">"${escapeAttr(c.nota)}"</div>` : ''}
-              ${c.fotoUrl ? `<div class="hint" style="margin-top:2px;">📷 foto allegata</div>` : ''}
+              ${c.fotoUrl ? `<button type="button" class="checkin-foto-thumb" data-foto-idx="${i}"><img src="${c.fotoUrl}" alt="Foto progresso del ${formatDate(c.data)}"></button>` : ''}
             </div>`).join('')}`}
       </div>`;
     const chkAttivo = document.getElementById('checkinAttivoToggle');
     if(chkAttivo) chkAttivo.addEventListener('change', e=>impostaCheckinCliente(r.id, { checkin_attivo: e.target.checked }));
     const chkCadenza = document.getElementById('checkinCadenzaSelect');
     if(chkCadenza) chkCadenza.addEventListener('change', e=>impostaCheckinCliente(r.id, { checkin_cadenza_settimane: parseInt(e.target.value)||1 }));
+    box.querySelectorAll('.checkin-foto-thumb').forEach(btn=>{
+      btn.addEventListener('click', ()=>apriFotoIngrandita(checkins[parseInt(btn.dataset.fotoIdx)].fotoUrl));
+    });
   }
 }
+
+// Foto di un check-in a schermo intero (dallo storico, lato PT): prima la
+// foto non si vedeva affatto lì, solo la scritta "foto allegata".
+function apriFotoIngrandita(url){
+  document.getElementById('fotoIngranditaImg').src = url;
+  document.getElementById('fotoIngranditaOverlay').classList.add('show');
+}
+function chiudiFotoIngrandita(){
+  document.getElementById('fotoIngranditaOverlay').classList.remove('show');
+  // niente src="" (vedi commento in checkin-cliente.js): removeAttribute evita
+  // che il browser la interpreti come "carica la pagina corrente come immagine".
+  document.getElementById('fotoIngranditaImg').removeAttribute('src');
+}
+document.getElementById('fotoIngranditaChiudi').addEventListener('click', chiudiFotoIngrandita);
+document.getElementById('fotoIngranditaOverlay').addEventListener('click', e=>{
+  if(e.target.id === 'fotoIngranditaOverlay') chiudiFotoIngrandita();
+});
 
 // Piccolo grafico a linea del peso dagli ultimi check-in (in ordine
 // cronologico, non del "più recente prima" usato per la lista sotto):

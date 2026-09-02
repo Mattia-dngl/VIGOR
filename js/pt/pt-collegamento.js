@@ -20,6 +20,19 @@ function nomeDi(riga){ return (riga && (riga.nome_pubblico || riga.nome)) || 'Se
 // mentre stai usando l'app: senza questo, te ne accorgeresti solo chiudendo e riaprendo.
 let _canaleMioProfilo = null;
 // ============================================================
+// NOTIFICHE IN TEMPO REALE: richiesta di essere seguito, PT che accetta,
+// check-in inviato da un cliente — vedi ascoltaNotificheRealtime() più sotto.
+// Un solo array di canali (a differenza di _canaleMioProfilo che è sempre
+// uno): qui possono essercene diversi insieme (uno per cliente seguito, per
+// i check-in), tutti da richiudere assieme al logout.
+// ============================================================
+let _canaliNotifiche = [];
+// clienteId -> quanti check-in avevo già visto l'ultima volta: serve a capire,
+// quando arriva un UPDATE realtime sul profilo di un cliente, se è stato
+// aggiunto un check-in nuovo (l'unico caso da notificare) o è cambiato
+// qualcos'altro nel suo blob "dati" (scheda, dieta, log...).
+let _cacheCheckinCount = {};
+// ============================================================
 // MESSAGGI: un messaggio per volta, in tempo reale. Un "canale" è o un
 // rapporto_id (chat PT ↔ cliente, come sempre) o un chat_id (chat libere
 // multi-partecipante, nuove — vedi js/account/messaggi.js per come si
@@ -169,6 +182,88 @@ function gestisciMioProfiloAggiornato(nuovaRiga){
     // se te lo tolgono mentre sei dentro l'area riservata, ti riporto fuori
     if(!oraPT && document.getElementById('areaPT').style.display === 'block') chiudiAreaPT();
   }
+}
+
+// Riapre da zero tutti i canali di notifica in tempo reale, in base al ruolo
+// e ai rapporti attivi al momento (va richiamata ogni volta che questi
+// possono essere cambiati: dopo il login e ogni volta che si vuole essere
+// sicuri che i canali seguano l'elenco clienti aggiornato). Va chiamata SOLO
+// dopo che _rapporti è già stato caricato (caricaRapporti()).
+async function ascoltaNotificheRealtime(){
+  if(!sb || !utenteOnline) return;
+  _canaliNotifiche.forEach(c=>sb.removeChannel(c));
+  _canaliNotifiche = [];
+
+  // lato PT: qualcuno chiede di essere seguito — prima lo si vedeva solo
+  // riaprendo l'area PT o le notifiche, mai subito.
+  if(sonoPT()){
+    const canaleRichieste = sb.channel('rt-richieste-pt-' + utenteOnline.id)
+      .on('postgres_changes', { event:'INSERT', schema:'public', table:'rapporti_pt', filter:`pt_id=eq.${utenteOnline.id}` }, async payload=>{
+        if(payload.new.stato !== 'in_attesa') return;
+        const p = await leggiProfilo(payload.new.cliente_id);
+        mostraNotificaRealtime('🤝', `${nomeDi(p)} vuole essere seguito da te`, ()=>apriAreaPT());
+        aggiornaCampanellaHome();
+        if(document.getElementById('notificheOverlay').classList.contains('show')) renderNotifiche();
+      })
+      .subscribe();
+    _canaliNotifiche.push(canaleRichieste);
+  }
+
+  // lato cliente: il PT ha accettato la mia richiesta — prima si scopriva
+  // solo tornando su "Il mio PT" e ricaricando.
+  if(!sonoPT()){
+    const canaleMioRapporto = sb.channel('rt-mio-rapporto-' + utenteOnline.id)
+      .on('postgres_changes', { event:'UPDATE', schema:'public', table:'rapporti_pt', filter:`cliente_id=eq.${utenteOnline.id}` }, async payload=>{
+        const precedente = _rapporti.find(x=>x.id===payload.new.id);
+        const eraInAttesa = precedente && precedente.stato === 'in_attesa';
+        await caricaRapporti();
+        if(eraInAttesa && payload.new.stato === 'attivo'){
+          const pt = await leggiProfilo(payload.new.pt_id);
+          mostraNotificaRealtime('🤝', `${nomeDi(pt)} ha accettato di seguirti`, ()=>{ if(typeof vaiA==='function') vaiA('program'); });
+        }
+        renderMioPT();
+        aggiornaCampanellaHome();
+      })
+      .subscribe();
+    _canaliNotifiche.push(canaleMioRapporto);
+  }
+
+  // lato PT: check-in inviato da un cliente seguito. Il check-in vive dentro
+  // il blob "dati" del suo profilo (non una tabella a sé), quindi ascolto gli
+  // UPDATE sulla sua riga e confronto quanti check-in c'erano prima — un
+  // canale per cliente attivo, come già si fa altrove (messaggi, profilo).
+  if(sonoPT()){
+    const attivi = _rapporti.filter(r=>r.pt_id===utenteOnline.id && r.stato==='attivo');
+    for(const r of attivi){
+      if(_cacheCheckinCount[r.cliente_id] === undefined){
+        const p = await leggiProfilo(r.cliente_id);
+        _cacheCheckinCount[r.cliente_id] = ((p && p.dati && p.dati.checkins) || []).length;
+      }
+      const clienteId = r.cliente_id;
+      const canaleCheckin = sb.channel('rt-checkin-' + clienteId)
+        .on('postgres_changes', { event:'UPDATE', schema:'public', table:'profili', filter:`id=eq.${clienteId}` }, payload=>{
+          const nuovi = (payload.new.dati && payload.new.dati.checkins) || [];
+          const precedenti = _cacheCheckinCount[clienteId] || 0;
+          _cacheCheckinCount[clienteId] = nuovi.length;
+          if(nuovi.length <= precedenti) return;
+          mostraNotificaRealtime('📷', `${nomeDi(payload.new)} ha inviato un check-in`, async ()=>{
+            apriAreaPT();
+            await apriCliente(clienteId);
+            document.querySelector('.pt-tab[data-pttab="checkin"]')?.click();
+          });
+          aggiornaCampanellaHome();
+          if(document.getElementById('notificheOverlay').classList.contains('show')) renderNotifiche();
+        })
+        .subscribe();
+      _canaliNotifiche.push(canaleCheckin);
+    }
+  }
+}
+function fermaAscoltoNotificheRealtime(){
+  if(!sb) return;
+  _canaliNotifiche.forEach(c=>sb.removeChannel(c));
+  _canaliNotifiche = [];
+  _cacheCheckinCount = {};
 }
 
 async function caricaRapporti(){

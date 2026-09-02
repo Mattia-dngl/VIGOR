@@ -1310,6 +1310,19 @@
     background:var(--ok); color:#ffffff; padding:10px 20px; border-radius:8px;
     font-size:13.5px; font-weight:600; opacity:0; pointer-events:none; transition:opacity .25s; z-index:50; max-width:88%; text-align:center;}
   .toast.show{opacity:1;}
+  /* Notifica "attiva" per gli eventi in tempo reale (richiesta PT, check-in
+     ricevuto, ecc — vedi ascoltaNotificheRealtime() in pt-collegamento.js):
+     a differenza di .toast è tappabile e porta dritti al punto giusto. */
+  .rt-notifica{position:fixed; left:50%; top:calc(14px + env(safe-area-inset-top, 0px));
+    transform:translate(-50%,-140%); z-index:500; display:flex; align-items:center; gap:10px;
+    background:var(--surface); color:var(--text); border:1px solid var(--border);
+    box-shadow:var(--shadow-md); border-radius:var(--r-pill); padding:10px 18px 10px 14px;
+    max-width:min(92vw, 380px); font-size:13px; font-weight:600; font-family:inherit;
+    text-align:left; line-height:1.3; cursor:pointer; transition:transform .25s ease;
+    -webkit-tap-highlight-color:transparent;}
+  .rt-notifica.show{transform:translate(-50%,0);}
+  .rt-notifica-icona{font-size:17px; flex:0 0 auto;}
+  .rt-notifica-testo{flex:1 1 auto; min-width:0;}
   .custom-confirm-overlay{
     position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:400;
     display:flex; align-items:center; justify-content:center; padding:24px;
@@ -1454,6 +1467,24 @@
   .mp-close{background:var(--surface2); border:none; width:32px; height:32px; border-radius:50%;
     font-size:14px; color:var(--text-dim); cursor:pointer; flex:0 0 auto;}
   .mp-close:hover{background:var(--accent-soft,#fdeae5); color:var(--accent);}
+
+  /* Anteprima della foto scelta per il check-in (lato cliente): prima era un
+     <img> nudo attaccato al bottone "Aggiungi foto", ora sta in una cornice
+     centrata con un tasto per toglierla senza dover riaprire il selettore file. */
+  .checkin-foto-anteprima{position:relative; margin-top:10px; display:flex;
+    align-items:center; justify-content:center; overflow:hidden;
+    background:var(--surface2); border:1px solid var(--border); border-radius:var(--r-lg);}
+  .checkin-foto-anteprima img{display:block; width:100%; max-height:320px; object-fit:cover;}
+  .checkin-foto-rimuovi{position:absolute; top:8px; right:8px; width:30px; height:30px;
+    border-radius:50%; border:none; background:rgba(15,18,23,.55); color:#fff; font-size:12px;
+    cursor:pointer; display:flex; align-items:center; justify-content:center;}
+  .checkin-foto-rimuovi:hover{background:rgba(15,18,23,.75);}
+
+  /* Foto ingrandita a schermo intero (lato PT, dallo storico check-in) */
+  .foto-ingrandita-box{position:relative; margin:auto; max-width:92vw; max-height:92vh;}
+  .foto-ingrandita-box img{display:block; max-width:92vw; max-height:92vh; border-radius:var(--r-lg);}
+  .foto-ingrandita-chiudi{position:absolute; top:-14px; right:-14px; background:var(--surface);
+    box-shadow:var(--shadow-md);}
 
   /* Pannello "Aggiungi esercizio" nell'allenamento libero: ricerca + elenco */
   .es-lista-risultati{overflow-y:auto; padding:8px 8px 16px; flex:1; min-height:0;}
@@ -1971,9 +2002,14 @@
   .pt-sub{margin:3px 0 0; font-size:12px; color:rgba(255,255,255,.68);}
   .pt-top .btn.secondary{background:rgba(255,255,255,.14); border-color:rgba(255,255,255,.25); color:#fff;}
   .pt-corpo{padding:16px;}
-  .pt-tabs{display:flex; gap:4px; margin-top:16px; overflow-x:auto;}
-  .pt-tab{flex:1 1 auto; white-space:nowrap; background:rgba(255,255,255,.10); border:none; color:rgba(255,255,255,.68);
-    font-family:var(--font-display); font-weight:700; font-size:11.5px; letter-spacing:.02em; padding:9px 12px;
+  /* Le 5 sezioni (Riepilogo/Scheda/Dieta/Storico/Check-in) devono stare tutte
+     in vista senza carosello: colonne di larghezza uguale (flex:1 1 0, non
+     "auto" sul contenuto) con font/padding ridotti così ci stanno tutte e 5
+     — overflow-x resta come rete di sicurezza sugli schermi più stretti. */
+  .pt-tabs{display:flex; gap:3px; margin-top:16px; overflow-x:auto;}
+  .pt-tab{flex:1 1 0; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    text-align:center; background:rgba(255,255,255,.10); border:none; color:rgba(255,255,255,.68);
+    font-family:var(--font-display); font-weight:700; font-size:10.5px; letter-spacing:.01em; padding:9px 4px;
     border-radius:var(--r-pill); cursor:pointer;}
   .pt-tab.active{background:var(--grad-accent); color:#fff; box-shadow:var(--shadow-accent);}
 
@@ -2043,6 +2079,11 @@
   .checkin-grafico-box{background:var(--surface2); border-radius:10px; padding:10px 12px 8px; margin-bottom:12px;}
   .checkin-grafico-box svg{width:100%; height:56px; display:block;}
   .checkin-grafico-legenda{display:flex; justify-content:space-between; font-size:10.5px; color:var(--text-faint); margin-top:2px;}
+  /* Miniatura della foto in ogni voce dello storico check-in (lato PT): prima
+     c'era solo la scritta "📷 foto allegata", la foto vera non si vedeva mai. */
+  .checkin-foto-thumb{margin-top:8px; padding:0; border:none; background:none; cursor:pointer;
+    display:block; width:96px; height:96px; border-radius:10px; overflow:hidden;}
+  .checkin-foto-thumb img{width:100%; height:100%; object-fit:cover; display:block;}
 
   /* ---- redesign 01/09/2026: la vista d'insieme del PT (oggi/richieste/
      clienti) usava tre card bianche identiche impilate — stesso titolo,

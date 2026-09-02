@@ -319,7 +319,10 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
       <label style="margin-top:10px;">Foto progresso <span style="text-transform:none; font-weight:400; color:var(--text-faint);">(facoltativa)</span></label>
       <input type="file" id="checkinFotoFile" accept="image/*" style="display:none;">
       <button type="button" class="btn secondary block" id="checkinFotoBtn" style="margin-top:0;">Aggiungi foto</button>
-      <div id="checkinFotoAnteprima" style="display:none; margin-top:8px;"><img alt="" style="max-width:100%; border-radius:10px; display:block;"></div>
+      <div id="checkinFotoAnteprima" class="checkin-foto-anteprima" style="display:none;">
+        <img alt="Foto progresso">
+        <button type="button" class="checkin-foto-rimuovi" id="checkinFotoRimuovi" aria-label="Rimuovi foto">&#10005;</button>
+      </div>
       <label style="margin-top:10px;">Come ti senti questa settimana?</label>
       <div class="seg-toggle" id="checkinSensazioneToggle">
         <button type="button" class="seg-btn" data-val="1">1</button>
@@ -332,6 +335,13 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
       <textarea id="checkinNota" placeholder="Es. la spalla destra tira ancora un po' sulla panca…"></textarea>
       <button class="btn block" id="checkinInviaBtn" style="margin-top:14px;">Invia check-in</button>
     </div>
+  </div>
+</div>
+
+<div class="mp-overlay" id="fotoIngranditaOverlay">
+  <div class="foto-ingrandita-box">
+    <button type="button" class="mp-close foto-ingrandita-chiudi" id="fotoIngranditaChiudi" aria-label="Chiudi">&#10005;</button>
+    <img id="fotoIngranditaImg" alt="Foto progresso">
   </div>
 </div>
 
