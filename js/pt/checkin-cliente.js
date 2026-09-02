@@ -40,13 +40,16 @@ document.querySelectorAll('#checkinSensazioneToggle .seg-btn').forEach(btn=>{
 
 // Stessa idea di ridimensionamento/compressione già usata per la foto
 // profilo (js/account/account.js, acctAvatarFile), ma qui il lato è molto
-// più grande (960 invece di 240): una foto profilo resta sempre piccola
+// più grande (1920 invece di 240): una foto profilo resta sempre piccola
 // (avatar), una foto di progresso invece si vede anche a piena larghezza
-// nell'anteprima e a schermo intero dal PT — 480px ci arrivava sfocata
-// (il browser la doveva allargare). 960px + qualità .85 + smoothing "high"
-// in fase di ridimensionamento restano nitidi anche lì, a fronte di un
-// file un po' più pesante (accettabile: un check-in a settimana, non foto
-// a raffica).
+// nell'anteprima, a schermo intero dal PT e — soprattutto — scaricata sul
+// telefono per guardarla bene: 960px bastava per l'anteprima ma restava
+// sgranata una volta scaricata e riaperta a piena risoluzione (un
+// telefono moderno ha lo schermo più largo di 960px fisici, quindi quella
+// foto veniva comunque ingrandita). 1920px (un lato "Full HD") + qualità
+// .9 + smoothing "high" in fase di ridimensionamento restano nitidi anche
+// così, a fronte di un file più pesante (accettabile: un check-in a
+// settimana, non foto a raffica).
 document.getElementById('checkinFotoBtn').addEventListener('click', ()=>document.getElementById('checkinFotoFile').click());
 document.getElementById('checkinFotoFile').addEventListener('change', function(e){
   const file = e.target.files && e.target.files[0];
@@ -57,7 +60,7 @@ document.getElementById('checkinFotoFile').addEventListener('change', function(e
   reader.onload = function(ev){
     const img = new Image();
     img.onload = function(){
-      const lato = 960;
+      const lato = 1920;
       const scala = Math.min(1, lato / Math.max(img.width, img.height));
       const canvas = document.createElement('canvas');
       canvas.width = Math.round(img.width * scala);
@@ -66,7 +69,7 @@ document.getElementById('checkinFotoFile').addEventListener('change', function(e
       ctx.imageSmoothingEnabled = true;
       ctx.imageSmoothingQuality = 'high';
       ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-      _checkinFotoDataUrl = canvas.toDataURL('image/jpeg', 0.85);
+      _checkinFotoDataUrl = canvas.toDataURL('image/jpeg', 0.9);
       const anteprima = document.getElementById('checkinFotoAnteprima');
       anteprima.querySelector('img').src = _checkinFotoDataUrl;
       anteprima.style.display = 'flex';
