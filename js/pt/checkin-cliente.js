@@ -1,0 +1,90 @@
+// ============================================================
+// CHECK-IN PERIODICO — lato cliente: compilazione (peso/foto/sensazione/nota).
+// La cadenza e l'attivazione le decide il PT per singolo rapporto
+// (attivo.checkin_attivo/checkin_cadenza_settimane, rapporti_pt) — qui si
+// gestisce solo l'invio, mai chi/quando lo chiede. Il check-in resta sempre
+// una proposta: si può compilare anche fuori dal promemoria.
+// ============================================================
+let _checkinFotoDataUrl = null;
+
+function apriCheckinCompilazione(){
+  const prof = loggedInProfile();
+  const ultimoPeso = prof ? ultimoPesoRegistrato(prof) : null;
+  document.getElementById('checkinPeso').value = ultimoPeso ? ultimoPeso.weight : '';
+  document.getElementById('checkinFotoAnteprima').style.display = 'none';
+  document.getElementById('checkinFotoAnteprima').querySelector('img').src = '';
+  _checkinFotoDataUrl = null;
+  document.querySelectorAll('#checkinSensazioneToggle .seg-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('checkinNota').value = '';
+  document.getElementById('checkinCompilaOverlay').classList.add('show');
+}
+function chiudiCheckinCompilazione(){
+  document.getElementById('checkinCompilaOverlay').classList.remove('show');
+}
+document.getElementById('checkinCompilaChiudi').addEventListener('click', chiudiCheckinCompilazione);
+document.getElementById('checkinCompilaOverlay').addEventListener('click', e=>{
+  if(e.target.id === 'checkinCompilaOverlay') chiudiCheckinCompilazione();
+});
+
+document.querySelectorAll('#checkinSensazioneToggle .seg-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('#checkinSensazioneToggle .seg-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+  });
+});
+
+// Stessa idea di ridimensionamento/compressione già usata per la foto
+// profilo (js/account/account.js, acctAvatarFile): qui il lato è un po'
+// più grande (480 invece di 240) perché una foto di progresso, a differenza
+// di un avatar, si guarda anche ingrandita.
+document.getElementById('checkinFotoBtn').addEventListener('click', ()=>document.getElementById('checkinFotoFile').click());
+document.getElementById('checkinFotoFile').addEventListener('change', function(e){
+  const file = e.target.files && e.target.files[0];
+  e.target.value = "";
+  if(!file) return;
+  if(!file.type || !file.type.startsWith('image/')){ toast("Scegli un file immagine."); return; }
+  const reader = new FileReader();
+  reader.onload = function(ev){
+    const img = new Image();
+    img.onload = function(){
+      const lato = 480;
+      const scala = Math.min(1, lato / Math.max(img.width, img.height));
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.round(img.width * scala);
+      canvas.height = Math.round(img.height * scala);
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      _checkinFotoDataUrl = canvas.toDataURL('image/jpeg', 0.75);
+      const anteprima = document.getElementById('checkinFotoAnteprima');
+      anteprima.querySelector('img').src = _checkinFotoDataUrl;
+      anteprima.style.display = 'block';
+    };
+    img.onerror = function(){ toast("Non riesco a leggere questa immagine."); };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+});
+
+document.getElementById('checkinInviaBtn').addEventListener('click', ()=>{
+  const prof = loggedInProfile();
+  if(!prof) return;
+  const pesoRaw = document.getElementById('checkinPeso').value;
+  const peso = pesoRaw === '' ? null : parseFloat(pesoRaw);
+  const sensBtn = document.querySelector('#checkinSensazioneToggle .seg-btn.active');
+  const sensazione = sensBtn ? parseInt(sensBtn.dataset.val) : null;
+  const nota = document.getElementById('checkinNota').value.trim();
+  if(peso == null && !_checkinFotoDataUrl && sensazione == null && !nota){
+    toast("Compila almeno un campo prima di inviare.");
+    return;
+  }
+  if(!prof.checkins) prof.checkins = [];
+  prof.checkins.push({
+    id: uid(), data: new Date().toISOString().slice(0,10),
+    peso, fotoUrl: _checkinFotoDataUrl, sensazione, nota
+  });
+  save();
+  if(typeof modalitaOnline === 'function' && modalitaOnline()) inviaOnline();
+  chiudiCheckinCompilazione();
+  toast("Check-in inviato ✓");
+  if(typeof renderMioPT === 'function') renderMioPT();
+});

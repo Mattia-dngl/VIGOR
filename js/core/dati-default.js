@@ -96,7 +96,7 @@ function newProfile(name, email, password, approvato){
   return { id: uid(), name: name.trim(), email: (email||'').trim().toLowerCase(), createdAt,
     approvato: !!approvato, bloccato:false, richiestoIl: new Date().toISOString(),
     passwordHash: simpleHash(password), sesso: null,
-    programs:[blankProgram()], activeProgramId:null, logs:[], measurements:[], mealLogs:[], waterLogs:[], customExercises:{}, customFoods:{}, avatarUrl:null,
+    programs:[blankProgram()], activeProgramId:null, logs:[], measurements:[], mealLogs:[], waterLogs:[], checkins:[], customExercises:{}, customFoods:{}, avatarUrl:null,
     altezza:null, dataNascita:null, eta:null, livelloAttivita:'moderato', obiettivoCalorico:'mantenimento',
     obiettivoPeso:null, obiettivoRecord:null,
     // Scadenza dell'abbonamento in palestra: nessuno la imposta ancora da

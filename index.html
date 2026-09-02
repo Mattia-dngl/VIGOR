@@ -307,6 +307,34 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
   </div>
 </div>
 
+<div class="mp-overlay" id="checkinCompilaOverlay">
+  <div class="mp-modal" style="max-width:420px;">
+    <div class="mp-head">
+      <h3>Check-in</h3>
+      <button class="mp-close" id="checkinCompilaChiudi" type="button" aria-label="Chiudi">&#10005;</button>
+    </div>
+    <div style="padding:14px 16px; overflow-y:auto;">
+      <label>Peso (kg)</label>
+      <input type="number" id="checkinPeso" step="0.1" min="0" placeholder="es. 78,4">
+      <label style="margin-top:10px;">Foto progresso <span style="text-transform:none; font-weight:400; color:var(--text-faint);">(facoltativa)</span></label>
+      <input type="file" id="checkinFotoFile" accept="image/*" style="display:none;">
+      <button type="button" class="btn secondary block" id="checkinFotoBtn" style="margin-top:0;">Aggiungi foto</button>
+      <div id="checkinFotoAnteprima" style="display:none; margin-top:8px;"><img alt="" style="max-width:100%; border-radius:10px; display:block;"></div>
+      <label style="margin-top:10px;">Come ti senti questa settimana?</label>
+      <div class="seg-toggle" id="checkinSensazioneToggle">
+        <button type="button" class="seg-btn" data-val="1">1</button>
+        <button type="button" class="seg-btn" data-val="2">2</button>
+        <button type="button" class="seg-btn" data-val="3">3</button>
+        <button type="button" class="seg-btn" data-val="4">4</button>
+        <button type="button" class="seg-btn" data-val="5">5</button>
+      </div>
+      <label style="margin-top:10px;">Nota per il PT <span style="text-transform:none; font-weight:400; color:var(--text-faint);">(facoltativa)</span></label>
+      <textarea id="checkinNota" placeholder="Es. la spalla destra tira ancora un po' sulla panca…"></textarea>
+      <button class="btn block" id="checkinInviaBtn" style="margin-top:14px;">Invia check-in</button>
+    </div>
+  </div>
+</div>
+
 <div id="areaPT" style="display:none;">
   <div id="ptElenco">
   <header class="pt-top">
@@ -357,6 +385,7 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
         <button class="pt-tab" data-pttab="scheda">Scheda</button>
         <button class="pt-tab" data-pttab="dieta">Dieta</button>
         <button class="pt-tab" data-pttab="storico">Storico</button>
+        <button class="pt-tab" data-pttab="checkin">Check-in</button>
       </nav>
     </header>
     <div class="pt-corpo" id="ptDettaglioCorpo"></div>
@@ -1962,6 +1991,7 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
 <script src="js/account/account.js"></script>
 <script src="js/pt/pt-collegamento.js"></script>
 <script src="js/pt/pt-area.js"></script>
+<script src="js/pt/checkin-cliente.js"></script>
 <script src="js/account/messaggi.js"></script>
 <script src="js/onboarding/recupero-codici.js"></script>
 <script src="js/sistema/offline-sistema.js"></script>
