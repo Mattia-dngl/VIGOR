@@ -469,7 +469,7 @@ function renderDettaglioPT(sezione){
               return `<div class="pt-scheda-ro checkin-post">
                   <button type="button" class="checkin-post-foto" data-foto-idx="${i}"><img src="${c.fotoUrl}" alt="Foto progresso del ${formatDate(c.data)}"></button>
                   <div class="checkin-post-caption">${didascalia}</div>
-                  <a class="checkin-post-scarica" href="${c.fotoUrl}" download="check-in-${c.data}.jpg" title="Scarica la foto originale" aria-label="Scarica la foto" onclick="event.stopPropagation()">${ICONA_SCARICA_SVG}</a>
+                  <button type="button" class="checkin-post-scarica" data-foto-idx="${i}" title="Scarica la foto originale" aria-label="Scarica la foto">${ICONA_SCARICA_SVG}</button>
                 </div>`;
             }).join('')}`}
       </div>`;
@@ -482,6 +482,10 @@ function renderDettaglioPT(sezione){
       const didascalia = `${formatDate(c.data)}${c.peso!=null ? ' · ' + c.peso + ' kg' : ''}`;
       btn.addEventListener('click', ()=>apriFotoIngrandita(c.fotoUrl, didascalia, `check-in-${c.data}.jpg`));
     });
+    box.querySelectorAll('.checkin-post-scarica').forEach(btn=>{
+      const c = checkins[parseInt(btn.dataset.fotoIdx)];
+      btn.addEventListener('click', e=>{ e.stopPropagation(); scaricaFotoCheckin(c.fotoUrl, `check-in-${c.data}.jpg`); });
+    });
   }
 }
 
@@ -491,14 +495,13 @@ function renderDettaglioPT(sezione){
 // vede la foto intera, con una didascalia opzionale sotto (data/peso) e un
 // tasto per scaricarla (stessa foto della miniatura: qui la si vede solo
 // più comoda a schermo intero, per la qualità piena conviene scaricarla).
+let _fotoIngranditaCorrente = { url: null, nomeFile: null };
 function apriFotoIngrandita(url, didascalia, nomeFile){
   document.getElementById('fotoIngranditaImg').src = url;
   const cap = document.getElementById('fotoIngranditaCaption');
   cap.textContent = didascalia || '';
   cap.style.display = didascalia ? 'block' : 'none';
-  const scarica = document.getElementById('fotoIngranditaScarica');
-  scarica.href = url;
-  scarica.setAttribute('download', nomeFile || 'foto-check-in.jpg');
+  _fotoIngranditaCorrente = { url, nomeFile: nomeFile || 'foto-check-in.jpg' };
   document.getElementById('fotoIngranditaOverlay').classList.add('show');
 }
 function chiudiFotoIngrandita(){
@@ -506,12 +509,51 @@ function chiudiFotoIngrandita(){
   // niente src="" (vedi commento in checkin-cliente.js): removeAttribute evita
   // che il browser la interpreti come "carica la pagina corrente come immagine".
   document.getElementById('fotoIngranditaImg').removeAttribute('src');
-  document.getElementById('fotoIngranditaScarica').removeAttribute('href');
+  _fotoIngranditaCorrente = { url: null, nomeFile: null };
 }
 document.getElementById('fotoIngranditaChiudi').addEventListener('click', chiudiFotoIngrandita);
+document.getElementById('fotoIngranditaScarica').addEventListener('click', ()=>{
+  if(_fotoIngranditaCorrente.url) scaricaFotoCheckin(_fotoIngranditaCorrente.url, _fotoIngranditaCorrente.nomeFile);
+});
 document.getElementById('fotoIngranditaOverlay').addEventListener('click', e=>{
   if(e.target.id === 'fotoIngranditaOverlay') chiudiFotoIngrandita();
 });
+
+// Scaricare la foto di un check-in: un <a download href="data:...">
+// funzionava su desktop ma su Safari/iOS un link download con una data:
+// URI spesso non fa nulla (Safari non la considera un file da salvare).
+// Qui si converte la data: URI in un vero Blob e si sceglie il modo più
+// affidabile per la piattaforma corrente:
+// - iOS: si passa dal foglio di condivisione nativo (navigator.share con
+//   un File), che su Safari è l'unico modo affidabile per arrivare a
+//   "Salva immagine" — un link scaricabile lì viene ignorato;
+// - altrove: download diretto via <a download> su un blob: URL (funziona
+//   su Chrome/Firefox/Edge desktop e su Android).
+// Se anche questo fallisce, si apre la foto in una scheda a sé: da lì si
+// può comunque salvarla tenendo il dito premuto sopra.
+async function scaricaFotoCheckin(url, nomeFile){
+  const iOS = /iP(hone|ad|od)/.test(navigator.userAgent);
+  try{
+    const risposta = await fetch(url);
+    const blob = await risposta.blob();
+    const file = new File([blob], nomeFile, { type: blob.type || 'image/jpeg' });
+    if(iOS && navigator.share && navigator.canShare && navigator.canShare({ files: [file] })){
+      await navigator.share({ files: [file] });
+      return;
+    }
+    const blobUrl = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = blobUrl;
+    a.download = nomeFile;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(()=>URL.revokeObjectURL(blobUrl), 4000);
+  }catch(e){
+    if(e && e.name === 'AbortError') return; // l'utente ha chiuso il foglio di condivisione
+    window.open(url, '_blank');
+  }
+}
 
 // Piccolo grafico a linea del peso dagli ultimi check-in (in ordine
 // cronologico, non del "più recente prima" usato per la lista sotto):
