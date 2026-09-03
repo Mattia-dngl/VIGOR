@@ -269,6 +269,19 @@ function selectDay(key){
   _allenamentoATempo = false;
   _allenamentoATempoBloccato = false;
   _riscaldamentoNascosto = false;
+  // Segnalato dall'utente (03/09/2026): scegliendo un nuovo allenamento il
+  // timer di recupero appariva già a metà corsa ("già ha 1 min"), invece che
+  // fermo. Causa: _timerFine (onboarding.js) vive apposta a livello globale e
+  // sopravvive al cambio schermata per poter continuare a contare mentre ci
+  // si sposta DENTRO lo stesso allenamento (vedi commento su _timerFine) —
+  // ma selectDay() non lo azzerava mai, quindi un recupero lasciato in corso
+  // (l'ultima serie di un allenamento precedente, mai atteso fino alla fine)
+  // restava a contare e ricompariva tale e quale scegliendo un allenamento
+  // successivo, con la barra già a metà invece che nascosta. Fermarlo qui,
+  // insieme al resto dello stato per-allenamento sopra, non rompe il caso
+  // legittimo (restare sulla stessa schermata mentre il recupero conta):
+  // quel percorso non richiama mai selectDay().
+  if(typeof timerFerma === 'function') timerFerma();
   if(typeof aggiornaCronometroAllenamento === 'function') aggiornaCronometroAllenamento();
 
   const p = activeProgram();
