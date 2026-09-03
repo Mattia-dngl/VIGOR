@@ -102,6 +102,21 @@ async function openVideoPopup(nome, url){
 
   const lib = (typeof libFind === 'function') ? libFind(nome) : null;
   document.getElementById('vidAltDesc').textContent = lib ? lib.d : "";
+
+  const gifBox = document.getElementById('vidGifBox');
+  const gifImg = document.getElementById('vidGifImg');
+  if(gifBox && gifImg){
+    gifBox.style.display = 'none';
+    gifImg.src = '';
+    if(typeof getGifEsercizio === 'function'){
+      getGifEsercizio(nome).then(url=>{
+        if(!url || _vidNome !== nome) return; // popup chiuso o cambiato nel frattempo
+        gifImg.src = url;
+        gifBox.style.display = 'block';
+      });
+    }
+  }
+
   let host = "";
   try{ host = new URL(url).hostname.replace(/^www\./,''); }catch(e){}
   const _paste = document.getElementById('vidPasteInput');
