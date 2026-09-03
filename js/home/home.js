@@ -428,7 +428,13 @@ function mostraHome(){
   document.getElementById('appRoot').style.display = 'none';
   document.getElementById('accountPanel').style.display = 'none';
   document.getElementById('areaPT').style.display = 'none';
-  document.body.classList.remove('area-pt', 'account-aperto');
+  // Registra (vedi apriRegistra()/showAppRoot() in account.js) nasconde
+  // intestazione e nav in basso con questa classe sul body: tornando in Home
+  // dopo aver salvato un allenamento (fine di saveLogBtn) va tolta come fa
+  // già showAppRoot() per ogni altra schermata, altrimenti la Home resta
+  // "bloccata" senza nav in basso (bug segnalato: si vedeva Home ma senza
+  // barra di navigazione dopo aver registrato l'allenamento).
+  document.body.classList.remove('area-pt', 'account-aperto', 'registra-aperto');
   document.body.classList.add('app-pronta');
   const p = (typeof activeProfile === 'function') ? activeProfile() : null;
   document.getElementById('homeSaluto').textContent = p && p.name ? `Bentornato, ${p.name}!` : 'Bentornato!';

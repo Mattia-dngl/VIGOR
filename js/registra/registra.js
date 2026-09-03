@@ -678,8 +678,10 @@ function calcolaRipartizioneRipetizioni(target, mainReps, tappe){
 // (un normale set-row, dove inserisci il peso vero che hai sollevato) seguita
 // da una riga per ogni drop. Il peso di ogni drop si ricalcola da solo,
 // ridotto della percentuale impostata rispetto al peso della tappa precedente
-// (che sia la principale o il drop prima di lui) e arrotondato ai 5 kg più
-// vicini — così i dischi restano quelli che hai davvero in palestra. Le
+// (che sia la principale o il drop prima di lui) e arrotondato ai 0,5 kg più
+// vicini — un passo più fine dei 5 kg di prima, che su pesi bassi/manubri
+// piccoli sballava troppo il calcolo (es. 17,2 kg diventava 15 invece di
+// 17,5). Le
 // ripetizioni dei drop si ricalcolano anche loro da sole, in base a quante ne
 // scrivi nella serie principale (vedi calcolaRipartizioneRipetizioni sopra):
 // basta compilare la serie principale, il resto segue in automatico mentre
@@ -718,7 +720,7 @@ function buildDropsetRound(exName, numeroRound, dropset, targetReps){
       const ricalcola = ()=>{
         const base = parseFloat(kgSorgente.value);
         if(isNaN(base)) return;
-        const calcolato = Math.round(base * (1 - (drop.riduzione||0)/100) / 5) * 5;   // arrotondo ai 5 kg
+        const calcolato = Math.round(base * (1 - (drop.riduzione||0)/100) / 0.5) * 0.5;   // arrotondo ai 0,5 kg
         kgInput.value = calcolato;
         currentSetInputs[exName][idx].kg = calcolato;
         kgInput.dispatchEvent(new Event('input', {bubbles:true}));   // così il calcolo scende anche ai drop successivi
@@ -835,13 +837,26 @@ document.getElementById('saveLogBtn').addEventListener('click', ()=>{
   document.getElementById('freeAddExManualeBtn2').style.display='none';
   document.getElementById('freeEmptyHint').style.display = 'none';
   document.getElementById('logNotes').value = "";
-  renderHeader();
-  renderDayChoices();
   // 31/08/2026 (quinto giro, richiesta esplicita): finito di registrare
   // restava sulla schermata di Registra, ormai vuota/azzerata — riporta in
   // Home, che intanto mostra già "Fatto oggi ✓" (aggiornaHomeCta() viene
   // richiamata da mostraHome()).
+  //
+  // mostraHome() PRIMA di renderHeader()/renderDayChoices() (bug segnalato,
+  // 03/09/2026): se oggi è un giorno vero di scheda, renderDayChoices()
+  // sceglie di nuovo quel giorno in automatico (selectDay dentro di lei) per
+  // preparare Registra alla prossima visita — ma selectDay richiama
+  // buildExerciseForm(), che riapre il popup "Prima di iniziare"
+  // (mostraPopupAllenamentoATempo). Con Registra ancora visibile in quel
+  // momento (mostraHome() non ancora chiamata) la guardia
+  // registraEVisibileOra() lo lasciava passare, e il popup restava aperto
+  // SOPRA la Home appena mostrata. Chiamando mostraHome() per prima,
+  // Registra risulta già nascosta quando selectDay() scatta: il popup si
+  // rimanda da solo (vedi _popupATempoInSospeso) e comparirà solo quando si
+  // rientra davvero in Registra, non sopra la Home.
   mostraHome();
+  renderHeader();
+  renderDayChoices();
 });
 
 // ============================================================

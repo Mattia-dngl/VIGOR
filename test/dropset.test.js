@@ -3,7 +3,8 @@
 // (index.html: buildDropsetRound, calcolaRipartizioneRipetizioni) sia
 // nell'editor della scheda (renderExerciseEditors, pulsante "×" di ogni tappa).
 // Copre tre correzioni:
-//  1) il peso dei drop si arrotonda ai 5 kg (non più ai 0,25 kg)
+//  1) il peso dei drop si arrotonda ai 0,5 kg (non più ai 5 kg, troppo grezzo
+//     sui pesi bassi/manubri piccoli — bug segnalato il 03/09/2026)
 //  2) le ripetizioni dei drop si calcolano da quelle scritte nella serie
 //     principale rispetto al target dell'esercizio, non più fisse a "8"
 //  3) togliere una singola tappa (drop/rest-pause) nell'editor scheda non
@@ -70,7 +71,7 @@ function giornoConDropset(riduzioni){
   };
 }
 
-test('buildDropsetRound: il peso dei drop si arrotonda ai 5 kg', async () => {
+test('buildDropsetRound: il peso dei drop si arrotonda ai 0,5 kg', async () => {
   const { window } = await loadApp();
   const r = await run(window, `
     const profilo = { id:'io', name:'Io', email:'io@test.it', logs:[], measurements:[], customExercises:{}, customFoods:{} };
@@ -84,8 +85,8 @@ test('buildDropsetRound: il peso dei drop si arrotonda ai 5 kg', async () => {
     const kgDrop = Array.from(document.querySelectorAll('.exercise-block .drop-row:not(.drop-row-main) [data-field="kg"]')).map(i=>i.value);
     return kgDrop;
   `);
-  // 55 -25% = 41.25 → arrotondato ai 5 kg più vicini = 40; 40 -25% = 30 (già multiplo di 5)
-  assert.deepEqual(r, ['40', '30']);
+  // 55 -25% = 41.25 → arrotondato ai 0,5 kg più vicini = 41.5; 41.5 -25% = 31.125 → 31
+  assert.deepEqual(r, ['41.5', '31']);
   window.close();
 });
 
