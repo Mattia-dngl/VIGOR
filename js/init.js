@@ -15,24 +15,22 @@ function renderAll(){
 }
 save();
 attachAutocomplete(document.getElementById('mealFoodInput'), foodSourceNames);
-// Se l'app ha già lavorato online, non deve MAI ricadere nella modalità locale:
-// mostrerebbe profili e dati di un altro sistema, confondendo tutto.
-const GIA_ONLINE = localStorage.getItem('fitproOnline') === '1';
 
 function viaSchermoAvvio(){
   const s = document.getElementById('avvioSchermo');
   if(s) s.remove();
 }
 
-if(configurataOnline() || GIA_ONLINE){
-  if(configurataOnline()) localStorage.setItem('fitproOnline','1');
-  mostraCloudGate('caricamento');
-  viaSchermoAvvio();
-  if(!configurataOnline()){
-    document.getElementById('cloudCaricaTxt').innerHTML =
-      "Non riesco a leggere la configurazione del server.<br>Controlla la connessione e riprova: i tuoi dati sono al sicuro online.";
-    document.getElementById('cloudRiprova').style.display = 'block';
-  } else {
+// VIGOR gira sempre online, su Supabase: non esiste più un ramo "solo su
+// questo telefono" (rimosso il 03/09/2026 — era vivo solo quando js/config.js
+// non aveva le credenziali, cosa che qui non succede mai).
+mostraCloudGate('caricamento');
+viaSchermoAvvio();
+if(!configurataOnline()){
+  document.getElementById('cloudCaricaTxt').innerHTML =
+    "Non riesco a leggere la configurazione del server.<br>Controlla js/config.js e riprova.";
+  document.getElementById('cloudRiprova').style.display = 'block';
+} else {
   attendiLibreria().then(pronta=>{
     if(pronta) return avvioOnline();
     document.getElementById('cloudCaricaTxt').innerHTML =
@@ -51,10 +49,4 @@ if(configurataOnline() || GIA_ONLINE){
       "Si è verificato un errore imprevisto: " + ((e && e.message) || String(e)) + "<br>Riprova.";
     document.getElementById('cloudRiprova').style.display = 'block';
   });
-  }
-} else {
-  preparaBloccoIniziale();
-  document.getElementById('profileGate').style.display = 'flex';
-  mostraBlocco();
-  viaSchermoAvvio();
 }

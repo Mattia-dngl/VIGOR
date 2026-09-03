@@ -8,7 +8,7 @@ const { loadApp } = require('./helpers/loadApp.js');
 test('ogni input[type=password] statico dell\'HTML viene avvolto e riceve un bottone occhio', async () => {
   const { document } = await loadApp();
   const campi = document.querySelectorAll('input[type=password]');
-  assert.ok(campi.length > 5, 'precondizione: ci sono davvero diversi campi password nell\'HTML');
+  assert.ok(campi.length > 2, 'precondizione: ci sono davvero diversi campi password nell\'HTML');
   campi.forEach(input=>{
     const wrap = input.closest('.pw-wrap');
     assert.ok(wrap, `${input.id} deve essere avvolto in .pw-wrap`);

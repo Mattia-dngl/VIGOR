@@ -147,7 +147,7 @@ test('apriImpostazioni("home") (es. da una notifica) apre Impostazioni, e chiude
   window.close();
 });
 
-test('aprire la tendina "Password e sicurezza" aggiorna l\'email mostrata e sceglie il blocco online/offline giusto', async () => {
+test('aprire la tendina "Password e sicurezza" aggiorna l\'email mostrata e mostra il blocco per cambiarla', async () => {
   const { window, document } = await loadApp();
   const r = await run(window, `
     const profilo = ${JSON.stringify(profiloBase())};
@@ -160,35 +160,12 @@ test('aprire la tendina "Password e sicurezza" aggiorna l\'email mostrata e sceg
     return {
       email: document.getElementById('privacyEmailMostrata').textContent,
       online: document.getElementById('pwOnlineBlock').style.display,
-      offline: document.getElementById('pwOfflineBlock').style.display,
       settingsVisibile: document.getElementById('settingsPanel').style.display
     };
   `);
   assert.equal(r.email, 'io@test.it');
-  assert.notEqual(r.online, 'none', 'online: il blocco email-per-cambiarla deve essere visibile');
-  assert.equal(r.offline, 'none', 'online: il blocco password locale deve restare nascosto');
+  assert.notEqual(r.online, 'none', 'il blocco email-per-cambiarla deve essere visibile');
   assert.equal(r.settingsVisibile, 'block');
-  await new Promise(r => setTimeout(r, 30));
-  window.close();
-});
-
-test('offline (nessun account online), "Password e sicurezza" mostra il cambio password locale', async () => {
-  const { window, document } = await loadApp();
-  const r = await run(window, `
-    const profilo = ${JSON.stringify(profiloBase())};
-    state.profiles = [profilo]; activeProfileId = 'io';
-    utenteOnline = null;
-    mostraHome();
-    apriImpostazioni('account');
-    document.getElementById('accPrivacy').open = true;
-    document.getElementById('accPrivacy').dispatchEvent(new window.Event('toggle'));
-    return {
-      online: document.getElementById('pwOnlineBlock').style.display,
-      offline: document.getElementById('pwOfflineBlock').style.display
-    };
-  `);
-  assert.equal(r.online, 'none', 'offline: il blocco email-per-cambiarla deve restare nascosto');
-  assert.notEqual(r.offline, 'none', 'offline: il cambio password locale deve essere visibile');
   await new Promise(r => setTimeout(r, 30));
   window.close();
 });

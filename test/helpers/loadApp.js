@@ -9,9 +9,10 @@
 //  - le librerie da CDN (supabase-js, Chart.js, xlsx) vengono sostituite con
 //    stub minimi: l'app le usa solo dentro funzioni che i test non chiamano,
 //    o dietro a un sb finto che forniamo noi (vedi installFakeSupabase)
-//  - APP_CONFIG resta vuoto: l'app imbocca da sola il ramo "profilo locale"
-//    all'avvio (mai una vera chiamata di rete), esattamente come quando la
-//    installi senza aver configurato Supabase (vedi js/config.js).
+//  - APP_CONFIG resta vuoto: l'app si ferma da sola sulla schermata di
+//    configurazione mancante (mai una vera chiamata di rete). Da lì loadApp()
+//    porta la finestra allo stato di un login online riuscito — vedi FINTO_LOGIN
+//    qui sotto — senza mai parlare con Supabase davvero.
 // ============================================================
 const fs = require('fs');
 const path = require('path');
@@ -53,7 +54,37 @@ function buildHtml(){
   return html;
 }
 
-// Crea una nuova finestra jsdom con l'app già avviata (ramo locale, offline).
+// Con APP_CONFIG vuoto l'app (giustamente) non riesce ad avviarsi online: si
+// ferma sulla schermata "configurazione mancante" (vedi js/init.js). Da qui la
+// porto allo stesso stato finale di un vero login online riuscito — un
+// profilo in state.profiles, activeProfileId impostato, home mostrata —
+// esattamente il punto a cui arriverebbe dopoAccessoOnline() in js/account/account.js
+// dopo aver parlato con Supabase, ma senza fare nessuna chiamata di rete.
+// Fino al 03/09/2026 questo lo faceva da sola l'app stessa: c'era un ramo
+// "profilo locale" che partiva da solo quando Supabase non era configurato
+// (comodo per i test, ma mai usato davvero: nella app reale config.js ha
+// sempre le credenziali). Tolto quel ramo, il bootstrap dei test è diventato
+// esplicito qui invece che implicito nell'app.
+const FINTO_LOGIN = `
+  const profilo = normalizzaProfilo(profiloVuotoPerCloud());
+  profilo.id = 'test-uid';
+  profilo.name = 'Io';
+  profilo.email = 'test@vigor.local';
+  profilo.approvato = true;
+  state.profiles = [profilo];
+  activeProfileId = profilo.id;
+  actingProfileId = null;
+  utenteOnline = { id: profilo.id, email: profilo.email };
+  rigaOnline = { id: profilo.id, email: profilo.email, nome: profilo.name, approvato: true, dati: profilo };
+  window.modalitaOnline = () => true;
+  document.documentElement.classList.remove('avvio');
+  nascondiCloudGate();
+  controllaSaltati(true);
+  renderAll();
+  mostraHome();
+`;
+
+// Crea una nuova finestra jsdom con l'app già avviata e un profilo loggato.
 // Ogni test parte da zero: nessuno stato è condiviso fra un test e l'altro.
 async function loadApp(){
   const html = buildHtml();
@@ -73,8 +104,10 @@ async function loadApp(){
     throw new Error('Errori durante il caricamento dell\'app in jsdom:\n' + msg);
   }
   // localStorage pulito ad ogni test (jsdom ne fornisce uno reale per finestra)
-  // Lascio che l'app giri fino in fondo al proprio avvio sincrono.
+  // Lascio che l'app giri fino in fondo al proprio avvio sincrono, poi la
+  // porto oltre la schermata di login (vedi FINTO_LOGIN sopra).
   // Alcune parti (timer, animazioni) usano setTimeout: non serve aspettarle qui.
+  window.eval(`(() => { ${FINTO_LOGIN}\n})()`);
   return { dom, window, document: window.document };
 }
 

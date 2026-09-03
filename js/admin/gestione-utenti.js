@@ -10,11 +10,6 @@ async function renderAmministrazioneOnline(){
   if(subhead) subhead.style.display = amministratore ? 'block' : 'none';
   if(!amministratore || !sb) return;
 
-  // online l'ingresso è protetto dall'account: la vecchia password d'invito non serve.
-  // Sotto-sezione intera nascosta per id (prima si cercava per TESTO dentro le
-  // label: bastava rinominare un'etichetta per rompere silenziosamente questo nascondimento).
-  const subPw = document.getElementById('subPwIngresso');
-  if(subPw) subPw.style.display = 'none';
   const subPT = document.getElementById('subPT');
   if(subPT) subPT.style.display = '';
 
@@ -141,130 +136,6 @@ async function renderAmministrazioneOnline(){
   }));
 }
 
-function renderAmministrazione(){
-  if(modalitaOnline()){ renderAmministrazioneOnline(); return; }
-  const card = document.getElementById('cardAmministrazione');
-  const amministratore = sonoAmministratore();
-
-  card.style.display = amministratore ? 'block' : 'none';
-  const subhead = document.getElementById('settingsSubheadAmm');
-  if(subhead) subhead.style.display = amministratore ? 'block' : 'none';
-  if(!amministratore) return;
-
-  document.getElementById('statoIngresso').textContent =
-    (state.appLock && state.appLock.predefinita) ? "quella iniziale (cambiala)" : "personalizzata";
-  document.getElementById('statoIngresso').className =
-    (state.appLock && state.appLock.predefinita) ? "warn" : "ok";
-
-  // il ruolo Personal Trainer esiste solo online (richiede il rapporto
-  // PT↔cliente su Supabase): offline la sotto-sezione resterebbe sempre
-  // vuota, quindi la nascondo invece di mostrare un accordion senza niente dentro.
-  const subPT = document.getElementById('subPT');
-  if(subPT) subPT.style.display = 'none';
-  const subPw = document.getElementById('subPwIngresso');
-  if(subPw) subPw.style.display = '';
-
-  const io = loggedInProfile();
-
-  // ---- richieste in attesa ----
-  const attesa = state.profiles.filter(p=>!p.approvato);
-  const boxAttesa = document.getElementById('elencoAttesa');
-  document.getElementById('contaAttesa').textContent = attesa.length ? `(${attesa.length})` : '';
-  document.getElementById('contaProfili').textContent = state.profiles.filter(p=>p.approvato).length
-    ? `(${state.profiles.filter(p=>p.approvato).length})` : '';
-  const subRichieste = document.getElementById('subRichieste');
-  if(subRichieste && !subRichieste.dataset.toccato){ subRichieste.open = attesa.length > 0; }
-  if(attesa.length === 0){
-    boxAttesa.innerHTML = '<div class="empty" style="padding:14px 0;">Nessuna richiesta in sospeso.</div>';
-  } else {
-    boxAttesa.innerHTML = attesa.map(p=>{
-      const quando = p.richiestoIl ? new Date(p.richiestoIl) : null;
-      const q = quando ? `${String(quando.getDate()).padStart(2,'0')}/${String(quando.getMonth()+1).padStart(2,'0')} alle ${String(quando.getHours()).padStart(2,'0')}:${String(quando.getMinutes()).padStart(2,'0')}` : '';
-      return `<div class="riga-profilo attesa">
-        <div class="info">
-          <div class="nome">${escapeAttr(p.name)}</div>
-          <div class="mail">${escapeAttr(p.email) || 'nessuna email'}${q ? ' · richiesta del ' + q : ''}</div>
-        </div>
-        <div class="azioni">
-          <button class="approva" data-appr="${p.id}">Approva</button>
-          <button class="pericolo" data-rifiuta="${p.id}">Rifiuta</button>
-        </div>
-      </div>`;
-    }).join('');
-    boxAttesa.querySelectorAll('[data-appr]').forEach(b=>b.addEventListener('click', ()=>{
-      const prof = state.profiles.find(x=>x.id===b.dataset.appr);
-      if(!prof) return;
-      prof.approvato = true;
-      prof.bloccato = false;
-      save();
-      renderAmministrazione();
-      toast(`${prof.name} può entrare ✓`);
-    }));
-    boxAttesa.querySelectorAll('[data-rifiuta]').forEach(b=>b.addEventListener('click', ()=>{
-      const prof = state.profiles.find(x=>x.id===b.dataset.rifiuta);
-      if(!prof) return;
-      customConfirm(`Rifiutare la richiesta di "${prof.name}" (${prof.email||'senza email'})? L'account verrà eliminato.`, ()=>{
-        state.profiles = state.profiles.filter(x=>x.id!==prof.id);
-        save();
-        renderAmministrazione();
-        toast("Richiesta rifiutata");
-      });
-    }));
-  }
-
-  // ---- profili già attivi ----
-  const wrap = document.getElementById('elencoProfiliAmm');
-  wrap.innerHTML = state.profiles.filter(p=>p.approvato).map(p=>{
-    const suo = p.id === (io && io.id);
-    const allen = (p.logs||[]).filter(l=>l.status==='registrato').length;
-    return `<div class="riga-profilo">
-      <div class="info">
-        <div class="nome">${escapeAttr(p.name)}${suo?' (tu)':''}</div>
-        <div class="mail">${escapeAttr(p.email) || 'nessuna email'} · ${allen} allenamenti</div>
-      </div>
-      <div class="azioni">
-        <button data-reset="${p.id}">Reimposta password</button>
-        ${suo ? '' : `<button data-sospendi="${p.id}">Sospendi</button>`}
-        ${suo ? '' : `<button class="pericolo" data-canc="${p.id}">Elimina</button>`}
-      </div>
-    </div>`;
-  }).join('');
-
-  wrap.querySelectorAll('[data-reset]').forEach(b=>b.addEventListener('click', ()=>{
-    const prof = state.profiles.find(x=>x.id===b.dataset.reset);
-    if(!prof) return;
-    const nuova = generaCodice().replace('-','');
-    customConfirm(`Reimpostare la password di "${prof.name}"? Diventerà: ${nuova}\nAnnotala e comunicagliela.`, ()=>{
-      prof.passwordHash = simpleHash(nuova);
-      save();
-      toast(`Nuova password di ${prof.name}: ${nuova}`);
-      copiaNegliAppunti(nuova);
-    });
-  }));
-  wrap.querySelectorAll('[data-sospendi]').forEach(b=>b.addEventListener('click', ()=>{
-    const prof = state.profiles.find(x=>x.id===b.dataset.sospendi);
-    if(!prof) return;
-    customConfirm(`Sospendere "${prof.name}"? Non potrà più entrare finché non lo riapprovi. I suoi dati restano.`, ()=>{
-      prof.approvato = false;
-      prof.bloccato = true;
-      save();
-      renderAmministrazione();
-      toast(`${prof.name} sospeso`);
-    });
-  }));
-  wrap.querySelectorAll('[data-canc]').forEach(b=>b.addEventListener('click', ()=>{
-    const prof = state.profiles.find(x=>x.id===b.dataset.canc);
-    if(!prof) return;
-    const allen = (prof.logs||[]).filter(l=>l.status==='registrato').length;
-    customConfirm(`Eliminare il profilo di "${prof.name}" (${prof.email||'senza email'})? Verranno cancellati per sempre ${allen} allenamenti, scheda e dieta.`, ()=>{
-      state.profiles = state.profiles.filter(x=>x.id!==prof.id);
-      save();
-      renderAmministrazione();
-      toast("Profilo eliminato");
-    });
-  }));
-}
-
 // "Richieste in attesa" si apre da sola quando c'è qualcosa da approvare, ma
 // se l'admin la chiude a mano non deve riaprirsi da sola al render successivo
 // (es. dopo aver approvato qualcun altro) finché non ce ne sono di nuove.
@@ -281,28 +152,11 @@ document.getElementById('filtroProfiliAmm').addEventListener('input', function()
   });
 });
 
-document.getElementById('cambiaPwIngressoBtn').addEventListener('click', ()=>{
-  if(!sonoAmministratore()){ toast("Solo l'amministratore può cambiarla."); return; }
-  const nuova = document.getElementById('nuovaPwIngresso').value.trim();
-  if(nuova.length < 6){ toast("Usane una di almeno 6 caratteri."); return; }
-  customConfirm(`Cambiare la password d'ingresso in "${nuova}"? Chi ha la vecchia non entrerà più.`, ()=>{
-    const codice = generaCodice();
-    state.appLock = { hash: simpleHash(nuova), recuperoHash: simpleHash(normalizzaCodice(codice)), predefinita: false };
-    save();
-    document.getElementById('nuovaPwIngresso').value = "";
-    renderAmministrazione();
-    customConfirm(`Password d'ingresso aggiornata.\n\nCodice di recupero (salvalo): ${codice}`, ()=>{});
-    copiaNegliAppunti(codice);
-  });
-});
-
-
-
 // ============================================================
 // SINCRONIZZAZIONE ONLINE (Supabase)
-// Se qui sotto ci sono indirizzo e chiave, l'app lavora con l'account online:
-// stessi dati da qualsiasi telefono, da Safari e dall'app installata.
-// Se restano vuoti, l'app continua a funzionare solo su questo dispositivo.
+// Indirizzo e chiave stanno in config.js: da lì l'app lavora sempre con
+// l'account online, stessi dati da qualsiasi telefono, da Safari e
+// dall'app installata (non esiste più una modalità "solo questo dispositivo").
 // ============================================================
 // I due valori si mettono nel file "config.js", che è piccolo e facile da modificare.
 // APP_CONFIG è il nome nuovo, neutro (non legato a nessun nome dell'app, così
