@@ -4,12 +4,8 @@
 // attributi) dentro innerHTML — nomi di esercizi, note, messaggi di chat
 // PT↔cliente, nomi dei giorni della scheda... Un valore contenente
 // "<img src=x onerror=...>" veniva quindi ESEGUITO invece che mostrato come
-// testo. Il caso più diretto: il nome scelto in fase di REGISTRAZIONE
-// (js/ui/profile-gate.js createProfileBtn non lo valida) finisce, non
-// escapato, nella lista profili (chiunque apra l'app lo vede, PRIMA del
-// login) e nel pannello admin "Gestione utenti" (eseguito nella sessione di
-// chi approva il nuovo account). customConfirm() aveva lo stesso problema:
-// il messaggio finiva in innerHTML senza alcun escape.
+// testo. customConfirm() aveva lo stesso problema: il messaggio finiva in
+// innerHTML senza alcun escape.
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const { loadApp, run } = require('./helpers/loadApp.js');
@@ -24,29 +20,16 @@ test('escapeAttr: neutralizza tutti i caratteri speciali HTML, non solo le virgo
   window.close();
 });
 
-test('registrazione profilo locale: un nome con markup non viene eseguito nella lista profili (prima del login)', async () => {
+test('pannello admin: un nome/email con markup in "Richieste in attesa" non viene eseguito', async () => {
   const { window, document } = await loadApp();
   await run(window, `
-    state.profiles = [{ id:'x1', name: ${JSON.stringify(PAYLOAD)}, email:'x@test.it',
-      approvato:true, bloccato:false, passwordHash: simpleHash('1234'), logs:[] }];
-    renderProfileGate();
-  `);
-  const list = document.getElementById('profileList');
-  assert.equal(list.querySelectorAll('img').length, 0,
-    'il nome del profilo non deve creare un <img> reale nella lista (stored XSS)');
-  assert.ok(list.innerHTML.includes('&lt;img'), 'deve comparire come testo escapato');
-  window.close();
-});
-
-test('pannello admin (locale): un nome/email con markup in "Richieste in attesa" non viene eseguito', async () => {
-  const { window, document } = await loadApp();
-  await run(window, `
-    state.profiles = [
-      { id:'admin', name:'Mattia', email:'dangelomattia2002@gmail.com', approvato:true, bloccato:false, logs:[] },
-      { id:'p1', name: ${JSON.stringify(PAYLOAD)}, email: ${JSON.stringify(PAYLOAD)}, approvato:false, bloccato:false, logs:[] }
+    window.__righeAdmin = [
+      { id:'admin', nome:'Mattia', email:'dangelomattia2002@gmail.com', approvato:true, is_pt:false, dati:{logs:[]} },
+      { id:'p1', nome: ${JSON.stringify(PAYLOAD)}, email: ${JSON.stringify(PAYLOAD)}, approvato:false, dati:{logs:[]} }
     ];
-    activeProfileId = 'admin';
-    renderAmministrazione();
+    utenteOnline = { id:'admin', email:'dangelomattia2002@gmail.com' };
+    sb = { from(){ return { select(){ return this; }, order(){ return Promise.resolve({ data: window.__righeAdmin, error:null }); } }; } };
+    await renderAmministrazioneOnline();
   `);
   const box = document.getElementById('elencoAttesa');
   assert.equal(box.querySelectorAll('img').length, 0,

@@ -111,7 +111,7 @@ function apriImpostazioni(provenienza){
   document.getElementById('settingsPanel').style.display = 'block';
   _impostazioniProvenienza = provenienza;
   renderImpostazioniInline();
-  renderAmministrazione();
+  renderAmministrazioneOnline();
   aggiornaVisibilitaEliminaAccount();
 }
 // Chiude #settingsPanel tornando a dove si è aperta (vedi apriImpostazioni).
@@ -141,7 +141,6 @@ function renderImpostazioniInline(){
   renderPromemoria();
   const _lpAuto = loggedInProfile();
   document.getElementById('autoSkipToggle').checked = !_lpAuto || _lpAuto.autoSkip !== false;
-  document.getElementById('codiceMostrato').style.display = 'none';
 
   const canManage = canManageExercises();
   // 31/08/2026: testo accorciato (era un doppio periodo lungo) — l'informazione
@@ -172,9 +171,6 @@ function apriAccountPanel(){
   if(!lp) return;
   document.getElementById('accountNameInput').value = lp.name;
   document.getElementById('accountEmailMostrata').textContent = lp.email || "non impostata";
-  document.getElementById('accountOldPw').value = "";
-  document.getElementById('accountNewPw').value = "";
-  document.getElementById('accountNewPw2').value = "";
   document.querySelectorAll('#setSesso .seg-btn').forEach(b=>{
     b.classList.toggle('active', b.dataset.val === lp.sesso);
   });
@@ -351,20 +347,13 @@ document.getElementById('homeEsciBtn').addEventListener('click', async ()=>{
     // resterebbe visibile sopra la schermata di accesso dopo l'uscita
     document.getElementById('accountPanel').style.display = 'none';
     document.body.classList.remove('account-aperto');
-    if(modalitaOnline() && sb){
-      if(_canaleMioProfilo){ sb.removeChannel(_canaleMioProfilo); _canaleMioProfilo = null; }
-      fermaAscoltoNotificheRealtime();
-      await sb.auth.signOut();
-      utenteOnline = null; rigaOnline = null;
-      activeProfileId = null;
-      document.getElementById('homeScreen').style.display = 'none';
-      mostraCloudGate('accedi');
-      return;
-    }
-    actingProfileId = null;
+    if(_canaleMioProfilo){ sb.removeChannel(_canaleMioProfilo); _canaleMioProfilo = null; }
+    fermaAscoltoNotificheRealtime();
+    await sb.auth.signOut();
+    utenteOnline = null; rigaOnline = null;
+    activeProfileId = null;
     document.getElementById('homeScreen').style.display = 'none';
-    document.getElementById('profileGate').style.display = 'flex';
-    renderProfileGate();
+    mostraCloudGate('accedi');
   });
 });
 document.getElementById('closeAccountBtn').addEventListener('click', chiudiAccountPanel);
@@ -391,14 +380,9 @@ document.getElementById('acctVaiMessaggiBtn').addEventListener('click', ()=>apri
 // l'esito precedente ogni volta che si apre, invece di navigare altrove.
 document.getElementById('accPrivacy').addEventListener('toggle', function(){
   if(!this.open) return;
-  const online = !!utenteOnline;
-  // Online: password vera gestita da Supabase, si cambia col link via email.
-  // Offline: il profilo locale ha una password propria (accountOldPw/New/New2,
-  // ex "Nome e password"). "Elimina account" (#pwEliminaBlock) vive ora fuori
-  // da questo accordion — vedi aggiornaVisibilitaEliminaAccount() sotto —
-  // ma resta legata alla stessa condizione (richiede un server).
-  document.getElementById('pwOnlineBlock').style.display = online ? '' : 'none';
-  document.getElementById('pwOfflineBlock').style.display = online ? 'none' : '';
+  // Password vera gestita da Supabase, si cambia col link via email.
+  // "Elimina account" (#pwEliminaBlock) vive ora fuori da questo accordion —
+  // vedi aggiornaVisibilitaEliminaAccount() sotto.
   document.getElementById('privacyEmailMostrata').textContent = (utenteOnline && utenteOnline.email) || (loggedInProfile()||{}).email || '—';
   document.getElementById('privacyPwEsito').style.display = 'none';
   aggiornaVisibilitaEliminaAccount();

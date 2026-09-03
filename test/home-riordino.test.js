@@ -39,12 +39,14 @@ test('"Esci dall\'app" ora è un bottone vero dentro Account, non un link in fon
   window.close();
 });
 
-test('uscire dall\'app (modalità locale) chiude anche Account, non solo Home, e torna al gate profili', async () => {
+test('uscire dall\'app chiude anche Account, non solo Home, e torna alla schermata di accesso', async () => {
   const { window, document } = await loadApp();
   await run(window, `
     const profilo = { id:'io', name:'Io', email:'io@test.it', logs:[], measurements:[], customExercises:{}, customFoods:{},
       programs:[{id:'p1', days:[]}], activeProgramId:'p1' };
     state.profiles = [profilo]; activeProfileId = 'io';
+    utenteOnline = { id:'io', email:'io@test.it' };
+    sb = { auth: { signOut(){ return Promise.resolve({error:null}); } }, removeChannel(){} };
     apriAccountPanel();
   `);
   assert.equal(document.getElementById('accountPanel').style.display, 'block', 'precondizione: Account è aperto');
@@ -54,7 +56,7 @@ test('uscire dall\'app (modalità locale) chiude anche Account, non solo Home, e
     document.getElementById('customConfirmOk').click();
   `);
   assert.equal(document.getElementById('accountPanel').style.display, 'none', 'Account deve richiudersi');
-  assert.equal(document.getElementById('profileGate').style.display, 'flex', 'deve tornare al gate di scelta profilo');
+  assert.equal(document.getElementById('cloudGate').style.display, 'flex', 'deve tornare alla schermata di accesso online');
   window.close();
 });
 

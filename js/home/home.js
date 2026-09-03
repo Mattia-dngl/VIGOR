@@ -2,8 +2,6 @@
 function mostraCloudGate(quale){
   document.documentElement.classList.remove('avvio');
   document.body.classList.remove('app-pronta');
-  document.getElementById('lockScreen').style.display = 'none';
-  document.getElementById('profileGate').style.display = 'none';
   document.getElementById('appRoot').style.display = 'none';
   document.getElementById('accountPanel').style.display = 'none';
   const g = document.getElementById('cloudGate');

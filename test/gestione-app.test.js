@@ -1,23 +1,48 @@
 'use strict';
 // Test della riorganizzazione di "Gestione dell'app" (Account, solo admin):
-// prima era un unico accordion con 4 liste tutte srotolate insieme (password,
-// richieste, PT, profili attivi) — su telefono ci si perdeva. Ora ogni gruppo
-// è un accordion annidato chiuso di default, "Richieste in attesa" si apre da
-// sola solo quando c'è qualcosa da approvare, "Personal Trainer" è nascosto in
-// modalità locale (concetto che esiste solo online), e "Profili attivi" ha un
-// filtro di ricerca e le azioni per riga in griglia invece che in fila che va
-// a capo.
+// prima era un unico accordion con liste tutte srotolate insieme (richieste,
+// PT, profili attivi) — su telefono ci si perdeva. Ora ogni gruppo è un
+// accordion annidato chiuso di default, "Richieste in attesa" si apre da sola
+// solo quando c'è qualcosa da approvare, e "Profili attivi" ha un filtro di
+// ricerca e le azioni per riga in griglia invece che in fila che va a capo.
+//
+// 03/09/2026: rimossa la modalità locale — l'admin lavora sempre online
+// (renderAmministrazioneOnline(), Supabase). Questi test simulano un `sb`
+// minimo invece di popolare state.profiles direttamente.
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const { loadApp, run } = require('./helpers/loadApp.js');
 
-function profiloAdmin(extra){
-  return Object.assign({ id:'admin', name:'Mattia', email:'dangelomattia2002@gmail.com', approvato:true, logs:[] }, extra||{});
+function rigaAdmin(extra){
+  return Object.assign({ id:'admin', nome:'Mattia', email: 'dangelomattia2002@gmail.com', approvato:true, is_pt:false, dati:{logs:[]} }, extra||{});
 }
 
-test('struttura: le 4 sezioni di "Gestione dell\'app" sono accordion annidati distinti', async () => {
+// sb finto per renderAmministrazioneOnline(): select().order() legge da
+// window.__righeAdmin, così un test può cambiarle fra un render e l'altro
+// (es. dopo aver "approvato" qualcuno) senza dover ricreare tutto lo stub.
+function installaAdminFinto(righeIniziali){
+  return `
+    window.__righeAdmin = ${JSON.stringify(righeIniziali)};
+    utenteOnline = { id:'admin', email:'dangelomattia2002@gmail.com' };
+    sb = {
+      from(table){
+        return {
+          select(){ return this; },
+          order(){ return Promise.resolve({ data: window.__righeAdmin, error:null }); },
+          update(valori){ return { eq(col, id){
+            const r = window.__righeAdmin.find(x=>x.id===id);
+            if(r) Object.assign(r, valori);
+            return Promise.resolve({error:null});
+          } }; }
+        };
+      }
+    };
+  `;
+}
+
+test('struttura: le sezioni di "Gestione dell\'app" sono accordion annidati distinti', async () => {
   const { window, document } = await loadApp();
-  const ids = ['subRichieste', 'subProfili', 'subPT', 'subPwIngresso'];
+  const ids = ['subRichieste', 'subProfili', 'subPT'];
   for(const id of ids){
     const el = document.getElementById(id);
     assert.ok(el, `manca #${id}`);
@@ -26,37 +51,28 @@ test('struttura: le 4 sezioni di "Gestione dell\'app" sono accordion annidati di
   window.close();
 });
 
-test('modalità locale: la sezione "Personal Trainer" è nascosta (il ruolo PT esiste solo online)', async () => {
+test('online: la sezione "Personal Trainer" è sempre visibile (il ruolo PT esiste solo online, ed è l\'unica modalità rimasta)', async () => {
   const { window } = await loadApp();
   const r = await run(window, `
-    state.profiles = [${JSON.stringify(profiloAdmin())}];
-    activeProfileId = 'admin';
-    renderAmministrazione();
-    return {
-      ptNascosto: document.getElementById('subPT').style.display === 'none',
-      pwVisibile: document.getElementById('subPwIngresso').style.display !== 'none'
-    };
+    ${installaAdminFinto([rigaAdmin()])}
+    await renderAmministrazioneOnline();
+    return { ptVisibile: document.getElementById('subPT').style.display !== 'none' };
   `);
-  assert.equal(r.ptNascosto, true, 'in locale "Personal Trainer" non deve essere mostrato vuoto');
-  assert.equal(r.pwVisibile, true, 'in locale "Password d\'ingresso" resta visibile');
+  assert.equal(r.ptVisibile, true);
   window.close();
 });
 
 test('"Richieste in attesa" si apre da sola solo quando c\'è qualcosa da approvare, e conta correttamente', async () => {
   const { window } = await loadApp();
   const r = await run(window, `
-    state.profiles = [
-      ${JSON.stringify(profiloAdmin())},
-      { id:'p1', name:'Chi aspetta', email:'aspetta@test.it', approvato:false, logs:[] }
-    ];
-    activeProfileId = 'admin';
-    renderAmministrazione();
+    ${installaAdminFinto([rigaAdmin(), { id:'p1', nome:'Chi aspetta', email:'aspetta@test.it', approvato:false, dati:{logs:[]} }])}
+    await renderAmministrazioneOnline();
     const apertoConRichiesta = document.getElementById('subRichieste').open;
     const badge = document.getElementById('contaAttesa').textContent;
 
     // approvo l'unica richiesta: ora non ce ne sono più
-    state.profiles.find(p=>p.id==='p1').approvato = true;
-    renderAmministrazione();
+    window.__righeAdmin.find(p=>p.id==='p1').approvato = true;
+    await renderAmministrazioneOnline();
     return { apertoConRichiesta, badge, apertoSenzaRichieste: document.getElementById('subRichieste').open };
   `);
   assert.equal(r.apertoConRichiesta, true, 'con una richiesta in sospeso la sezione deve aprirsi da sola');
@@ -68,16 +84,12 @@ test('"Richieste in attesa" si apre da sola solo quando c\'è qualcosa da approv
 test('"Richieste in attesa" chiusa a mano dall\'admin non si riapre da sola al render successivo', async () => {
   const { window } = await loadApp();
   const r = await run(window, `
-    state.profiles = [
-      ${JSON.stringify(profiloAdmin())},
-      { id:'p1', name:'Chi aspetta', email:'aspetta@test.it', approvato:false, logs:[] }
-    ];
-    activeProfileId = 'admin';
-    renderAmministrazione(); // si apre da sola (c'è una richiesta)
+    ${installaAdminFinto([rigaAdmin(), { id:'p1', nome:'Chi aspetta', email:'aspetta@test.it', approvato:false, dati:{logs:[]} }])}
+    await renderAmministrazioneOnline(); // si apre da sola (c'è una richiesta)
     const sub = document.getElementById('subRichieste');
     sub.open = false; // l'admin la chiude a mano
     sub.dispatchEvent(new window.Event('toggle'));
-    renderAmministrazione(); // un secondo render (es. dopo un'altra azione)
+    await renderAmministrazioneOnline(); // un secondo render (es. dopo un'altra azione)
     return { restaChiusa: sub.open === false };
   `);
   assert.equal(r.restaChiusa, true, 'non deve tornare ad aprirsi da sola dopo che l\'admin l\'ha chiusa');
@@ -87,13 +99,12 @@ test('"Richieste in attesa" chiusa a mano dall\'admin non si riapre da sola al r
 test('"Profili attivi": il conteggio nel titolo e il filtro di ricerca funzionano', async () => {
   const { window } = await loadApp();
   const r = await run(window, `
-    state.profiles = [
-      ${JSON.stringify(profiloAdmin())},
-      { id:'p1', name:'Mario Rossi', email:'mario@test.it', approvato:true, logs:[] },
-      { id:'p2', name:'Luca Bianchi', email:'luca@test.it', approvato:true, logs:[] }
-    ];
-    activeProfileId = 'admin';
-    renderAmministrazione();
+    ${installaAdminFinto([
+      rigaAdmin(),
+      { id:'p1', nome:'Mario Rossi', email:'mario@test.it', approvato:true, dati:{logs:[]} },
+      { id:'p2', nome:'Luca Bianchi', email:'luca@test.it', approvato:true, dati:{logs:[]} }
+    ])}
+    await renderAmministrazioneOnline();
     const badge = document.getElementById('contaProfili').textContent;
 
     const filtro = document.getElementById('filtroProfiliAmm');
