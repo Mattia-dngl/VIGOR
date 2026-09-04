@@ -245,35 +245,11 @@ document.getElementById('vidOverlay').addEventListener('click', e=>{
   if(e.target.id==='vidOverlay') closeVideoPopup();
 });
 
-// ============================================================
-// LETTORE VIDEO INLINE — se il link è di un servizio che si lascia
-// incorporare (YouTube, Vimeo, Google Drive: li riconosce urlIncorporabile),
-// il tasto "▶ Video" lo fa vedere qui dentro invece di aprire una scheda
-// esterna. Per gli altri link (es. le pagine di Muscle & Strength, che sono
-// normali pagine web e non si lasciano mettere in un iframe) resta il
-// comportamento di prima: si apre fuori con apriAltrove.
-// ============================================================
-function apriPlayerVideo(nome, embedUrl){
-  document.getElementById('playerTitle').textContent = nome || "Video";
-  document.getElementById('playerIframe').src = embedUrl;
-  document.getElementById('playerOverlay').classList.add('show');
-}
-function chiudiPlayerVideo(){
-  document.getElementById('playerOverlay').classList.remove('show');
-  document.getElementById('playerIframe').src = ''; // ferma la riproduzione
-}
-document.getElementById('playerClose').addEventListener('click', chiudiPlayerVideo);
-document.getElementById('playerOverlay').addEventListener('click', e=>{
-  if(e.target.id==='playerOverlay') chiudiPlayerVideo();
-});
-
 document.addEventListener('keydown', e=>{
-  if(e.key!=='Escape') return;
-  if(document.getElementById('playerOverlay').classList.contains('show')) chiudiPlayerVideo();
-  else if(document.getElementById('vidOverlay').classList.contains('show')) closeVideoPopup();
+  if(e.key==='Escape' && document.getElementById('vidOverlay').classList.contains('show')) closeVideoPopup();
 });
-// il tasto "▶ Video" apre direttamente quello che c'è assegnato: dentro
-// l'app se si può incorporare, altrimenti fuori come prima.
+// il tasto "▶ Video" apre direttamente quello che c'è assegnato (link o
+// ricerca YouTube), senza popup: niente più riquadro nero.
 // il tastino "⋯" apre invece il pannello per vedere/cambiare il video.
 document.addEventListener('click', e=>{
   const g = e.target.closest('[data-gestisci]');
@@ -288,10 +264,7 @@ document.addEventListener('click', e=>{
   if(!a) return;
   e.preventDefault();
   e.stopPropagation();
-  const url = a.getAttribute('href');
-  const embed = urlIncorporabile(url);
-  if(embed) apriPlayerVideo(a.dataset.exName, embed);
-  else apriAltrove(url);
+  apriAltrove(a.getAttribute('href'));
 }, true);
 
 function schermoPiccolo(){
