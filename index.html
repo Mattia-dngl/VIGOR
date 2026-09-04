@@ -46,6 +46,17 @@
       console.error('Libreria esterna non caricata correttamente:', e.filename, e.message);
       return;
     }
+    // Stesso caso di sopra ma "muto": un errore di script cross-origin (sempre
+    // Chart.js o xlsx, gli unici <script> esterni che carichiamo — Supabase è
+    // locale) arriva col filename VUOTO invece che valorizzato, quando il
+    // browser nasconde i dettagli (successo il 04/09/2026 quando il Service
+    // Worker aveva in cache una copia corrotta di uno dei due file: il guard
+    // sopra non lo intercettava perché cercava un filename che qui non c'è,
+    // e la persona si ritrovava il crash screen aprendo l'app dalla home).
+    if(e && e.message === 'Script error.' && !e.filename && !e.lineno && !e.colno){
+      console.error('Script esterno (Chart.js/xlsx) non eseguito correttamente, dettagli nascosti dal browser:', e);
+      return;
+    }
     mostraErroreGlobale((e.message || 'Errore sconosciuto') + '\n' + (e.filename || '') + ':' + (e.lineno || '?') + ':' + (e.colno || '?'));
   }, true);
   window.addEventListener('unhandledrejection', function(e){
