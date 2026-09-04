@@ -39,11 +39,20 @@ function renderSchedaView(){
   const statiHtml = `<div class="riepilogo-grid">${statVoci.map(([lab,val])=>`
     <div class="riepilogo-stat"><span class="riepilogo-label">${lab.toUpperCase()}</span><span class="riepilogo-val">${val}</span></div>`).join('')}</div>`;
 
+  // 02/09/2026: una scheda senza giorni non è davvero "attiva" (non c'è
+  // niente da seguire) — prima questo badge diceva sempre ATTIVO anche con
+  // 0 giorni, mentre la Home (aggiornaHomeCta in home.js) la trattava già
+  // come "nessuna scheda attiva" nello stesso istante. Stesso criterio ora
+  // in entrambi i posti: p.days.length>0.
+  const schedaCompleta = p.days.length > 0;
+  const badgeHtml = schedaCompleta
+    ? '<span class="scheda-badge-attivo">ATTIVO</span>'
+    : '<span class="scheda-badge-attivo scheda-badge-vuota">DA COMPLETARE</span>';
   const infoCardHtml = `
     <div class="card scheda-info-card">
       <div class="scheda-info-top">
         <h3 class="scheda-info-nome">${p.name}</h3>
-        <span class="scheda-badge-attivo">ATTIVO</span>
+        ${badgeHtml}
       </div>
       ${settimanaHtml}
       ${statiHtml}

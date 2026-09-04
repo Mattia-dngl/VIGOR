@@ -34,7 +34,17 @@
     // arriva SOLO in fase di cattura, non in bubbling: per questo il listener
     // qui sotto è registrato con "true" come terzo argomento.
     if(e && e.target && e.target !== window && e.target.tagName){
-      mostraErroreGlobale('Risorsa non caricata: <' + e.target.tagName.toLowerCase() + '> ' + (e.target.src || e.target.href || '?'));
+      // Solo uno <script> bloccato è davvero fatale (l'app non può funzionare
+      // senza la sua logica). Un <link> (es. il CSS di Google Fonts, bloccato
+      // spesso da ad-blocker/estensioni privacy) o un'altra risorsa decorativa
+      // non impedisce affatto all'app di funzionare — bloccare tutto per
+      // questo (02/09/2026, verificato dal vivo: l'app sotto funzionava
+      // perfettamente con il font di riserva) è peggio del problema stesso.
+      if(e.target.tagName === 'SCRIPT'){
+        mostraErroreGlobale('Risorsa non caricata: <' + e.target.tagName.toLowerCase() + '> ' + (e.target.src || e.target.href || '?'));
+      } else {
+        console.warn('Risorsa non critica non caricata: <' + e.target.tagName.toLowerCase() + '> ' + (e.target.src || e.target.href || '?'));
+      }
       return;
     }
     // Chart.js e xlsx (grafici/esportazione Excel) vengono da un CDN esterno e
@@ -377,6 +387,17 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
     <!-- Striscia dei giorni della settimana, oggi in evidenza -->
     <div class="home-daystrip" id="homeDayStrip"></div>
 
+    <!-- 02/09/2026: le due colonne qui sotto (home-columns/home-col) sono solo
+         contenitori nuovi attorno alle stesse card di sempre — nessun id
+         toccato. Su mobile restano una sola colonna (nessuna regola CSS le
+         tocca sotto i 1024px); da 1024px in su (vedi lo stesso breakpoint
+         già usato altrove nel foglio di stile) diventano una griglia a 2
+         colonne, così lo spazio in larghezza su desktop non resta vuoto e la
+         Home non è più identica a quella di un telefono — vedi
+         VIGOR-report-frizioni-02-09-2026.md punto 7 e il mockup "Mockup
+         Desktop VIGOR". -->
+    <div class="home-columns">
+    <div class="home-col">
     <!-- Allenamento di oggi: sostituisce la vecchia card "Allenati", apre direttamente Registra -->
     <div class="home-cta-card" id="homeCtaCard">
       <div class="home-cta-eyebrow" id="homeCtaEyebrow">ALLENAMENTO DI OGGI</div>
@@ -417,7 +438,9 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
         <div class="heatmap-legend-item"><span class="heatmap-legend-dot" style="background:#ff4b2b"></span>Intenso</div>
       </div>
     </div>
+    </div>
 
+    <div class="home-col">
     <!-- Scheda attiva: nome del programma in corso, con un tasto per aprirlo.
          31/08/2026: spostata sopra "Obiettivo settimanale" su richiesta
          esplicita dell'utente (prima era più in basso, sotto "I tuoi
@@ -521,6 +544,8 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
         <span class="hint" id="homeDietaOggiKcal"></span>
       </div>
       <div id="homeDietaOggiBody"></div>
+    </div>
+    </div>
     </div>
 
     <button type="button" class="home-pt-card" id="homePTBtn" style="display:none;">
@@ -1081,7 +1106,10 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
         </button>
       </div>
       <div class="timer-bar" id="timerBar">
-        <div class="timer-display" id="timerDisplay">1:30</div>
+        <div class="timer-time-group">
+          <div class="timer-label">Recupero</div>
+          <div class="timer-display" id="timerDisplay">1:30</div>
+        </div>
         <div class="timer-msg" id="timerMsg">Recupero finito</div>
         <div class="timer-presets" id="timerPresets">
           <button type="button" data-sec="60">60"</button>
@@ -1710,11 +1738,11 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
        "Home" (non più "Dashboard": preferenza esplicita), data-go resta
        "home" per non toccare tutta la logica di vaiA()/aggiornaNavGlobale
        che già usa quella chiave. -->
-  <button type="button" class="active" data-go="home">
+  <button type="button" class="active nav-go-btn" data-go="home">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path d="M12 3.2 3 11h2.4v9h5.1v-6h3v6h5.1v-9H21z" stroke-width="1.8" stroke-linejoin="round"/></svg>
     <span class="tab-label">Home</span>
   </button>
-  <button type="button" data-go="program">
+  <button type="button" class="nav-go-btn" data-go="program">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><rect x="5" y="3.5" width="14" height="17" rx="2.5" stroke-width="1.8"/><path d="M9 8.5h6M9 12h6M9 15.5h4" stroke-linecap="round" stroke-width="1.8"/></svg>
     <span class="tab-label">Scheda</span>
   </button>
@@ -1724,13 +1752,51 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
     <span class="tab-fab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></span>
     <span class="tab-label">Registra</span>
   </button>
-  <button type="button" data-go="diet">
+  <button type="button" class="nav-go-btn" data-go="diet">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path d="M7 3v8a2 2 0 0 0 4 0V3M9 11v10M17 3c-1.5 1.5-2 3.5-2 5.5 0 1.7.8 2.5 2 2.5V3zM17 11v10" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/></svg>
     <span class="tab-label">Dieta</span>
   </button>
-  <button type="button" data-go="storico">
+  <button type="button" class="nav-go-btn" data-go="storico">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7" stroke-linecap="round" stroke-width="1.8"/><path d="M3 4v5h5" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/><path d="M12 8v5l3.5 2" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/></svg>
     <span class="tab-label">Storico</span>
+  </button>
+</nav>
+
+<!-- 02/09/2026: sidebar per schermi larghi (≥1024px), al posto della bottom-bar
+     da telefono — vedi VIGOR-report-frizioni-02-09-2026.md punto 7 e il mockup
+     "Mockup Desktop VIGOR". Riusa gli stessi bottoni data-go (classe
+     nav-go-btn condivisa con #navTabsGlobale: stesso listener in
+     tabs-header.js, stessa sincronizzazione in aggiornaNavGlobale), quindi
+     naviga esattamente come la bottom-bar. Nascosta di default (mobile);
+     mostrata solo da CSS a ≥1024px quando body.app-pronta (mai sulle
+     schermate di accesso/onboarding). -->
+<nav class="sidebar-nav" id="sidebarNavGlobale">
+  <div class="sidebar-nav-logo">VIG<span>OR</span></div>
+  <div class="sidebar-nav-items">
+    <button type="button" class="active nav-go-btn" data-go="home">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path d="M12 3.2 3 11h2.4v9h5.1v-6h3v6h5.1v-9H21z" stroke-width="1.8" stroke-linejoin="round"/></svg>
+      <span>Home</span>
+    </button>
+    <button type="button" class="nav-go-btn" data-go="program">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><rect x="5" y="3.5" width="14" height="17" rx="2.5" stroke-width="1.8"/><path d="M9 8.5h6M9 12h6M9 15.5h4" stroke-linecap="round" stroke-width="1.8"/></svg>
+      <span>Scheda</span>
+    </button>
+    <button type="button" id="sidebarRegistraBtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><rect x="1.5" y="9.5" width="2.8" height="5" rx="1.2" fill="currentColor" stroke="none"/><rect x="19.7" y="9.5" width="2.8" height="5" rx="1.2" fill="currentColor" stroke="none"/><rect x="5" y="7.5" width="3" height="9" rx="1.3" fill="currentColor" stroke="none"/><rect x="16" y="7.5" width="3" height="9" rx="1.3" fill="currentColor" stroke="none"/><rect x="7.6" y="11" width="8.8" height="2" rx="1" fill="currentColor" stroke="none"/></svg>
+      <span>Registra</span>
+    </button>
+    <button type="button" class="nav-go-btn" data-go="diet">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path d="M7 3v8a2 2 0 0 0 4 0V3M9 11v10M17 3c-1.5 1.5-2 3.5-2 5.5 0 1.7.8 2.5 2 2.5V3zM17 11v10" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/></svg>
+      <span>Dieta</span>
+    </button>
+    <button type="button" class="nav-go-btn" data-go="storico">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7" stroke-linecap="round" stroke-width="1.8"/><path d="M3 4v5h5" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/><path d="M12 8v5l3.5 2" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/></svg>
+      <span>Storico</span>
+    </button>
+  </div>
+  <button type="button" id="sidebarAccountBtn" class="sidebar-nav-account">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-6 8-6s8 2 8 6"/></svg>
+    <span>Account</span>
   </button>
 </nav>
 

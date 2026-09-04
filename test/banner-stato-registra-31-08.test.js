@@ -8,8 +8,10 @@
 // elementi sotto (mancava margin-bottom). Corretto in due punti:
 //  1) #statusInfo (Registra) ora prende un tono coerente con il badge che
 //     contiene: verde per "Come da programma", ambra per "Giorno diverso
-//     dal previsto"/"Allenamento libero", neutro (grigio) per "Saltato" e
-//     per il testo semplice prima di scegliere un giorno.
+//     dal previsto", neutro (grigio) per "Saltato", "Allenamento libero"
+//     (tolto il tono ambra il 02/09/2026 — è una scelta normale, non un
+//     avviso, vedi VIGOR-report-frizioni-02-09-2026.md punto 4) e per il
+//     testo semplice prima di scegliere un giorno.
 //  2) .reminder-banner ("Oggi tocca: ... non ancora registrato" in Home),
 //     stesso problema, stessa famiglia di colore: passato ad ambra.
 const test = require('node:test');
@@ -114,7 +116,12 @@ test('Registra: "Saltato" mostra il banner in tono neutro (né positivo né di a
   window.close();
 });
 
-test('Allenamento libero: il banner ha il tono di attenzione (ambra), coerente con il badge "Allenamento libero" al suo interno', async () => {
+// 02/09/2026: il tono ambra per "Allenamento libero" è stato tolto — vedi
+// VIGOR-report-frizioni-02-09-2026.md punto 4. Scegliere "Allenamento
+// libero" dal menu "Cosa vuoi registrare?" è una scelta normale, non un
+// motivo di attenzione: il banner ora resta .info-banner neutro (di base,
+// nessun modificatore), come già per "Saltato".
+test('Allenamento libero: il banner resta neutro (non ambra), è una scelta normale non un avviso', async () => {
   const { window, document } = await loadApp();
   await run(window, `
     const profilo = ${JSON.stringify(profiloBase())};
@@ -124,6 +131,8 @@ test('Allenamento libero: il banner ha il tono di attenzione (ambra), coerente c
     document.getElementById('fabOptLibero').click();
   `);
   const banner = document.getElementById('statusInfo');
-  assert.ok(banner.classList.contains('esito-attenzione'));
+  assert.ok(!banner.classList.contains('esito-attenzione'), 'non deve più avere il tono ambra');
+  assert.ok(!banner.classList.contains('esito-positivo'));
+  assert.ok(banner.classList.contains('info-banner'));
   window.close();
 });
