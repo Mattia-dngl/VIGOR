@@ -37,6 +37,15 @@
       mostraErroreGlobale('Risorsa non caricata: <' + e.target.tagName.toLowerCase() + '> ' + (e.target.src || e.target.href || '?'));
       return;
     }
+    // Chart.js e xlsx (grafici/esportazione Excel) vengono da un CDN esterno e
+    // non servono per il resto dell'app: un problema di rete che li spezza
+    // (frequente con poco segnale — visto il 04/09/2026, risposta corrotta
+    // scambiata per lo script vero) non deve bloccare tutta l'app dietro
+    // questa schermata. Lo segnalo solo in console.
+    if(e && e.filename && /cdnjs\.cloudflare\.com/.test(e.filename)){
+      console.error('Libreria esterna non caricata correttamente:', e.filename, e.message);
+      return;
+    }
     mostraErroreGlobale((e.message || 'Errore sconosciuto') + '\n' + (e.filename || '') + ':' + (e.lineno || '?') + ':' + (e.colno || '?'));
   }, true);
   window.addEventListener('unhandledrejection', function(e){
@@ -56,8 +65,8 @@
      da node_modules/@supabase/supabase-js@2.45.4/dist/umd/ (non minificato,
      jsdelivr minifica al volo lato server: qui non serve). -->
 <script src="js/vendor/supabase.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" crossorigin="anonymous"></script>
 <link rel="stylesheet" href="css/style.css">
   <link rel="manifest" href="manifest.webmanifest">
   <meta name="theme-color" content="#1a2033">
