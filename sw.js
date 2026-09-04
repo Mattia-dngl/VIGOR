@@ -5,12 +5,14 @@
 // l'app se ne accorge da sola e si aggiorna in automatico (vedi
 // js/sistema/offline-sistema.js), senza bisogno che nessuno tocchi nulla.
 // ============================================================
-const VERSIONE = "vigor-v95";
+const VERSIONE = "vigor-v96";
 
 const DA_TENERE = [
   "./",
   "./index.html",
   "./css/style.css",
+  "./js/config.js",
+  "./js/brand.js",
   "./js/corpo.js",
   "./js/corpo-donna.js",
   "./js/esercizi.js",
@@ -22,8 +24,10 @@ const DA_TENERE = [
   "./js/admin/gestione-utenti.js",
   "./js/home/home.js",
   "./js/account/account.js",
+  "./js/account/messaggi.js",
   "./js/pt/pt-collegamento.js",
   "./js/pt/pt-area.js",
+  "./js/pt/checkin-cliente.js",
   "./js/sistema/offline-sistema.js",
   "./js/esercizi/esercizi-video.js",
   "./js/esercizi/glossario-libero.js",
@@ -31,6 +35,7 @@ const DA_TENERE = [
   "./js/esercizi/esercizi-export-import.js",
   "./js/ui/profile-gate.js",
   "./js/ui/tabs-header.js",
+  "./js/ui/campo-password.js",
   "./js/registra/registra.js",
   "./js/storico/storico.js",
   "./js/storico/calendario-allenamenti.js",
@@ -39,7 +44,6 @@ const DA_TENERE = [
   "./js/scheda/scheda-view.js",
   "./js/scheda/scheda-editor.js",
   "./js/vendor/supabase.js",
-  "./js/vendor/591.supabase.js",
   "./js/init.js",
   "./manifest.webmanifest",
   "./assets/icons/icon-192.png",
