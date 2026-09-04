@@ -5,7 +5,7 @@
 // l'app se ne accorge da sola e si aggiorna in automatico (vedi
 // js/sistema/offline-sistema.js), senza bisogno che nessuno tocchi nulla.
 // ============================================================
-const VERSIONE = "vigor-v94";
+const VERSIONE = "vigor-v95";
 
 const DA_TENERE = [
   "./",
@@ -58,6 +58,20 @@ const DA_TENERE_ESTERNI = [
   "https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600;700&family=Roboto+Mono:wght@400;500;700&display=swap"
 ];
 
+// una risposta con status 200 non basta: capitato il 04/09/2026 che con poco
+// segnale una risposta corrotta (pagina di errore del provider/proxy) venisse
+// scambiata per lo script vero e salvata così in cache per sempre, con la
+// libreria che poi falliva a ogni apertura dell'app (specie da Home, dove il
+// Service Worker è sempre nel mezzo). Un file JS vero da cdnjs dichiara
+// sempre un content-type coerente: uso quello come controllo minimo.
+function rispostaEsternaValida(risposta, url) {
+  if (!risposta || !risposta.ok) return false;
+  const ct = (risposta.headers.get("content-type") || "").toLowerCase();
+  if (/\.js$/.test(url)) return /javascript/.test(ct);
+  if (/\.css/.test(url)) return /css/.test(ct) || ct === "";
+  return true;
+}
+
 // installazione: scarico e conservo i file dell'app
 self.addEventListener("install", evento => {
   evento.waitUntil(
@@ -65,7 +79,7 @@ self.addEventListener("install", evento => {
       await cache.addAll(DA_TENERE);
       // se una di queste non si scarica non deve bloccare l'installazione
       await Promise.all(DA_TENERE_ESTERNI.map(u =>
-        fetch(u).then(r => { if (r.ok) return cache.put(u, r); }).catch(() => {})
+        fetch(u).then(r => { if (rispostaEsternaValida(r, u)) return cache.put(u, r); }).catch(() => {})
       ));
     }).then(() => self.skipWaiting())
   );
@@ -161,14 +175,18 @@ self.addEventListener("fetch", evento => {
     if (!conservabile) return;
     evento.respondWith(
       caches.match(richiesta).then(salvata => {
-        if (salvata) return salvata;
-        return fetch(richiesta).then(risposta => {
-          if (risposta && risposta.ok) {
-            const copia = risposta.clone();
-            caches.open(VERSIONE).then(c => c.put(richiesta, copia)).catch(() => {});
+        // rivalido sempre in background, anche quando la copia salvata esiste
+        // e viene usata subito: così una copia corrotta si autocorregge al
+        // primo giro con rete buona, invece di restare in cache per sempre
+        // (prima capitava solo al primo salvataggio, mai più dopo).
+        const aggiornamento = fetch(richiesta).then(risposta => {
+          if (rispostaEsternaValida(risposta, richiesta.url)) {
+            caches.open(VERSIONE).then(c => c.put(richiesta, risposta.clone())).catch(() => {});
           }
           return risposta;
-        });
+        }).catch(() => null);
+        if (salvata) return salvata;
+        return aggiornamento.then(risposta => risposta || Promise.reject(new Error("rete non disponibile")));
       })
     );
     return;
