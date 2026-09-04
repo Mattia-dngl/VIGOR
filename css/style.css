@@ -625,6 +625,8 @@
   .scheda-info-nome{font-family:var(--font-display); font-size:16px; margin:0;}
   .scheda-badge-attivo{font-size:9.5px; font-weight:700; letter-spacing:0.04em; color:#1f9d55;
     background:rgba(31,157,85,0.14); padding:4px 9px; border-radius:var(--r-pill); white-space:nowrap; flex:0 0 auto; margin-top:1px;}
+  .scheda-badge-attivo.scheda-badge-vuota{color:var(--text-dim); background:var(--surface2);}
+  .scheda-badge-attivo.scheda-badge-vuota::before{background:var(--text-dim);}
   .scheda-pt-riga{font-size:12.5px; color:var(--text-dim); margin:5px 0 0;}
   .scheda-settimana-row{margin-top:12px;}
   .scheda-settimana-testo{display:flex; justify-content:space-between; font-size:11.5px; color:var(--text-dim); margin-bottom:5px;}
@@ -972,6 +974,65 @@
     .app-shell{max-width:1280px;}
     #clientsList, #ptSchedeList, #ptDieteList, #subscriptionsList{grid-template-columns:repeat(4,1fr);}
   }
+
+  /* ============================================================
+     LAYOUT DESKTOP (≥1024px) — 02/09/2026
+     Prima l'app restava larga come su mobile anche su schermi grandi
+     (il contenuto reale era limitato da #homeScreen .settings-inner a
+     640px, indipendentemente da .app-shell) e la barra di navigazione
+     in basso restava quella da telefono. Vedi
+     VIGOR-report-frizioni-02-09-2026.md punto 7 e il mockup "Mockup
+     Desktop VIGOR": sidebar fissa a sinistra al posto della bottom-bar,
+     e la Home usa la larghezza in più con una griglia a 2 colonne
+     invece di un'unica colonna lunghissima.
+     ============================================================ */
+  .sidebar-nav{display:none;}
+  @media (min-width:1024px){
+    body.app-pronta{padding-left:232px;}
+    body.app-pronta main{padding-bottom:36px !important;} /* non serve più spazio per la bottom-bar */
+    body.app-pronta #navTabsGlobale{display:none;}
+    body.app-pronta #sidebarNavGlobale{display:flex;}
+    body.impostazioni-aperte #sidebarNavGlobale, body.modifica-pt #sidebarNavGlobale, body.area-pt #sidebarNavGlobale{display:none !important;}
+    body.impostazioni-aperte, body.modifica-pt, body.area-pt{padding-left:0 !important;}
+
+    .sidebar-nav{
+      flex-direction:column; position:fixed; top:0; left:0; bottom:0; width:232px;
+      background:var(--surface); border-right:1px solid var(--border);
+      padding:26px 16px; box-sizing:border-box; z-index:110; /* sopra #homeScreen/#settingsPanel/#accountPanel (z-index:100), altrimenti la coprono */
+    }
+    /* #homeScreen/#settingsPanel/#accountPanel sono position:fixed; inset:0 —
+       non risentono del padding-left messo su body più sopra (fuori dal
+       flusso normale), quindi vanno spostati qui uno per uno perché il loro
+       contenuto non finisca sotto la sidebar; il padding in basso riservato
+       alla bottom-bar da telefono (100px) non serve più. */
+    body.app-pronta #homeScreen, body.app-pronta #settingsPanel, body.app-pronta #accountPanel{
+      padding-left:calc(232px + 16px); padding-bottom:24px;
+    }
+    .sidebar-nav-logo{font-family:var(--font-display); font-size:19px; font-weight:800;
+      font-style:italic; color:var(--text); padding:0 10px;}
+    .sidebar-nav-logo span{color:var(--accent);}
+    .sidebar-nav-items{display:flex; flex-direction:column; gap:3px; margin-top:30px; flex:1 1 auto;}
+    .sidebar-nav button{display:flex; align-items:center; gap:12px; padding:11px 10px;
+      border-radius:12px; background:none; border:none; cursor:pointer; width:100%;
+      font-family:var(--font-display); font-size:13px; font-weight:700; color:var(--text-dim);
+      text-align:left;}
+    .sidebar-nav button svg{width:19px; height:19px; flex:0 0 auto;}
+    .sidebar-nav button:hover{background:var(--surface2); color:var(--text);}
+    .sidebar-nav-items button.active{background:rgba(255,75,43,0.10); color:var(--accent);}
+    .sidebar-nav-items button.active:hover{background:rgba(255,75,43,0.14);}
+    .sidebar-nav-account{display:flex; align-items:center; gap:12px; padding:11px 10px;
+      border-radius:12px; border:1px solid var(--border); border-top:1px solid var(--border);
+      margin-top:10px; background:none; cursor:pointer; font-family:var(--font-display);
+      font-size:12.5px; font-weight:700; color:var(--text-dim); width:100%; text-align:left;}
+    .sidebar-nav-account svg{width:19px; height:19px; flex:0 0 auto;}
+    .sidebar-nav-account:hover{background:var(--surface2);}
+
+    /* Home: più larga e su due colonne, invece dell'unica colonna da 640px
+       usata anche su mobile (vedi #homeScreen .settings-inner più sotto). */
+    body.app-pronta #homeScreen .settings-inner{max-width:960px;}
+    .home-columns{display:grid; grid-template-columns:1fr 1fr; gap:20px; align-items:start;}
+    .home-col{min-width:0;}
+  }
   label{display:block; font-size:10.5px; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.03em; margin-bottom:3px; margin-top:9px;}
   label:first-child{margin-top:0;}
   input[type=text], input[type=date], input[type=number], input[type=email], input[type=password], select, textarea{
@@ -1187,6 +1248,7 @@
   .status-badge.ok{background:rgba(31,157,99,0.14); color:var(--ok);}
   .status-badge.warn{background:rgba(177,121,10,0.14); color:var(--warn);}
   .status-badge.skip{background:rgba(107,114,128,0.14); color:var(--skip);}
+  .status-badge.neutro{background:rgba(107,114,128,0.14); color:var(--skip);}
   .log-item{border-bottom:1px solid var(--border); padding:9px 0;}
   .log-item:last-child{border-bottom:none;}
   .log-head{display:flex; justify-content:space-between; align-items:center; cursor:pointer; flex-wrap:wrap; gap:5px;}
@@ -1688,8 +1750,15 @@
     align-items:center; gap:10px; flex-wrap:wrap;}
   .timer-bar.show{display:flex;}
   .timer-bar.suona{border-color:var(--ok); background:rgba(31,157,99,.10);}
+  /* 02/09/2026: prima il tempo del recupero non aveva nessuna etichetta,
+     facile da confondere con il "Cronometro allenamento" (durata totale)
+     mostrato subito sotto — quello sì etichettato. */
+  .timer-time-group{flex:0 0 auto; display:flex; flex-direction:column; gap:1px; min-width:62px;}
+  .timer-label{font-family:var(--font-display); font-size:8.5px; font-weight:700; letter-spacing:.05em;
+    text-transform:uppercase; color:var(--text-faint); line-height:1;}
+  .timer-bar.suona .timer-label{color:var(--ok);}
   .timer-display{flex:0 0 auto; font-family:'Roboto Mono',monospace; font-size:23px; font-weight:700;
-    color:var(--text); letter-spacing:.01em; line-height:1; min-width:62px;}
+    color:var(--text); letter-spacing:.01em; line-height:1;}
   .timer-bar.suona .timer-display{color:var(--ok);}
   .timer-presets{flex:1 1 auto; min-width:0; display:flex; gap:5px; overflow-x:auto;
     scrollbar-width:none;}

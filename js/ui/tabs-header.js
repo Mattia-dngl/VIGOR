@@ -6,6 +6,12 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
     btn.classList.add('active');
     document.getElementById('view-'+btn.dataset.tab).classList.add('active');
+    // 02/09/2026: renderHeader() non veniva mai richiamata al solo cambio
+    // tab (solo da azioni come salvare una scheda) — il titolo in alto
+    // restava quindi quello impostato l'ultima volta, spesso "Registro
+    // allenamento" fin dall'avvio, anche su Dieta. Ora si aggiorna ad ogni
+    // cambio di tab, coerente col titolo dinamico introdotto sopra.
+    renderHeader();
     // 01/09/2026: "Piano alimentare assegnato dal PT" ora è una finestra a
     // schermo intero (vedi .diet-plan-toggle[open]) — lasciarla aperta
     // mentre si cambia tab la nasconderebbe (la sezione Dieta passa a
@@ -30,7 +36,13 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     if(btn.dataset.tab==='diet'){ renderMealDiary(); renderDietPlanView(); renderDietEditForm(); segnaVistaCliente('dieta'); }
     if(btn.dataset.tab==='history'){ renderHistory(); renderVolume(); renderMeasurements(); }
     if(btn.dataset.tab==='program'){ renderProgramView(); renderNewProgramForm(); segnaVistaCliente('scheda');
-      if(typeof renderMioPT === 'function' && modalitaOnline()) renderMioPT(); }
+      // 02/09/2026: prima chiamava renderMioPT() solo se già online — ma è
+      // proprio DENTRO renderMioPT() (pt-collegamento.js) che sta la logica
+      // che nasconde #cardMioPT in modalità locale/offline. Con il guard qui
+      // quella logica non scattava mai per un profilo offline: la card
+      // restava visibile con un "+" per una funzione (collegare un PT) che
+      // in locale non ha senso. Ora è renderMioPT() stesso a decidere.
+      if(typeof renderMioPT === 'function') renderMioPT(); }
     aggiornaNavGlobale(btn.dataset.tab);
   });
 });
@@ -54,6 +66,7 @@ function toggleFabMenu(){
   document.getElementById('fabMenuOverlay').classList.contains('show') ? chiudiFabMenu() : apriFabMenu();
 }
 document.getElementById('fabRegistraBtn').addEventListener('click', toggleFabMenu);
+document.getElementById('sidebarRegistraBtn').addEventListener('click', toggleFabMenu);
 document.getElementById('fabMenuOverlay').addEventListener('click', (e)=>{
   if(e.target.id === 'fabMenuOverlay') chiudiFabMenu();
 });
@@ -121,7 +134,10 @@ document.getElementById('fabOptPasto').addEventListener('click', ()=>{
   }
 });
 
-document.querySelectorAll('#navTabsGlobale button[data-go]').forEach(btn=>{
+// .nav-go-btn (non più solo "#navTabsGlobale button[data-go]"): 02/09/2026,
+// stessi bottoni duplicati anche nella sidebar desktop #sidebarNavGlobale
+// (≥1024px) — stesso listener per entrambe le barre di navigazione.
+document.querySelectorAll('.nav-go-btn[data-go]').forEach(btn=>{
   btn.addEventListener('click', ()=>{
     // Ritoccare la scheda su cui si è già (Dieta/Scheda diventano lunghe nel
     // tempo, tornare in cima a mano era scomodo): stesso gesto già familiare
@@ -287,12 +303,19 @@ function updateTabVisibility(){
 // ============================================================
 // HEADER
 // ============================================================
+// 02/09/2026: prima il titolo era sempre "Registro allenamento", fisso,
+// anche su Dieta — il blocco (titolo + striscia giorni) è condiviso tra
+// Scheda/Registra/Dieta perché è fuori dalle sezioni .view, quindi restava
+// identico cambiando tab: chi toccava "Dieta" vedeva ancora in cima il
+// titolo di un'altra schermata, come se il tocco non avesse avuto effetto.
+const TITOLI_HEADER_PER_TAB = {program:'La tua Scheda', log:'Registro allenamento', diet:'Dieta di oggi'};
 function renderHeader(){
   const mainTitle = document.getElementById('mainTitle');
   const pulseBox = document.getElementById('weekPulse');
   const summaryBox = document.getElementById('quickSummary');
 
-  mainTitle.textContent = 'Registro allenamento';
+  const tabAttivo = document.querySelector('.tab-btn.active')?.dataset.tab;
+  mainTitle.textContent = TITOLI_HEADER_PER_TAB[tabAttivo] || 'Registro allenamento';
   pulseBox.style.display = 'flex';
   summaryBox.style.display = 'flex';
 

@@ -87,7 +87,7 @@ function aggiornaNavGlobale(attivo){
   // Scheda, quindi evidenzio comunque "Scheda".
   const mappa = { log:'program' };
   const finale = mappa[attivo] || attivo;
-  document.querySelectorAll('#navTabsGlobale button[data-go]').forEach(b=>{
+  document.querySelectorAll('.nav-go-btn[data-go]').forEach(b=>{
     b.classList.toggle('active', b.dataset.go === finale);
   });
 }
@@ -344,6 +344,7 @@ document.getElementById('homeCtaAddBtn').addEventListener('click', ()=>{
 document.getElementById('homeAllenatiBtn').addEventListener('click', ()=>vaiA('program'));
 document.getElementById('homePTBtn').addEventListener('click', ()=>apriAreaPT());
 document.getElementById('homeAvatarBtn').addEventListener('click', apriAccountPanel);
+document.getElementById('sidebarAccountBtn').addEventListener('click', apriAccountPanel);
 document.getElementById('homeSchedaAttivaCard').addEventListener('click', ()=>vaiA('program'));
 document.getElementById('homeEsciBtn').addEventListener('click', async ()=>{
   customConfirm("Uscire dall'app? Dovrai rifare l'accesso.", async ()=>{

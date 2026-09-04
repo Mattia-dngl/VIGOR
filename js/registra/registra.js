@@ -292,8 +292,13 @@ function selectDay(key){
   }
 
   if(key==="LIBERO"){
-    info.className = 'info-banner esito-attenzione';
-    info.innerHTML = `<span class="status-badge warn">Allenamento libero</span>`;
+    // 02/09/2026: prima usava i toni ambra di "esito-attenzione"/status-badge
+    // warn, gli stessi di un vero avviso — ma scegliere "Allenamento libero"
+    // dal menu "Cosa vuoi registrare?" è una scelta normale, non un problema.
+    // .info-banner di base (senza modificatore) è già neutro/grigio, pensato
+    // apposta per questo.
+    info.className = 'info-banner';
+    info.innerHTML = `<span class="status-badge neutro">Allenamento libero</span>`;
     FREE_DAY.exercises = [];
     currentSetInputs = {};
     buildExerciseForm(FREE_DAY);
