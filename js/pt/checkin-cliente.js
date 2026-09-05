@@ -99,10 +99,31 @@ document.getElementById('checkinInviaBtn').addEventListener('click', ()=>{
     return;
   }
   if(!prof.checkins) prof.checkins = [];
+  const data = new Date().toISOString().slice(0,10);
   prof.checkins.push({
-    id: uid(), data: new Date().toISOString().slice(0,10), creatoIl: new Date().toISOString(),
+    id: uid(), data, creatoIl: new Date().toISOString(),
     peso, fotoUrl: _checkinFotoDataUrl, sensazione, nota
   });
+  // Un peso diverso dall'ultimo registrato in Storico → Misure vale anche
+  // come una misurazione vera e propria: lo aggiungo lì (stessa logica di
+  // "unione per data" già usata in storico.js/saveMeasureBtn), altrimenti il
+  // grafico peso e ultimoPesoRegistrato() (Home, Dieta, editor scheda)
+  // non se ne accorgerebbero mai. Se il peso è invariato non duplico nulla.
+  if(peso != null){
+    if(!prof.measurements) prof.measurements = [];
+    const ultimo = ultimoPesoRegistrato(prof);
+    if(!ultimo || ultimo.weight !== peso){
+      const precedente = prof.measurements.find(m=>m.date===data);
+      prof.measurements = prof.measurements.filter(m=>m.date!==data);
+      prof.measurements.push({
+        date: data,
+        weight: peso,
+        waist: precedente ? precedente.waist : null,
+        extra: (precedente && precedente.extra) || {}
+      });
+      prof.measurements.sort((a,b)=>a.date.localeCompare(b.date));
+    }
+  }
   save();
   if(typeof modalitaOnline === 'function' && modalitaOnline()) inviaOnline();
   chiudiCheckinCompilazione();
