@@ -187,6 +187,70 @@ test('invio check-in: peso + sensazione + nota vengono salvati sul profilo e l\'
   window.close();
 });
 
+test('invio check-in: un peso diverso dall\'ultimo registrato viene aggiunto anche alle Misure', async () => {
+  const { window } = await loadApp();
+  await run(window, `
+    state.profiles = [${JSON.stringify(profiloBase({ measurements:[{date:'2026-08-01', weight:80, waist:90, extra:{}}] }))}];
+    activeProfileId = 'io';
+    apriCheckinCompilazione();
+    document.getElementById('checkinPeso').value = '78.5';
+    document.getElementById('checkinInviaBtn').click();
+  `);
+  const r = await run(window, `return activeProfile().measurements;`);
+  assert.equal(r.length, 2, 'si aggiunge una nuova misurazione, quella vecchia resta');
+  const oggi = new Date().toISOString().slice(0,10);
+  const nuova = r.find(m=>m.date===oggi);
+  assert.ok(nuova, 'la nuova misurazione è datata oggi');
+  assert.equal(nuova.weight, 78.5);
+  window.close();
+});
+
+test('invio check-in: peso uguale all\'ultimo registrato, nessuna misurazione duplicata', async () => {
+  const { window } = await loadApp();
+  await run(window, `
+    state.profiles = [${JSON.stringify(profiloBase({ measurements:[{date:'2026-08-01', weight:80, waist:null, extra:{}}] }))}];
+    activeProfileId = 'io';
+    apriCheckinCompilazione();
+    document.getElementById('checkinPeso').value = '80';
+    document.getElementById('checkinInviaBtn').click();
+  `);
+  const r = await run(window, `return activeProfile().measurements;`);
+  assert.equal(r.length, 1, 'peso invariato: non si duplica la misurazione');
+  window.close();
+});
+
+test('invio check-in: una misurazione già presente per oggi (es. vita) non viene persa, solo il peso si aggiorna', async () => {
+  const { window } = await loadApp();
+  const oggi = new Date().toISOString().slice(0,10);
+  await run(window, `
+    state.profiles = [${JSON.stringify(profiloBase({ measurements:[{date:oggi, weight:null, waist:95, extra:{}}] }))}];
+    activeProfileId = 'io';
+    apriCheckinCompilazione();
+    document.getElementById('checkinPeso').value = '77';
+    document.getElementById('checkinInviaBtn').click();
+  `);
+  const r = await run(window, `return activeProfile().measurements;`);
+  assert.equal(r.length, 1);
+  assert.equal(r[0].weight, 77);
+  assert.equal(r[0].waist, 95, 'la vita già registrata oggi resta, non viene sovrascritta');
+  window.close();
+});
+
+test('invio check-in: nessun peso compilato, le Misure restano invariate', async () => {
+  const { window } = await loadApp();
+  await run(window, `
+    state.profiles = [${JSON.stringify(profiloBase({ measurements:[{date:'2026-08-01', weight:80, waist:null, extra:{}}] }))}];
+    activeProfileId = 'io';
+    apriCheckinCompilazione();
+    document.getElementById('checkinPeso').value = '';
+    document.getElementById('checkinNota').value = 'Solo una nota';
+    document.getElementById('checkinInviaBtn').click();
+  `);
+  const r = await run(window, `return activeProfile().measurements;`);
+  assert.equal(r.length, 1);
+  window.close();
+});
+
 test('invio check-in: basta anche un solo campo (es. solo la nota) per poter inviare', async () => {
   const { window, document } = await loadApp();
   await run(window, `
