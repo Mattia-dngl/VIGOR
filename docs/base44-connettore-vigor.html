@@ -1,0 +1,444 @@
+<title>Base44 su VIGOR</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,600;1,7..72,400&family=IBM+Plex+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap">
+<style>
+:root{
+  --paper:#f6f3ee;
+  --surface:#fffdfa;
+  --ink:#1b1813;
+  --dim:#6b6357;
+  --faint:#9a9184;
+  --rule:#e2dbd0;
+  --warm:#e0431f;        /* lato VIGOR */
+  --cool:#0f6f78;        /* lato Base44 */
+  --cool-soft:#e3f1f2;
+  --warm-soft:#fbe6df;
+  --ok:#1c8a52;
+  --shadow:0 18px 38px -22px rgba(27,24,19,.45);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#141210; --surface:#1d1a17; --ink:#efe9df; --dim:#a9a093; --faint:#7c7368;
+    --rule:#332e28; --warm:#ff7154; --cool:#5cbcc4; --cool-soft:#12292b; --warm-soft:#2e1c16;
+    --ok:#4cc088; --shadow:0 18px 38px -22px rgba(0,0,0,.8);
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#141210; --surface:#1d1a17; --ink:#efe9df; --dim:#a9a093; --faint:#7c7368;
+  --rule:#332e28; --warm:#ff7154; --cool:#5cbcc4; --cool-soft:#12292b; --warm-soft:#2e1c16;
+  --ok:#4cc088; --shadow:0 18px 38px -22px rgba(0,0,0,.8);
+}
+
+*{box-sizing:border-box}
+body{
+  background:var(--paper); color:var(--ink);
+  font-family:'Literata',Georgia,serif; font-size:16.5px; line-height:1.62;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1080px; margin:0 auto; padding:56px 24px 96px}
+.col{max-width:64ch}
+h1,h2,h3,.disp{font-family:'Bricolage Grotesque','Plus Jakarta Sans',system-ui,sans-serif; text-wrap:balance}
+h1{font-size:clamp(2.3rem,5.2vw,3.5rem); line-height:1.02; letter-spacing:-.025em; font-weight:800; margin:.1em 0 .35em}
+h2{font-size:clamp(1.5rem,3vw,2rem); line-height:1.12; letter-spacing:-.018em; font-weight:700; margin:0 0 .2em}
+h3{font-size:1.08rem; letter-spacing:-.008em; font-weight:700; margin:0 0 .3em}
+p{margin:0 0 1em}
+a{color:var(--warm)}
+.eyebrow{font-family:'IBM Plex Mono',monospace; font-size:.72rem; letter-spacing:.16em; text-transform:uppercase; color:var(--faint); margin:0}
+.lead{font-size:1.14rem; color:var(--dim)}
+.lead strong{color:var(--ink); font-weight:600}
+hr.rule{border:0; border-top:1px solid var(--rule); margin:56px 0}
+
+/* sezioni numerate: sono 4 casi d'uso paralleli, non una sequenza -> niente numeri, solo etichette di ruolo */
+section{margin:0 0 56px}
+.sec-head{display:flex; align-items:baseline; gap:14px; flex-wrap:wrap; margin-bottom:14px}
+.tag{
+  font-family:'IBM Plex Mono',monospace; font-size:.68rem; letter-spacing:.1em; text-transform:uppercase;
+  padding:3px 9px; border-radius:4px; background:var(--cool-soft); color:var(--cool); white-space:nowrap;
+}
+.tag.warm{background:var(--warm-soft); color:var(--warm)}
+.tag.plain{background:transparent; color:var(--faint); border:1px solid var(--rule)}
+
+figure{margin:26px 0; padding:0}
+figcaption{font-size:.9rem; color:var(--dim); margin-top:12px; max-width:62ch}
+figcaption b{color:var(--ink); font-weight:600}
+.figframe{
+  background:var(--surface); border:1px solid var(--rule); border-radius:14px;
+  padding:22px; overflow-x:auto; box-shadow:var(--shadow);
+}
+.figframe svg{display:block; width:100%; min-width:620px; height:auto; color:var(--ink)}
+
+/* ---------- toolbelt ---------- */
+.belt{display:grid; grid-template-columns:repeat(auto-fit,minmax(215px,1fr)); gap:14px; margin:24px 0}
+.belt div{border:1px solid var(--rule); border-left:3px solid var(--cool); border-radius:0 10px 10px 0; padding:13px 15px; background:var(--surface)}
+.belt h3{font-size:.95rem}
+.belt ul{margin:6px 0 0; padding:0; list-style:none; font-family:'IBM Plex Mono',monospace; font-size:.76rem; color:var(--dim); line-height:1.75}
+
+/* ---------- mockup comune ---------- */
+.mock{
+  --m-bg:#f7f7f6; --m-surface:#ffffff; --m-text:#17150f; --m-dim:#6d6656; --m-faint:#a39c8a;
+  --m-border:#e2e2df; --m-accent:#ff4b2b; --m-ok:#1fb15f; --m-diet:#0f7a90;
+  font-family:'Plus Jakarta Sans',system-ui,sans-serif; color:var(--m-text);
+  background:var(--m-bg); border-radius:12px; overflow:hidden; border:1px solid #d9d5cd;
+}
+.mocklabel{
+  position:absolute; top:10px; right:10px; z-index:2;
+  font-family:'IBM Plex Mono',monospace; font-size:.6rem; letter-spacing:.12em; text-transform:uppercase;
+  background:rgba(27,24,19,.72); color:#fff; padding:3px 7px; border-radius:4px;
+}
+.mockwrap{position:relative}
+.chrome{display:flex; align-items:center; gap:7px; padding:9px 12px; background:#ecebe7; border-bottom:1px solid #dedad2}
+.chrome i{width:9px; height:9px; border-radius:50%; background:#cdc9c1; display:block}
+.chrome span{font-family:'IBM Plex Mono',monospace; font-size:.68rem; color:#7d7668; margin-left:8px}
+
+/* dashboard PT */
+.dash{display:grid; grid-template-columns:150px 1fr 190px; min-height:330px; font-size:12px}
+.dash .side{background:#17150f; color:#efe9df; padding:16px 12px; display:flex; flex-direction:column; gap:5px}
+.dash .side .logo{font-weight:800; font-size:16px; letter-spacing:-.02em; margin-bottom:14px}
+.dash .side .logo em{font-style:normal; color:#ff4b2b}
+.dash .side a{display:block; padding:7px 9px; border-radius:8px; color:#c7c0b2; text-decoration:none; font-weight:600}
+.dash .side a.on{background:rgba(255,75,43,.16); color:#ff8a70}
+.dash .main{padding:16px 18px; background:var(--m-bg)}
+.dash .aside{padding:16px 14px; background:var(--m-surface); border-left:1px solid var(--m-border)}
+.kpis{display:grid; grid-template-columns:repeat(3,1fr); gap:9px; margin:12px 0 16px}
+.kpi{background:var(--m-surface); border:1px solid var(--m-border); border-radius:10px; padding:9px 11px}
+.kpi b{display:block; font-size:19px; letter-spacing:-.02em; font-variant-numeric:tabular-nums}
+.kpi span{font-size:10px; color:var(--m-dim); text-transform:uppercase; letter-spacing:.06em}
+table.cli{width:100%; border-collapse:collapse; background:var(--m-surface); border:1px solid var(--m-border); border-radius:10px; overflow:hidden}
+table.cli th{font-size:9.5px; text-transform:uppercase; letter-spacing:.08em; color:var(--m-faint); text-align:left; padding:8px 10px; border-bottom:1px solid var(--m-border); font-weight:700}
+table.cli td{padding:8px 10px; border-bottom:1px solid #f0efec; font-size:11.5px; font-variant-numeric:tabular-nums}
+table.cli tr:last-child td{border-bottom:0}
+.pill{display:inline-block; padding:2px 8px; border-radius:999px; font-size:10px; font-weight:700; letter-spacing:.02em}
+.pill.ok{background:#e4f6ec; color:#12693b}
+.pill.warn{background:#fdf0d8; color:#8a5c05}
+.pill.bad{background:#fde3dc; color:#b3301a}
+.bar{height:5px; border-radius:999px; background:#eceae4; overflow:hidden; margin-top:4px}
+.bar i{display:block; height:100%; background:var(--m-accent)}
+.todo{display:flex; gap:9px; padding:9px 0; border-bottom:1px solid #f0efec; font-size:11.5px}
+.todo:last-child{border-bottom:0}
+.todo em{font-style:normal; width:6px; height:6px; border-radius:50%; background:var(--m-accent); margin-top:5px; flex:none}
+.todo span{color:var(--m-dim); font-size:10.5px; display:block}
+.h-row{display:flex; align-items:baseline; justify-content:space-between; gap:10px}
+.h-row h4{margin:0; font-size:14px; letter-spacing:-.01em}
+.h-row small{color:var(--m-faint); font-size:10.5px}
+
+/* check-in: schema -> form */
+.ci{display:grid; grid-template-columns:1fr 1fr; gap:0; min-height:300px}
+.ci .schema{background:#17150f; color:#d8d2c5; padding:16px; font-family:'IBM Plex Mono',monospace; font-size:11px; line-height:1.85}
+.ci .schema h5{margin:0 0 10px; font-family:'Plus Jakarta Sans',sans-serif; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:#8d8578}
+.ci .schema k{color:#ffb3a0}
+.ci .schema t{color:#7fd3c4}
+.ci .form{padding:16px 18px; background:var(--m-surface)}
+.field{margin-bottom:11px}
+.field label{display:block; font-size:10.5px; font-weight:700; color:var(--m-dim); margin-bottom:4px}
+.field .box{border:1px solid var(--m-border); border-radius:9px; padding:8px 10px; font-size:12px; background:var(--m-bg)}
+.field .box.filled{background:#fff; color:var(--m-text); font-weight:600}
+.rate{display:flex; gap:5px}
+.rate i{flex:1; height:26px; border-radius:7px; border:1px solid var(--m-border); background:var(--m-bg); font-style:normal; font-size:11px; display:flex; align-items:center; justify-content:center; color:var(--m-faint)}
+.rate i.on{background:var(--m-accent); border-color:var(--m-accent); color:#fff; font-weight:700}
+.btn{display:inline-block; background:var(--m-accent); color:#fff; font-weight:700; font-size:12px; padding:8px 16px; border-radius:999px}
+.chip{display:inline-flex; align-items:center; gap:6px; background:#e3f4f7; color:#0b5c6b; border-radius:999px; padding:5px 11px; font-size:10.5px; font-weight:700; margin-top:10px}
+
+/* telefoni prima/dopo */
+.phones{display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:18px}
+.phone{border-radius:22px; padding:10px; background:#17150f}
+.phone .screen{background:#f7f7f6; border-radius:15px; padding:12px; font-family:'Plus Jakarta Sans',sans-serif; color:#17150f; min-height:250px}
+.phone .cap{font-family:'IBM Plex Mono',monospace; font-size:.63rem; letter-spacing:.12em; text-transform:uppercase; color:#a39c8a; padding:6px 4px 2px}
+.timer{background:#fff; border:1px solid #e2e2df; border-radius:12px; padding:9px 11px; margin-bottom:9px}
+.timer .big{font-size:24px; font-weight:800; letter-spacing:-.03em; font-variant-numeric:tabular-nums}
+.timer .lbl{font-size:9.5px; text-transform:uppercase; letter-spacing:.1em; color:#6d6656; font-weight:700; margin-bottom:2px}
+.timer .shorts{display:flex; gap:5px; margin-top:6px}
+.timer .shorts i{font-style:normal; font-size:10px; border:1px solid #e2e2df; border-radius:999px; padding:3px 8px; color:#6d6656}
+.badge-warn{display:inline-flex; gap:5px; align-items:center; background:#fdf0d8; color:#8a5c05; border:1px solid #f0dcae; border-radius:8px; padding:5px 9px; font-size:10.5px; font-weight:700; margin-bottom:9px}
+.badge-mode{display:inline-flex; gap:5px; align-items:center; background:#eceae4; color:#4b463c; border-radius:999px; padding:5px 11px; font-size:10.5px; font-weight:700; margin-bottom:9px}
+.mini{font-size:10.5px; color:#6d6656}
+
+/* landing */
+.land{padding:26px 22px; background:linear-gradient(160deg,#17150f,#2a2015); color:#f3efe6; text-align:center}
+.land .word{font-size:30px; font-weight:800; letter-spacing:-.03em}
+.land .word em{font-style:normal; color:#ff4b2b}
+.land p{font-size:12.5px; color:#bdb5a5; margin:6px auto 14px; max-width:34ch; line-height:1.5}
+.land .cta{display:flex; gap:7px; max-width:330px; margin:0 auto}
+.land .cta span{flex:1; background:rgba(255,255,255,.09); border:1px solid rgba(255,255,255,.16); border-radius:999px; padding:8px 13px; font-size:11.5px; color:#9a9184; text-align:left}
+.land .cta b{background:#ff4b2b; color:#fff; border-radius:999px; padding:8px 15px; font-size:11.5px}
+.land .ticks{display:flex; gap:16px; justify-content:center; margin-top:16px; font-size:10.5px; color:#8d8578; flex-wrap:wrap}
+
+/* tabella decisione */
+.table{width:100%; border-collapse:collapse; margin:22px 0; font-size:.93rem}
+.table th{text-align:left; font-family:'IBM Plex Mono',monospace; font-size:.68rem; letter-spacing:.12em; text-transform:uppercase; color:var(--faint); padding:0 14px 9px; font-weight:500; border-bottom:1px solid var(--rule)}
+.table td{padding:12px 14px; border-bottom:1px solid var(--rule); vertical-align:top}
+.table td:first-child{font-weight:600}
+.table tr td:nth-child(2){color:var(--cool)}
+.table tr td:nth-child(3){color:var(--dim)}
+
+.limits{list-style:none; padding:0; margin:20px 0 0; display:grid; gap:14px}
+.limits li{padding-left:26px; position:relative; color:var(--dim)}
+.limits li::before{content:"—"; position:absolute; left:0; color:var(--warm); font-weight:700}
+.limits b{color:var(--ink); font-weight:600}
+
+.note{background:var(--surface); border:1px solid var(--rule); border-radius:12px; padding:18px 20px; margin:26px 0}
+.note p:last-child{margin-bottom:0}
+code{font-family:'IBM Plex Mono',monospace; font-size:.85em; background:var(--cool-soft); color:var(--cool); padding:1px 5px; border-radius:4px}
+footer{color:var(--faint); font-size:.85rem; border-top:1px solid var(--rule); padding-top:20px; margin-top:60px}
+@media (max-width:720px){
+  .dash{grid-template-columns:1fr}
+  .dash .side{flex-direction:row; flex-wrap:wrap; align-items:center}
+  .dash .side .logo{margin-bottom:0}
+  .ci{grid-template-columns:1fr}
+}
+</style>
+
+<div class="wrap">
+
+<p class="eyebrow">Valutazione connettore · 7 settembre 2026</p>
+<h1>Base44 su VIGOR</h1>
+<p class="lead col"><strong>Base44 è un costruttore di app con l'AI:</strong> gli descrivi cosa vuoi, lui genera un'app React ospitata sui suoi server, con database e integrazioni OAuth già pronte. Il connettore MCP mi permette di crearla, leggerne e scriverne i file, modellare i dati e collegare le integrazioni — <em>senza uscire da questa chat</em>.</p>
+<p class="lead col">Quello che <em>non</em> fa: toccare VIGOR. Il tuo repo è HTML+JS puro, zero build, con <code>sw.js</code> e Supabase. Base44 vive accanto, non dentro. Per questo qui sotto ci sono quattro usi dove quella distanza è un vantaggio, e una lista onesta di dove invece è solo un doppione da mantenere.</p>
+
+<div class="note col">
+  <p><strong>Stato di oggi:</strong> ho interrogato il tuo account Base44 — <b>zero app create</b>. Niente di quello che segue esiste ancora: sono mockup disegnati sui colori e sui problemi reali di VIGOR (dai report in <code>docs/archivio/</code>), non screenshot.</p>
+</div>
+
+<hr class="rule">
+
+<section>
+<div class="sec-head"><h2>Cosa mette in mano il connettore</h2></div>
+<p class="col">Non è "un bottone che genera un sito". Sono cinque famiglie di strumenti, e la terza è quella che di solito sorprende: il database e i form CRUD non li scrivi, li dichiari.</p>
+<div class="belt">
+  <div><h3>Costruire</h3><ul><li>create_base44_app</li><li>edit_base44_app</li><li>create_checkpoint</li></ul></div>
+  <div><h3>Codice</h3><ul><li>read_file · write_file</li><li>edit_file · grep</li><li>run_command</li></ul></div>
+  <div><h3>Dati</h3><ul><li>create_entity_schema</li><li>update_entity_schema</li><li>query / create / update</li></ul></div>
+  <div><h3>Integrazioni</h3><ul><li>list_connectors</li><li>initiate_connector_connection</li><li>(Calendar, Slack, email…)</li></ul></div>
+</div>
+</section>
+
+<figure>
+<div class="figframe">
+<svg viewBox="0 0 900 470" role="img" aria-label="Diagramma: VIGOR resta nel repo con Supabase, l'app Base44 vive a parte con il proprio store dati; il codice passa solo con un porting manuale.">
+  <defs>
+    <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <polygon points="0,0 10,5 0,10" fill="currentColor"/>
+    </marker>
+    <marker id="arw" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <polygon points="0,0 10,5 0,10" fill="#e0431f"/>
+    </marker>
+  </defs>
+  <g font-family="'IBM Plex Mono',monospace" font-size="12">
+
+  <!-- Claude Code -->
+  <rect x="370" y="12" width="160" height="42" rx="9" fill="none" stroke="currentColor" stroke-width="1.5"/>
+  <text x="450" y="38" text-anchor="middle" font-size="12.5" fill="currentColor">Claude Code (io)</text>
+  <path d="M395 54 L 215 96" stroke="currentColor" stroke-width="1.3" fill="none" marker-end="url(#ar)"/>
+  <path d="M505 54 L 685 96" stroke="currentColor" stroke-width="1.3" fill="none" marker-end="url(#ar)"/>
+  <text x="248" y="72" text-anchor="middle" fill="currentColor" opacity=".72" font-size="10.5">Edit / Write sui file</text>
+  <text x="655" y="72" text-anchor="middle" fill="currentColor" opacity=".72" font-size="10.5">tool MCP Base44</text>
+
+  <!-- pannello VIGOR -->
+  <rect x="20" y="100" width="390" height="248" rx="12" fill="none" stroke="#e0431f" stroke-width="1.6"/>
+  <text x="40" y="126" fill="#e0431f" font-size="11" letter-spacing="1.5">VIGOR — QUESTO REPO</text>
+  <rect x="44" y="140" width="342" height="42" rx="8" fill="none" stroke="currentColor" opacity=".45"/>
+  <text x="60" y="166" fill="currentColor" font-size="11.5">index.html + js/ — vanilla, zero build</text>
+  <rect x="44" y="192" width="342" height="42" rx="8" fill="none" stroke="currentColor" opacity=".45"/>
+  <text x="60" y="218" fill="currentColor" font-size="11.5">sw.js — offline, PWA installabile</text>
+  <rect x="44" y="244" width="342" height="42" rx="8" fill="none" stroke="currentColor" opacity=".45"/>
+  <text x="60" y="270" fill="currentColor" font-size="11.5">localStorage — profili sul dispositivo</text>
+  <text x="44" y="316" fill="currentColor" opacity=".6" font-size="10.5">deploy: file statici, li controlli tu</text>
+
+  <!-- pannello Base44 -->
+  <rect x="490" y="100" width="390" height="248" rx="12" fill="none" stroke="#0f6f78" stroke-width="1.6"/>
+  <text x="510" y="126" fill="#0f6f78" font-size="11" letter-spacing="1.5">APP BASE44 — OSPITATA DA LORO</text>
+  <rect x="514" y="140" width="342" height="42" rx="8" fill="none" stroke="currentColor" opacity=".45"/>
+  <text x="530" y="166" fill="currentColor" font-size="11.5">React + Tailwind, generata dal prompt</text>
+  <rect x="514" y="192" width="342" height="42" rx="8" fill="none" stroke="currentColor" opacity=".45"/>
+  <text x="530" y="218" fill="currentColor" font-size="11.5">Entities — database suo, CRUD gratis</text>
+  <rect x="514" y="244" width="342" height="42" rx="8" fill="none" stroke="currentColor" opacity=".45"/>
+  <text x="530" y="270" fill="currentColor" font-size="11.5">connettori OAuth già cablati</text>
+  <text x="514" y="316" fill="currentColor" opacity=".6" font-size="10.5">deploy: URL Base44, un click</text>
+
+  <!-- porting -->
+  <path d="M486 214 L 416 214" stroke="#e0431f" stroke-width="1.6" fill="none" stroke-dasharray="5 4" marker-end="url(#arw)"/>
+  <text x="450" y="196" text-anchor="middle" fill="#e0431f" font-size="10.5">idee, UI, copy</text>
+  <text x="450" y="240" text-anchor="middle" fill="#e0431f" font-size="10.5">a mano</text>
+
+  <!-- supabase -->
+  <rect x="330" y="398" width="240" height="52" rx="10" fill="none" stroke="currentColor" stroke-width="1.5"/>
+  <text x="450" y="429" text-anchor="middle" fill="currentColor" font-size="12.5">Supabase — auth + dati veri</text>
+  <path d="M215 348 L 372 398" stroke="currentColor" stroke-width="1.4" fill="none" marker-end="url(#ar)"/>
+  <text x="212" y="382" fill="currentColor" opacity=".72" font-size="10.5">già oggi</text>
+  <path d="M685 348 L 528 398" stroke="currentColor" stroke-width="1.4" fill="none" stroke-dasharray="4 4" opacity=".55" marker-end="url(#ar)"/>
+  <text x="690" y="382" fill="currentColor" opacity=".6" font-size="10.5">solo con codice custom</text>
+  </g>
+</svg>
+</div>
+<figcaption><b>La linea che conta.</b> Tutto quello che Base44 costruisce nasce dalla sua parte: altro linguaggio, altro database, altro hosting. Verso VIGOR passano idee e interfacce, non file — il porting da React a vanilla lo faccio io, a mano. Verso la tua Supabase l'app Base44 arriva solo se le scrivo codice apposta.</figcaption>
+</figure>
+
+<hr class="rule">
+
+<section>
+<div class="sec-head"><span class="tag">Uso 1</span><h2>Il cruscotto PT che oggi manca su desktop</h2></div>
+<p class="col">Il report frizioni del 02/09 chiude con il punto 7: su un monitor da 1440px VIGOR resta una colonna da 700px con la barra di navigazione da telefono. Per chi si allena va benissimo — il telefono è in palestra. Per un PT che apre il PC per gestire quattordici clienti, no. Ed è esattamente il pezzo che non vuoi infilare dentro <code>index.html</code>: altro pubblico, altra densità, altro dispositivo.</p>
+<figure>
+<div class="mockwrap">
+<span class="mocklabel">mockup</span>
+<div class="mock">
+  <div class="chrome"><i></i><i></i><i></i><span>vigor-pt.base44.app/clienti</span></div>
+  <div class="dash">
+    <nav class="side">
+      <div class="logo">VIG<em>OR</em> PT</div>
+      <a href="#" class="on">Clienti</a><a href="#">Schede</a><a href="#">Check-in</a><a href="#">Messaggi</a><a href="#">Calendario</a>
+    </nav>
+    <div class="main">
+      <div class="h-row"><h4>Clienti</h4><small>aggiornato 4 min fa</small></div>
+      <div class="kpis">
+        <div class="kpi"><b>14</b><span>attivi</span></div>
+        <div class="kpi"><b>3</b><span>fermi da 10gg</span></div>
+        <div class="kpi"><b>81%</b><span>aderenza media</span></div>
+      </div>
+      <table class="cli">
+        <tr><th>Cliente</th><th>Ultimo allenamento</th><th>Aderenza 4 sett.</th><th>Check-in</th></tr>
+        <tr><td>Giulia R.</td><td>ieri</td><td>92%<div class="bar"><i style="width:92%"></i></div></td><td><span class="pill ok">ok</span></td></tr>
+        <tr><td>Marco T.</td><td>4 giorni fa</td><td>68%<div class="bar"><i style="width:68%"></i></div></td><td><span class="pill warn">in ritardo</span></td></tr>
+        <tr><td>Sara V.</td><td>oggi</td><td>88%<div class="bar"><i style="width:88%"></i></div></td><td><span class="pill ok">ok</span></td></tr>
+        <tr><td>Luca B.</td><td>12 giorni fa</td><td>34%<div class="bar"><i style="width:34%"></i></div></td><td><span class="pill bad">mancante</span></td></tr>
+      </table>
+    </div>
+    <aside class="aside">
+      <div class="h-row"><h4>Da fare oggi</h4></div>
+      <div class="todo"><em></em><div>Luca B. fermo da 12 giorni<span>scrivigli o metti in pausa la scheda</span></div></div>
+      <div class="todo"><em></em><div>Marco T. — check-in scaduto<span>promemoria inviato lunedì</span></div></div>
+      <div class="todo"><em></em><div>Giulia R. ha chiuso il mesociclo<span>settimana di scarico da programmare</span></div></div>
+    </aside>
+  </div>
+</div>
+</div>
+<figcaption><b>Stessa app, altro mestiere.</b> Tabella densa, colonne allineate, stato codificato con colore <em>e</em> parola. In Base44 è una descrizione a parole più tre entità; in VIGOR sarebbe un secondo layout responsive dentro un <code>index.html</code> già da 121 KB.</figcaption>
+</figure>
+</section>
+
+<section>
+<div class="sec-head"><span class="tag">Uso 2</span><h2>Check-in ricorrenti: la parte noiosa la fa lui</h2></div>
+<p class="col">Il report migliorie del 01/09 la mette come lacuna verso Trainerize: «VIGOR ha le misurazioni corporee ma non un vero check-in strutturato con promemoria automatico verso il cliente». Il promemoria è il punto: significa scheduler, invio email o push, gestione degli errori. In Base44 dichiari i campi e la ricorrenza, e il form, la tabella e l'invio esistono.</p>
+<figure>
+<div class="mockwrap">
+<span class="mocklabel">mockup</span>
+<div class="mock">
+  <div class="ci">
+    <div class="schema">
+      <h5>Entity · CheckIn</h5>
+      <div><k>data</k>: <t>date</t></div>
+      <div><k>peso_kg</k>: <t>number</t></div>
+      <div><k>vita_cm</k>: <t>number</t></div>
+      <div><k>sonno</k>: <t>enum 1–5</t></div>
+      <div><k>energia</k>: <t>enum 1–5</t></div>
+      <div><k>foto</k>: <t>file[]</t></div>
+      <div><k>note</k>: <t>text</t></div>
+      <div><k>cliente</k>: <t>ref → Cliente</t></div>
+      <div style="opacity:.55; margin-top:12px">→ form, lista e storico<br>generati dallo schema</div>
+    </div>
+    <div class="form">
+      <div class="h-row" style="margin-bottom:12px"><h4>Check-in · lunedì 7</h4><small>Giulia R.</small></div>
+      <div class="field"><label>Peso</label><div class="box filled">64,2 kg <span style="color:#1fb15f; font-weight:700">−0,4</span></div></div>
+      <div class="field"><label>Come hai dormito</label><div class="rate"><i>1</i><i>2</i><i>3</i><i class="on">4</i><i>5</i></div></div>
+      <div class="field"><label>Energia in palestra</label><div class="rate"><i>1</i><i>2</i><i class="on">3</i><i>4</i><i>5</i></div></div>
+      <div class="field"><label>Note per il PT</label><div class="box" style="color:#a39c8a">Spalla destra un po' fastidiosa in panca…</div></div>
+      <span class="btn">Invia al PT</span>
+      <div class="chip">⏰ Ogni lunedì 08:00 · email + notifica</div>
+    </div>
+  </div>
+</div>
+</div>
+<figcaption><b>Dallo schema al modulo compilato.</b> Le otto righe a sinistra producono il form, la validazione, lo storico e la vista PT. Il promemoria settimanale è una riga di configurazione, non un cron da scrivere e sorvegliare.</figcaption>
+</figure>
+</section>
+
+<section>
+<div class="sec-head"><span class="tag">Uso 3</span><h2>Provare una correzione UX prima di toccare il repo</h2></div>
+<p class="col">Punti 3 e 4 del report frizioni: in "Registra" ci sono due cronometri uno sopra l'altro e solo uno etichettato, e "Allenamento libero" — una scelta voluta — è mostrata con badge ambra e icona di avviso, il linguaggio dell'errore. Sono correzioni da dieci minuti, ma la domanda vera è <em>quale</em> versione convince: si risponde guardandola, non discutendola. Un prototipo Base44 cliccabile su telefono vero costa un prompt, e non lascia niente da revertare in <code>index.html</code>.</p>
+<figure>
+<div class="mockwrap">
+<span class="mocklabel">mockup</span>
+<div class="phones">
+  <div>
+    <div class="cap">oggi</div>
+    <div class="phone"><div class="screen">
+      <div class="mini" style="margin-bottom:8px; font-weight:700">Che giorno hai fatto?</div>
+      <div class="badge-warn">⚠️ ALLENAMENTO LIBERO</div>
+      <div class="timer"><div class="big">1:30</div><div class="shorts"><i>1:00</i><i>1:30</i><i>2:00</i><i style="background:#17150f;color:#fff;border-color:#17150f">Avvia</i></div></div>
+      <div class="timer"><div class="lbl">Cronometro allenamento</div><div class="big">00:04:12</div><div class="mini">Allenamento in corso</div></div>
+      <div class="mini" style="margin-top:10px; color:#a39c8a">Due timer, uno senza nome.</div>
+    </div></div>
+  </div>
+  <div>
+    <div class="cap">ipotesi da testare</div>
+    <div class="phone"><div class="screen">
+      <div class="mini" style="margin-bottom:8px; font-weight:700">Che giorno hai fatto?</div>
+      <div class="badge-mode">● Allenamento libero</div>
+      <div class="timer"><div class="lbl">Timer recupero</div><div class="big">1:30</div><div class="shorts"><i>1:00</i><i>1:30</i><i>2:00</i><i style="background:#ff4b2b;color:#fff;border-color:#ff4b2b">Avvia</i></div></div>
+      <div class="timer"><div class="lbl">Durata allenamento</div><div class="big">00:04:12</div><div class="mini">In corso da 4 minuti</div></div>
+      <div class="mini" style="margin-top:10px; color:#a39c8a">Due nomi, due ruoli chiari.</div>
+    </div></div>
+  </div>
+</div>
+</div>
+<figcaption><b>La differenza è tutta nelle etichette.</b> Un prototipo serve a scegliere fra varianti con il telefono in mano — poi nel repo entra solo la versione vinta, e le altre non sono mai esistite.</figcaption>
+</figure>
+</section>
+
+<section>
+<div class="sec-head"><span class="tag">Uso 4</span><h2>La pagina pubblica che VIGOR non ha</h2></div>
+<p class="col">Nel repo ci sono <code>index.html</code> (l'app) e <code>privacy.html</code>. Non c'è un posto dove mandare un PT interessato, né dove raccogliere un'email o una segnalazione. È il caso più banale e insieme quello con il rapporto valore/tempo più alto: una landing con lista d'attesa e un modulo feedback, dominio proprio, dati che finiscono in una tabella che posso interrogare da qui — senza aggiungere una riga al service worker.</p>
+<figure>
+<div class="mockwrap">
+<span class="mocklabel">mockup</span>
+<div class="mock">
+  <div class="chrome"><i></i><i></i><i></i><span>vigor.app</span></div>
+  <div class="land">
+    <div class="word">VIG<em>OR</em></div>
+    <p>Scheda, allenamenti, dieta e mappa muscolare. Il tuo PT vede tutto, tu apri solo il telefono.</p>
+    <div class="cta"><span>la-tua@email.it</span><b>Entra in lista</b></div>
+    <div class="ticks"><span>✓ Funziona offline</span><span>✓ Si installa come app</span><span>✓ Dati tuoi, su Supabase</span></div>
+  </div>
+</div>
+</div>
+<figcaption><b>Un giorno di lavoro risparmiato.</b> Le iscrizioni finiscono in un'entità Base44 che posso leggere e filtrare con <code>query_entities</code> direttamente da questa chat.</figcaption>
+</figure>
+</section>
+
+<hr class="rule">
+
+<section>
+<div class="sec-head"><span class="tag warm">Attenzione</span><h2>Dove invece ti crea solo lavoro</h2></div>
+<ul class="limits col">
+  <li><b>Non rifattorizza VIGOR.</b> I tool <code>read_file</code> / <code>edit_file</code> del connettore agiscono sui file dell'app Base44, non su questo repo. Le 121 KB di <code>index.html</code> restano lavoro mio, qui.</li>
+  <li><b>Il codice generato è React + Tailwind.</b> VIGOR è vanilla senza build: nessun componente si copia-incolla. Quello che passa è il disegno e il testo, non il file.</li>
+  <li><b>Due database.</b> Le entità Base44 stanno nel loro store, i tuoi utenti in Supabase. Se l'app Base44 deve leggere i dati veri, serve codice custom e una chiave — e una chiave in più è una superficie in più da proteggere.</li>
+  <li><b>Niente offline né PWA.</b> Il tuo <code>sw.js</code>, l'installazione sulla Home, i profili in <code>localStorage</code>: tutto questo un'app Base44 non lo replica. Per l'uso in palestra resta VIGOR.</li>
+  <li><b>Un secondo progetto da mantenere.</b> Sensato per una landing o un pannello PT che cambiano di rado; pessimo se ci finisce dentro una funzione che poi vive in parallelo a quella vera.</li>
+</ul>
+</section>
+
+<section>
+<div class="sec-head"><h2>Come dividerei il lavoro</h2></div>
+<table class="table">
+  <tr><th>Cosa</th><th>Base44</th><th>Repo VIGOR</th></tr>
+  <tr><td>Cruscotto PT da desktop</td><td>sì — pubblico e densità diversi</td><td>solo se il PT deve lavorarci offline</td></tr>
+  <tr><td>Check-in ricorrenti + promemoria</td><td>sì per provarlo end-to-end</td><td>poi la parte cliente va portata qui</td></tr>
+  <tr><td>Landing, lista d'attesa, feedback</td><td>sì, senza riserve</td><td>—</td></tr>
+  <tr><td>Prototipi di correzioni UX</td><td>sì, usa e getta</td><td>entra solo la variante scelta</td></tr>
+  <tr><td>Timer, registrazione, dieta, offline</td><td>no</td><td>qui, sempre</td></tr>
+  <tr><td>Login, profili, sync</td><td>no — è già Supabase</td><td>qui, sempre</td></tr>
+</table>
+</section>
+
+<div class="note col">
+  <h3>Il passo successivo, se ti va</h3>
+  <p>Posso creare davvero una di queste app: dimmi quale e la costruisco con le tue parole, poi ti passo l'URL dell'editor Base44 e la modifichiamo insieme. Partirei dal <b>cruscotto PT</b> — è il buco più grosso e il più difficile da colmare dentro l'app attuale.</p>
+  <p>Nota pratica: creare un'app la aggiunge al tuo account Base44 (oggi vuoto) e richiede qualche minuto di build. Non la creo finché non me lo dici tu.</p>
+</div>
+
+<footer>
+  Fonti interne: <code>docs/archivio/VIGOR-report-frizioni-02-09-2026.md</code> (punti 3, 4, 7), <code>docs/archivio/VIGOR-report-migliorie-01-09-2026.md</code> (check-in, area PT), <code>manifest.webmanifest</code>, <code>css/style.css</code>, <code>js/config.js</code>. Tutte le schermate in questa pagina sono mockup disegnati per l'occasione.
+</footer>
+
+</div>
