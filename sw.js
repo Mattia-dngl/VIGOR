@@ -5,7 +5,7 @@
 // l'app se ne accorge da sola e si aggiorna in automatico (vedi
 // js/sistema/offline-sistema.js), senza bisogno che nessuno tocchi nulla.
 // ============================================================
-const VERSIONE = "vigor-v96";
+const VERSIONE = "vigor-v97";
 
 const DA_TENERE = [
   "./",
@@ -45,6 +45,8 @@ const DA_TENERE = [
   "./js/scheda/scheda-editor.js",
   "./js/vendor/supabase.js",
   "./js/init.js",
+  "./js/landing.js",
+  "./css/landing.css",
   "./manifest.webmanifest",
   "./assets/icons/icon-192.png",
   "./assets/icons/icon-512.png",
