@@ -2208,14 +2208,31 @@
      atleti con una card "in evidenza" per chi ha bisogno di attenzione.
      Nessun id/classe usato da renderAreaPT/renderDettaglioPT è stato
      rinominato: solo l'aspetto dentro #ptOggi/#ptRichieste/#ptClienti. ---- */
+  /* ---- 08/09/2026: la schermata "I tuoi atleti" riportata al look del
+     mockup fornito dall'utente — card foto+badge+barra+tasto "Apri" per
+     "cose da guardare oggi" (griglia a due colonne) e righe piene largo con
+     lo stesso tasto "Apri" per "I tuoi atleti" (una colonna sola), al posto
+     della striscia di alert compatti e della griglia mista card/spotlight
+     del redesign precedente. ---- */
+  .pt-home-btn{display:flex; flex-direction:column; align-items:center; gap:3px;
+    background:rgba(255,255,255,.14); border:1px solid rgba(255,255,255,.25); color:#fff;
+    border-radius:14px; padding:9px 17px; font-family:var(--font-display); font-weight:700;
+    font-size:10.5px; letter-spacing:.02em; cursor:pointer;}
+  .pt-home-btn svg{width:17px; height:17px;}
+  .pt-home-btn:active{transform:scale(.96);}
+
   .pth-stats{display:flex; gap:10px; margin-top:16px;}
-  .pth-chip{flex:1; min-width:0; background:rgba(255,255,255,.08); border-radius:var(--r-md); padding:12px 13px;}
+  .pth-chip{position:relative; flex:1; min-width:0; background:rgba(255,255,255,.08); border-radius:var(--r-md); padding:12px 13px;}
   .pth-chip.accent{background:rgba(255,75,43,.20); border:1px solid rgba(255,75,43,.5);}
   .pth-chip b{display:block; font-family:var(--font-display); font-weight:800; font-size:21px;
     letter-spacing:-.02em; color:#fff; line-height:1.1;}
   .pth-chip.accent b{color:var(--accent-dim);}
   .pth-chip span{display:block; font-size:9px; font-weight:700; letter-spacing:.1em; text-transform:uppercase;
     color:rgba(255,255,255,.6); margin-top:3px;}
+  .pth-chip-icon{position:absolute; top:10px; right:10px; width:19px; height:19px; border-radius:50%;
+    background:rgba(255,255,255,.18); color:#fff; display:flex; align-items:center; justify-content:center;}
+  .pth-chip-icon svg{width:11px; height:11px;}
+  .pth-chip-icon.ok{background:var(--ok);}
 
   .pt-section{margin-bottom:22px;}
   .pt-section-label{display:flex; align-items:center; gap:6px; font-size:10.5px; font-weight:700;
@@ -2224,21 +2241,6 @@
   .pt-scroll-row{display:flex; gap:10px; overflow-x:auto; padding:1px 16px 6px 1px; margin:0 -16px 0 -1px; scrollbar-width:none;}
   .pt-scroll-row::-webkit-scrollbar{display:none;}
 
-  .pt-alert-card{flex:0 0 auto; width:148px; border-radius:var(--r-md); padding:13px 14px;
-    display:flex; flex-direction:column; gap:6px; cursor:pointer; border:1px solid transparent;
-    font-family:'Inter',system-ui,sans-serif; text-align:left; -webkit-appearance:none; appearance:none;}
-  .pt-alert-card .head{display:flex; align-items:center; gap:6px;}
-  .pt-alert-card .dot{width:7px; height:7px; border-radius:50%; flex:0 0 auto;}
-  .pt-alert-card .lab{font-size:9.5px; font-weight:700; letter-spacing:.05em;}
-  .pt-alert-card .nome{font-family:var(--font-display); font-weight:700; font-size:13px; color:var(--text);}
-  .pt-alert-card .desc{font-size:10.5px; color:var(--text-dim); line-height:1.35;}
-  .pt-alert-card .link{font-size:10px; font-weight:700; margin-top:2px;}
-  .pt-alert-card.warn{background:#fbead0; border-color:rgba(177,121,10,.28);}
-  .pt-alert-card.warn .dot, .pt-alert-card.warn .lab, .pt-alert-card.warn .link{color:var(--warn);}
-  .pt-alert-card.danger{background:#fde2e2; border-color:rgba(226,59,59,.28);}
-  .pt-alert-card.danger .dot, .pt-alert-card.danger .lab, .pt-alert-card.danger .link{color:#e23b3b;}
-  .pt-alert-card.accent{background:var(--accent-soft); border-color:rgba(255,75,43,.28);}
-  .pt-alert-card.accent .dot, .pt-alert-card.accent .lab, .pt-alert-card.accent .link{color:var(--accent);}
   .pt-empty-banner{background:rgba(31,177,95,.12); border:1px solid rgba(31,177,95,.3); color:var(--ok);
     border-radius:var(--r-md); padding:13px 15px; font-size:12.5px; font-weight:600;}
 
@@ -2252,30 +2254,54 @@
   .pt-icon-btn.ok{background:var(--ok);}
   .pt-icon-btn.no{background:var(--accent);}
 
-  .pt-client-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
-  .pt-client-wrap{display:flex; flex-direction:column; align-items:flex-end; gap:5px;}
-  .pt-client-wrap.spotlight{grid-column:1/-1;}
-  .pt-client-card{width:100%; background:var(--surface); border:1px solid var(--border); border-radius:var(--r-md);
-    padding:13px 14px; display:flex; flex-direction:column; gap:9px; cursor:pointer; text-align:left;
+  /* "Cose da guardare oggi": griglia a due colonne di card verticali —
+     foto/icona + badge di stato in alto, nome, una riga di stato, barra
+     sottile, tasto "Apri" a piena larghezza in fondo. */
+  .pt-oggi-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+  .pt-oggi-card{width:100%; display:flex; flex-direction:column; gap:7px; border-radius:var(--r-md);
+    padding:13px 13px 14px; border:1px solid transparent; cursor:pointer; text-align:left;
     font-family:inherit; -webkit-appearance:none; appearance:none;}
-  .pt-client-card .nome{font-family:var(--font-display); font-weight:600; font-size:12.5px; color:var(--text);}
-  .pt-client-card .meta{font-size:9.5px; color:var(--text-faint); margin-top:1px;}
-  .pt-fresh{height:5px; border-radius:3px; background:var(--surface2); overflow:hidden;}
+  .pt-oggi-card.warn{background:#fbead0; border-color:rgba(177,121,10,.22);}
+  .pt-oggi-card.danger{background:#fde2e2; border-color:rgba(226,59,59,.22);}
+  .pt-oggi-card.accent{background:var(--accent-soft); border-color:rgba(255,75,43,.22);}
+  .pt-oggi-top{display:flex; align-items:flex-start; justify-content:space-between; gap:6px;}
+  .pt-oggi-badge{font-size:8.5px; font-weight:800; letter-spacing:.05em; text-transform:uppercase;
+    padding:4px 8px; border-radius:var(--r-pill); background:rgba(255,255,255,.6); white-space:nowrap; margin-top:2px;}
+  .pt-oggi-card.warn .pt-oggi-badge{color:var(--warn);}
+  .pt-oggi-card.danger .pt-oggi-badge{color:#e23b3b;}
+  .pt-oggi-card.accent .pt-oggi-badge{color:var(--accent);}
+  .pt-oggi-icon{width:40px; height:40px; border-radius:50%; background:rgba(255,255,255,.65); display:flex;
+    align-items:center; justify-content:center; color:var(--accent); flex:0 0 auto;}
+  .pt-oggi-icon svg{width:18px; height:18px;}
+  .pt-oggi-nome{font-family:var(--font-display); font-weight:800; font-size:14.5px; color:var(--text); letter-spacing:-.01em;}
+  .pt-oggi-status{font-size:10.5px; color:var(--text-dim); line-height:1.3;}
+  .pt-oggi-card.no-avatar .pt-oggi-nome{font-size:20px;}
+
+  .pt-apri-pill{display:inline-flex; align-items:center; justify-content:center; background:var(--grad-accent);
+    color:#fff; font-family:var(--font-display); font-weight:700; font-size:11.5px; padding:7px 16px;
+    border-radius:var(--r-pill); box-shadow:var(--shadow-accent);}
+  .pt-apri-pill.block{width:100%; padding:10px 14px; margin-top:2px; box-sizing:border-box;}
+
+  .pt-fresh{height:5px; border-radius:3px; background:rgba(0,0,0,.08); overflow:hidden;}
   .pt-fresh i{display:block; height:100%; border-radius:3px;}
-  .pt-perm-chip{align-self:flex-start; background:var(--surface2); color:var(--text-dim); font-size:8.5px;
-    font-weight:700; letter-spacing:.04em; text-transform:uppercase; padding:4px 8px; border-radius:var(--r-pill);}
+
+  /* "I tuoi atleti": una riga piena larghezza per persona — avatar, nome,
+     stato, barra sottile e il tasto "Apri" allineato a destra; chi ha
+     bisogno di attenzione (spotlight) riceve solo una tinta diversa. */
+  .pt-client-grid{display:grid; grid-template-columns:1fr; gap:10px;}
+  .pt-client-wrap{display:flex; flex-direction:column; align-items:flex-end; gap:5px;}
+  .pt-client-row{width:100%; display:flex; align-items:center; gap:12px; background:var(--surface);
+    border:1px solid var(--border); border-radius:var(--r-md); padding:12px 14px; cursor:pointer;
+    text-align:left; font-family:inherit; -webkit-appearance:none; appearance:none;}
+  .pt-client-row.spotlight{background:var(--accent-soft); border-color:rgba(255,75,43,.3);}
+  .pt-client-row-info{flex:1; min-width:0;}
+  .pt-client-row-info .nome{font-family:var(--font-display); font-weight:700; font-size:13.5px; color:var(--text);}
+  .pt-client-row-info .status{font-size:10.5px; color:var(--text-dim); margin:2px 0 6px;}
+  .pt-client-row.spotlight .status{color:var(--accent); font-weight:600;}
+
   .pt-termina-link{background:none; border:none; color:var(--text-faint); font-size:9.5px; font-weight:600;
     cursor:pointer; padding:0 2px; font-family:inherit;}
   .pt-termina-link:hover{color:var(--accent);}
-
-  .pt-spotlight{width:100%; display:flex; align-items:center; gap:13px; background:var(--accent-soft);
-    border:1px solid rgba(255,75,43,.3); border-radius:var(--r-lg); padding:15px; cursor:pointer;
-    text-align:left; font-family:inherit; -webkit-appearance:none; appearance:none;}
-  .pt-spotlight .info{flex:1; min-width:0;}
-  .pt-spotlight .nome{font-family:var(--font-display); font-weight:600; font-size:13.5px; color:var(--text);}
-  .pt-spotlight .status{font-size:10px; font-weight:700; color:var(--accent); margin:3px 0 6px;}
-  .pt-spotlight-btn{flex:0 0 auto; background:var(--grad-accent); color:#fff; font-size:11px; font-weight:700;
-    padding:9px 14px; border-radius:12px; box-shadow:var(--shadow-accent); font-family:inherit;}
 
   .pt-riepilogo-stats{display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin:12px 0 14px;}
   .pt-riepilogo-stat{background:var(--surface2); border-radius:var(--r-sm); padding:10px 10px;}
