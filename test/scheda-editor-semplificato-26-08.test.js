@@ -139,28 +139,56 @@ test('salvare con "Salva scheda" (modo "nuova") archivia quella attuale e attiva
   window.close();
 });
 
-test('PT che modifica la scheda di un cliente vede ancora entrambi i bottoni (comportamento invariato: non ha un "+Nuova scheda" separato)', async () => {
+// 08/09/2026: il PT ora usa la STESSA coppia matita/"+Nuova scheda" del
+// cliente (area PT: vedi #ptSchedaEditBtn/#ptNuovaSchedaBtn e
+// apriEditorSchedaPT in pt-area.js), invece di vedere sempre entrambi i
+// bottoni assieme — un solo bottone alla volta, come per il cliente stesso.
+function clienteFinto(){
+  return {
+    riga: { id:'cli-1', nome:'Cliente Uno', email:'uno@test.it', dati: {
+      logs:[], measurements:[], mealLogs:[], customExercises:{}, customFoods:{},
+      programs:[{ id:'p1', name:'Scheda Cliente', createdAt:'2026-01-01', archivedAt:null, scadenza:null,
+        durataSettimane:null, dataInizio:null, notePT:null,
+        days:[{key:'A', name:'Giorno A', weekday:'Lunedì', categoria:null, exercises:[]}], dietInfo:{}, diet:{} }],
+      activeProgramId:'p1'
+    }},
+    rapporto: { id:'r-1', cliente_id:'cli-1', pt_id:'pt-1', stato:'attivo', puo_scheda:true, puo_dieta:false }
+  };
+}
+
+test('PT, matita ("Modifica scheda"): un solo bottone "Aggiorna scheda", niente campo Nome né spiegazione lunga', async () => {
   const { window, document } = await loadApp();
   await run(window, `
     utenteOnline = { id:'pt-1' };
-    document.body.insertAdjacentHTML('beforeend', '<div id="ptSchedaEditorSlot"></div>');
-    _clienteAperto = {
-      riga: { id:'cli-1', nome:'Cliente Uno', email:'uno@test.it', dati: {
-        logs:[], measurements:[], mealLogs:[], customExercises:{}, customFoods:{},
-        programs:[{ id:'p1', name:'Scheda Cliente', createdAt:'2026-01-01', archivedAt:null, scadenza:null,
-          durataSettimane:null, dataInizio:null, notePT:null,
-          days:[{key:'A', name:'Giorno A', weekday:'Lunedì', categoria:null, exercises:[]}], dietInfo:{}, diet:{} }],
-        activeProgramId:'p1'
-      }},
-      rapporto: { id:'r-1', cliente_id:'cli-1', pt_id:'pt-1', stato:'attivo', puo_scheda:true, puo_dieta:false }
-    };
-    mostraEditorSchedaInlinePT();
+    document.body.insertAdjacentHTML('beforeend', '<div id="ptSchedaViewWrap"></div><div id="ptSchedaEditorSlot"></div>');
+    _clienteAperto = ${JSON.stringify(clienteFinto())};
+    apriEditorSchedaPT('modifica');
   `);
+  assert.equal(document.getElementById('programEditTitolo2').textContent, 'Modifica scheda di Cliente Uno');
   assert.equal(document.getElementById('updateProgramBtn').style.display, 'block');
+  assert.equal(document.getElementById('saveNewProgramBtn').style.display, 'none', '"Salva come nuova versione" non serve mentre si aggiorna');
+  assert.equal(document.getElementById('newProgramNameWrap').style.display, 'none');
+  assert.equal(document.getElementById('programEditIntroWrap').style.display, 'none');
+  assert.equal(document.getElementById('programEditIntroHint').style.display, 'none');
+  window.close();
+});
+
+test('PT, "+ Nuova scheda": un solo bottone "Salva scheda", campo Nome e avviso breve sull\'archiviazione', async () => {
+  const { window, document } = await loadApp();
+  await run(window, `
+    utenteOnline = { id:'pt-1' };
+    document.body.insertAdjacentHTML('beforeend', '<div id="ptSchedaViewWrap"></div><div id="ptSchedaEditorSlot"></div>');
+    _clienteAperto = ${JSON.stringify(clienteFinto())};
+    apriEditorSchedaPT('nuova');
+  `);
+  assert.equal(document.getElementById('programEditTitolo2').textContent, 'Nuova scheda di Cliente Uno');
+  assert.equal(document.getElementById('updateProgramBtn').style.display, 'none');
   assert.equal(document.getElementById('saveNewProgramBtn').style.display, 'block');
-  assert.equal(document.getElementById('saveNewProgramBtn').textContent, 'Salva come nuova versione');
-  assert.equal(document.getElementById('programEditTitolo2').textContent, 'Scheda di Cliente Uno');
-  assert.equal(document.getElementById('programEditIntroWrap').style.display, '', 'per il PT la spiegazione resta visibile come prima');
+  assert.equal(document.getElementById('saveNewProgramBtn').textContent, 'Salva scheda');
+  assert.equal(document.getElementById('newProgramNameWrap').style.display, 'block');
+  assert.equal(document.getElementById('programEditHintNuova').style.display, 'block');
+  const r = await run(window, `return editingDays.length;`);
+  assert.equal(r, 0, '"+ Nuova scheda" riparte da zero, non copia i giorni della scheda attuale del cliente');
   window.close();
 });
 
