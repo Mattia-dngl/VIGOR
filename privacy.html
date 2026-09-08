@@ -5,43 +5,106 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Informativa sulla privacy — VIGOR</title>
 <style>
-  body{font-family:'Inter',system-ui,sans-serif; max-width:720px; margin:0 auto; padding:32px 22px 60px;
-    color:#17150f; line-height:1.6; background:#f7f7f6;}
+  body{font-family:'Inter',system-ui,sans-serif; max-width:760px; margin:0 auto; padding:32px 22px 60px;
+    color:#17150f; line-height:1.65; background:#f7f7f6;}
   h1{font-size:26px; margin-bottom:4px;}
-  .sub{color:#6d6656; font-size:13px; margin-bottom:32px;}
+  .sub{color:#6d6656; font-size:13px; margin-bottom:24px;}
   h2{font-size:17px; margin-top:32px; color:#17150f;}
+  h3{font-size:14.5px; margin-top:20px; color:#17150f;}
   p, li{font-size:14.5px; color:#3a362c;}
   a{color:#dd4526;}
   .logo{font-weight:800; font-style:italic; font-size:20px; margin-bottom:18px;}
   .logo .dot{color:#ff4b2b;}
+  table{width:100%; border-collapse:collapse; font-size:13.5px; margin:12px 0;}
+  th, td{text-align:left; padding:8px 10px; border-bottom:1px solid #e2e2df; vertical-align:top;}
+  th{color:#6d6656; font-weight:700; font-size:12px; text-transform:uppercase; letter-spacing:.03em;}
+  .avviso{background:#fff4e9; border:1.5px solid #f0c48a; border-radius:12px; padding:16px 18px; margin:20px 0; font-size:13.5px; color:#7a4a06;}
+  .avviso b{display:block; margin-bottom:4px;}
+  .placeholder{background:#ffe4d8; padding:1px 5px; border-radius:4px; font-family:monospace; font-size:13px;}
+  .torna{display:inline-block; margin-top:36px; font-size:13px;}
 </style>
 </head>
 <body>
   <div class="logo">VIGOR<span class="dot">.</span></div>
   <h1>Informativa sulla privacy</h1>
-  <div class="sub">Ultimo aggiornamento: 1 settembre 2026</div>
+  <div class="sub">Ultimo aggiornamento: 8 settembre 2026</div>
 
-  <p>VIGOR è un'app per registrare allenamenti, dieta e progressi in palestra. Questa pagina spiega quali dati raccogliamo e come li usiamo.</p>
+  <div class="avviso">
+    <b>Nota per chi gestisce VIGOR (non per chi legge come utente)</b>
+    Questa informativa è scritta in italiano semplice e copre i punti richiesti da un'app come questa (titolare, basi giuridiche, conservazione, sub-responsabili, dati sanitari). Prima di pubblicarla, <b>falla verificare da un avvocato o consulente privacy</b>: non è una consulenza legale. I campi segnati con <span class="placeholder">[COMPILA]</span> vanno completati con i tuoi dati fiscali/legali veri prima di andare online.
+  </div>
 
-  <h2>Quali dati raccogliamo</h2>
+  <p>VIGOR è un'app per Personal Trainer e atleti: schede, allenamenti, dieta, check-in e progressi. Questa pagina spiega quali dati raccogliamo, perché, per quanto tempo li teniamo e con chi li condividiamo.</p>
+
+  <h2>1. Chi tratta i tuoi dati (titolare del trattamento)</h2>
+  <table>
+    <tr><th>Titolare</th><td class="placeholder">[COMPILA: nome e cognome o ragione sociale]</td></tr>
+    <tr><th>Partita IVA / Codice fiscale</th><td class="placeholder">[COMPILA]</td></tr>
+    <tr><th>Sede</th><td class="placeholder">[COMPILA: indirizzo]</td></tr>
+    <tr><th>Email</th><td><a href="mailto:dangelomattia2002@gmail.com">dangelomattia2002@gmail.com</a></td></tr>
+    <tr><th>PEC</th><td class="placeholder">[COMPILA, se disponibile]</td></tr>
+  </table>
+
+  <h2>2. Quali dati raccogliamo</h2>
   <ul>
-    <li><b>Dati account:</b> email e nome, forniti da te alla registrazione oppure ottenuti dal tuo account Google se scegli "Accedi con Google" (in quel caso riceviamo nome, email e foto profilo che il tuo account Google condivide).</li>
-    <li><b>Dati di allenamento:</b> schede, esercizi, storico allenamenti, misure corporee e dati sulla dieta che inserisci tu stesso nell'app.</li>
+    <li><b>Dati account:</b> email e nome, forniti alla registrazione oppure ottenuti dal tuo account Google se scegli "Accedi con Google" (in quel caso riceviamo nome, email e foto profilo).</li>
+    <li><b>Dati di allenamento:</b> scheda, esercizi, storico allenamenti, che inserisci tu stesso o che ti assegna il tuo Personal Trainer.</li>
+    <li><b>Dati sulla dieta:</b> piano alimentare, pasti registrati, obiettivi calorici.</li>
+    <li><b>Dati sanitari/corporei (categoria particolare, art. 9 GDPR):</b> peso, misure corporee (vita, ecc.), sensazioni soggettive e <b>foto di progresso fisico</b> caricate al check-in. Sono dati che riguardano la tua salute/il tuo corpo: li trattiamo solo con il tuo consenso esplicito e separato (vedi sezione 6).</li>
+    <li><b>Comunicazioni:</b> messaggi scambiati con il tuo Personal Trainer o i tuoi clienti dentro l'app.</li>
+    <li><b>Dati di fatturazione</b> (solo per i Personal Trainer con un piano a pagamento, quando attivo): gestiti direttamente da Stripe, il nostro fornitore di pagamenti — non vediamo né conserviamo il numero della tua carta.</li>
   </ul>
 
-  <h2>Come li usiamo</h2>
-  <p>Solo per far funzionare l'app: farti accedere da qualsiasi dispositivo, salvare la tua scheda e il tuo storico, e mostrarli a te (e al tuo Personal Trainer, se ne hai uno collegato). Non vendiamo né condividiamo i tuoi dati con terzi per pubblicità.</p>
+  <h2>3. Perché li trattiamo (basi giuridiche)</h2>
+  <table>
+    <tr><th>Finalità</th><th>Base giuridica</th></tr>
+    <tr><td>Far funzionare l'app: account, scheda, storico, sincronizzazione tra dispositivi</td><td>Esecuzione del contratto (art. 6.1.b GDPR) — i Termini che accetti registrandoti</td></tr>
+    <tr><td>Peso, misure e foto di progresso</td><td>Consenso esplicito e separato (art. 9.2.a GDPR), revocabile in ogni momento</td></tr>
+    <tr><td>Far vedere i tuoi dati al tuo Personal Trainer</td><td>Consenso: sei tu a collegarlo e a scegliere cosa può vedere/modificare</td></tr>
+    <tr><td>Fatturazione dell'abbonamento PT</td><td>Esecuzione del contratto + obblighi fiscali (art. 6.1.b e 6.1.c)</td></tr>
+    <tr><td>Sicurezza, prevenzione abusi, log errori</td><td>Legittimo interesse (art. 6.1.f) a mantenere l'app funzionante e sicura</td></tr>
+    <tr><td>Statistiche d'uso in forma aggregata (analytics)</td><td>Legittimo interesse — dati aggregati, senza cookie né identificatori personali (vedi sezione 8)</td></tr>
+  </table>
 
-  <h2>Dove sono conservati</h2>
-  <p>I dati sono conservati su <a href="https://supabase.com/privacy" target="_blank" rel="noopener">Supabase</a>, il nostro fornitore di database e autenticazione, che agisce come responsabile del trattamento per nostro conto.</p>
+  <h2>4. Per quanto tempo conserviamo i dati</h2>
+  <ul>
+    <li><b>Dati dell'account e di allenamento:</b> per tutta la durata dell'account, finché non lo elimini.</li>
+    <li><b>Foto di progresso:</b> come sopra; cancellate insieme all'account (vedi sezione 9).</li>
+    <li><b>Dati di fatturazione:</b> conservati per il tempo richiesto dalla normativa fiscale italiana (di norma 10 anni per le scritture contabili), anche oltre la cancellazione dell'account.</li>
+    <li><b>Log tecnici/errori:</b> fino a 12 mesi, poi cancellati automaticamente.</li>
+    <li><b>Dopo la cancellazione dell'account:</b> i dati vengono rimossi entro 30 giorni dai sistemi in produzione, salvo quanto già conservato per obblighi fiscali.</li>
+  </ul>
 
-  <h2>Accesso con Google</h2>
+  <h2>5. Con chi condividiamo i dati (sub-responsabili del trattamento)</h2>
+  <p>Non vendiamo né condividiamo i tuoi dati per pubblicità. Li affidiamo solo a fornitori che ci aiutano a far funzionare l'app, sempre come responsabili del trattamento per nostro conto:</p>
+  <table>
+    <tr><th>Fornitore</th><th>Cosa fa</th><th>Dove</th></tr>
+    <tr><td>Supabase</td><td>Database, autenticazione, archiviazione foto</td><td>UE (regione eu-west-1, Irlanda) — <a href="https://supabase.com/privacy" target="_blank" rel="noopener">privacy Supabase</a></td></tr>
+    <tr><td>Google (Google Sign-In)</td><td>Accesso con account Google, solo se lo scegli tu</td><td><a href="https://policies.google.com/privacy" target="_blank" rel="noopener">privacy Google</a></td></tr>
+    <tr><td>Stripe</td><td>Pagamenti dell'abbonamento PT (quando attivo)</td><td><a href="https://stripe.com/it/privacy" target="_blank" rel="noopener">privacy Stripe</a></td></tr>
+    <tr><td>Plausible o Umami</td><td>Statistiche d'uso aggregate, cookieless (quando attivate)</td><td>Nessun dato personale raccolto — vedi sezione 8</td></tr>
+  </table>
+  <p class="placeholder">[COMPILA: se attivi Stripe/analytics, verifica di avere con questi fornitori un accordo (DPA) valido — Supabase, Stripe e i principali provider analytics ne offrono uno standard da accettare online.]</p>
+
+  <h2>6. Foto di progresso e dati sanitari: consenso separato</h2>
+  <p>Peso, misure corporee e foto di progresso sono dati che riguardano la tua salute o il tuo corpo (categoria particolare ex art. 9 GDPR). Li trattiamo <b>solo se dai un consenso esplicito e separato</b>, richiesto la prima volta che compili un check-in con una foto — non basta aver accettato i Termini generali. Puoi revocare questo consenso in ogni momento da Account, e puoi comunque usare l'app senza mai caricare foto: non è mai obbligatorio.</p>
+  <p>Le foto sono conservate su un'area privata (bucket dedicato), non pubblica: solo tu e il tuo Personal Trainer con un rapporto attivo potete vederle, mai altri utenti.</p>
+
+  <h2>7. Accesso con Google</h2>
   <p>Se accedi con Google, usiamo esclusivamente le informazioni di base del profilo (nome, email, foto) per creare il tuo account VIGOR. Non accediamo ad altri dati del tuo account Google (contatti, Drive, ecc.).</p>
 
-  <h2>I tuoi diritti</h2>
-  <p>Puoi cancellare account e dati in qualsiasi momento dall'app, sotto Account → Privacy e sicurezza → Elimina account. La cancellazione è definitiva e rimuove scheda, dieta, storico e conversazioni.</p>
+  <h2>8. Analytics: cookieless, senza dati personali</h2>
+  <p>Quando attive, le statistiche d'uso (Plausible o Umami) non usano cookie, non creano un profilo della singola persona e non registrano indirizzo IP completo, email o nome. Contano solo eventi generici (es. "nuova registrazione", "primo allenamento registrato") in forma aggregata: non serve un banner cookie perché non tracciano individualmente nessuno.</p>
 
-  <h2>Contatti</h2>
+  <h2>9. I tuoi diritti</h2>
+  <p>Puoi in ogni momento: chiedere accesso, correzione o cancellazione dei tuoi dati; revocare un consenso dato (es. quello per le foto); opporti al trattamento basato su legittimo interesse; chiedere la portabilità dei tuoi dati. Puoi cancellare account e dati direttamente dall'app, sotto Account → Privacy e sicurezza → Elimina account: la cancellazione è definitiva e rimuove scheda, dieta, storico, misure, check-in, foto e conversazioni. Per qualunque richiesta scrivi a <a href="mailto:dangelomattia2002@gmail.com">dangelomattia2002@gmail.com</a>. Hai anche diritto di reclamo al Garante per la protezione dei dati personali (<a href="https://www.garanteprivacy.it" target="_blank" rel="noopener">garanteprivacy.it</a>).</p>
+
+  <h2>10. Personal Trainer: un ruolo di responsabile del trattamento</h2>
+  <p>Se sei un Personal Trainer che usa VIGOR con i tuoi clienti, tratti anche tu i loro dati (scheda, misure, foto) per conto tuo, in autonomia rispetto a noi. Ti consigliamo di avere un accordo scritto con i tuoi clienti sul trattamento dei loro dati — trovi un modello di partenza in <a href="accordo-trattamento-dati-pt.html">Accordo sul trattamento dati per PT</a>.</p>
+
+  <h2>11. Contatti</h2>
   <p>Per qualsiasi domanda su questa informativa: <a href="mailto:dangelomattia2002@gmail.com">dangelomattia2002@gmail.com</a></p>
+
+  <a class="torna" href="landing.html">← Torna alla home</a>
 </body>
 </html>

@@ -73,6 +73,7 @@ function normalizzaProfilo(p){
   if(p.obiettivoPeso === undefined) p.obiettivoPeso = null;
   if(p.obiettivoRecord === undefined) p.obiettivoRecord = null;
   if(p.abbonamentoScadenza === undefined) p.abbonamentoScadenza = null;
+  if(p.consensoFotoDataIl === undefined) p.consensoFotoDataIl = null; // Task 5 roadmap: consenso esplicito per le foto di check-in
   if(!p.customExercises) p.customExercises = {};
   Object.keys(p.customExercises).forEach(name=>{
     if(Array.isArray(p.customExercises[name])){
