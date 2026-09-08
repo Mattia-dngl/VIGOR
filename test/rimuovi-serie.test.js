@@ -121,7 +121,7 @@ test('"segna fatta" sulla serie giusta anche dopo aver tolto una serie precedent
   window.close();
 });
 
-test('scheda vera (non Allenamento libero): stesso tasto per togliere una serie sulle 3 di default', async () => {
+test('scheda vera (non Allenamento libero): le 3 serie previste dal PT non hanno il tasto per toglierle', async () => {
   const { window, document } = await loadApp();
   await run(window, `
     const profilo = ${JSON.stringify(profiloBase())};
@@ -130,11 +130,46 @@ test('scheda vera (non Allenamento libero): stesso tasto per togliere una serie 
     apriRegistra();
     selectDay('A');
   `);
-  let righe = document.querySelectorAll('.exercise-block .set-row');
+  const righe = document.querySelectorAll('.exercise-block .set-row');
   assert.equal(righe.length, 3);
-  await run(window, `document.querySelectorAll('.exercise-block .set-row')[0].querySelector('.set-remove-btn').click();`);
+  righe.forEach(r=> assert.ok(!r.querySelector('.set-remove-btn'), 'una serie pianificata dalla scheda non si deve poter togliere'));
+  window.close();
+});
+
+test('scheda vera: nessun tasto per togliere l\'esercizio (solo "Allenamento libero" ce l\'ha)', async () => {
+  const { window, document } = await loadApp();
+  await run(window, `
+    const profilo = ${JSON.stringify(profiloBase())};
+    state.profiles = [profilo]; activeProfileId = 'io';
+    mostraHome();
+    apriRegistra();
+    selectDay('A');
+  `);
+  const blocco = document.querySelector('.exercise-block');
+  assert.ok(!blocco.querySelector('.ex-remove-btn'), 'un esercizio della scheda non si deve poter togliere');
+  window.close();
+});
+
+test('scheda vera: una serie aggiunta in più con "+ Aggiungi serie" ha il tasto per toglierla, e togliendola restano le 3 previste', async () => {
+  const { window, document } = await loadApp();
+  await run(window, `
+    const profilo = ${JSON.stringify(profiloBase())};
+    state.profiles = [profilo]; activeProfileId = 'io';
+    mostraHome();
+    apriRegistra();
+    selectDay('A');
+    document.querySelector('.add-set[data-ex="Panca Piana"]').click();
+  `);
+  let righe = document.querySelectorAll('.exercise-block .set-row');
+  assert.equal(righe.length, 4, 'la serie extra si aggiunge alle 3 previste');
+  const extra = righe[3];
+  assert.ok(extra.querySelector('.set-remove-btn'), 'la serie extra aggiunta a mano deve avere il tasto per toglierla');
+  righe.forEach((r,i)=>{ if(i<3) assert.ok(!r.querySelector('.set-remove-btn'), 'le 3 serie previste restano non rimovibili'); });
+  await run(window, `document.querySelectorAll('.exercise-block .set-row')[3].querySelector('.set-remove-btn').click();`);
   righe = document.querySelectorAll('.exercise-block .set-row');
-  assert.equal(righe.length, 2);
+  assert.equal(righe.length, 3, 'tolta la serie extra restano solo le 3 previste dalla scheda');
+  const r = await run(window, `return currentSetInputs['Panca Piana'].length;`);
+  assert.equal(r, 3, 'anche i dati salvati tornano a 3, non solo il DOM');
   window.close();
 });
 
