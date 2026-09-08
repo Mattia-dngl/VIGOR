@@ -557,6 +557,7 @@ async function dopoAccessoOnline(){
       const res = await sb.from('profili').insert(nuova).select().maybeSingle();
       if(res.error) throw res.error;
       rigaOnline = res.data || nuova;
+      eventoAnalytics('registrazione'); // prima volta con Google: qui è dove si scopre, non al click sul bottone
     } else {
       rigaOnline = data;
     }
@@ -589,6 +590,7 @@ async function dopoAccessoOnline(){
 
     // porto i dati online dentro il motore locale dell'app
     applicaDatiOnline();
+    if(typeof segnaEVerificaRitorno === 'function') segnaEVerificaRitorno();
     // la card per l'area riservata compare solo a chi è Personal Trainer
     document.getElementById('homePTBtn').style.display = sonoPT() ? 'flex' : 'none';
     caricaRapporti().then(()=>{ renderMioPT(); aggiornaCampanellaHome(); aggiornaPuntinoMessaggi(); ascoltaNotificheRealtime(); }).catch(()=>{});
@@ -791,6 +793,7 @@ document.getElementById('regBtn').addEventListener('click', async ()=>{
       options:{ data:{ nome }, emailRedirectTo: ritorno }
     });
     if(error){ err.textContent = traduciErrore(error.message); err.style.display='block'; return; }
+    eventoAnalytics('registrazione');
     if(data.session){
       utenteOnline = data.user;
       await dopoAccessoOnline();
