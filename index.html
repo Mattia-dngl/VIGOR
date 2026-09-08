@@ -1612,23 +1612,17 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
 
     <div id="programStoricoBlock" style="display:none;">
     <!-- Niente più intestazione "Registro Allenamento"/card PT sopra (nascoste
-         apposta quando si è su Storico, vedi apriStorico()) e niente più i 3
-         tasti Allenamenti/Volume/Misure sempre in vista: il calendario è la
-         prima cosa che si vede, gli altri due restano raggiungibili da un
-         menu compatto (richiesta esplicita, 25/08 diciassettesimo giro). -->
+         apposta quando si è su Storico, vedi apriStorico()): il calendario è
+         la prima cosa che si vede. Il menu a tendina compatto (25/08) è stato
+         sostituito da 3 schede sempre visibili (richiesta esplicita, bozza
+         landing/storico 08/09/2026): meno nascosto, più immediato. -->
     <div class="storico-top-row">
       <h2 class="storico-titolo">Storico</h2>
-      <div class="storico-menu-wrap">
-        <button type="button" class="storico-menu-btn" id="storicoMenuBtn" aria-haspopup="true" aria-expanded="false">
-          <span id="storicoMenuBtnLabel">Allenamenti</span>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
-        </button>
-        <div class="storico-menu" id="storicoMenu">
-          <button type="button" class="seg-btn active" data-seg2="allenamenti">Allenamenti</button>
-          <button type="button" class="seg-btn" data-seg2="volume">Volume</button>
-          <button type="button" class="seg-btn" data-seg2="misure">Misure</button>
-        </div>
-      </div>
+    </div>
+    <div class="seg-toggle">
+      <button type="button" class="seg-btn active" data-seg2="allenamenti">Allenamenti</button>
+      <button type="button" class="seg-btn" data-seg2="volume">Volume</button>
+      <button type="button" class="seg-btn" data-seg2="misure">Misure</button>
     </div>
 
     <div id="historyLogsBlock">
@@ -1668,6 +1662,16 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
         </div>
         <div id="historyList"><div class="empty">Nessun allenamento registrato ancora.</div></div>
       </div>
+
+      <!-- "Schede archiviate" viveva dentro Modifica scheda, poi sempre visibile
+           in Storico qualunque fosse la scheda scelta (26/08). Da qui in poi si
+           vede solo nella scheda Allenamenti (richiesta esplicita, 08/09/2026):
+           uno spazio solo, non ripetuto sotto Volume e Misure. -->
+      <details class="card details-card">
+        <summary>Schede archiviate</summary>
+        <p class="hint" style="margin-top:0; color:var(--text-dim);">Ogni versione qui sotto mostra anche il piano alimentare che era abbinato in quel momento.</p>
+        <div class="details-body" id="archiveList"><div class="empty">Nessuna scheda precedente.</div></div>
+      </details>
     </div>
 
     <div id="historyMisureBlock" style="display:none;">
@@ -1748,14 +1752,6 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
       </div>
     </div>
 
-    <!-- "Schede archiviate" viveva dentro Modifica scheda: spostata qui
-         (26/08, richiesta esplicita) — resta sempre visibile in Storico,
-         qualunque sia il segmento scelto (Allenamenti/Volume/Misure). -->
-    <details class="card details-card">
-      <summary>Schede archiviate</summary>
-      <p class="hint" style="margin-top:0; color:var(--text-dim);">Ogni versione qui sotto mostra anche il piano alimentare che era abbinato in quel momento.</p>
-      <div class="details-body" id="archiveList"><div class="empty">Nessuna scheda precedente.</div></div>
-    </details>
     </div>
   </section>
 

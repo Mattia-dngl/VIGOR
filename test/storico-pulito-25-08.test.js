@@ -4,8 +4,9 @@
 // Allenamento"/"Caricamento..." (.sticky-top) e la card "Il mio Personal
 // Trainer" (#cardMioPT) — entrambe condivise con Scheda/Registra/Dieta —
 // non devono più comparire sopra il calendario: il calendario deve essere
-// la prima cosa in vista. In più, i 3 tasti Allenamenti/Volume/Misure
-// sempre in vista sono stati sostituiti da un menu a tendina compatto.
+// la prima cosa in vista. I 3 tasti Allenamenti/Volume/Misure erano poi
+// diventati un menu a tendina compatto, e dall'08/09/2026 sono tornati
+// schede sempre visibili (richiesta esplicita, redesign Storico).
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const { loadApp, run } = require('./helpers/loadApp.js');
@@ -45,7 +46,7 @@ test('tornando su Scheda (o un\'altra vista) dopo Storico, intestazione e card P
   window.close();
 });
 
-test('menu a tendina Storico: chiuso di default, mostra "Allenamenti" attivo, si apre al tocco', async () => {
+test('schede Storico: sempre visibili (niente più menu a tendina), "Allenamenti" attiva di default', async () => {
   const { window, document } = await loadApp();
   await run(window, `
     const profilo = ${JSON.stringify(profiloBase())};
@@ -53,27 +54,24 @@ test('menu a tendina Storico: chiuso di default, mostra "Allenamenti" attivo, si
     mostraHome();
     document.querySelector('#navTabsGlobale button[data-go="storico"]').click();
   `);
-  assert.equal(document.getElementById('storicoMenu').classList.contains('show'), false);
-  assert.match(document.getElementById('storicoMenuBtnLabel').textContent, /Allenamenti/);
-  await run(window, `document.getElementById('storicoMenuBtn').click();`);
-  assert.equal(document.getElementById('storicoMenu').classList.contains('show'), true);
+  const tabs = document.querySelectorAll('.seg-toggle .seg-btn[data-seg2]');
+  assert.equal(tabs.length, 3, 'le 3 schede Allenamenti/Volume/Misure sono sempre nel markup, non dentro un menu');
+  assert.ok(document.querySelector('.seg-btn[data-seg2="allenamenti"]').classList.contains('active'));
   window.close();
 });
 
-test('menu a tendina Storico: scegliendo "Volume" cambia vista, aggiorna l\'etichetta e richiude il menu (niente più 3 tasti sempre in vista)', async () => {
+test('schede Storico: scegliendo "Volume" cambia vista subito, senza menu da aprire prima', async () => {
   const { window, document } = await loadApp();
   await run(window, `
     const profilo = ${JSON.stringify(profiloBase())};
     state.profiles = [profilo]; activeProfileId = 'io';
     mostraHome();
     document.querySelector('#navTabsGlobale button[data-go="storico"]').click();
-    document.getElementById('storicoMenuBtn').click();
     document.querySelector('.seg-btn[data-seg2="volume"]').click();
   `);
-  assert.match(document.getElementById('storicoMenuBtnLabel').textContent, /Volume/);
+  assert.ok(document.querySelector('.seg-btn[data-seg2="volume"]').classList.contains('active'));
   assert.equal(document.getElementById('historyVolumeBlock').style.display, 'block');
   assert.equal(document.getElementById('historyLogsBlock').style.display, 'none');
-  assert.equal(document.getElementById('storicoMenu').classList.contains('show'), false, 'il menu si richiude dopo la scelta');
   window.close();
 });
 

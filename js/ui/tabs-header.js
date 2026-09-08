@@ -239,7 +239,6 @@ document.querySelectorAll('.seg-btn[data-segd]').forEach(btn=>{
   });
 });
 
-const ETICHETTA_SEG2 = { allenamenti:'Allenamenti', volume:'Volume', misure:'Misure' };
 document.querySelectorAll('.seg-btn[data-seg2]').forEach(btn=>{
   btn.addEventListener('click', ()=>{
     document.querySelectorAll('.seg-btn[data-seg2]').forEach(b=>b.classList.remove('active'));
@@ -250,35 +249,8 @@ document.querySelectorAll('.seg-btn[data-seg2]').forEach(btn=>{
     document.getElementById('historyMisureBlock').style.display = mode==='misure' ? 'block':'none';
     if(mode==='misure') renderMeasurements();
     if(mode==='allenamenti') renderCalendarioStorico();
-    // Il menu a tendina che ha sostituito i 3 tasti sempre in vista (25/08,
-    // diciassettesimo giro): aggiorno l'etichetta e richiudo il menu.
-    const label = document.getElementById('storicoMenuBtnLabel');
-    if(label) label.textContent = ETICHETTA_SEG2[mode] || '';
-    chiudiStoricoMenu();
   });
 });
-function chiudiStoricoMenu(){
-  const menu = document.getElementById('storicoMenu');
-  const btn = document.getElementById('storicoMenuBtn');
-  if(!menu || !btn) return;
-  menu.classList.remove('show');
-  btn.setAttribute('aria-expanded', 'false');
-}
-(function(){
-  const btn = document.getElementById('storicoMenuBtn');
-  const menu = document.getElementById('storicoMenu');
-  if(!btn || !menu) return;
-  btn.addEventListener('click', (e)=>{
-    e.stopPropagation();
-    const aperto = menu.classList.toggle('show');
-    btn.setAttribute('aria-expanded', aperto ? 'true' : 'false');
-  });
-  document.addEventListener('click', (e)=>{
-    if(!menu.classList.contains('show')) return;
-    if(e.target === btn || btn.contains(e.target) || menu.contains(e.target)) return;
-    chiudiStoricoMenu();
-  });
-})();
 
 // Toggle Scheda/Storico in cima alla Scheda: lo Storico è lo stesso contenuto che
 // prima viveva nel tab dedicato (Volume/Allenamenti/Misure), solo spostato qui dentro.
