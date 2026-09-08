@@ -2092,7 +2092,7 @@
 
   /* ---------- area Personal Trainer ---------- */
   #areaPT{position:fixed; inset:0; background:var(--bg); z-index:120; overflow-y:auto;
-    padding-bottom:calc(30px + env(safe-area-inset-bottom, 0px));}
+    padding-bottom:calc(100px + env(safe-area-inset-bottom, 0px));}
   .pt-top{background:var(--grad-ink); color:#fff; padding:22px 20px 24px; border-radius:0 0 var(--r-lg) var(--r-lg);}
   .pt-top .top-row{display:flex; justify-content:space-between; align-items:flex-start; gap:12px;}
   .pt-top-id{display:flex; align-items:center; gap:12px;}

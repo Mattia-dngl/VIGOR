@@ -161,6 +161,11 @@ function renderImpostazioniInline(){
     renderBaseExerciseList();
   }
 }
+// Impostato da js/pt/pt-area.js prima di chiamare apriAccountPanel() dalla
+// barra di navigazione della zona PT (#ptNavAccountBtn): dice a
+// chiudiAccountPanel() qui sotto se tornare all'area PT invece che alla
+// Home del cliente.
+let _accountApertoDallAreaPT = false;
 function apriAccountPanel(){
   document.getElementById('homeScreen').style.display = 'none';
   document.getElementById('appRoot').style.display = 'none';
@@ -342,6 +347,13 @@ document.getElementById('acctDatiEditBtn').addEventListener('click', ()=>toggleD
 function chiudiAccountPanel(){
   document.getElementById('accountPanel').style.display = 'none';
   document.body.classList.remove('account-aperto');
+  if(_accountApertoDallAreaPT){
+    _accountApertoDallAreaPT = false;
+    document.getElementById('areaPT').style.display = 'block';
+    document.body.classList.add('area-pt');
+    renderAreaPT();
+    return;
+  }
   mostraHome();
 }
 
