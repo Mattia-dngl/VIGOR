@@ -796,6 +796,96 @@ function apriEditorSchedaPT(modo){
     renderDayEditors();
   }
 }
+// ---------- "Copia da scheda esistente" (08/09/2026) ----------
+// SOLO dentro "Nuova scheda" del PT (bottone #ptCopiaSchedaBtn, mostrato solo
+// lì da aggiornaModalitaEditorScheda in scheda-editor.js). Permessi: il PT
+// può copiare solo le proprie schede e quelle di chi segue ATTIVAMENTE in
+// questo momento — mai da _rapporti/_clienteAperto già in cache. Sia
+// l'elenco (qui) sia la copia vera e propria (copiaSchedaSelezionata) fanno
+// SEMPRE una lettura fresca da Supabase, così un rapporto terminato nel
+// frattempo (es. il PT smette di seguire Franco mentre l'elenco è ancora
+// aperto) non lascia comunque copiare le sue schede.
+async function apriCopiaSchedaOverlay(){
+  if(!modalitaPT || _modificaPTCosa !== 'scheda' || _modoEditorScheda !== 'nuova') return;
+  const overlay = document.getElementById('ptCopiaSchedaOverlay');
+  const box = document.getElementById('ptCopiaSchedaLista');
+  overlay.classList.add('show');
+  box.innerHTML = '<div class="empty">Carico le schede disponibili…</div>';
+
+  const mieProgrammi = ((loggedInProfile() || {}).programs || []).filter(p=>giorniCompilati(p.days));
+
+  // Fresca ad ogni apertura: mai fidarsi di un elenco rapporti caricato in
+  // precedenza (potrebbe non riflettere più un rapporto appena terminato).
+  await caricaRapporti();
+  const attivi = _rapporti.filter(r => r.pt_id === utenteOnline.id && r.stato === 'attivo');
+  const clientiConProgrammi = (await Promise.all(attivi.map(async r=>{
+    const cliente = await leggiProfilo(r.cliente_id);
+    if(!cliente) return null;
+    const programmi = ((cliente.dati || {}).programs || []).filter(p=>giorniCompilati(p.days));
+    return programmi.length ? { cliente, programmi } : null;
+  }))).filter(Boolean);
+
+  const rigaProgramma = (p, ownerId, ownerNome) => {
+    const nEx = (p.days||[]).reduce((n,g)=>n+(g.exercises||[]).length, 0);
+    return `<button type="button" class="pt-copia-riga" data-owner="${escapeAttr(ownerId)}" data-programma="${escapeAttr(p.id)}">
+        <div class="pname">${escapeAttr(p.name)}${p.archivedAt ? ' <span class="hint">(archiviata)</span>' : ''}</div>
+        <div class="hint">${(p.days||[]).length} giorni · ${nEx} esercizi${ownerNome ? ' · ' + escapeAttr(ownerNome) : ''}</div>
+      </button>`;
+  };
+  const sezione = (titolo, righe) => righe.length ? `<div class="pt-copia-sezione"><h4>${titolo}</h4>${righe.join('')}</div>` : '';
+
+  const righeMie = mieProgrammi.map(p=>rigaProgramma(p, 'me', null));
+  const righeClienti = clientiConProgrammi.flatMap(c=>c.programmi.map(p=>rigaProgramma(p, c.cliente.id, nomeDi(c.cliente))));
+
+  if(righeMie.length === 0 && righeClienti.length === 0){
+    box.innerHTML = '<div class="empty">Non hai ancora nessuna scheda compilata da copiare, né tua né di chi segui.</div>';
+    return;
+  }
+  box.innerHTML = sezione('Le tue schede', righeMie) + sezione('Schede dei tuoi clienti', righeClienti);
+  box.querySelectorAll('[data-programma]').forEach(btn=>{
+    btn.addEventListener('click', ()=>copiaSchedaSelezionata(btn.dataset.owner, btn.dataset.programma));
+  });
+}
+// Ricontrolla i permessi DI NUOVO al momento della copia (non solo quando si
+// è aperto l'elenco poco prima): se il rapporto è stato terminato nel
+// frattempo, la copia viene rifiutata e l'elenco si aggiorna da capo.
+async function copiaSchedaSelezionata(ownerId, programmaId){
+  if(!modalitaPT || _modificaPTCosa !== 'scheda' || _modoEditorScheda !== 'nuova') return;
+  let programmi, nomeOwner = null;
+  if(ownerId === 'me'){
+    programmi = (loggedInProfile() || {}).programs || [];
+  } else {
+    const { data: rapportoFresco } = await sb.from('rapporti_pt')
+      .select('stato').eq('pt_id', utenteOnline.id).eq('cliente_id', ownerId).eq('stato', 'attivo').maybeSingle();
+    if(!rapportoFresco){
+      toast("Non segui più questa persona: non puoi più copiare le sue schede.");
+      apriCopiaSchedaOverlay();
+      return;
+    }
+    const cliente = await leggiProfilo(ownerId);
+    if(!cliente){ toast("Non riesco a leggere questa persona."); return; }
+    programmi = (cliente.dati || {}).programs || [];
+    nomeOwner = nomeDi(cliente);
+  }
+  const programma = programmi.find(p=>p.id === programmaId);
+  if(!programma){ toast("Questa scheda non è più disponibile."); apriCopiaSchedaOverlay(); return; }
+
+  // Copia indipendente: clone profondo, mai lo stesso oggetto/riferimento
+  // della scheda originale — modificare l'una non deve mai toccare l'altra.
+  editingDays = JSON.parse(JSON.stringify(programma.days || []));
+  document.getElementById('newProgramName').value = `Copia di ${programma.name}`;
+  document.getElementById('newProgramDurata').value = programma.durataSettimane || "";
+  renderDayEditors();
+  document.getElementById('ptCopiaSchedaOverlay').classList.remove('show');
+  toast(`Scheda copiata${nomeOwner ? ' da ' + nomeOwner : ''} ✓ — modificala e assegnala`);
+}
+document.getElementById('ptCopiaSchedaBtn').addEventListener('click', apriCopiaSchedaOverlay);
+document.getElementById('ptCopiaSchedaChiudi').addEventListener('click', ()=>
+  document.getElementById('ptCopiaSchedaOverlay').classList.remove('show'));
+document.getElementById('ptCopiaSchedaOverlay').addEventListener('click', e=>{
+  if(e.target.id === 'ptCopiaSchedaOverlay') e.currentTarget.classList.remove('show');
+});
+
 // Freccia indietro / salvataggio riusciti nell'editor inline: chiude davvero
 // l'editor (salva + rimette il markup al suo posto nel lato cliente) e
 // ridisegna la vista PT in modalità "Vedi", come fa il pencil/back del

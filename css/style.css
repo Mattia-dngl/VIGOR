@@ -1419,6 +1419,20 @@
      (es. "Esercizi" dentro Impostazioni, "Codice di recupero del profilo"
      dentro Sicurezza) senza dover aprire un ulteriore <details>. */
   .settings-subhead{font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; color:var(--text-dim);}
+  /* "Copia da scheda esistente" (08/09/2026, area PT → Nuova scheda): elenco
+     di schede-pulsante, una per riga, raggruppate per sezione (proprie /
+     clienti seguiti). Stesso family font/colori delle altre righe elenco. */
+  .pt-copia-sezione{margin-top:14px;}
+  .pt-copia-sezione:first-child{margin-top:0;}
+  .pt-copia-sezione h4{font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.04em;
+    color:var(--text-dim); margin:0 0 6px;}
+  .pt-copia-riga{display:block; width:100%; text-align:left; background:var(--surface2); border:1px solid var(--border);
+    border-radius:12px; padding:10px 12px; margin-bottom:8px; cursor:pointer; font-family:inherit;
+    -webkit-appearance:none; appearance:none;}
+  .pt-copia-riga:last-child{margin-bottom:0;}
+  .pt-copia-riga:hover{border-color:var(--accent);}
+  .pt-copia-riga .pname{color:var(--text); font-family:var(--font-display); font-size:13.5px;}
+  .pt-copia-riga .hint{margin-top:2px;}
   .archive-item{padding:10px 0; border-bottom:1px solid var(--border); font-size:13px; color:var(--text-dim);}
   .archive-item .pname{color:var(--text); font-family:var(--font-display); font-size:13.5px;}
   details.archive-sub-detail{border-bottom:1px solid var(--border); padding:10px 0;}

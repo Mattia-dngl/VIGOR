@@ -5,13 +5,11 @@ let editingDietInfo = {};
 let editingDiet = {};
 
 // Come si è entrati nell'editor scheda: 'modifica' (matita, sulla scheda già
-// attiva) o 'nuova' (+ Nuova scheda). Serve a mostrare UN SOLO bottone di
+// attiva) o 'nuova' (+ Nuova scheda, o "+ Nuova scheda" del PT — vedi
+// apriEditorSchedaPT in pt-area.js). Serve a mostrare UN SOLO bottone di
 // salvataggio alla volta invece di entrambi sempre assieme — segnalato
 // "troppo incasinato"/inutile vedere "Salva come nuova versione" mentre si
-// sta solo aggiornando (26/08/2026). Per il PT che modifica la scheda di un
-// cliente (mostraEditorSchedaInlinePT) restano invece SEMPRE visibili
-// entrambi, come prima: è l'unico punto d'ingresso che ha, non ha un
-// "+Nuova scheda" separato per i clienti.
+// sta solo aggiornando (26/08/2026).
 let _modoEditorScheda = 'modifica';
 
 function renderNewProgramForm(){
@@ -48,6 +46,7 @@ function aggiornaModalitaEditorScheda(){
   const nomeWrap = document.getElementById('newProgramNameWrap');
   const btnAggiorna = document.getElementById('updateProgramBtn');
   const btnNuova = document.getElementById('saveNewProgramBtn');
+  const copiaWrap = document.getElementById('ptCopiaSchedaWrap');
   if(!titolo2 || !btnAggiorna || !btnNuova) return;
 
   const nuova = _modoEditorScheda === 'nuova';
@@ -60,6 +59,9 @@ function aggiornaModalitaEditorScheda(){
   btnAggiorna.style.display = nuova ? 'none' : 'block';
   btnNuova.style.display = nuova ? 'block' : 'none';
   btnNuova.textContent = nuova ? 'Salva scheda' : 'Salva come nuova versione';
+  // "Copia da scheda esistente": SOLO per il PT che crea una nuova scheda per
+  // un cliente — mai per il cliente che crea la propria, mai in "modifica".
+  if(copiaWrap) copiaWrap.style.display = (pt && nuova) ? 'block' : 'none';
 }
 
 function renderDietEditForm(){
