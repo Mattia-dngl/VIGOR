@@ -662,7 +662,11 @@
      "mangiava" spazio nella vista). Nessuna freccia/marker di default del
      browser: il segnale di "clicca per la nota" è il badge con lo spillo. */
   .ex-note-toggle{cursor:pointer;}
-  .ex-note-toggle > summary{list-style:none; cursor:pointer;}
+  /* display:block esplicito: lo user agent (Chrome/Safari) rende <summary>
+     "display:flex" di default — con due div dentro (nome + stats) li
+     affiancava in riga invece di impilarli, e il nome andava a capo parola
+     per parola su 3+ righe strette invece di restare su 1-2 righe piene. */
+  .ex-note-toggle > summary{display:block; list-style:none; cursor:pointer;}
   .ex-note-toggle > summary::-webkit-details-marker{display:none;}
   .ex-note-toggle > summary::marker{display:none; content:"";}
   .ex-note-badge{display:inline-flex; align-items:center; gap:3px; margin-left:auto; padding:2px 7px;
