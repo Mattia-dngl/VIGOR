@@ -200,6 +200,24 @@ async function upsertMisurazione(prof, misurazione){
 }
 
 // ============================================================
+// CHECK-IN PERIODICO (Task 4a roadmap, secondo pezzo): stesso principio
+// delle misure — il check-in resta anche nel blob "dati" (offline, come
+// sempre), e quando possibile viene specchiato sulla tabella
+// "checkin_periodico" per renderlo interrogabile. A differenza delle
+// misure un check-in non si modifica mai dopo l'invio: qui è sempre e solo
+// un inserimento, mai un upsert-per-data.
+async function specchiaCheckinSuTabella(prof, checkin){
+  if(typeof sb === 'undefined' || !sb || typeof utenteOnline === 'undefined' || !utenteOnline || prof.id !== utenteOnline.id) return;
+  try{
+    await sb.from('checkin_periodico').insert({
+      id: checkin.id, profilo_id: prof.id, data: checkin.data,
+      peso: checkin.peso, sensazione: checkin.sensazione,
+      nota: checkin.nota || null, foto_path: checkin.fotoPath || null
+    });
+  }catch(e){ console.error(e); }
+}
+
+// ============================================================
 // NOTIFICHE INCROCIATE PT ↔ CLIENTE su scheda/dieta
 // Non c'è una tabella "notifiche": come per messaggi/richieste, la notifica è
 // calcolata al volo confrontando "quando è stata modificata" con "quando l'ha

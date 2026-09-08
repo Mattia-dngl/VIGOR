@@ -127,10 +127,9 @@ document.getElementById('checkinInviaBtn').addEventListener('click', async ()=>{
   const data = new Date().toISOString().slice(0,10);
   const id = uid();
   const fotoPath = await caricaFotoCheckin(prof.id, id);
-  prof.checkins.push({
-    id, data, creatoIl: new Date().toISOString(),
-    peso, fotoPath, sensazione, nota
-  });
+  const checkin = { id, data, creatoIl: new Date().toISOString(), peso, fotoPath, sensazione, nota };
+  prof.checkins.push(checkin);
+  specchiaCheckinSuTabella(prof, checkin);
   // Un peso diverso dall'ultimo registrato in Storico → Misure vale anche
   // come una misurazione vera e propria: lo aggiungo lì (stessa logica di
   // "unione per data" già usata in storico.js/saveMeasureBtn), altrimenti il
