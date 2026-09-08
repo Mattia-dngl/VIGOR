@@ -285,6 +285,24 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
   </div>
 </div>
 
+<!-- "Copia da scheda esistente" (08/09/2026): SOLO nella "Nuova scheda" del
+     PT (vedi #ptCopiaSchedaWrap in Scheda). L'elenco è costruito ogni volta
+     da capo da apriCopiaSchedaOverlay() (pt-area.js) con una lettura fresca
+     da Supabase — mai dati già in memoria — così una persona che il PT ha
+     smesso di seguire nel frattempo sparisce subito dall'elenco. -->
+<div class="mp-overlay" id="ptCopiaSchedaOverlay">
+  <div class="mp-modal" style="max-width:460px;">
+    <div class="mp-head">
+      <h3>Copia da scheda esistente</h3>
+      <button class="mp-close" id="ptCopiaSchedaChiudi" type="button" aria-label="Chiudi">&#10005;</button>
+    </div>
+    <div style="padding:14px 16px; overflow-y:auto;">
+      <p class="hint" style="margin:0 0 10px;">Scegli una scheda da usare come base: viene copiata qui sotto, quella originale resta invariata.</p>
+      <div id="ptCopiaSchedaLista"><div class="empty">Carico le schede disponibili…</div></div>
+    </div>
+  </div>
+</div>
+
 <div class="mp-overlay" id="checkinCompilaOverlay">
   <div class="mp-modal" style="max-width:420px;">
     <div class="mp-head">
@@ -1568,6 +1586,16 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
         <div id="newProgramNameWrap" style="display:none;">
           <label style="margin-top:0;">Nome/etichetta scheda</label>
           <input type="text" id="newProgramName" placeholder="Es. Programma Forza - Fase 2">
+        </div>
+        <!-- 08/09/2026: "Copia da scheda esistente" — SOLO per il PT che crea
+             una nuova scheda per un cliente (mai per il cliente stesso che
+             crea la propria, mai fuori da "Nuova scheda"): vedi
+             aggiornaModalitaEditorScheda() per il toggle di visibilità e
+             apriCopiaSchedaOverlay()/copiaSchedaSelezionata() in pt-area.js
+             per l'elenco (sempre fresco da Supabase, mai da _rapporti già in
+             cache) e il ricontrollo dei permessi al momento della copia. -->
+        <div id="ptCopiaSchedaWrap" style="display:none; margin-top:10px;">
+          <button type="button" class="btn secondary block" id="ptCopiaSchedaBtn">Copia da scheda esistente</button>
         </div>
         <!-- 31/08/2026: prima c'erano tre campi (durata, data inizio, scadenza)
              che dicevano in pratica la stessa cosa in tre modi diversi — ed
