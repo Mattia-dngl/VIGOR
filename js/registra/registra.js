@@ -458,7 +458,11 @@ function buildExerciseForm(day){
       _dropsetPerEsercizio[ex.name] = ex.dropset;
       for(let k=0;k<ex.sets;k++) buildDropsetRound(ex.name, k+1, ex.dropset, ex.reps);
     } else {
-      for(let k=0;k<ex.sets;k++) addSetRow(ex.name);
+      // Seguendo una scheda vera (non "Allenamento libero") le serie
+      // previste dal PT non si possono togliere: solo quelle aggiunte in
+      // più da qui in poi (vedi "+ Aggiungi serie" più sotto, che chiama
+      // addSetRow senza questo argomento e resta quindi sempre rimovibile).
+      for(let k=0;k<ex.sets;k++) addSetRow(ex.name, undefined, undefined, day.key === 'LIBERO');
     }
   });
   if(day.key === 'LIBERO'){
@@ -567,11 +571,19 @@ function buildExerciseForm(day){
 // sua ultima tappa (vedi buildDropsetRound). Decide se segnarla "fatta" fa
 // partire il recupero (avviaRecuperoSeATtempo): a metà di un dropset non c'è
 // pausa da cronometrare, solo dopo l'ultima tappa del round.
-function addSetRow(exName, tappa, isFineRound){
+function addSetRow(exName, tappa, isFineRound, rimovibile){
   const container = document.querySelector(`.sets-container[data-ex="${CSS.escape(exName)}"]`);
   const idx = currentSetInputs[exName].length;
   const campi = campiDi(exName);
   const fineRound = isFineRound !== undefined ? isFineRound : (typeof tappa !== 'number');
+  // rimovibile: di default true (serie extra, aggiunta a mano — via "+
+  // Aggiungi serie", "riporta" o il ripristino della bozza — sempre
+  // togliibile). Le serie previste dalla scheda vengono passate con
+  // rimovibile=false dal ciclo iniziale in buildExerciseForm quando il
+  // giorno NON è "Allenamento libero": seguendo una scheda creata non si
+  // può togliere una serie/ripetizione già pianificata, solo aggiungerne
+  // ed eventualmente togliere quelle in più.
+  const puoiRimuovere = rimovibile !== false;
 
   const vuota = {};
   campi.forEach(c=>{ vuota[c.chiave] = ''; });
@@ -599,7 +611,7 @@ function addSetRow(exName, tappa, isFineRound){
      ${c.unita ? `<span class="x">${c.unita}</span>` : ''}`).join('');
   row.innerHTML = `<span class="set-num">${idx+1}</span>${pezzi}
      <button type="button" class="set-fatta-btn" aria-label="Segna serie completata" title="Segna serie completata">✓</button>
-     ${diRound ? '' : '<button type="button" class="set-remove-btn" aria-label="Togli questa serie" title="Togli questa serie">×</button>'}`;
+     ${(diRound || !puoiRimuovere) ? '' : '<button type="button" class="set-remove-btn" aria-label="Togli questa serie" title="Togli questa serie">×</button>'}`;
 
   container.appendChild(row);
   row.querySelectorAll('input').forEach(inp=>{
