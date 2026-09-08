@@ -97,6 +97,29 @@ document.getElementById('ptChiudiDettaglio').addEventListener('click', async ()=
   }
 });
 
+// ---------- barra di navigazione dedicata alla zona PT ----------
+// Mockup fornito dall'utente (08/09/2026): sotto l'elenco atleti, una bottom
+// bar SOLO per l'area PT (Atleti/Messaggi/Account) — vedi #navTabsPT in
+// index.html. "Atleti" torna semplicemente all'elenco (chiude il dettaglio
+// cliente se aperto, riusando il tasto "← Elenco" già esistente). "Messaggi"
+// apre lo stesso overlay chat di sempre (apriMessaggiHome, in
+// account/messaggi.js): resta sopra l'area PT senza doverla nascondere.
+// "Account" invece nasconde l'area PT come fa apriAccountPanel() con
+// Home/appRoot: chiudendo Account si torna qui (non alla Home del cliente)
+// grazie a _accountApertoDallAreaPT, letto da chiudiAccountPanel() in
+// account/account.js.
+document.getElementById('ptNavAtletiBtn').addEventListener('click', ()=>{
+  if(document.getElementById('ptDettaglio').style.display !== 'none'){
+    document.getElementById('ptChiudiDettaglio').click();
+  }
+});
+document.getElementById('ptNavMessaggiBtn').addEventListener('click', ()=>apriMessaggiHome());
+document.getElementById('ptNavAccountBtn').addEventListener('click', ()=>{
+  document.getElementById('areaPT').style.display = 'none';
+  _accountApertoDallAreaPT = true;
+  apriAccountPanel();
+});
+
 // Quanti giorni interi sono passati da una data ISO (yyyy-mm-dd) ad oggi.
 // Ritorna null se la data manca o non è valida — così chi chiama può distinguere
 // "non lo so" da "zero giorni fa".
