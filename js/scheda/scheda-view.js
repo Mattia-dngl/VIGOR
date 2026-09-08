@@ -83,15 +83,24 @@ function renderSchedaView(){
         ${eOggi ? `<button type="button" class="btn block" onclick="apriRegistra()">Registra questo allenamento</button>` : ''}
         ${d.exercises.map((ex,ei)=>{
           const vi = getExerciseVideoInfo(ex.name);
-          return `<div class="day-view-ex">
-            <div class="day-view-ex-nome"><span class="day-view-ex-num">${ei+1}</span>${ex.name}${etichettaTecnica(ex,d)}</div>
+          const corpo = `
+            <div class="day-view-ex-nome">
+              <span class="day-view-ex-num">${ei+1}</span>${ex.name}${etichettaTecnica(ex,d)}
+              ${ex.note ? `<span class="ex-note-badge">📌<svg class="ex-note-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></span>` : ''}
+            </div>
             <div class="day-view-ex-stats">
               <span>${descriviTargetSerie(ex)}</span>
               ${ex.recupero && ex.supersetCon==null ? `<span>⏱ ${ex.recupero}s recupero</span>` : ''}
               <a href="${escapeAttr(vi.url)}" data-ex-name="${escapeAttr(ex.name)}" class="video-link">▶ video</a>
-            </div>
-            ${ex.note ? `<div class="day-view-ex-note exercise-note">📌 ${ex.note}</div>` : ''}
-          </div>`;
+            </div>`;
+          // Note del PT a scomparsa: <details> nativo, così l'esercizio con
+          // nota è cliccabile per aprirla/richiuderla senza JS dedicato, e
+          // quelli senza nota restano semplici div (niente cursore/chevron
+          // inutili) — segnalato che le note sempre aperte occupavano troppo
+          // spazio nella vista.
+          return ex.note
+            ? `<details class="day-view-ex ex-note-toggle"><summary>${corpo}</summary><div class="day-view-ex-note exercise-note">${ex.note}</div></details>`
+            : `<div class="day-view-ex">${corpo}</div>`;
         }).join('') || '<div class="empty">Nessun esercizio in questo giorno.</div>'}
       </div>
     </details>`;

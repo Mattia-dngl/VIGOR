@@ -473,7 +473,17 @@ async function renderDettaglioPT(sezione){
             ${(prog.days||[]).map(g=>`
               <div class="pt-scheda-ro">
                 <b>${g.key} · ${g.name}</b> <span class="hint">${g.weekday || 'senza giorno fisso'}</span>
-                ${(g.exercises||[]).map(e=>`<div class="hint" style="margin-top:4px;">${e.name} — ${descriviTargetSerie(e)}${etichettaTecnica(e,g)}</div>${e.note?`<div class="exercise-note" style="margin:2px 0 4px 10px;">📌 ${escapeAttr(e.note)}</div>`:''}`).join('')}
+                ${(g.exercises||[]).map((e,ei)=>{
+                  // Numero d'ordine + nota a scomparsa (26/09/2026): prima le
+                  // note del PT stavano sempre aperte e senza numerazione
+                  // degli esercizi, la vista occupava troppo spazio verticale.
+                  // Ora <details> nasconde la nota finché non ci si clicca
+                  // sopra il badge 📌 (niente per gli esercizi senza nota).
+                  const riga = `<span class="day-view-ex-num">${ei+1}</span><span>${e.name} — ${descriviTargetSerie(e)}${etichettaTecnica(e,g)}</span>`;
+                  return e.note
+                    ? `<details class="ex-note-toggle" style="margin-top:4px;"><summary class="hint" style="display:flex; align-items:center; gap:7px; cursor:pointer;">${riga}<span class="ex-note-badge">📌<svg class="ex-note-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></span></summary><div class="exercise-note" style="margin:4px 0 4px 25px;">${escapeAttr(e.note)}</div></details>`
+                    : `<div class="hint" style="display:flex; align-items:center; gap:7px; margin-top:4px;">${riga}</div>`;
+                }).join('')}
               </div>`).join('')}
           `}
         </div>
