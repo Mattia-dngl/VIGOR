@@ -86,7 +86,32 @@ document.getElementById('checkinFotoRimuovi').addEventListener('click', ()=>{
   anteprima.style.display = 'none';
 });
 
-document.getElementById('checkinInviaBtn').addEventListener('click', ()=>{
+// Carica la foto (già ridimensionata/compressa qui sopra) sul bucket privato
+// "checkin-foto", path <profilo_id>/<checkin_id>.jpg — mai più il base64
+// dentro il profilo (riempiva localStorage e la riga Supabase, ~1MB l'una).
+// Ritorna il path salvato, o null se non c'è stata nessuna foto o l'upload
+// è fallito: in quel caso il chiamante salva comunque il resto del check-in
+// e avvisa la persona, non perde nient'altro.
+async function caricaFotoCheckin(profiloId, checkinId){
+  if(!_checkinFotoDataUrl) return null;
+  if(typeof sb === 'undefined' || !sb){
+    mostraAvvisoPersistente("Sei offline: la foto di questo check-in non è stata salvata. Il resto del check-in è salvato regolarmente.");
+    return null;
+  }
+  try{
+    const blob = await (await fetch(_checkinFotoDataUrl)).blob();
+    const path = `${profiloId}/${checkinId}.jpg`;
+    const { error } = await sb.storage.from('checkin-foto').upload(path, blob, { contentType: 'image/jpeg', upsert: true });
+    if(error) throw error;
+    return path;
+  }catch(e){
+    console.error(e);
+    mostraAvvisoPersistente("La foto di questo check-in non è stata salvata (errore di connessione). Il resto del check-in è salvato regolarmente.");
+    return null;
+  }
+}
+
+document.getElementById('checkinInviaBtn').addEventListener('click', async ()=>{
   const prof = loggedInProfile();
   if(!prof) return;
   const pesoRaw = document.getElementById('checkinPeso').value;
@@ -100,9 +125,11 @@ document.getElementById('checkinInviaBtn').addEventListener('click', ()=>{
   }
   if(!prof.checkins) prof.checkins = [];
   const data = new Date().toISOString().slice(0,10);
+  const id = uid();
+  const fotoPath = await caricaFotoCheckin(prof.id, id);
   prof.checkins.push({
-    id: uid(), data, creatoIl: new Date().toISOString(),
-    peso, fotoUrl: _checkinFotoDataUrl, sensazione, nota
+    id, data, creatoIl: new Date().toISOString(),
+    peso, fotoPath, sensazione, nota
   });
   // Un peso diverso dall'ultimo registrato in Storico → Misure vale anche
   // come una misurazione vera e propria: lo aggiungo lì (stessa logica di

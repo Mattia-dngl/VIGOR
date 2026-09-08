@@ -94,8 +94,50 @@ function save(){
 // rimandata è solo la scrittura su localStorage, mai la modifica dei dati:
 // chi legge `state` (backup, export, render...) vede sempre il valore vero.
 let _salvataggioLocaleTimer = null;
+// Avviso generico che, a differenza di toast()/mostraNotificaRealtime()
+// (spariscono da soli), resta finché non lo si chiude a mano o finché chi
+// lo ha mostrato non lo toglie perché il problema si è risolto. Usato sia
+// per localStorage pieno (qui sotto) sia per l'upload di una foto di
+// check-in fallito (js/pt/checkin-cliente.js): un solo meccanismo, un solo
+// slot visibile alla volta — un secondo avviso ne aggiorna solo il testo.
+let _avvisoPersistenteEl = null;
+function mostraAvvisoPersistente(testo){
+  if(_avvisoPersistenteEl){
+    _avvisoPersistenteEl.querySelector('.avviso-persistente-testo').textContent = testo;
+    return;
+  }
+  const el = document.createElement('div');
+  el.className = 'avviso-persistente';
+  el.setAttribute('role', 'alert');
+  const span = document.createElement('span');
+  span.className = 'avviso-persistente-testo';
+  span.textContent = testo;
+  const chiudi = document.createElement('button');
+  chiudi.type = 'button';
+  chiudi.className = 'avviso-persistente-chiudi';
+  chiudi.textContent = 'Chiudi';
+  chiudi.addEventListener('click', nascondiAvvisoPersistente);
+  el.append(span, chiudi);
+  document.body.appendChild(el);
+  _avvisoPersistenteEl = el;
+}
+function nascondiAvvisoPersistente(){
+  if(_avvisoPersistenteEl){ _avvisoPersistenteEl.remove(); _avvisoPersistenteEl = null; }
+}
 function scriviStatoLocaleSubito(){
-  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(e){}
+  try{
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    nascondiAvvisoPersistente(); // una scrittura riuscita risolve l'avviso di prima
+  }catch(e){
+    mostraAvvisoPersistente("Spazio pieno sul telefono: questa modifica potrebbe non restare salvata qui. Se hai connessione l'ho comunque mandata online.");
+    // La copia in locale non c'è più, ma quella online resta l'unica fonte
+    // affidabile: se posso parlarle, la aggiorno subito invece di aspettare
+    // il debounce di programmaInvio() (1200ms) o peggio la prossima modifica.
+    if(typeof modalitaOnline === 'function' && modalitaOnline() && typeof navigator !== 'undefined'
+      && navigator.onLine && typeof inviaOnline === 'function'){
+      inviaOnline();
+    }
+  }
 }
 function programmaSalvataggioLocale(){
   clearTimeout(_salvataggioLocaleTimer);

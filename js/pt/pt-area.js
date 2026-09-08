@@ -296,7 +296,7 @@ async function apriCliente(clienteId){
   document.getElementById('ptDettaglio').style.display = 'block';
   window.scrollTo(0,0);
   document.querySelectorAll('.pt-tab').forEach(t=>t.classList.toggle('active', t.dataset.pttab === 'riepilogo'));
-  renderDettaglioPT('riepilogo');
+  await renderDettaglioPT('riepilogo');
 }
 
 // Cambiare tab (Riepilogo/Scheda/Dieta/Storico) comporta chiudere l'editor
@@ -316,7 +316,7 @@ document.querySelectorAll('.pt-tab').forEach(t=>t.addEventListener('click', asyn
     await chiudiEditorSchedaInlinePT();
     await chiudiEditorDietaInlinePT();
     document.querySelectorAll('.pt-tab').forEach(x=>x.classList.toggle('active', x===t));
-    renderDettaglioPT(t.dataset.pttab);
+    await renderDettaglioPT(t.dataset.pttab);
   } finally {
     _cambiandoTabPT = false;
     tabs.style.opacity = '';
@@ -324,7 +324,29 @@ document.querySelectorAll('.pt-tab').forEach(t=>t.addEventListener('click', asyn
   }
 }));
 
-function renderDettaglioPT(sezione){
+// Foto di check-in su Storage (bucket privato "checkin-foto"): il record ha
+// solo il path (c.fotoPath), mai l'URL vero — va firmato al momento, un solo
+// giro per tutte le foto della pagina invece di una chiamata per miniatura.
+// Non lancia mai: se Storage non risponde, quelle foto restano non mostrate
+// (meglio della sezione check-in che non si apre affatto) e i check-in più
+// vecchi non ancora migrati (c.fotoUrl, base64) restano comunque visibili
+// perché non passano da qui.
+async function urlFirmateCheckinFoto(checkins){
+  const paths = [...new Set(checkins.map(c=>c.fotoPath).filter(Boolean))];
+  if(paths.length === 0 || typeof sb === 'undefined' || !sb) return {};
+  try{
+    const { data, error } = await sb.storage.from('checkin-foto').createSignedUrls(paths, 3600);
+    if(error || !data) return {};
+    const mappa = {};
+    data.forEach(riga=>{ if(riga && !riga.error && riga.signedUrl) mappa[riga.path] = riga.signedUrl; });
+    return mappa;
+  }catch(e){
+    console.error(e);
+    return {};
+  }
+}
+
+async function renderDettaglioPT(sezione){
   if(!_clienteAperto) return;
   const d = _clienteAperto.riga.dati || {};
   const r = _clienteAperto.rapporto;
@@ -434,6 +456,12 @@ function renderDettaglioPT(sezione){
     // notifiche (bell/lista, vedi renderNotifiche in home.js) smettono di
     // segnalare i check-in già visti qui.
     segnaVistaPT('checkin');
+    // Le foto migrate su Storage hanno solo il path (c.fotoPath): serve un
+    // URL firmato per mostrarle, un giro solo per tutte prima di disegnare
+    // la pagina. I check-in vecchi non ancora migrati (c.fotoUrl, base64)
+    // non hanno bisogno di niente e restano visibili comunque.
+    const urlFirmate = await urlFirmateCheckinFoto(checkins);
+    const fotoDaMostrare = c => c.fotoPath ? urlFirmate[c.fotoPath] : c.fotoUrl;
     box.innerHTML = `
       <div class="card">
         <h3>Check-in periodico</h3>
@@ -465,9 +493,10 @@ function renderDettaglioPT(sezione){
                 </div>
                 ${c.sensazione ? `<div class="hint">Sensazione: ${c.sensazione}/5</div>` : ''}
                 ${c.nota ? `<div class="hint" style="margin-top:2px; font-style:italic;">"${escapeAttr(c.nota)}"</div>` : ''}`;
-              if(!c.fotoUrl) return `<div class="pt-scheda-ro">${didascalia}</div>`;
+              const foto = fotoDaMostrare(c);
+              if(!foto) return `<div class="pt-scheda-ro">${didascalia}</div>`;
               return `<div class="pt-scheda-ro checkin-post">
-                  <button type="button" class="checkin-post-foto" data-foto-idx="${i}"><img src="${c.fotoUrl}" alt="Foto progresso del ${formatDate(c.data)}"></button>
+                  <button type="button" class="checkin-post-foto" data-foto-idx="${i}"><img src="${foto}" alt="Foto progresso del ${formatDate(c.data)}"></button>
                   <div class="checkin-post-caption">${didascalia}</div>
                   <button type="button" class="checkin-post-scarica" data-foto-idx="${i}" title="Scarica la foto originale" aria-label="Scarica la foto">${ICONA_SCARICA_SVG}</button>
                 </div>`;
@@ -480,11 +509,11 @@ function renderDettaglioPT(sezione){
     box.querySelectorAll('.checkin-post-foto').forEach(btn=>{
       const c = checkins[parseInt(btn.dataset.fotoIdx)];
       const didascalia = `${formatDate(c.data)}${c.peso!=null ? ' · ' + c.peso + ' kg' : ''}`;
-      btn.addEventListener('click', ()=>apriFotoIngrandita(c.fotoUrl, didascalia, `check-in-${c.data}.jpg`));
+      btn.addEventListener('click', ()=>apriFotoIngrandita(fotoDaMostrare(c), didascalia, `check-in-${c.data}.jpg`));
     });
     box.querySelectorAll('.checkin-post-scarica').forEach(btn=>{
       const c = checkins[parseInt(btn.dataset.fotoIdx)];
-      btn.addEventListener('click', e=>{ e.stopPropagation(); scaricaFotoCheckin(c.fotoUrl, `check-in-${c.data}.jpg`); });
+      btn.addEventListener('click', e=>{ e.stopPropagation(); scaricaFotoCheckin(fotoDaMostrare(c), `check-in-${c.data}.jpg`); });
     });
   }
 }
@@ -587,7 +616,7 @@ async function impostaCheckinCliente(idRapporto, patch){
   Object.assign(_clienteAperto.rapporto, patch);
   const r2 = _rapporti.find(x=>x.id===idRapporto);
   if(r2) Object.assign(r2, patch);
-  renderDettaglioPT('checkin');
+  await renderDettaglioPT('checkin');
 }
 
 // ---------- modificare scheda o dieta di un cliente ----------
@@ -802,7 +831,7 @@ async function tornaDaModificaPT(){
   document.getElementById('areaPT').style.display = 'block';
   document.getElementById('ptElenco').style.display = 'none';
   document.getElementById('ptDettaglio').style.display = 'block';
-  renderDettaglioPT(document.querySelector('.pt-tab.active').dataset.pttab);
+  await renderDettaglioPT(document.querySelector('.pt-tab.active').dataset.pttab);
   toast("Modifiche salvate ✓");
 }
 
