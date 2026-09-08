@@ -391,7 +391,7 @@ async function renderMioPT(){
 }
 
 async function leggiProfilo(id){
-  const { data } = await sb.from('profili').select('id,nome,nome_pubblico,email,is_pt,dati').eq('id', id).maybeSingle();
+  const { data } = await sb.from('profili').select('id,nome,nome_pubblico,email,is_pt,dati,aggiornato_il').eq('id', id).maybeSingle();
   return data;
 }
 

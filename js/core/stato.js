@@ -16,6 +16,11 @@ let _clienteBuffer = null;
 let _clienteIdInModifica = null;
 let _modificaPTCosa = null;   // 'scheda' o 'dieta': cosa sto modificando, per l'avviso in chat
 let _ptSalvataggioTimer = null;
+// aggiornato_il del cliente letto quando ho aperto l'editor: serve a
+// salvaModifichePT() per accorgersi se nel frattempo lui ha salvato
+// qualcosa (allenamento, check-in) e in quel caso non scrivere sopra una
+// fotografia vecchia dei suoi dati — vedi js/pt/pt-area.js.
+let _clienteBufferApertoIl = null;
 
 function load(){
   let data;

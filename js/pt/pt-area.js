@@ -648,14 +648,13 @@ function propagaEserciziPersonalizzatiPT(giorni){
   });
 }
 
-// ---------- editor scheda del cliente, DIRETTAMENTE nella sua scheda (non in una
-// schermata a parte): sposto il vero editor (stesso identico markup e stessa
-// logica di quando lo fai per te — editingDays, dropset, superset, i due tasti
-// Aggiorna/Salva come nuova versione) dentro il pannello del cliente, invece di
-// duplicarne il codice. Quando esci da questa scheda, torna al suo posto.
-function mostraEditorSchedaInlinePT(){
-  if(!_clienteAperto) return;
-  const p = _clienteAperto.riga;
+// Fotografia di partenza dei dati del cliente su cui il PT lavorerà
+// (_clienteBuffer): usata dai tre punti di ingresso qui sotto
+// (editor scheda/dieta inline, modificaComePT). Registra anche
+// aggiornato_il letto in questo momento — salvaModifichePT() lo confronta
+// con quello vero sul server prima di scrivere, per accorgersi se il
+// cliente ha salvato qualcosa nel frattempo (vedi lì).
+function preparaClienteBuffer(p){
   const buffer = JSON.parse(JSON.stringify(p.dati || {}));
   buffer.id = p.id;
   buffer.name = nomeDi(p);
@@ -671,8 +670,19 @@ function mostraEditorSchedaInlinePT(){
   if(!buffer.waterLogs) buffer.waterLogs = [];
   if(!buffer.checkins) buffer.checkins = [];
   if(!buffer.customFoods) buffer.customFoods = {};
+  _clienteBufferApertoIl = p.aggiornato_il || null;
+  return buffer;
+}
 
-  _clienteBuffer = buffer;
+// ---------- editor scheda del cliente, DIRETTAMENTE nella sua scheda (non in una
+// schermata a parte): sposto il vero editor (stesso identico markup e stessa
+// logica di quando lo fai per te — editingDays, dropset, superset, i due tasti
+// Aggiorna/Salva come nuova versione) dentro il pannello del cliente, invece di
+// duplicarne il codice. Quando esci da questa scheda, torna al suo posto.
+function mostraEditorSchedaInlinePT(){
+  if(!_clienteAperto) return;
+  const p = _clienteAperto.riga;
+  _clienteBuffer = preparaClienteBuffer(p);
   _clienteIdInModifica = p.id;
   _modificaPTCosa = 'scheda';
   modalitaPT = true;
@@ -709,23 +719,7 @@ async function chiudiEditorSchedaInlinePT(){
 function mostraEditorDietaInlinePT(){
   if(!_clienteAperto) return;
   const p = _clienteAperto.riga;
-  const buffer = JSON.parse(JSON.stringify(p.dati || {}));
-  buffer.id = p.id;
-  buffer.name = nomeDi(p);
-  buffer.approvato = true;
-  if(!buffer.programs || !buffer.programs.length) buffer.programs = [blankProgram()];
-  if(!buffer.activeProgramId) buffer.activeProgramId = buffer.programs[buffer.programs.length-1].id;
-  if(!buffer.customExercises) buffer.customExercises = {};
-  Object.keys(buffer.customExercises).forEach(name=>{
-    if(Array.isArray(buffer.customExercises[name])) buffer.customExercises[name] = {muscles: buffer.customExercises[name], video:''};
-  });
-  if(!buffer.measurements) buffer.measurements = [];
-  if(!buffer.mealLogs) buffer.mealLogs = [];
-  if(!buffer.waterLogs) buffer.waterLogs = [];
-  if(!buffer.checkins) buffer.checkins = [];
-  if(!buffer.customFoods) buffer.customFoods = {};
-
-  _clienteBuffer = buffer;
+  _clienteBuffer = preparaClienteBuffer(p);
   _clienteIdInModifica = p.id;
   _modificaPTCosa = 'dieta';
   modalitaPT = true;
@@ -756,24 +750,7 @@ async function chiudiEditorDietaInlinePT(){
 function modificaComePT(cosa){
   if(!_clienteAperto) return;
   const p = _clienteAperto.riga;
-  const buffer = JSON.parse(JSON.stringify(p.dati || {}));
-  buffer.id = p.id;
-  buffer.name = nomeDi(p);
-  buffer.approvato = true;
-  if(!buffer.programs || !buffer.programs.length) buffer.programs = [blankProgram()];
-  if(!buffer.activeProgramId) buffer.activeProgramId = buffer.programs[buffer.programs.length-1].id;
-  if(!buffer.customExercises) buffer.customExercises = {};
-  // vecchio formato (solo array di muscoli, senza video/tipo): lo aggiorno come fa load() per me
-  Object.keys(buffer.customExercises).forEach(name=>{
-    if(Array.isArray(buffer.customExercises[name])) buffer.customExercises[name] = {muscles: buffer.customExercises[name], video:''};
-  });
-  if(!buffer.measurements) buffer.measurements = [];
-  if(!buffer.mealLogs) buffer.mealLogs = [];
-  if(!buffer.waterLogs) buffer.waterLogs = [];
-  if(!buffer.checkins) buffer.checkins = [];
-  if(!buffer.customFoods) buffer.customFoods = {};
-
-  _clienteBuffer = buffer;
+  _clienteBuffer = preparaClienteBuffer(p);
   _clienteIdInModifica = p.id;
   _modificaPTCosa = cosa;
   modalitaPT = true;
@@ -803,10 +780,49 @@ async function salvaModifichePT(){
     return false;
   }
   if(!sb){ toast("Serve la connessione per salvare sul suo account."); return false; }
-  const { error } = await sb.from('profili')
-    .update({ dati: _clienteBuffer, aggiornato_il: new Date().toISOString() })
+
+  // Scrittura condizionata: aggiorno solo se aggiornato_il è ancora quello
+  // che avevo letto quando ho aperto l'editor (.eq in più). Il caso normale
+  // (nessuno ha toccato il profilo nel frattempo) costa un solo giro di
+  // rete, uguale a prima. Se invece qualcuno ha salvato — tipicamente il
+  // cliente stesso, un allenamento o un check-in — la condizione non trova
+  // corrispondenza: PostgREST non scrive nulla e torna un array vuoto,
+  // senza errore. È il segnale per rileggere, riapplicare sopra SOLO
+  // scheda/dieta (mai storico/misure/check-in, che sono suoi) e riprovare.
+  const nuovoAggiornatoIl = new Date().toISOString();
+  let query = sb.from('profili')
+    .update({ dati: _clienteBuffer, aggiornato_il: nuovoAggiornatoIl })
     .eq('id', _clienteIdInModifica);
+  if(_clienteBufferApertoIl) query = query.eq('aggiornato_il', _clienteBufferApertoIl);
+  const { data, error } = await query.select('id');
   if(error){ console.error(error); toast("Non riuscito a salvare: " + error.message); return false; }
+
+  if(data && data.length > 0){
+    _clienteBufferApertoIl = nuovoAggiornatoIl;
+    if(_clienteAperto) _clienteAperto.riga.aggiornato_il = nuovoAggiornatoIl;
+    return true;
+  }
+
+  const { data: fresco, error: erroreLettura } = await sb.from('profili')
+    .select('dati,aggiornato_il').eq('id', _clienteIdInModifica).maybeSingle();
+  if(erroreLettura || !fresco){
+    console.error(erroreLettura);
+    toast("Non riuscito a salvare: il cliente ha aggiornato i suoi dati nel frattempo, riprova.");
+    return false;
+  }
+  const datiUniti = Object.assign({}, fresco.dati, {
+    programs: _clienteBuffer.programs,
+    activeProgramId: _clienteBuffer.activeProgramId
+  });
+  const nuovoAggiornatoIl2 = new Date().toISOString();
+  const { error: erroreScrittura } = await sb.from('profili')
+    .update({ dati: datiUniti, aggiornato_il: nuovoAggiornatoIl2 })
+    .eq('id', _clienteIdInModifica);
+  if(erroreScrittura){ console.error(erroreScrittura); toast("Non riuscito a salvare: " + erroreScrittura.message); return false; }
+  _clienteBuffer = datiUniti;
+  _clienteBufferApertoIl = nuovoAggiornatoIl2;
+  if(_clienteAperto) _clienteAperto.riga.aggiornato_il = nuovoAggiornatoIl2;
+  toast("Il cliente ha aggiornato i suoi dati nel frattempo: ho salvato la tua modifica senza toccare il suo storico.");
   return true;
 }
 function programmaSalvataggioPT(){
