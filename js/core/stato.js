@@ -218,6 +218,25 @@ async function specchiaCheckinSuTabella(prof, checkin){
 }
 
 // ============================================================
+// ALLENAMENTI (Task 4a roadmap, terzo pezzo): stesso principio di
+// misure/check-in — un log resta anche nel blob "dati" (offline, come
+// sempre) e quando possibile viene specchiato sulla tabella "allenamenti".
+// Accetta un ARRAY (non un solo log): registra.js ne salva uno alla volta,
+// ma controllaSaltati() (recupero-codici.js) può aggiungerne molti in un
+// solo giro — un inserimento in blocco invece di uno a uno.
+async function specchiaAllenamentiSuTabella(prof, logs){
+  if(!logs || logs.length === 0) return;
+  if(typeof sb === 'undefined' || !sb || typeof utenteOnline === 'undefined' || !utenteOnline || prof.id !== utenteOnline.id) return;
+  try{
+    await sb.from('allenamenti').insert(logs.map(log => ({
+      id: log.id, profilo_id: prof.id, data: log.date, program_id: log.programId,
+      status: log.status, day_key: log.dayKey, day_name: log.dayName,
+      exercises: log.exercises || [], notes: log.notes || null, auto: !!log.auto
+    })));
+  }catch(e){ console.error(e); }
+}
+
+// ============================================================
 // NOTIFICHE INCROCIATE PT ↔ CLIENTE su scheda/dieta
 // Non c'è una tabella "notifiche": come per messaggi/richieste, la notifica è
 // calcolata al volo confrontando "quando è stata modificata" con "quando l'ha

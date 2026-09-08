@@ -814,6 +814,7 @@ document.getElementById('saveLogBtn').addEventListener('click', ()=>{
   // se quel giorno era stato segnato saltato in automatico, la scelta manuale ha la precedenza
   prof.logs = prof.logs.filter(l => !(l.auto && l.date===iso && l.programId===p.id));
   prof.logs.push(log);
+  specchiaAllenamentiSuTabella(prof, [log]);
 
   const nuoviRecord = [];
   log.exercises.forEach(e=>{
