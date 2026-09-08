@@ -38,7 +38,28 @@ document.getElementById('sceltaPTOverlay').addEventListener('click', e=>{
 
 
 // ---------- area del Personal Trainer ----------
-function apriAreaPT(){
+// Task 6a (roadmap): l'accesso all'area PT dipende dall'abbonamento, scritto
+// SOLO dal webhook Stripe lato server (mai dal client). Nessuna riga in
+// abbonamenti_pt (PT già esistenti da prima di questa funzione) o uno
+// stato diverso da 'scaduto'/'pagamento_fallito' NON blocca mai: meglio
+// lasciar passare un caso dubbio che chiudere fuori per errore un PT vero.
+async function abbonamentoPTBloccato(){
+  if(!sb || !utenteOnline) return false;
+  try{
+    const { data } = await sb.from('abbonamenti_pt').select('stato').eq('pt_id', utenteOnline.id).maybeSingle();
+    return !!data && (data.stato === 'scaduto' || data.stato === 'pagamento_fallito');
+  }catch(e){ console.error(e); return false; }
+}
+
+async function apriAreaPT(){
+  if(await abbonamentoPTBloccato()){
+    // I clienti del PT non c'entrano nulla: hanno un account e una sessione
+    // propri, indipendenti da questo controllo — restano liberi di usare
+    // l'app come sempre. A perdere l'accesso è solo la SUA area PT.
+    mostraHome();
+    mostraAvvisoPersistente("Il tuo piano PT non è attivo: l'area PT è momentaneamente sospesa. I tuoi clienti continuano a usare l'app normalmente. Vai su Account per vedere i piani.");
+    return;
+  }
   document.getElementById('homeScreen').style.display = 'none';
   document.getElementById('appRoot').style.display = 'none';
   document.getElementById('accountPanel').style.display = 'none';
