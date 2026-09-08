@@ -909,10 +909,12 @@ function renderProgramDetailHtml(p){
           </div>
         </div>
       </div>
-      ${d.exercises.map(ex=>{
+      ${d.exercises.map((ex,ei)=>{
         const vi = getExerciseVideoInfo(ex.name);
-        return `<div class="hint">• ${ex.name} — ${descriviTargetSerie(ex)}${etichettaTecnica(ex,d)} <a href="${escapeAttr(vi.url)}" data-ex-name="${escapeAttr(ex.name)}" class="video-link">▶</a></div>
-          ${ex.note ? `<div class="exercise-note" style="margin:2px 0 6px 14px;">📌 ${escapeAttr(ex.note)}</div>` : ''}`;
+        const riga = `<span class="day-view-ex-num">${ei+1}</span><span>${ex.name} — ${descriviTargetSerie(ex)}${etichettaTecnica(ex,d)} <a href="${escapeAttr(vi.url)}" data-ex-name="${escapeAttr(ex.name)}" class="video-link">▶</a></span>`;
+        return ex.note
+          ? `<details class="ex-note-toggle" style="margin-top:4px;"><summary class="hint" style="display:flex; align-items:center; gap:7px; cursor:pointer;">${riga}<span class="ex-note-badge">📌<svg class="ex-note-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></span></summary><div class="exercise-note" style="margin:4px 0 6px 25px;">${escapeAttr(ex.note)}</div></details>`
+          : `<div class="hint" style="display:flex; align-items:center; gap:7px; margin-top:4px;">${riga}</div>`;
       }).join('')}
     </div>`).join('');
 
