@@ -198,45 +198,63 @@ function apriAccountPanel(){
   if(typeof aggiornaPuntinoMessaggi === 'function') aggiornaPuntinoMessaggi();
 }
 
-// Segnaposto per una funzione futura: oggi nessuna palestra è collegata
-// all'app, quindi lp.abbonamentoScadenza è sempre null e la card lo dice
-// esplicitamente. Appena una palestra imposterà questa data da qualche
-// parte (gestione PT/admin, non ancora costruita), la stessa card mostrerà
-// da sola data e badge di stato senza bisogno di altre modifiche qui.
-function renderAbbonamento(lp){
+// Card "Abbonamento" (Task 6a roadmap): visibile solo al Personal Trainer
+// — l'atleta non paga mai, niente da mostrargli qui. Legge lo stato da
+// abbonamenti_pt, scritto SOLO dal webhook Stripe lato server (il client
+// non ha alcun permesso di scrittura su quella tabella): qui è sempre e
+// solo un pannello di sola lettura. I pagamenti veri non sono ancora
+// attivi (vedi supabase/functions/stripe-webhook e #pianiPTOverlay più
+// sotto): finché non lo sono, lo stato resta 'nessuno' per tutti.
+async function renderAbbonamento(lp){
+  const card = document.getElementById('acctAbbonamentoCard');
+  if(!sonoPT()){ card.style.display = 'none'; return; }
+  card.style.display = '';
   const titolo = document.getElementById('abbonamentoTitolo');
   const hint = document.getElementById('abbonamentoHint');
-  const card = document.getElementById('acctAbbonamentoCard');
-  const rinnovaBtn = document.getElementById('abbonamentoRinnovaBtn');
-  const scadenza = lp && lp.abbonamentoScadenza;
-  if(!scadenza){
-    titolo.textContent = 'Abbonamento';
-    hint.textContent = "Non ancora collegato: appena la tua palestra lo attiva, qui vedrai in automatico quando scade il tuo abbonamento.";
-    card.className = 'card acct-highlight-card';
-    rinnovaBtn.style.display = 'none';
-    return;
+  document.getElementById('abbonamentoRinnovaBtn').textContent = 'Vedi i piani';
+  document.getElementById('abbonamentoRinnovaBtn').style.display = 'inline-flex';
+
+  let riga = null;
+  if(sb && utenteOnline){
+    try{
+      const res = await sb.from('abbonamenti_pt').select('piano,stato,prova_scade_il').eq('pt_id', utenteOnline.id).maybeSingle();
+      riga = res.data;
+    }catch(e){ console.error(e); }
   }
-  const giorni = giorniDaOggi(scadenza);
-  const data = formatDate(scadenza);
-  if(giorni !== null && giorni > 0){
-    titolo.textContent = 'Abbonamento scaduto';
-    hint.textContent = `Scaduto il ${data}: parla con la tua palestra per rinnovarlo.`;
-    card.className = 'card acct-highlight-card stato-low';
-    rinnovaBtn.style.display = 'inline-flex';
-  } else if(giorni !== null && giorni > -7){
-    titolo.textContent = 'Abbonamento in scadenza';
-    hint.textContent = `Scade il ${data}: rinnovalo per continuare ad allenarti senza interruzioni.`;
-    card.className = 'card acct-highlight-card stato-warn';
-    rinnovaBtn.style.display = 'inline-flex';
-  } else {
-    titolo.textContent = 'Abbonamento attivo';
-    hint.textContent = `Valido fino al ${data}.`;
+  const stato = (riga && riga.stato) || 'nessuno';
+  const piano = (riga && riga.piano) || 'nessuno';
+
+  if(stato === 'attivo'){
+    titolo.textContent = piano === 'pt_pro' ? 'Piano PT Pro attivo' : 'Piano PT attivo';
+    hint.textContent = piano === 'pt_pro' ? 'Clienti illimitati.' : 'Fino a 15 clienti collegati.';
     card.className = 'card acct-highlight-card stato-ok';
-    rinnovaBtn.style.display = 'none';
+  } else if(stato === 'prova'){
+    titolo.textContent = 'Prova gratuita PT';
+    hint.textContent = riga && riga.prova_scade_il ? `Scade il ${formatDate(riga.prova_scade_il.slice(0,10))}.` : 'In corso.';
+    card.className = 'card acct-highlight-card stato-warn';
+  } else if(stato === 'scaduto' || stato === 'pagamento_fallito'){
+    titolo.textContent = stato === 'pagamento_fallito' ? 'Pagamento non riuscito' : 'Abbonamento scaduto';
+    hint.textContent = "Attiva un piano per riaprire la tua area PT. I tuoi clienti continuano a usare l'app normalmente, nessun loro dato viene toccato.";
+    card.className = 'card acct-highlight-card stato-low';
+  } else {
+    titolo.textContent = 'Nessun piano attivo';
+    hint.textContent = 'Scegli un piano per aprire la tua area PT. 14 giorni di prova, senza carta.';
+    card.className = 'card acct-highlight-card';
   }
 }
 document.getElementById('abbonamentoRinnovaBtn').addEventListener('click', ()=>
-  toast("Contatta la tua palestra per rinnovare l'abbonamento."));
+  document.getElementById('pianiPTOverlay').classList.add('show'));
+document.getElementById('pianiPTChiudi').addEventListener('click', ()=>
+  document.getElementById('pianiPTOverlay').classList.remove('show'));
+document.getElementById('pianiPTOverlay').addEventListener('click', e=>{
+  if(e.target.id === 'pianiPTOverlay') e.currentTarget.classList.remove('show');
+});
+// Nessuno di questi tre bottoni fa davvero qualcosa: i pagamenti non sono
+// ancora attivi (vedi il commento sopra renderAbbonamento).
+['pianoPTBtn','pianoPTProBtn','pianoGestisciBtn'].forEach(id=>{
+  document.getElementById(id).addEventListener('click', ()=>
+    toast("I pagamenti non sono ancora attivi. Torna presto!"));
+});
 
 // Icona chat riusata al posto dell'emoji 💬 nei bottoni "Messaggi", per restare
 // coerenti con lo stile a icone SVG del resto dell'app.
@@ -539,6 +557,7 @@ async function dopoAccessoOnline(){
       const res = await sb.from('profili').insert(nuova).select().maybeSingle();
       if(res.error) throw res.error;
       rigaOnline = res.data || nuova;
+      eventoAnalytics('registrazione'); // prima volta con Google: qui è dove si scopre, non al click sul bottone
     } else {
       rigaOnline = data;
     }
@@ -571,6 +590,7 @@ async function dopoAccessoOnline(){
 
     // porto i dati online dentro il motore locale dell'app
     applicaDatiOnline();
+    if(typeof segnaEVerificaRitorno === 'function') segnaEVerificaRitorno();
     // la card per l'area riservata compare solo a chi è Personal Trainer
     document.getElementById('homePTBtn').style.display = sonoPT() ? 'flex' : 'none';
     caricaRapporti().then(()=>{ renderMioPT(); aggiornaCampanellaHome(); aggiornaPuntinoMessaggi(); ascoltaNotificheRealtime(); }).catch(()=>{});
@@ -773,6 +793,7 @@ document.getElementById('regBtn').addEventListener('click', async ()=>{
       options:{ data:{ nome }, emailRedirectTo: ritorno }
     });
     if(error){ err.textContent = traduciErrore(error.message); err.style.display='block'; return; }
+    eventoAnalytics('registrazione');
     if(data.session){
       utenteOnline = data.user;
       await dopoAccessoOnline();

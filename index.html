@@ -80,6 +80,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Roboto+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <script src="js/config.js"></script>
 <script src="js/brand.js"></script>
+<script src="js/analytics.js"></script>
 <!-- Libreria Supabase servita in locale (non più dal CDN jsdelivr): sospettato
      essere la causa reale del caricamento infinito segnalato il 02/09/2026 —
      su quel dispositivo/rete jsdelivr.net non rispondeva mai (né errore né
@@ -208,6 +209,9 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
         <label>Password</label>
         <input type="password" id="regPw" placeholder="Almeno 8 caratteri" autocomplete="new-password">
         <button class="btn block" id="regBtn" style="margin-top:14px;">Registrati</button>
+        <div class="hint" style="margin-top:10px; text-align:center;">
+          Registrandoti accetti i <a href="termini.html" target="_blank" rel="noopener">Termini</a> e l'<a href="privacy.html" target="_blank" rel="noopener">Informativa privacy</a>.
+        </div>
         <button class="link-btn" id="regTornaEmailBtn" style="margin-top:10px;">← Cambia email</button>
       </div>
 
@@ -250,6 +254,33 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
     <div style="padding:14px 16px; overflow-y:auto;">
       <p class="hint" style="margin:0 0 10px;">Manderai una richiesta: il trainer potrà seguirti solo dopo averla accettata. Deciderai tu se lasciargli modificare scheda e dieta.</p>
       <div id="elencoPT"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Piani PT (Task 6a roadmap): i pagamenti veri non sono ancora attivi —
+     ogni bottone qui dentro mostra solo un avviso ("torna presto"), niente
+     porta davvero a Stripe. Lo stato vero (se un domani sarà attivo) lo
+     scrive solo il server via webhook, mai questo overlay. -->
+<div class="mp-overlay" id="pianiPTOverlay">
+  <div class="mp-modal" style="max-width:460px;">
+    <div class="mp-head">
+      <h3>Piani per il Personal Trainer</h3>
+      <button class="mp-close" id="pianiPTChiudi" type="button" aria-label="Chiudi">&#10005;</button>
+    </div>
+    <div style="padding:14px 16px; overflow-y:auto;">
+      <p class="hint" style="margin:0 0 12px;">I pagamenti non sono ancora attivi: presto potrai scegliere qui il tuo piano. I tuoi clienti restano sempre gratis, in ogni piano.</p>
+      <div class="card" style="margin-bottom:10px;">
+        <h3 style="margin:0 0 4px;">Personal Trainer</h3>
+        <div class="dato-riga"><span>19€/mese</span><b>fino a 15 clienti</b></div>
+        <button type="button" class="btn block" id="pianoPTBtn" style="margin-top:10px;">Scegli questo piano</button>
+      </div>
+      <div class="card">
+        <h3 style="margin:0 0 4px;">Personal Trainer Pro</h3>
+        <div class="dato-riga"><span>39€/mese</span><b>clienti illimitati</b></div>
+        <button type="button" class="btn secondary block" id="pianoPTProBtn" style="margin-top:10px;">Scegli questo piano</button>
+      </div>
+      <button type="button" class="link-btn" id="pianoGestisciBtn" style="margin-top:14px; width:100%; text-align:center;">Gestisci fatturazione</button>
     </div>
   </div>
 </div>
@@ -941,7 +972,10 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
       <button class="btn danger block" id="privacyEliminaBtn" style="margin-top:10px;">Elimina il mio account</button>
     </div>
 
-    <div class="hint" style="margin-top:18px; text-align:center;">VIGOR — Registro allenamento</div>
+    <div class="hint" style="margin-top:10px; text-align:center;">
+      <a href="privacy.html" target="_blank" rel="noopener">Privacy</a> · <a href="termini.html" target="_blank" rel="noopener">Termini e condizioni</a>
+    </div>
+    <div class="hint" style="margin-top:8px; text-align:center;">VIGOR — Registro allenamento</div>
   </div>
 </div>
 

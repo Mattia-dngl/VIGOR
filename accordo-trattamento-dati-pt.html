@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Accordo trattamento dati per PT — VIGOR</title>
+<style>
+  body{font-family:'Inter',system-ui,sans-serif; max-width:760px; margin:0 auto; padding:32px 22px 60px;
+    color:#17150f; line-height:1.65; background:#f7f7f6;}
+  h1{font-size:24px; margin-bottom:4px;}
+  .sub{color:#6d6656; font-size:13px; margin-bottom:24px;}
+  h2{font-size:16px; margin-top:28px; color:#17150f;}
+  p, li{font-size:14px; color:#3a362c;}
+  a{color:#dd4526;}
+  .logo{font-weight:800; font-style:italic; font-size:20px; margin-bottom:18px;}
+  .logo .dot{color:#ff4b2b;}
+  .avviso{background:#fff4e9; border:1.5px solid #f0c48a; border-radius:12px; padding:16px 18px; margin:20px 0; font-size:13.5px; color:#7a4a06;}
+  .avviso b{display:block; margin-bottom:4px;}
+  .placeholder{background:#ffe4d8; padding:1px 5px; border-radius:4px; font-family:monospace; font-size:13px;}
+  .campo{border:1px dashed #b0a892; border-radius:8px; padding:10px 12px; margin:8px 0; font-size:13.5px; background:#fff;}
+  table{width:100%; border-collapse:collapse; font-size:13px; margin:12px 0;}
+  th, td{text-align:left; padding:7px 9px; border-bottom:1px solid #e2e2df; vertical-align:top;}
+  th{color:#6d6656; font-weight:700; font-size:11.5px; text-transform:uppercase;}
+  .firma{margin-top:14px; border-top:1px dashed #b0a892; padding-top:14px;}
+  .torna{display:inline-block; margin-top:36px; font-size:13px;}
+  @media print{ .avviso{display:none;} body{background:#fff;} }
+</style>
+</head>
+<body>
+  <div class="logo">VIGOR<span class="dot">.</span></div>
+  <h1>Modello di accordo sul trattamento dei dati (art. 28 GDPR)</h1>
+  <div class="sub">Per Personal Trainer e studi che usano VIGOR con i propri clienti</div>
+
+  <div class="avviso">
+    <b>Come e quando si usa questo modello</b>
+    Nel rapporto tra un Personal Trainer/studio e i propri clienti, il PT è di norma <b>titolare autonomo</b> del trattamento dei dati dei suoi clienti (decide lui scheda, dieta, valutazioni) — VIGOR è invece <b>responsabile del trattamento per conto del PT</b> quando il PT usa l'app per gestirli, e a sua volta VIGOR si appoggia a Supabase come sub-responsabile. Questo documento è un <b>modello di partenza</b> — se vuoi che sia VIGOR, come fornitore, a garantirti formalmente il trattamento corretto dei dati dei tuoi clienti tramite l'app, è pensato per essere firmato tra te (PT) e chi gestisce VIGOR. <b>Fallo verificare da un legale prima di firmarlo</b>: i contenuti minimi dell'art. 28 GDPR sono tutti presenti, ma la formulazione esatta va adattata al tuo caso. I campi <span class="placeholder">[COMPILA]</span> vanno completati da entrambe le parti.
+  </div>
+
+  <h2>Tra</h2>
+  <div class="campo"><b>Titolare del trattamento (il Personal Trainer/studio):</b><br>
+    Nome/ragione sociale: <span class="placeholder">[COMPILA]</span> — P.IVA/CF: <span class="placeholder">[COMPILA]</span> — Indirizzo: <span class="placeholder">[COMPILA]</span> — Email: <span class="placeholder">[COMPILA]</span></div>
+  <div class="campo"><b>Responsabile del trattamento (VIGOR):</b><br>
+    Nome/ragione sociale: <span class="placeholder">[COMPILA — stesso titolare indicato in privacy.html]</span> — P.IVA/CF: <span class="placeholder">[COMPILA]</span> — Indirizzo: <span class="placeholder">[COMPILA]</span> — Email: <a href="mailto:dangelomattia2002@gmail.com">dangelomattia2002@gmail.com</a></div>
+
+  <h2>1. Oggetto</h2>
+  <p>Il Responsabile (VIGOR) tratta, per conto del Titolare (il PT), i dati personali dei clienti che il Titolare gestisce tramite l'app: dati identificativi, dati di allenamento, misure corporee, foto di progresso, dati sulla dieta e comunicazioni scambiate tramite l'app.</p>
+
+  <h2>2. Durata</h2>
+  <p>Il trattamento dura per tutto il periodo in cui il Titolare usa VIGOR con i propri clienti, e cessa alla disattivazione dell'account PT o alla cancellazione dei dati richiesta dal Titolare.</p>
+
+  <h2>3. Natura e finalità del trattamento</h2>
+  <table>
+    <tr><th>Categoria di dati</th><th>Finalità</th></tr>
+    <tr><td>Dati identificativi del cliente (nome, email)</td><td>Gestione dell'account e del rapporto PT-cliente</td></tr>
+    <tr><td>Scheda, allenamenti, dieta</td><td>Erogazione del servizio di coaching da parte del Titolare</td></tr>
+    <tr><td>Misure corporee, foto di progresso (dati ex art. 9 GDPR)</td><td>Monitoraggio dei progressi, solo con consenso esplicito del cliente</td></tr>
+    <tr><td>Messaggi PT-cliente</td><td>Comunicazione tra le parti dentro l'app</td></tr>
+  </table>
+
+  <h2>4. Istruzioni del Titolare</h2>
+  <p>Il Responsabile tratta i dati esclusivamente secondo le istruzioni documentate del Titolare, che si intendono date tramite l'uso stesso delle funzioni dell'app (es. attivare il check-in periodico, concedere permessi di modifica scheda/dieta). Il Responsabile informa il Titolare se ritiene che un'istruzione violi il GDPR o altre norme sulla protezione dei dati.</p>
+
+  <h2>5. Riservatezza</h2>
+  <p>Il Responsabile garantisce che chi accede ai dati per suo conto sia vincolato alla riservatezza. Le foto e i dati dei clienti sono accessibili solo al cliente stesso e al Titolare con un rapporto attivo, mai ad altri utenti dell'app.</p>
+
+  <h2>6. Misure di sicurezza</h2>
+  <p>Il Responsabile adotta misure tecniche e organizzative adeguate: accesso ai dati protetto da autenticazione, regole di accesso a livello di riga sul database (Row Level Security) che limitano ogni utente ai propri dati, foto conservate in un'area privata non pubblica, connessioni cifrate (HTTPS).</p>
+
+  <h2>7. Sub-responsabili</h2>
+  <p>Il Responsabile si avvale di Supabase (infrastruttura database, autenticazione, archiviazione) come sub-responsabile, con sede dati nell'Unione Europea. Il Titolare autorizza sin d'ora questo sub-responsabile; eventuali nuovi sub-responsabili verranno comunicati con ragionevole anticipo.</p>
+
+  <h2>8. Assistenza al Titolare</h2>
+  <p>Il Responsabile assiste il Titolare, nei limiti di quanto tecnicamente possibile tramite le funzioni dell'app, nel rispondere alle richieste di esercizio dei diritti degli interessati (accesso, cancellazione, portabilità) e nel notificare eventuali violazioni di dati (data breach) senza ingiustificato ritardo.</p>
+
+  <h2>9. Cancellazione o restituzione dei dati</h2>
+  <p>Alla cessazione del rapporto, il Responsabile cancella o rende disponibili per l'esportazione i dati trattati per conto del Titolare, salvo obblighi di conservazione previsti dalla legge.</p>
+
+  <h2>10. Audit</h2>
+  <p>Il Titolare può richiedere informazioni ragionevoli sulle misure di sicurezza adottate dal Responsabile per verificare il rispetto di questo accordo.</p>
+
+  <div class="firma">
+    <p><b>Per il Titolare (Personal Trainer/studio)</b><br>
+    Nome: <span class="placeholder">[COMPILA]</span> — Data: <span class="placeholder">[COMPILA]</span> — Firma: <span class="placeholder">[COMPILA]</span></p>
+    <p><b>Per il Responsabile (VIGOR)</b><br>
+    Nome: <span class="placeholder">[COMPILA]</span> — Data: <span class="placeholder">[COMPILA]</span> — Firma: <span class="placeholder">[COMPILA]</span></p>
+  </div>
+
+  <a class="torna" href="privacy.html">← Torna all'informativa privacy</a>
+</body>
+</html>

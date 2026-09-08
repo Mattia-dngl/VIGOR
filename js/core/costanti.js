@@ -19,7 +19,6 @@ const NOMI_MESI = ["Gennaio","Febbraio","Marzo","Aprile","Maggio","Giugno","Lugl
 const STORAGE_KEY = "gymTrackerPersonaleState_v1";
 // unico account che può gestire l'app: password d'ingresso, profili, reimpostazioni
 const EMAIL_AMMINISTRATORE = "dangelomattia2002@gmail.com";
-const PASSWORD_INGRESSO_INIZIALE = "ALLENATIOra26";
 const OLD_STORAGE_KEY = "gymTrackerPersonaleState_v0";
 const MUSCLE_GROUPS = ["Petto","Schiena","Spalle","Bicipiti","Tricipiti","Quadricipiti","Femorali","Glutei","Polpacci","Core/Addome"];
 // Zone fini della mappa muscolare (stesse di corpo.js/ZONE_LABEL più sotto): usate per

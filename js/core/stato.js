@@ -16,6 +16,11 @@ let _clienteBuffer = null;
 let _clienteIdInModifica = null;
 let _modificaPTCosa = null;   // 'scheda' o 'dieta': cosa sto modificando, per l'avviso in chat
 let _ptSalvataggioTimer = null;
+// aggiornato_il del cliente letto quando ho aperto l'editor: serve a
+// salvaModifichePT() per accorgersi se nel frattempo lui ha salvato
+// qualcosa (allenamento, check-in) e in quel caso non scrivere sopra una
+// fotografia vecchia dei suoi dati — vedi js/pt/pt-area.js.
+let _clienteBufferApertoIl = null;
 
 function load(){
   let data;
@@ -68,6 +73,7 @@ function normalizzaProfilo(p){
   if(p.obiettivoPeso === undefined) p.obiettivoPeso = null;
   if(p.obiettivoRecord === undefined) p.obiettivoRecord = null;
   if(p.abbonamentoScadenza === undefined) p.abbonamentoScadenza = null;
+  if(p.consensoFotoDataIl === undefined) p.consensoFotoDataIl = null; // Task 5 roadmap: consenso esplicito per le foto di check-in
   if(!p.customExercises) p.customExercises = {};
   Object.keys(p.customExercises).forEach(name=>{
     if(Array.isArray(p.customExercises[name])){
@@ -94,8 +100,50 @@ function save(){
 // rimandata è solo la scrittura su localStorage, mai la modifica dei dati:
 // chi legge `state` (backup, export, render...) vede sempre il valore vero.
 let _salvataggioLocaleTimer = null;
+// Avviso generico che, a differenza di toast()/mostraNotificaRealtime()
+// (spariscono da soli), resta finché non lo si chiude a mano o finché chi
+// lo ha mostrato non lo toglie perché il problema si è risolto. Usato sia
+// per localStorage pieno (qui sotto) sia per l'upload di una foto di
+// check-in fallito (js/pt/checkin-cliente.js): un solo meccanismo, un solo
+// slot visibile alla volta — un secondo avviso ne aggiorna solo il testo.
+let _avvisoPersistenteEl = null;
+function mostraAvvisoPersistente(testo){
+  if(_avvisoPersistenteEl){
+    _avvisoPersistenteEl.querySelector('.avviso-persistente-testo').textContent = testo;
+    return;
+  }
+  const el = document.createElement('div');
+  el.className = 'avviso-persistente';
+  el.setAttribute('role', 'alert');
+  const span = document.createElement('span');
+  span.className = 'avviso-persistente-testo';
+  span.textContent = testo;
+  const chiudi = document.createElement('button');
+  chiudi.type = 'button';
+  chiudi.className = 'avviso-persistente-chiudi';
+  chiudi.textContent = 'Chiudi';
+  chiudi.addEventListener('click', nascondiAvvisoPersistente);
+  el.append(span, chiudi);
+  document.body.appendChild(el);
+  _avvisoPersistenteEl = el;
+}
+function nascondiAvvisoPersistente(){
+  if(_avvisoPersistenteEl){ _avvisoPersistenteEl.remove(); _avvisoPersistenteEl = null; }
+}
 function scriviStatoLocaleSubito(){
-  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(e){}
+  try{
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    nascondiAvvisoPersistente(); // una scrittura riuscita risolve l'avviso di prima
+  }catch(e){
+    mostraAvvisoPersistente("Spazio pieno sul telefono: questa modifica potrebbe non restare salvata qui. Se hai connessione l'ho comunque mandata online.");
+    // La copia in locale non c'è più, ma quella online resta l'unica fonte
+    // affidabile: se posso parlarle, la aggiorno subito invece di aspettare
+    // il debounce di programmaInvio() (1200ms) o peggio la prossima modifica.
+    if(typeof modalitaOnline === 'function' && modalitaOnline() && typeof navigator !== 'undefined'
+      && navigator.onLine && typeof inviaOnline === 'function'){
+      inviaOnline();
+    }
+  }
 }
 function programmaSalvataggioLocale(){
   clearTimeout(_salvataggioLocaleTimer);
@@ -118,6 +166,76 @@ window.addEventListener('pagehide', ()=>{
 // mentre lo sto seguendo come PT. loggedInProfile() è invece sempre e solo
 // il mio, così la mia identità (nome, account, impostazioni) non cambia mai.
 function activeProfile(){ return modalitaPT ? _clienteBuffer : loggedInProfile(); }
+
+// ============================================================
+// MISURE (Task 4a roadmap): salva/aggiorna una misurazione per data — stessa
+// regola ovunque nell'app ("un valore per data", la nuova sostituisce
+// l'eventuale precedente) — prima duplicata tre volte quasi identica tra
+// Storico, onboarding e check-in. Chi chiama ha già deciso i valori finali
+// di weight/waist/extra (ognuno con le proprie regole su cosa tenere del
+// valore precedente, diverse da un punto all'altro): qui si pensa solo a
+// salvarli, in locale (sempre) e sulla tabella "misurazioni" (in più,
+// quando possibile) — mai al posto del salvataggio locale/del blob, che
+// restano quelli di sempre via save().
+//
+// La tabella esiste APPOSTA per rendere le misure interrogabili (grafici,
+// query) senza dover leggere/scrivere tutto il blob "dati" del profilo a
+// ogni pesata: è uno specchio in più, non l'unica copia — se lo specchio
+// fallisce (offline, errore) la misura resta comunque salvata come sempre,
+// non si perde nulla.
+async function upsertMisurazione(prof, misurazione){
+  if(!prof.measurements) prof.measurements = [];
+  prof.measurements = prof.measurements.filter(m=>m.date!==misurazione.date);
+  prof.measurements.push(misurazione);
+  prof.measurements.sort((a,b)=>a.date.localeCompare(b.date));
+
+  if(typeof sb !== 'undefined' && sb && typeof utenteOnline !== 'undefined' && utenteOnline && prof.id === utenteOnline.id){
+    try{
+      await sb.from('misurazioni').upsert({
+        profilo_id: prof.id, data: misurazione.date,
+        peso: misurazione.weight, vita: misurazione.waist,
+        extra: misurazione.extra || {}
+      }, { onConflict: 'profilo_id,data' });
+    }catch(e){ console.error(e); }
+  }
+}
+
+// ============================================================
+// CHECK-IN PERIODICO (Task 4a roadmap, secondo pezzo): stesso principio
+// delle misure — il check-in resta anche nel blob "dati" (offline, come
+// sempre), e quando possibile viene specchiato sulla tabella
+// "checkin_periodico" per renderlo interrogabile. A differenza delle
+// misure un check-in non si modifica mai dopo l'invio: qui è sempre e solo
+// un inserimento, mai un upsert-per-data.
+async function specchiaCheckinSuTabella(prof, checkin){
+  if(typeof sb === 'undefined' || !sb || typeof utenteOnline === 'undefined' || !utenteOnline || prof.id !== utenteOnline.id) return;
+  try{
+    await sb.from('checkin_periodico').insert({
+      id: checkin.id, profilo_id: prof.id, data: checkin.data,
+      peso: checkin.peso, sensazione: checkin.sensazione,
+      nota: checkin.nota || null, foto_path: checkin.fotoPath || null
+    });
+  }catch(e){ console.error(e); }
+}
+
+// ============================================================
+// ALLENAMENTI (Task 4a roadmap, terzo pezzo): stesso principio di
+// misure/check-in — un log resta anche nel blob "dati" (offline, come
+// sempre) e quando possibile viene specchiato sulla tabella "allenamenti".
+// Accetta un ARRAY (non un solo log): registra.js ne salva uno alla volta,
+// ma controllaSaltati() (recupero-codici.js) può aggiungerne molti in un
+// solo giro — un inserimento in blocco invece di uno a uno.
+async function specchiaAllenamentiSuTabella(prof, logs){
+  if(!logs || logs.length === 0) return;
+  if(typeof sb === 'undefined' || !sb || typeof utenteOnline === 'undefined' || !utenteOnline || prof.id !== utenteOnline.id) return;
+  try{
+    await sb.from('allenamenti').insert(logs.map(log => ({
+      id: log.id, profilo_id: prof.id, data: log.date, program_id: log.programId,
+      status: log.status, day_key: log.dayKey, day_name: log.dayName,
+      exercises: log.exercises || [], notes: log.notes || null, auto: !!log.auto
+    })));
+  }catch(e){ console.error(e); }
+}
 
 // ============================================================
 // NOTIFICHE INCROCIATE PT ↔ CLIENTE su scheda/dieta

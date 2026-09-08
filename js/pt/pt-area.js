@@ -38,7 +38,28 @@ document.getElementById('sceltaPTOverlay').addEventListener('click', e=>{
 
 
 // ---------- area del Personal Trainer ----------
-function apriAreaPT(){
+// Task 6a (roadmap): l'accesso all'area PT dipende dall'abbonamento, scritto
+// SOLO dal webhook Stripe lato server (mai dal client). Nessuna riga in
+// abbonamenti_pt (PT già esistenti da prima di questa funzione) o uno
+// stato diverso da 'scaduto'/'pagamento_fallito' NON blocca mai: meglio
+// lasciar passare un caso dubbio che chiudere fuori per errore un PT vero.
+async function abbonamentoPTBloccato(){
+  if(!sb || !utenteOnline) return false;
+  try{
+    const { data } = await sb.from('abbonamenti_pt').select('stato').eq('pt_id', utenteOnline.id).maybeSingle();
+    return !!data && (data.stato === 'scaduto' || data.stato === 'pagamento_fallito');
+  }catch(e){ console.error(e); return false; }
+}
+
+async function apriAreaPT(){
+  if(await abbonamentoPTBloccato()){
+    // I clienti del PT non c'entrano nulla: hanno un account e una sessione
+    // propri, indipendenti da questo controllo — restano liberi di usare
+    // l'app come sempre. A perdere l'accesso è solo la SUA area PT.
+    mostraHome();
+    mostraAvvisoPersistente("Il tuo piano PT non è attivo: l'area PT è momentaneamente sospesa. I tuoi clienti continuano a usare l'app normalmente. Vai su Account per vedere i piani.");
+    return;
+  }
   document.getElementById('homeScreen').style.display = 'none';
   document.getElementById('appRoot').style.display = 'none';
   document.getElementById('accountPanel').style.display = 'none';
@@ -296,7 +317,7 @@ async function apriCliente(clienteId){
   document.getElementById('ptDettaglio').style.display = 'block';
   window.scrollTo(0,0);
   document.querySelectorAll('.pt-tab').forEach(t=>t.classList.toggle('active', t.dataset.pttab === 'riepilogo'));
-  renderDettaglioPT('riepilogo');
+  await renderDettaglioPT('riepilogo');
 }
 
 // Cambiare tab (Riepilogo/Scheda/Dieta/Storico) comporta chiudere l'editor
@@ -316,7 +337,7 @@ document.querySelectorAll('.pt-tab').forEach(t=>t.addEventListener('click', asyn
     await chiudiEditorSchedaInlinePT();
     await chiudiEditorDietaInlinePT();
     document.querySelectorAll('.pt-tab').forEach(x=>x.classList.toggle('active', x===t));
-    renderDettaglioPT(t.dataset.pttab);
+    await renderDettaglioPT(t.dataset.pttab);
   } finally {
     _cambiandoTabPT = false;
     tabs.style.opacity = '';
@@ -324,7 +345,29 @@ document.querySelectorAll('.pt-tab').forEach(t=>t.addEventListener('click', asyn
   }
 }));
 
-function renderDettaglioPT(sezione){
+// Foto di check-in su Storage (bucket privato "checkin-foto"): il record ha
+// solo il path (c.fotoPath), mai l'URL vero — va firmato al momento, un solo
+// giro per tutte le foto della pagina invece di una chiamata per miniatura.
+// Non lancia mai: se Storage non risponde, quelle foto restano non mostrate
+// (meglio della sezione check-in che non si apre affatto) e i check-in più
+// vecchi non ancora migrati (c.fotoUrl, base64) restano comunque visibili
+// perché non passano da qui.
+async function urlFirmateCheckinFoto(checkins){
+  const paths = [...new Set(checkins.map(c=>c.fotoPath).filter(Boolean))];
+  if(paths.length === 0 || typeof sb === 'undefined' || !sb) return {};
+  try{
+    const { data, error } = await sb.storage.from('checkin-foto').createSignedUrls(paths, 3600);
+    if(error || !data) return {};
+    const mappa = {};
+    data.forEach(riga=>{ if(riga && !riga.error && riga.signedUrl) mappa[riga.path] = riga.signedUrl; });
+    return mappa;
+  }catch(e){
+    console.error(e);
+    return {};
+  }
+}
+
+async function renderDettaglioPT(sezione){
   if(!_clienteAperto) return;
   const d = _clienteAperto.riga.dati || {};
   const r = _clienteAperto.rapporto;
@@ -434,6 +477,12 @@ function renderDettaglioPT(sezione){
     // notifiche (bell/lista, vedi renderNotifiche in home.js) smettono di
     // segnalare i check-in già visti qui.
     segnaVistaPT('checkin');
+    // Le foto migrate su Storage hanno solo il path (c.fotoPath): serve un
+    // URL firmato per mostrarle, un giro solo per tutte prima di disegnare
+    // la pagina. I check-in vecchi non ancora migrati (c.fotoUrl, base64)
+    // non hanno bisogno di niente e restano visibili comunque.
+    const urlFirmate = await urlFirmateCheckinFoto(checkins);
+    const fotoDaMostrare = c => c.fotoPath ? urlFirmate[c.fotoPath] : c.fotoUrl;
     box.innerHTML = `
       <div class="card">
         <h3>Check-in periodico</h3>
@@ -465,9 +514,10 @@ function renderDettaglioPT(sezione){
                 </div>
                 ${c.sensazione ? `<div class="hint">Sensazione: ${c.sensazione}/5</div>` : ''}
                 ${c.nota ? `<div class="hint" style="margin-top:2px; font-style:italic;">"${escapeAttr(c.nota)}"</div>` : ''}`;
-              if(!c.fotoUrl) return `<div class="pt-scheda-ro">${didascalia}</div>`;
+              const foto = fotoDaMostrare(c);
+              if(!foto) return `<div class="pt-scheda-ro">${didascalia}</div>`;
               return `<div class="pt-scheda-ro checkin-post">
-                  <button type="button" class="checkin-post-foto" data-foto-idx="${i}"><img src="${c.fotoUrl}" alt="Foto progresso del ${formatDate(c.data)}"></button>
+                  <button type="button" class="checkin-post-foto" data-foto-idx="${i}"><img src="${foto}" alt="Foto progresso del ${formatDate(c.data)}"></button>
                   <div class="checkin-post-caption">${didascalia}</div>
                   <button type="button" class="checkin-post-scarica" data-foto-idx="${i}" title="Scarica la foto originale" aria-label="Scarica la foto">${ICONA_SCARICA_SVG}</button>
                 </div>`;
@@ -480,11 +530,11 @@ function renderDettaglioPT(sezione){
     box.querySelectorAll('.checkin-post-foto').forEach(btn=>{
       const c = checkins[parseInt(btn.dataset.fotoIdx)];
       const didascalia = `${formatDate(c.data)}${c.peso!=null ? ' · ' + c.peso + ' kg' : ''}`;
-      btn.addEventListener('click', ()=>apriFotoIngrandita(c.fotoUrl, didascalia, `check-in-${c.data}.jpg`));
+      btn.addEventListener('click', ()=>apriFotoIngrandita(fotoDaMostrare(c), didascalia, `check-in-${c.data}.jpg`));
     });
     box.querySelectorAll('.checkin-post-scarica').forEach(btn=>{
       const c = checkins[parseInt(btn.dataset.fotoIdx)];
-      btn.addEventListener('click', e=>{ e.stopPropagation(); scaricaFotoCheckin(c.fotoUrl, `check-in-${c.data}.jpg`); });
+      btn.addEventListener('click', e=>{ e.stopPropagation(); scaricaFotoCheckin(fotoDaMostrare(c), `check-in-${c.data}.jpg`); });
     });
   }
 }
@@ -587,7 +637,7 @@ async function impostaCheckinCliente(idRapporto, patch){
   Object.assign(_clienteAperto.rapporto, patch);
   const r2 = _rapporti.find(x=>x.id===idRapporto);
   if(r2) Object.assign(r2, patch);
-  renderDettaglioPT('checkin');
+  await renderDettaglioPT('checkin');
 }
 
 // ---------- modificare scheda o dieta di un cliente ----------
@@ -619,14 +669,13 @@ function propagaEserciziPersonalizzatiPT(giorni){
   });
 }
 
-// ---------- editor scheda del cliente, DIRETTAMENTE nella sua scheda (non in una
-// schermata a parte): sposto il vero editor (stesso identico markup e stessa
-// logica di quando lo fai per te — editingDays, dropset, superset, i due tasti
-// Aggiorna/Salva come nuova versione) dentro il pannello del cliente, invece di
-// duplicarne il codice. Quando esci da questa scheda, torna al suo posto.
-function mostraEditorSchedaInlinePT(){
-  if(!_clienteAperto) return;
-  const p = _clienteAperto.riga;
+// Fotografia di partenza dei dati del cliente su cui il PT lavorerà
+// (_clienteBuffer): usata dai tre punti di ingresso qui sotto
+// (editor scheda/dieta inline, modificaComePT). Registra anche
+// aggiornato_il letto in questo momento — salvaModifichePT() lo confronta
+// con quello vero sul server prima di scrivere, per accorgersi se il
+// cliente ha salvato qualcosa nel frattempo (vedi lì).
+function preparaClienteBuffer(p){
   const buffer = JSON.parse(JSON.stringify(p.dati || {}));
   buffer.id = p.id;
   buffer.name = nomeDi(p);
@@ -642,8 +691,19 @@ function mostraEditorSchedaInlinePT(){
   if(!buffer.waterLogs) buffer.waterLogs = [];
   if(!buffer.checkins) buffer.checkins = [];
   if(!buffer.customFoods) buffer.customFoods = {};
+  _clienteBufferApertoIl = p.aggiornato_il || null;
+  return buffer;
+}
 
-  _clienteBuffer = buffer;
+// ---------- editor scheda del cliente, DIRETTAMENTE nella sua scheda (non in una
+// schermata a parte): sposto il vero editor (stesso identico markup e stessa
+// logica di quando lo fai per te — editingDays, dropset, superset, i due tasti
+// Aggiorna/Salva come nuova versione) dentro il pannello del cliente, invece di
+// duplicarne il codice. Quando esci da questa scheda, torna al suo posto.
+function mostraEditorSchedaInlinePT(){
+  if(!_clienteAperto) return;
+  const p = _clienteAperto.riga;
+  _clienteBuffer = preparaClienteBuffer(p);
   _clienteIdInModifica = p.id;
   _modificaPTCosa = 'scheda';
   modalitaPT = true;
@@ -680,23 +740,7 @@ async function chiudiEditorSchedaInlinePT(){
 function mostraEditorDietaInlinePT(){
   if(!_clienteAperto) return;
   const p = _clienteAperto.riga;
-  const buffer = JSON.parse(JSON.stringify(p.dati || {}));
-  buffer.id = p.id;
-  buffer.name = nomeDi(p);
-  buffer.approvato = true;
-  if(!buffer.programs || !buffer.programs.length) buffer.programs = [blankProgram()];
-  if(!buffer.activeProgramId) buffer.activeProgramId = buffer.programs[buffer.programs.length-1].id;
-  if(!buffer.customExercises) buffer.customExercises = {};
-  Object.keys(buffer.customExercises).forEach(name=>{
-    if(Array.isArray(buffer.customExercises[name])) buffer.customExercises[name] = {muscles: buffer.customExercises[name], video:''};
-  });
-  if(!buffer.measurements) buffer.measurements = [];
-  if(!buffer.mealLogs) buffer.mealLogs = [];
-  if(!buffer.waterLogs) buffer.waterLogs = [];
-  if(!buffer.checkins) buffer.checkins = [];
-  if(!buffer.customFoods) buffer.customFoods = {};
-
-  _clienteBuffer = buffer;
+  _clienteBuffer = preparaClienteBuffer(p);
   _clienteIdInModifica = p.id;
   _modificaPTCosa = 'dieta';
   modalitaPT = true;
@@ -727,24 +771,7 @@ async function chiudiEditorDietaInlinePT(){
 function modificaComePT(cosa){
   if(!_clienteAperto) return;
   const p = _clienteAperto.riga;
-  const buffer = JSON.parse(JSON.stringify(p.dati || {}));
-  buffer.id = p.id;
-  buffer.name = nomeDi(p);
-  buffer.approvato = true;
-  if(!buffer.programs || !buffer.programs.length) buffer.programs = [blankProgram()];
-  if(!buffer.activeProgramId) buffer.activeProgramId = buffer.programs[buffer.programs.length-1].id;
-  if(!buffer.customExercises) buffer.customExercises = {};
-  // vecchio formato (solo array di muscoli, senza video/tipo): lo aggiorno come fa load() per me
-  Object.keys(buffer.customExercises).forEach(name=>{
-    if(Array.isArray(buffer.customExercises[name])) buffer.customExercises[name] = {muscles: buffer.customExercises[name], video:''};
-  });
-  if(!buffer.measurements) buffer.measurements = [];
-  if(!buffer.mealLogs) buffer.mealLogs = [];
-  if(!buffer.waterLogs) buffer.waterLogs = [];
-  if(!buffer.checkins) buffer.checkins = [];
-  if(!buffer.customFoods) buffer.customFoods = {};
-
-  _clienteBuffer = buffer;
+  _clienteBuffer = preparaClienteBuffer(p);
   _clienteIdInModifica = p.id;
   _modificaPTCosa = cosa;
   modalitaPT = true;
@@ -774,10 +801,49 @@ async function salvaModifichePT(){
     return false;
   }
   if(!sb){ toast("Serve la connessione per salvare sul suo account."); return false; }
-  const { error } = await sb.from('profili')
-    .update({ dati: _clienteBuffer, aggiornato_il: new Date().toISOString() })
+
+  // Scrittura condizionata: aggiorno solo se aggiornato_il è ancora quello
+  // che avevo letto quando ho aperto l'editor (.eq in più). Il caso normale
+  // (nessuno ha toccato il profilo nel frattempo) costa un solo giro di
+  // rete, uguale a prima. Se invece qualcuno ha salvato — tipicamente il
+  // cliente stesso, un allenamento o un check-in — la condizione non trova
+  // corrispondenza: PostgREST non scrive nulla e torna un array vuoto,
+  // senza errore. È il segnale per rileggere, riapplicare sopra SOLO
+  // scheda/dieta (mai storico/misure/check-in, che sono suoi) e riprovare.
+  const nuovoAggiornatoIl = new Date().toISOString();
+  let query = sb.from('profili')
+    .update({ dati: _clienteBuffer, aggiornato_il: nuovoAggiornatoIl })
     .eq('id', _clienteIdInModifica);
+  if(_clienteBufferApertoIl) query = query.eq('aggiornato_il', _clienteBufferApertoIl);
+  const { data, error } = await query.select('id');
   if(error){ console.error(error); toast("Non riuscito a salvare: " + error.message); return false; }
+
+  if(data && data.length > 0){
+    _clienteBufferApertoIl = nuovoAggiornatoIl;
+    if(_clienteAperto) _clienteAperto.riga.aggiornato_il = nuovoAggiornatoIl;
+    return true;
+  }
+
+  const { data: fresco, error: erroreLettura } = await sb.from('profili')
+    .select('dati,aggiornato_il').eq('id', _clienteIdInModifica).maybeSingle();
+  if(erroreLettura || !fresco){
+    console.error(erroreLettura);
+    toast("Non riuscito a salvare: il cliente ha aggiornato i suoi dati nel frattempo, riprova.");
+    return false;
+  }
+  const datiUniti = Object.assign({}, fresco.dati, {
+    programs: _clienteBuffer.programs,
+    activeProgramId: _clienteBuffer.activeProgramId
+  });
+  const nuovoAggiornatoIl2 = new Date().toISOString();
+  const { error: erroreScrittura } = await sb.from('profili')
+    .update({ dati: datiUniti, aggiornato_il: nuovoAggiornatoIl2 })
+    .eq('id', _clienteIdInModifica);
+  if(erroreScrittura){ console.error(erroreScrittura); toast("Non riuscito a salvare: " + erroreScrittura.message); return false; }
+  _clienteBuffer = datiUniti;
+  _clienteBufferApertoIl = nuovoAggiornatoIl2;
+  if(_clienteAperto) _clienteAperto.riga.aggiornato_il = nuovoAggiornatoIl2;
+  toast("Il cliente ha aggiornato i suoi dati nel frattempo: ho salvato la tua modifica senza toccare il suo storico.");
   return true;
 }
 function programmaSalvataggioPT(){
@@ -802,7 +868,7 @@ async function tornaDaModificaPT(){
   document.getElementById('areaPT').style.display = 'block';
   document.getElementById('ptElenco').style.display = 'none';
   document.getElementById('ptDettaglio').style.display = 'block';
-  renderDettaglioPT(document.querySelector('.pt-tab.active').dataset.pttab);
+  await renderDettaglioPT(document.querySelector('.pt-tab.active').dataset.pttab);
   toast("Modifiche salvate ✓");
 }
 

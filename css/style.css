@@ -1385,6 +1385,21 @@
   .rt-notifica.show{transform:translate(-50%,0);}
   .rt-notifica-icona{font-size:17px; flex:0 0 auto;}
   .rt-notifica-testo{flex:1 1 auto; min-width:0;}
+  /* Avviso persistente generico (js/core/stato.js, mostraAvvisoPersistente):
+     a differenza di .toast/.rt-notifica non sparisce da solo, resta finché
+     non si chiude o finché chi lo ha mostrato non lo toglie perché il
+     problema si è risolto. Usato per localStorage pieno e per l'upload di
+     una foto di check-in fallito. */
+  .avviso-persistente{
+    position:fixed; left:0; right:0; top:0; z-index:600;
+    display:flex; align-items:center; gap:12px; justify-content:center;
+    background:var(--warn); color:#fff; padding:10px 16px;
+    padding-top:calc(10px + env(safe-area-inset-top, 0px));
+    font-size:12.5px; font-weight:600; line-height:1.35;}
+  .avviso-persistente-chiudi{
+    flex:0 0 auto; background:rgba(255,255,255,.2); color:#fff; border:none;
+    border-radius:var(--r-pill); padding:6px 14px; font-size:11.5px; font-weight:700;
+    font-family:var(--font-display); cursor:pointer;}
   .custom-confirm-overlay{
     position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:400;
     display:flex; align-items:center; justify-content:center; padding:24px;

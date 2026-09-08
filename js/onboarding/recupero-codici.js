@@ -81,15 +81,18 @@ function autoRegistraSaltati(){
 
   const cur = new Date(daIso + "T12:00:00");
   let aggiunti = 0, giro = 0;
+  const nuoviLog = [];
   while(isoDaData(cur) < sogliaIso && giro++ < 800){
     const iso = isoDaData(cur);
     const previsto = p.days.find(d=>d.weekday === WEEKDAYS[cur.getDay()]);
     const scartato = prof.autoSkipIgnorati && prof.autoSkipIgnorati.includes(iso);
     if(previsto && !scartato && !prof.logs.some(l=>l.date===iso && l.programId===p.id)){
-      prof.logs.push({
+      const log = {
         id: uid(), date: iso, programId: p.id, status: "saltato",
         dayKey: null, dayName: null, exercises: [], notes: "", auto: true
-      });
+      };
+      prof.logs.push(log);
+      nuoviLog.push(log);
       aggiunti++;
     }
     cur.setDate(cur.getDate()+1);
@@ -97,6 +100,7 @@ function autoRegistraSaltati(){
   if(aggiunti>0){
     prof.logs.sort((a,b)=>a.date.localeCompare(b.date));
     save();
+    specchiaAllenamentiSuTabella(prof, nuoviLog);
   }
   return aggiunti;
 }

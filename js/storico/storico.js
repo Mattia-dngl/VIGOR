@@ -50,14 +50,12 @@ document.getElementById('saveMeasureBtn').addEventListener('click', ()=>{
   // invece di cancellare quelle vecchie
   const precedente = prof.measurements.find(m=>m.date===date);
   const extraUniti = Object.assign({}, (precedente && precedente.extra) || {}, extra);
-  prof.measurements = prof.measurements.filter(m=>m.date!==date);
-  prof.measurements.push({
+  upsertMisurazione(prof, {
     date,
     weight: weight ? parseFloat(weight) : (precedente ? precedente.weight : null),
     waist: waist ? parseFloat(waist) : (precedente ? precedente.waist : null),
     extra: extraUniti
   });
-  prof.measurements.sort((a,b)=>a.date.localeCompare(b.date));
   save();
   document.getElementById('measureWeight').value = "";
   document.getElementById('measureWaist').value = "";

@@ -813,7 +813,10 @@ document.getElementById('saveLogBtn').addEventListener('click', ()=>{
 
   // se quel giorno era stato segnato saltato in automatico, la scelta manuale ha la precedenza
   prof.logs = prof.logs.filter(l => !(l.auto && l.date===iso && l.programId===p.id));
+  const eraIlPrimoAllenamento = log.status === 'registrato' && !prof.logs.some(l=>l.status==='registrato');
   prof.logs.push(log);
+  specchiaAllenamentiSuTabella(prof, [log]);
+  if(eraIlPrimoAllenamento) eventoAnalytics('primo_allenamento');
 
   const nuoviRecord = [];
   log.exercises.forEach(e=>{

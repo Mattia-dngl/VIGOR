@@ -11,6 +11,9 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const { loadApp, run } = require('./helpers/loadApp.js');
 
+// salvaModifichePT() (pt-area.js) fa .update(...).eq('id',...)[.eq('aggiornato_il',...)].select('id'):
+// la scrittura condizionata dal Task 4b ha bisogno che il finto sb la accetti,
+// non solo la vecchia .eq(...) da sola.
 function fakeSupabaseCliente(cliente){
   return `{
     from(table){
@@ -18,7 +21,10 @@ function fakeSupabaseCliente(cliente){
         return {
           select(){ return this; },
           eq(col, val){ return { maybeSingle(){ return Promise.resolve({data: val===${JSON.stringify(cliente.id)} ? ${JSON.stringify(cliente)} : null, error:null}); } }; },
-          update(patch){ return { eq(col,val){ return Promise.resolve({error:null}); } }; }
+          update(patch){
+            const risultato = { eq(){ return risultato; }, select(){ return Promise.resolve({ data:[{id:${JSON.stringify(cliente.id)}}], error:null }); } };
+            return risultato;
+          }
         };
       }
       return { select(){return this;}, eq(){return this;}, or(){return Promise.resolve({data:[],error:null});}, update(){return {eq(){return Promise.resolve({error:null});}};} };
