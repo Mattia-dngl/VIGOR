@@ -83,11 +83,58 @@ function inizializzaPaginaInstallazione(){
   }
 }
 
+// Rivela le sezioni/card marcate con [data-reveal] quando entrano nello
+// schermo (fade + salita), invece di mostrare tutta la pagina già "montata"
+// dall'inizio. Chi preferisce ridurre le animazioni, o un browser senza
+// IntersectionObserver, vede subito tutto senza attese.
+function inizializzaRivelazioneScroll(){
+  const elementi = Array.from(document.querySelectorAll('[data-reveal]'));
+  if(!elementi.length) return;
+
+  const riduciMovimento = typeof window.matchMedia === 'function' &&
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  if(riduciMovimento || typeof IntersectionObserver === 'undefined'){
+    elementi.forEach(el => el.classList.add('is-visible'));
+    return;
+  }
+
+  const osservatore = new IntersectionObserver((voci) => {
+    voci.forEach(voce => {
+      if(voce.isIntersecting){
+        voce.target.classList.add('is-visible');
+        osservatore.unobserve(voce.target);
+      }
+    });
+  }, { threshold:0.15, rootMargin:'0px 0px -40px 0px' });
+
+  elementi.forEach(el => osservatore.observe(el));
+}
+
+// Piccola ombra sull'header sticky appena si scrolla, così non resta piatto
+// e "attaccato" al contenuto sottostante.
+function inizializzaHeaderScroll(){
+  const header = document.querySelector('.site-header');
+  if(!header) return;
+  function aggiorna(){
+    header.classList.toggle('scrolled', window.scrollY > 8);
+  }
+  aggiorna();
+  window.addEventListener('scroll', aggiorna, { passive:true });
+}
+
+function inizializzaLandingComune(){
+  inizializzaRivelazioneScroll();
+  inizializzaHeaderScroll();
+}
+
 if(typeof window !== 'undefined'){
   window.rilevaSistemaOperativo = rilevaSistemaOperativo;
   window.rilevaWebviewSocial = rilevaWebviewSocial;
   window.inizializzaPaginaInstallazione = inizializzaPaginaInstallazione;
+  window.inizializzaLandingComune = inizializzaLandingComune;
   document.addEventListener('DOMContentLoaded', inizializzaPaginaInstallazione);
+  document.addEventListener('DOMContentLoaded', inizializzaLandingComune);
 }
 
 if(typeof module !== 'undefined' && module.exports){
