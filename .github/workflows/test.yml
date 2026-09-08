@@ -16,7 +16,11 @@ jobs:
       - name: Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          # jsdom 30 richiede Node ^22.22.2 || ^24.15.0 || >=26.0.0 (vedi
+          # node_modules/jsdom/package.json): con Node 20 npm test fallisce
+          # subito con "webidl.util.markAsUncloneable is not a function"
+          # dentro undici, non è un vero fallimento dei test.
+          node-version: 22.22.2
 
       - name: Installa le dipendenze
         run: npm ci
