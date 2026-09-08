@@ -167,6 +167,39 @@ window.addEventListener('pagehide', ()=>{
 function activeProfile(){ return modalitaPT ? _clienteBuffer : loggedInProfile(); }
 
 // ============================================================
+// MISURE (Task 4a roadmap): salva/aggiorna una misurazione per data — stessa
+// regola ovunque nell'app ("un valore per data", la nuova sostituisce
+// l'eventuale precedente) — prima duplicata tre volte quasi identica tra
+// Storico, onboarding e check-in. Chi chiama ha già deciso i valori finali
+// di weight/waist/extra (ognuno con le proprie regole su cosa tenere del
+// valore precedente, diverse da un punto all'altro): qui si pensa solo a
+// salvarli, in locale (sempre) e sulla tabella "misurazioni" (in più,
+// quando possibile) — mai al posto del salvataggio locale/del blob, che
+// restano quelli di sempre via save().
+//
+// La tabella esiste APPOSTA per rendere le misure interrogabili (grafici,
+// query) senza dover leggere/scrivere tutto il blob "dati" del profilo a
+// ogni pesata: è uno specchio in più, non l'unica copia — se lo specchio
+// fallisce (offline, errore) la misura resta comunque salvata come sempre,
+// non si perde nulla.
+async function upsertMisurazione(prof, misurazione){
+  if(!prof.measurements) prof.measurements = [];
+  prof.measurements = prof.measurements.filter(m=>m.date!==misurazione.date);
+  prof.measurements.push(misurazione);
+  prof.measurements.sort((a,b)=>a.date.localeCompare(b.date));
+
+  if(typeof sb !== 'undefined' && sb && typeof utenteOnline !== 'undefined' && utenteOnline && prof.id === utenteOnline.id){
+    try{
+      await sb.from('misurazioni').upsert({
+        profilo_id: prof.id, data: misurazione.date,
+        peso: misurazione.weight, vita: misurazione.waist,
+        extra: misurazione.extra || {}
+      }, { onConflict: 'profilo_id,data' });
+    }catch(e){ console.error(e); }
+  }
+}
+
+// ============================================================
 // NOTIFICHE INCROCIATE PT ↔ CLIENTE su scheda/dieta
 // Non c'è una tabella "notifiche": come per messaggi/richieste, la notifica è
 // calcolata al volo confrontando "quando è stata modificata" con "quando l'ha

@@ -141,14 +141,12 @@ document.getElementById('checkinInviaBtn').addEventListener('click', async ()=>{
     const ultimo = ultimoPesoRegistrato(prof);
     if(!ultimo || ultimo.weight !== peso){
       const precedente = prof.measurements.find(m=>m.date===data);
-      prof.measurements = prof.measurements.filter(m=>m.date!==data);
-      prof.measurements.push({
+      upsertMisurazione(prof, {
         date: data,
         weight: peso,
         waist: precedente ? precedente.waist : null,
         extra: (precedente && precedente.extra) || {}
       });
-      prof.measurements.sort((a,b)=>a.date.localeCompare(b.date));
     }
   }
   save();

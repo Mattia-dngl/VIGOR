@@ -67,13 +67,11 @@ document.getElementById('onbContinua').addEventListener('click', ()=>{
     if(pesoNum && pesoNum > 0){
       const oggi = new Date().toISOString().slice(0,10);
       const precedente = p.measurements.find(m=>m.date===oggi);
-      p.measurements = p.measurements.filter(m=>m.date!==oggi);
-      p.measurements.push({
+      upsertMisurazione(p, {
         date: oggi, weight: pesoNum,
         waist: precedente ? precedente.waist : null,
         extra: (precedente && precedente.extra) || {}
       });
-      p.measurements.sort((a,b)=>a.date.localeCompare(b.date));
     }
   }
 
