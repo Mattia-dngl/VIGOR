@@ -35,8 +35,10 @@ function renderSchedaEditForm(){
 // salvataggio in base a COME si è entrati nell'editor (_modoEditorScheda) —
 // un solo bottone alla volta, niente più spiegazione lunga su cosa fanno
 // "Aggiorna"/"Salva come nuova versione" quando in realtà se ne vede solo
-// uno (26/08/2026). Il PT che modifica la scheda di un cliente fa eccezione:
-// per lui restano sempre visibili entrambi, comportamento invariato.
+// uno (26/08/2026). Dal 08/09/2026 il PT che modifica la scheda di un
+// cliente usa lo STESSO identico motore matita/"+Nuova scheda" del cliente
+// (vedi apriEditorSchedaPT in pt-area.js): non più un'eccezione con entrambi
+// i bottoni sempre assieme, solo il titolo cambia per dire di chi è la scheda.
 function aggiornaModalitaEditorScheda(){
   const pt = !!(modalitaPT && _modificaPTCosa==='scheda' && _clienteAperto);
   const titolo2 = document.getElementById('programEditTitolo2');
@@ -48,22 +50,9 @@ function aggiornaModalitaEditorScheda(){
   const btnNuova = document.getElementById('saveNewProgramBtn');
   if(!titolo2 || !btnAggiorna || !btnNuova) return;
 
-  if(pt){
-    // comportamento di sempre, invariato: entrambi i bottoni e la spiegazione
-    // completa, perché il PT non ha un "+Nuova scheda" separato per i clienti
-    titolo2.textContent = `Scheda di ${nomeDi(_clienteAperto.riga)}`;
-    if(introWrap) introWrap.style.display = '';
-    if(introHint) introHint.style.display = '';
-    if(hintNuova) hintNuova.style.display = 'none';
-    if(nomeWrap) nomeWrap.style.display = 'block';
-    btnAggiorna.style.display = 'block';
-    btnNuova.style.display = 'block';
-    btnNuova.textContent = 'Salva come nuova versione';
-    return;
-  }
-
   const nuova = _modoEditorScheda === 'nuova';
-  titolo2.textContent = nuova ? 'Nuova scheda' : 'Modifica scheda';
+  const suffisso = pt ? ` di ${nomeDi(_clienteAperto.riga)}` : '';
+  titolo2.textContent = (nuova ? 'Nuova scheda' : 'Modifica scheda') + suffisso;
   if(introWrap) introWrap.style.display = 'none';
   if(introHint) introHint.style.display = 'none';
   if(hintNuova) hintNuova.style.display = nuova ? 'block' : 'none';
@@ -77,12 +66,15 @@ function renderDietEditForm(){
   const p = activeProgram();
   editingDietInfo = JSON.parse(JSON.stringify(p.dietInfo || defaultDietInfo()));
   editingDiet = (p.diet && typeof p.diet === 'object') ? JSON.parse(JSON.stringify(p.diet)) : defaultDietDays();
+  const pt = !!(modalitaPT && _modificaPTCosa==='dieta' && _clienteAperto);
   const titolo = document.getElementById('dietEditTitolo');
   if(titolo){
-    titolo.textContent = (modalitaPT && _modificaPTCosa==='dieta' && _clienteAperto)
+    titolo.textContent = pt
       ? `Dieta di ${nomeDi(_clienteAperto.riga)}`
       : "Il personal trainer ti ha aggiornato la dieta?";
   }
+  const titolo2 = document.getElementById('dietEditTitolo2');
+  if(titolo2) titolo2.textContent = pt ? `Modifica dieta di ${nomeDi(_clienteAperto.riga)}` : 'Modifica dieta';
   renderDietInfoEditors();
   renderDietDayEditors();
   applyDietEditFormVisibility();
@@ -636,6 +628,11 @@ document.getElementById('schedaEditBtn').addEventListener('click', ()=>{
 document.getElementById('schedaTornaVediBtn').addEventListener('click', ()=>{
   _modoEditorScheda = 'modifica';   // si esce dall'editor: la prossima apertura riparte da "modifica"
   document.querySelector('.seg-btn[data-seg="view"]').click();
+  // Lato PT questo stesso bottone vive dentro la scheda del cliente
+  // (mostraEditorSchedaInlinePT sposta qui l'editor): oltre al toggle di
+  // sempre, chiude davvero l'editor (salva) e torna alla vista PT.
+  // tornaVistaSchedaPT (pt-area.js) si esclude da sola se non è il caso.
+  if(typeof tornaVistaSchedaPT === 'function') tornaVistaSchedaPT();
 });
 document.getElementById('nuovaSchedaBtn').addEventListener('click', ()=>{
   customConfirm("Iniziare una scheda nuova da zero? La scheda attuale resta invariata finché non premi \"Salva scheda\".", ()=>{
@@ -661,6 +658,8 @@ document.getElementById('dietEditBtn').addEventListener('click', ()=>{
 });
 document.getElementById('dietTornaVediBtn').addEventListener('click', ()=>{
   document.querySelector('.seg-btn[data-segd="view"]').click();
+  // Lato PT: stesso passaggio di schedaTornaVediBtn qui sopra.
+  if(typeof tornaVistaDietaPT === 'function') tornaVistaDietaPT();
 });
 
 document.getElementById('clearDietFormBtn').addEventListener('click', ()=>{
@@ -822,6 +821,7 @@ document.getElementById('updateProgramBtn').addEventListener('click', ()=>{
   // appena salvata. Stesso passaggio già usato da #schedaTornaVediBtn.
   document.querySelector('.seg-btn[data-seg="view"]').click();
   document.querySelector('.tab-btn[data-tab="program"]').click();
+  if(typeof tornaVistaSchedaPT === 'function') tornaVistaSchedaPT();
 });
 
 document.getElementById('saveNewProgramBtn').addEventListener('click', ()=>{
@@ -858,6 +858,7 @@ document.getElementById('saveNewProgramBtn').addEventListener('click', ()=>{
   // voce di nav.
   document.querySelector('.seg-btn[data-seg="view"]').click();
   document.querySelector('.tab-btn[data-tab="program"]').click();
+  if(typeof tornaVistaSchedaPT === 'function') tornaVistaSchedaPT();
 });
 
 document.getElementById('saveDietBtn').addEventListener('click', ()=>{
@@ -886,6 +887,7 @@ document.getElementById('saveDietBtn').addEventListener('click', ()=>{
   // la dieta appena salvata sotto agli occhi ancora in modalità editor.
   document.querySelector('.seg-btn[data-segd="view"]').click();
   document.querySelector('.tab-btn[data-tab="diet"]').click();
+  if(typeof tornaVistaDietaPT === 'function') tornaVistaDietaPT();
 });
 
 function renderProgramDetailHtml(p){

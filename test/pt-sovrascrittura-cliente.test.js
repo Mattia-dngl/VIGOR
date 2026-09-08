@@ -80,6 +80,10 @@ test('il cliente registra un allenamento MENTRE il PT ha la scheda aperta: il sa
     await apriCliente('cli-1');
     document.querySelector('.pt-tab[data-pttab="scheda"]').click();
     await new Promise(r => setTimeout(r, 0));
+    // 08/09/2026: la scheda si apre in "Vedi" (come dal lato cliente) — serve
+    // il tap sulla matita per entrare davvero nell'editor e popolare il buffer.
+    document.getElementById('ptSchedaEditBtn').click();
+    await new Promise(r => setTimeout(r, 0));
   `);
 
   // Il PT modifica il nome della scheda (nel buffer, non ancora salvato).
@@ -124,6 +128,8 @@ test('nessuna modifica concorrente: il salvataggio del PT resta un giro solo, co
     document.getElementById('areaPT').style.display = 'block';
     await apriCliente('cli-1');
     document.querySelector('.pt-tab[data-pttab="scheda"]').click();
+    await new Promise(r => setTimeout(r, 0));
+    document.getElementById('ptSchedaEditBtn').click();
     await new Promise(r => setTimeout(r, 0));
     _clienteBuffer.programs[0].name = 'Scheda aggiornata dal PT';
     document.querySelector('.pt-tab[data-pttab="riepilogo"]').click();

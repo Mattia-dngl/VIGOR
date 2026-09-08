@@ -1,4 +1,7 @@
 const ICONA_SCARICA_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="M7.5 10.5 12 15l4.5-4.5"/><path d="M4 20h16"/></svg>';
+// Stessa matita usata dal lato cliente per "Modifica scheda"/"Modifica dieta"
+// (#schedaEditBtn/#dietEditBtn in index.html) — la riuso qui per l'area PT.
+const ICONA_MATITA_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>';
 
 // ---------- scelta del trainer ----------
 document.getElementById('chiediPTBtn').addEventListener('click', async ()=>{
@@ -452,22 +455,37 @@ async function renderDettaglioPT(sezione){
 
   if(sezione === 'scheda'){
     const puo = r.puo_scheda;
+    const nomeCliente = nomeDi(_clienteAperto.riga);
     box.innerHTML = `
-      <div class="card">
-        <h3>Scheda${puo ? '' : ' (sola lettura)'}</h3>
-        ${puo ? '<p class="hint">Modifica direttamente qui sotto: le modifiche arrivano subito sul suo telefono.</p>'
-              : '<p class="hint">Per modificarla serve che la persona ti dia il permesso dalla sua scheda.</p>'}
-        ${!prog ? '<div class="empty">Nessuna scheda impostata.</div>' : `
-          <div class="pt-scheda-ro"><b>${prog.name}</b> <span class="hint">dal ${formatDate(prog.createdAt)}${prog.scadenza ? ' · scadenza ' + formatDate(prog.scadenza) + (giorniDaOggi(prog.scadenza) > 0 ? ' (scaduta)' : '') : ''}</span></div>
-          ${(prog.days||[]).map(g=>`
-            <div class="pt-scheda-ro">
-              <b>${g.key} · ${g.name}</b> <span class="hint">${g.weekday || 'senza giorno fisso'}</span>
-              ${(g.exercises||[]).map(e=>`<div class="hint" style="margin-top:4px;">${e.name} — ${descriviTargetSerie(e)}${etichettaTecnica(e,g)}</div>${e.note?`<div class="exercise-note" style="margin:2px 0 4px 10px;">📌 ${escapeAttr(e.note)}</div>`:''}`).join('')}
-            </div>`).join('')}
-        `}
+      <div id="ptSchedaViewWrap">
+        <div class="scheda-header-row">
+          <h2 class="scheda-titolo">Scheda di ${escapeAttr(nomeCliente)}</h2>
+          ${puo ? `<div class="scheda-header-actions">
+              <button type="button" class="btn-nuova-scheda" id="ptNuovaSchedaBtn">+ Nuova scheda</button>
+              <button type="button" class="icon-btn-round" id="ptSchedaEditBtn" aria-label="Modifica scheda" title="Modifica scheda">${ICONA_MATITA_SVG}</button>
+            </div>` : ''}
+        </div>
+        <div class="card">
+          ${puo ? `<p class="hint">Le modifiche arrivano subito sul telefono di ${escapeAttr(nomeCliente)}.</p>`
+                : '<p class="hint">Per modificarla serve che la persona ti dia il permesso dalla sua scheda.</p>'}
+          ${!prog ? '<div class="empty">Nessuna scheda impostata.</div>' : `
+            <div class="pt-scheda-ro"><b>${prog.name}</b> <span class="hint">dal ${formatDate(prog.createdAt)}${prog.scadenza ? ' · scadenza ' + formatDate(prog.scadenza) + (giorniDaOggi(prog.scadenza) > 0 ? ' (scaduta)' : '') : ''}</span></div>
+            ${(prog.days||[]).map(g=>`
+              <div class="pt-scheda-ro">
+                <b>${g.key} · ${g.name}</b> <span class="hint">${g.weekday || 'senza giorno fisso'}</span>
+                ${(g.exercises||[]).map(e=>`<div class="hint" style="margin-top:4px;">${e.name} — ${descriviTargetSerie(e)}${etichettaTecnica(e,g)}</div>${e.note?`<div class="exercise-note" style="margin:2px 0 4px 10px;">📌 ${escapeAttr(e.note)}</div>`:''}`).join('')}
+              </div>`).join('')}
+          `}
+        </div>
       </div>
-      ${puo ? '<div id="ptSchedaEditorSlot"></div>' : ''}`;
-    if(puo) mostraEditorSchedaInlinePT();
+      ${puo ? '<div id="ptSchedaEditorSlot" style="display:none;"></div>' : ''}`;
+    if(puo){
+      document.getElementById('ptSchedaEditBtn').addEventListener('click', ()=>apriEditorSchedaPT('modifica'));
+      document.getElementById('ptNuovaSchedaBtn').addEventListener('click', ()=>{
+        customConfirm(`Iniziare una scheda nuova da zero per ${nomeCliente}? La scheda attuale resta invariata finché non premi "Salva scheda".`,
+          ()=>apriEditorSchedaPT('nuova'));
+      });
+    }
     segnaVistaPT('scheda');
     return;
   }
@@ -493,15 +511,25 @@ async function renderDettaglioPT(sezione){
             <div class="hint">Cena: ${day.cena||'-'}</div></div>`;
       }).join('');
     }
+    const nomeCliente = nomeDi(_clienteAperto.riga);
     box.innerHTML = `
-      <div class="card">
-        <h3>Dieta${puo ? '' : ' (sola lettura)'}</h3>
-        ${puo ? '<p class="hint">Modifica direttamente qui sotto: le modifiche arrivano subito sul suo telefono.</p>'
-              : '<p class="hint">Per modificarla serve che la persona ti dia il permesso.</p>'}
-        ${righeGiorni ? righeGiorni : '<div class="empty">Nessun piano alimentare impostato.</div>'}
+      <div id="ptDietaViewWrap">
+        <div class="scheda-header-row">
+          <h2 class="scheda-titolo diet">Dieta di ${escapeAttr(nomeCliente)}</h2>
+          ${puo ? `<div class="scheda-header-actions">
+              <button type="button" class="icon-btn-round" id="ptDietaEditBtn" aria-label="Modifica dieta" title="Modifica dieta">${ICONA_MATITA_SVG}</button>
+            </div>` : ''}
+        </div>
+        <div class="card">
+          ${puo ? `<p class="hint">Le modifiche arrivano subito sul telefono di ${escapeAttr(nomeCliente)}.</p>`
+                : '<p class="hint">Per modificarla serve che la persona ti dia il permesso.</p>'}
+          ${righeGiorni ? righeGiorni : '<div class="empty">Nessun piano alimentare impostato.</div>'}
+        </div>
       </div>
-      ${puo ? '<div id="ptDietaEditorSlot"></div>' : ''}`;
-    if(puo) mostraEditorDietaInlinePT();
+      ${puo ? '<div id="ptDietaEditorSlot" style="display:none;"></div>' : ''}`;
+    if(puo){
+      document.getElementById('ptDietaEditBtn').addEventListener('click', ()=>mostraEditorDietaInlinePT());
+    }
     segnaVistaPT('dieta');
   }
 
@@ -743,11 +771,45 @@ function mostraEditorSchedaInlinePT(){
   modalitaPT = true;
   document.body.classList.add('modifica-pt');   // riusa le stesse regole che nascondono backup/ripristina
 
+  const viewWrap = document.getElementById('ptSchedaViewWrap');
+  if(viewWrap) viewWrap.style.display = 'none';
   const editor = document.getElementById('programEditBlock');
   const slot = document.getElementById('ptSchedaEditorSlot');
+  if(slot) slot.style.display = 'block';
   if(editor && slot && editor.parentElement !== slot) slot.appendChild(editor);
   if(editor) editor.style.display = 'block';
   renderNewProgramForm();   // popola editingDays con la scheda attuale del cliente
+}
+// Matita ("Modifica scheda") o "+ Nuova scheda" nella vista PT (stessa coppia
+// di azioni del lato cliente, vedi #schedaEditBtn/#nuovaSchedaBtn): fissa
+// _modoEditorScheda PRIMA di aprire l'editor inline, così l'editor mostra un
+// solo bottone di salvataggio invece di entrambi sempre assieme, esattamente
+// come già succede per il cliente che modifica la propria scheda.
+function apriEditorSchedaPT(modo){
+  _modoEditorScheda = modo;
+  mostraEditorSchedaInlinePT();
+  if(modo === 'nuova'){
+    editingDays = [];
+    document.getElementById('newProgramName').value = "";
+    document.getElementById('newProgramDurata').value = "";
+    document.getElementById('newProgramNotePT').value = "";
+    renderDayEditors();
+  }
+}
+// Freccia indietro / salvataggio riusciti nell'editor inline: chiude davvero
+// l'editor (salva + rimette il markup al suo posto nel lato cliente) e
+// ridisegna la vista PT in modalità "Vedi", come fa il pencil/back del
+// cliente sulla propria scheda. Richiamate dai bottoni condivisi in
+// scheda-editor.js/dieta, guardate lì da modalitaPT+_modificaPTCosa.
+async function tornaVistaSchedaPT(){
+  if(!modalitaPT || _modificaPTCosa !== 'scheda') return;
+  await chiudiEditorSchedaInlinePT();
+  await renderDettaglioPT('scheda');
+}
+async function tornaVistaDietaPT(){
+  if(!modalitaPT || _modificaPTCosa !== 'dieta') return;
+  await chiudiEditorDietaInlinePT();
+  await renderDettaglioPT('dieta');
 }
 // Riporta l'editor al suo posto originale (dentro Scheda, per quando lo usi tu)
 // e salva subito eventuali modifiche in sospeso prima di uscire dalla pagina
@@ -780,8 +842,11 @@ function mostraEditorDietaInlinePT(){
   modalitaPT = true;
   document.body.classList.add('modifica-pt');
 
+  const viewWrap = document.getElementById('ptDietaViewWrap');
+  if(viewWrap) viewWrap.style.display = 'none';
   const editor = document.getElementById('dietPlanEditBlock');
   const slot = document.getElementById('ptDietaEditorSlot');
+  if(slot) slot.style.display = 'block';
   if(editor && slot && editor.parentElement !== slot) slot.appendChild(editor);
   if(editor) editor.style.display = 'block';
   renderDietEditForm();
