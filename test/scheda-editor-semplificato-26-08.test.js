@@ -183,7 +183,7 @@ test('"Schede archiviate" non è più dentro "Modifica scheda": ora vive in Stor
   window.close();
 });
 
-test('Storico mostra la tendina "Schede archiviate", sempre visibile qualunque sia il segmento scelto', async () => {
+test('Storico mostra la tendina "Schede archiviate" dentro la scheda Allenamenti, non ripetuta sotto Volume/Misure', async () => {
   const { window, document } = await loadApp();
   await run(window, `
     const profilo = ${JSON.stringify(profiloBase())};
@@ -191,9 +191,13 @@ test('Storico mostra la tendina "Schede archiviate", sempre visibile qualunque s
     mostraHome();
     vaiA('storico');
   `);
-  const details = Array.from(document.querySelectorAll('#programStoricoBlock details.details-card'))
+  const trovaArchivio = () => Array.from(document.querySelectorAll('#programStoricoBlock details.details-card'))
     .find(d => d.querySelector('summary')?.textContent === 'Schede archiviate');
-  assert.ok(details, 'deve esserci una tendina "Schede archiviate" dentro Storico');
+  assert.ok(trovaArchivio(), 'deve esserci una tendina "Schede archiviate" dentro Storico (scheda Allenamenti, attiva di default)');
+  assert.ok(document.getElementById('historyLogsBlock').contains(trovaArchivio()), 'vive dentro Allenamenti, non come blocco a parte sempre in vista');
+
+  await run(window, `document.querySelector('.seg-btn[data-seg2="volume"]').click();`);
+  assert.equal(document.getElementById('historyLogsBlock').style.display, 'none', 'passando a Volume, Allenamenti (e l\'archivio al suo interno) si nasconde');
   window.close();
 });
 
