@@ -184,39 +184,55 @@ async function renderAreaPT(){
   document.getElementById('ptContaOggi').textContent = totaleOggi ? `(${totaleOggi})` : '';
 
   // ---- header: i numeri chiave a colpo d'occhio, invece di solo un titolo ----
+  // Icona in un pallino nell'angolo di ogni chip (mockup 08/09/2026): un
+  // segno di spunta per "Seguiti", un "+" per "Richieste", un calendario per
+  // "Attivi in sett." — solo estetico, nessuna delle tre cambia significato.
+  const ICONA_PTH_SEGUITI = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5 9.5 17 19 7"/></svg>';
+  const ICONA_PTH_RICHIESTE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>';
+  const ICONA_PTH_ATTIVI = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="5.5" width="16" height="14.5" rx="2.5"/><path d="M4 10h16M8 3.5v3M16 3.5v3"/></svg>';
   document.getElementById('ptHeroStats').innerHTML = `
-    <div class="pth-chip"><b>${attivi.length}</b><span>Seguiti</span></div>
-    <div class="pth-chip${richieste.length ? ' accent' : ''}"><b>${richieste.length}</b><span>Richieste</span></div>
-    <div class="pth-chip"><b>${attiviQuestaSettimana}</b><span>Attivi questa settimana</span></div>`;
+    <div class="pth-chip"><span class="pth-chip-icon ok">${ICONA_PTH_SEGUITI}</span><b>${attivi.length}</b><span>Seguiti</span></div>
+    <div class="pth-chip${richieste.length ? ' accent' : ''}"><span class="pth-chip-icon">${ICONA_PTH_RICHIESTE}</span><b>${richieste.length}</b><span>Richieste</span></div>
+    <div class="pth-chip"><span class="pth-chip-icon">${ICONA_PTH_ATTIVI}</span><b>${attiviQuestaSettimana}</b><span>Attivi in sett.</span></div>`;
 
-  // ---- vista d'insieme: "cose da guardare oggi" come striscia di alert
-  // colorati per tipo (non più una card con elenco puntato) ----
+  // ---- vista d'insieme: "cose da guardare oggi" come griglia a due colonne
+  // di card-persona (mockup 08/09/2026: foto, badge di stato, nome, stato,
+  // barra e tasto "Apri" a piena larghezza — non più la striscia scorrevole
+  // di alert compatti di prima). freshnessDi() è dichiarata più sotto in
+  // questa stessa funzione ma è una function e quindi già disponibile qui.
   const boxOggi = document.getElementById('ptOggi');
   if(totaleOggi === 0){
     boxOggi.innerHTML = '<div class="pt-empty-banner">Tutto in ordine: nessuna richiesta in sospeso, nessuno fermo da troppo e nessun piano scaduto ✓</div>';
   } else {
-    const alertCard = (tipo, label, nome, meta, attrs)=>`<button type="button" class="pt-alert-card ${tipo}" ${attrs}>
-        <div class="head"><span class="dot"></span><span class="lab">${label}</span></div>
-        <div class="nome">${escapeAttr(nome)}</div>
-        <div class="desc">${escapeAttr(meta)}</div>
-        <div class="link">Apri →</div>
+    const personaCard = (tipo, badge, p, meta, fr, attrs)=>`<button type="button" class="pt-oggi-card ${tipo}" ${attrs}>
+        <div class="pt-oggi-top">
+          <div class="pt-avatar">${avatarContentHtml(nomeDi(p), (p.dati||{}).avatarUrl)}</div>
+          <span class="pt-oggi-badge">${badge}</span>
+        </div>
+        <div class="pt-oggi-nome">${escapeAttr(nomeDi(p))}</div>
+        <div class="pt-oggi-status">${escapeAttr(meta)}</div>
+        <div class="pt-fresh"><i style="width:${fr.pct}%; background:${fr.colore};"></i></div>
+        <span class="pt-apri-pill block">Apri</span>
       </button>`;
     const cards = [];
     if(richieste.length){
-      cards.push(`<button type="button" class="pt-alert-card accent" data-vai-richieste="1">
-          <div class="head"><span class="dot"></span><span class="lab">RICHIESTE</span></div>
-          <div class="nome">${richieste.length}</div>
-          <div class="desc">${richieste.length===1?'richiesta da accettare o rifiutare':'richieste da accettare o rifiutare'}</div>
-          <div class="link">Vedi sotto ↓</div>
+      cards.push(`<button type="button" class="pt-oggi-card accent no-avatar" data-vai-richieste="1">
+          <div class="pt-oggi-top">
+            <div class="pt-oggi-icon">${ICONA_PTH_RICHIESTE}</div>
+            <span class="pt-oggi-badge">RICHIESTE</span>
+          </div>
+          <div class="pt-oggi-nome">${richieste.length}</div>
+          <div class="pt-oggi-status">${richieste.length===1?'richiesta da accettare o rifiutare':'richieste da accettare o rifiutare'}</div>
+          <span class="pt-apri-pill block">Vedi sotto</span>
         </button>`);
     }
-    fermi.forEach(v=>cards.push(alertCard('warn', 'FERMO', nomeDi(v.p),
-      v.s.giorniFermo===null ? 'non si è ancora allenato' : `fermo da ${v.s.giorniFermo} giorni`,
-      `data-apri-oggi="${v.r.cliente_id}"`)));
-    scaduti.forEach(v=>cards.push(alertCard('danger', 'SCADUTO', nomeDi(v.p),
-      `scheda "${v.s.scheda.name}" scaduta il ${formatDate(v.s.scheda.scadenza)}`,
-      `data-apri-oggi="${v.r.cliente_id}"`)));
-    boxOggi.innerHTML = `<div class="pt-scroll-row">${cards.join('')}</div>`;
+    fermi.forEach(v=>cards.push(personaCard('warn', v.s.giorniFermo===null ? 'INATTIVO' : 'ATTENZIONE', v.p,
+      v.s.giorniFermo===null ? 'Non si è allenato' : `Fermo da ${v.s.giorniFermo} giorni`,
+      freshnessDi(v.s), `data-apri-oggi="${v.r.cliente_id}"`)));
+    scaduti.forEach(v=>cards.push(personaCard('danger', 'SCADUTO', v.p,
+      `Scheda "${v.s.scheda.name}" scaduta il ${formatDate(v.s.scheda.scadenza)}`,
+      freshnessDi(v.s), `data-apri-oggi="${v.r.cliente_id}"`)));
+    boxOggi.innerHTML = `<div class="pt-oggi-grid">${cards.join('')}</div>`;
     boxOggi.querySelectorAll('[data-apri-oggi]').forEach(b=>b.addEventListener('click', ()=>apriCliente(b.dataset.apriOggi)));
     const vaiRichieste = boxOggi.querySelector('[data-vai-richieste]');
     if(vaiRichieste) vaiRichieste.addEventListener('click', ()=>{
@@ -271,41 +287,36 @@ async function renderAreaPT(){
     return { pct: Math.round(frac*100), colore };
   }
 
-  function schedaCard(r, p, s){
+  // Riga di una persona seguita (mockup 08/09/2026): stessa forma per chi è
+  // in evidenza (fermo/scaduto, tinta d'allarme) e per chi è in regola —
+  // avatar, nome, una riga di stato, barra sottile, tasto "Apri" a destra.
+  function clienteRow(tipo, r, p, statusText, fr){
     const d = p.dati || {};
-    const allen = (d.logs||[]).filter(l=>l.status==='registrato').length;
-    const permessi = [r.puo_scheda ? 'scheda' : null, r.puo_dieta ? 'dieta' : null].filter(Boolean);
-    const permLabel = permessi.length ? 'Modifichi ' + permessi.join(' e ') : 'Sola lettura';
-    const fr = freshnessDi(s);
     return `<div class="pt-client-wrap">
-        <button type="button" class="pt-client-card" data-apri="${r.cliente_id}">
+        <button type="button" class="pt-client-row${tipo ? ' ' + tipo : ''}" data-apri="${r.cliente_id}">
           <div class="pt-avatar">${avatarContentHtml(nomeDi(p), d.avatarUrl)}</div>
-          <div><div class="nome">${escapeAttr(nomeDi(p))}</div><div class="meta">${allen} allenamenti</div></div>
-          <div class="pt-fresh"><i style="width:${fr.pct}%; background:${fr.colore};"></i></div>
-          <span class="pt-perm-chip">${permLabel}</span>
+          <div class="pt-client-row-info">
+            <div class="nome">${escapeAttr(nomeDi(p))}</div>
+            <div class="status">${escapeAttr(statusText)}</div>
+            <div class="pt-fresh"><i style="width:${fr.pct}%; background:${fr.colore};"></i></div>
+          </div>
+          <span class="pt-apri-pill">Apri</span>
         </button>
-        <button type="button" class="pt-termina-link" data-chiudi="${r.id}">Termina rapporto</button>
+        <button type="button" class="pt-termina-link" data-chiudi="${r.id}">↗ Termina rapporto</button>
       </div>`;
   }
 
-  function spotlightCard(r, p, s){
+  function schedaCard(r, p, s){
     const d = p.dati || {};
-    const fr = freshnessDi(s);
+    const allen = (d.logs||[]).filter(l=>l.status==='registrato').length;
+    return clienteRow('', r, p, `${allen} allenament${allen===1?'o':'i'}`, freshnessDi(s));
+  }
+
+  function spotlightCard(r, p, s){
     const motivi = [];
     if(s.fermoDaTroppo) motivi.push(s.giorniFermo===null ? 'non si è ancora allenato' : `fermo da ${s.giorniFermo} giorni`);
     if(s.scadenzaPassata) motivi.push('scheda scaduta');
-    return `<div class="pt-client-wrap spotlight">
-        <button type="button" class="pt-spotlight" data-apri="${r.cliente_id}">
-          <div class="pt-avatar pt-avatar-lg">${avatarContentHtml(nomeDi(p), d.avatarUrl)}</div>
-          <div class="info">
-            <div class="nome">${escapeAttr(nomeDi(p))}</div>
-            <div class="status">${escapeAttr(motivi.join(' · '))}</div>
-            <div class="pt-fresh"><i style="width:${fr.pct}%; background:${fr.colore};"></i></div>
-          </div>
-          <span class="pt-spotlight-btn">Apri</span>
-        </button>
-        <button type="button" class="pt-termina-link" data-chiudi="${r.id}">Termina rapporto</button>
-      </div>`;
+    return clienteRow('spotlight', r, p, motivi.join(' · '), freshnessDi(s));
   }
 
   const righe = attivi.map((r,i)=>({r, p: profili[i]||{}, s: segnali[i]})).filter(v=>v.p && v.p.id);

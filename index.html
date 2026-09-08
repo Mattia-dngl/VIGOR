@@ -334,7 +334,10 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
         <h1>I tuoi atleti</h1>
         <p class="pt-sub" id="ptSottotitolo">Le persone che segui</p>
       </div>
-      <button class="btn secondary" id="ptTornaHome" style="margin-top:0;">← Home</button>
+      <button class="pt-home-btn" id="ptTornaHome">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        <span>Home</span>
+      </button>
     </div>
     <div class="pth-stats" id="ptHeroStats"></div>
   </header>
@@ -351,7 +354,7 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
     </div>
 
     <div class="pt-section">
-      <div class="pt-section-label">Persone che segui</div>
+      <div class="pt-section-label">I tuoi atleti</div>
       <div id="ptClienti"></div>
     </div>
   </div>
