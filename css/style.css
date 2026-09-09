@@ -677,6 +677,22 @@
   .day-view-ex-recupero{white-space:nowrap;}
   .day-view-ex-note{margin:6px 0 0 25px; font-size:12px;}
 
+  /* 09/09/2026 (richiesta esplicita, con mockup allegato): esercizio in
+     superset in una card a sé, invece del testo "nome · Superset con
+     nome-partner" che andava a capo e spingeva tutto fuori asse quando i
+     nomi erano lunghi. Il numero resta allineato in alto (non al centro:
+     la card è alta più righe) — stesso trattamento a bordo colorato già
+     usato per il superset nell'editor (.exercise-edit-block:has(.superset-chip)). */
+  .day-view-ex-riga1:has(.superset-ex-card){align-items:flex-start;}
+  .superset-ex-card{flex:1; min-width:0; display:flex; flex-direction:column; gap:4px;
+    background:var(--surface2); border-left:3px solid var(--accent); border-radius:10px;
+    padding:9px 11px; margin:1px 0;}
+  .superset-ex-card .day-view-ex-stats{margin-left:0;}
+  .superset-ex-card .day-view-ex-riga2{margin-top:2px;}
+  .superset-tag-badge{align-self:flex-start; display:inline-flex; align-items:center; gap:4px;
+    font-size:10.5px; font-weight:700; font-family:var(--font-display); letter-spacing:.02em;
+    color:var(--accent); background:var(--accent-soft); padding:3px 8px; border-radius:var(--r-pill);}
+
   /* Esercizio con nota del PT: tutto il blocco diventa un <details>, la nota
      resta chiusa finché non ci si clicca sopra (prima stava sempre aperta e
      "mangiava" spazio nella vista). Nessuna freccia/marker di default del

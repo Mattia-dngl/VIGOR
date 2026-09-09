@@ -52,16 +52,26 @@ function urlFileVideo(url){
 function esercizioDiBase(nome){
   return !!(typeof libFind === 'function' && libFind(nome));
 }
+// Trova il partner di superset di un esercizio (in un verso o nell'altro:
+// lui ha scelto un partner, o qualcun altro ha scelto lui) — null se non è
+// in nessun superset. Centralizza la stessa ricerca già fatta da
+// etichettaTecnica(), così la vista Scheda può disegnare il superset come
+// card a sé (09/09/2026: nome+partner tutto sulla stessa riga andava troppo
+// spesso a capo, "Superset con" pesava troppo) senza duplicare la logica.
+function trovaPartnerSuperset(ex, giorno){
+  if(!giorno) return null;
+  if(ex.supersetCon!=null && giorno.exercises[ex.supersetCon]) return giorno.exercises[ex.supersetCon];
+  const mieIdx = giorno.exercises.indexOf(ex);
+  const chiIdx = chiMiHaAbbinato(giorno, mieIdx);
+  if(chiIdx >= 0) return giorno.exercises[chiIdx];
+  return null;
+}
 // piccola etichetta da mostrare nelle viste di sola lettura della scheda, per
 // sapere a colpo d'occhio quali esercizi hanno una tecnica speciale collegata
 function etichettaTecnica(ex, giorno){
   if(ex.dropset) return ex.dropset.tipo==='restpause' ? ' · Rest-pause' : ' · Dropset';
-  if(ex.supersetCon!=null && giorno && giorno.exercises[ex.supersetCon]) return ` · Superset con ${giorno.exercises[ex.supersetCon].name}`;
-  if(giorno){
-    const mieIdx = giorno.exercises.indexOf(ex);
-    const chiIdx = chiMiHaAbbinato(giorno, mieIdx);
-    if(chiIdx >= 0) return ` · Superset con ${giorno.exercises[chiIdx].name}`;
-  }
+  const partner = trovaPartnerSuperset(ex, giorno);
+  if(partner) return ` · Superset con ${partner.name}`;
   return '';
 }
 
