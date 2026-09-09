@@ -569,6 +569,14 @@ function ricostruisciFiguraCorpo(){
   const gboxB = document.querySelector('#glFigBack .zoom-ctrl'); if(gboxB) gboxB.remove();
 
   if(typeof glBuildAll === 'function'){ glBuildAll(); }
+
+  // La mappa muscolare della Home ("La tua settimana") è una terza figura
+  // costruita da queste stesse geometrie (GEO/GEO_DONNA): senza ricostruirla
+  // anche qui, dopo aver scelto il sesso all'onboarding restava quella
+  // disegnata prima (con la figura del sesso sbagliato) finché non si
+  // usciva dalla Home e ci si tornava — unico momento in cui hmRefresh()
+  // veniva richiamato di nuovo (da renderHome()).
+  if(typeof hmRefresh === 'function') hmRefresh();
 }
 
 // ============================================================

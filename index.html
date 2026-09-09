@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<meta name="color-scheme" content="light">
 <title>Registro Allenamento</title>
 <script src="js/ui/redirect-landing.js"></script>
 <script>
@@ -1109,8 +1110,14 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
       <label>Altezza (cm)</label>
       <input type="text" id="onbAltezza" placeholder="Es. 178" inputmode="decimal">
 
-      <label>Attività fisica</label>
-      <input type="text" id="onbAttivita" placeholder="Es. Palestra 4 volte a settimana">
+      <label>Livello di attività fisica</label>
+      <select id="onbAttivita">
+        <option value="sedentario">Sedentario — lavoro da seduto, poco o nessun esercizio</option>
+        <option value="leggero">Leggero — esercizio 1-3 giorni a settimana</option>
+        <option value="moderato">Moderato — esercizio 3-5 giorni a settimana</option>
+        <option value="intenso">Intenso — esercizio 6-7 giorni a settimana</option>
+        <option value="molto_intenso">Molto intenso — esercizio quotidiano + lavoro fisico</option>
+      </select>
     </div>
 
     <button class="btn block" id="onbContinua" style="margin-top:14px;">Continua</button>
