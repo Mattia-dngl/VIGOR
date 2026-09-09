@@ -3,6 +3,7 @@
 function renderAll(){
   logDateInput.value = new Date().toISOString().slice(0,10);
   controllaOnboarding();
+  chiediPromemoriaAlPrimoAccesso();
   updateTabVisibility();
   renderHeader();
   renderDayChoices();
