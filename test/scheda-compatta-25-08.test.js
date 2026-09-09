@@ -146,7 +146,8 @@ test('renderSchedaView(): la categoria del giorno compare come tag colorato, il 
   assert.ok(giornoB.querySelector('.workout-tag.cat-cardio'), 'Giorno B (categoria cardio) deve avere il tag colorato');
   const giornoA = [...document.querySelectorAll('#programView .day-view-accordion')].find(d=>d.querySelector('.dname-riepilogo').textContent.includes('Giorno A'));
   assert.equal(giornoA.querySelector('.workout-tag'), null, 'Giorno A senza categoria non deve avere nessun tag');
-  assert.match(giornoA.querySelector('.day-view-ex-stats').textContent, /90s recupero/);
+  assert.match(giornoA.querySelector('.day-view-ex-recupero').textContent, /90s recupero/);
+  assert.doesNotMatch(giornoA.querySelector('.day-view-ex-stats').textContent, /recupero/);
   window.close();
 });
 

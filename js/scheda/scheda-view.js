@@ -83,19 +83,21 @@ function renderSchedaView(){
         ${eOggi ? `<button type="button" class="btn block" onclick="apriRegistra()">Registra questo allenamento</button>` : ''}
         ${d.exercises.map((ex,ei)=>{
           const vi = getExerciseVideoInfo(ex.name);
-          // Nome, serie e recupero/video su UNA riga sola, in flusso normale
-          // (niente flex): nome/numero/dettagli/link sono tutti inline, così
-          // il browser va a capo come un normale paragrafo (al massimo 2
-          // righe con nomi lunghi) invece di stringere il testo in colonne
-          // strette come succedeva con nome e statistiche su due <div> flex
-          // separati dentro lo stesso <summary> (Chrome/Safari rendono
-          // <summary> "display:flex" di default). La nota, se c'è, va nella
-          // riga sotto, a scomparsa.
+          // 09/09/2026 (richiesta esplicita): prima riga SOLO nome+serie,
+          // sempre. Nota/recupero/video vanno forzati sulla riga sotto (un
+          // <div> a parte, non più inline nello stesso paragrafo) così non
+          // finiscono più a fianco del nome su schermi larghi.
+          const riga2Parti = [
+            ex.note ? `<span class="ex-note-badge">📌<svg class="ex-note-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></span>` : '',
+            (ex.recupero && ex.supersetCon==null) ? `<span class="day-view-ex-recupero">⏱ ${ex.recupero}s recupero</span>` : '',
+            `<a href="${escapeAttr(vi.url)}" data-ex-name="${escapeAttr(ex.name)}" class="video-link">▶ video</a>`
+          ].filter(Boolean).join('');
           const riga = `
-            <span class="day-view-ex-num">${ei+1}</span><span class="day-view-ex-nome-testo">${ex.name}${etichettaTecnica(ex,d)}</span>
-            <span class="day-view-ex-stats">${descriviTargetSerie(ex)}${ex.recupero && ex.supersetCon==null ? ` · ⏱ ${ex.recupero}s recupero` : ''}</span>
-            <a href="${escapeAttr(vi.url)}" data-ex-name="${escapeAttr(ex.name)}" class="video-link">▶ video</a>
-            ${ex.note ? `<span class="ex-note-badge">📌<svg class="ex-note-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></span>` : ''}`;
+            <div class="day-view-ex-riga1">
+              <span class="day-view-ex-num">${ei+1}</span><span class="day-view-ex-nome-testo">${ex.name}${etichettaTecnica(ex,d)}</span>
+              <span class="day-view-ex-stats">${descriviTargetSerie(ex)}</span>
+            </div>
+            <div class="day-view-ex-riga2">${riga2Parti}</div>`;
           return ex.note
             ? `<details class="day-view-ex ex-note-toggle"><summary class="day-view-ex-riga">${riga}</summary><div class="day-view-ex-note exercise-note">${ex.note}</div></details>`
             : `<div class="day-view-ex"><div class="day-view-ex-riga">${riga}</div></div>`;
