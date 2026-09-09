@@ -106,7 +106,7 @@ test('avvioOnline: con una sessione valida, continua verso dopoAccessoOnline() c
             return { select(){ return this; },
               eq(){ return { maybeSingle(){ return Promise.resolve({
                 data: { id:'u1', email:'ok@test.it', approvato:true, bloccato:false, nome:'Ok',
-                  dati: Object.assign(newProfile('Ok','ok@test.it','x',true), {measurements:[]}) },
+                  dati: Object.assign(newProfile('Ok','ok@test.it',true), {measurements:[]}) },
                 error:null
               }); } }; } };
           }
@@ -136,7 +136,7 @@ test('dopoAccessoOnline: un login online normale (senza errori) continua a funzi
           return { select(){ return this; },
             eq(){ return { maybeSingle(){ return Promise.resolve({
               data: { id:'u1', email:'ok@test.it', approvato:true, bloccato:false, nome:'Ok',
-                dati: Object.assign(newProfile('Ok','ok@test.it','x',true), {measurements:[]}) },
+                dati: Object.assign(newProfile('Ok','ok@test.it',true), {measurements:[]}) },
               error:null
             }); } }; } };
         }

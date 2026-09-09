@@ -39,10 +39,6 @@ function load(){
   }
   data.profiles.forEach(p=>{
     normalizzaProfilo(p);
-    // l'hash locale serve solo a chi non è mai passato dal login online
-    // (vedi profiloVuotoPerCloud(), che lo elimina apposta): non va quindi
-    // dentro normalizzaProfilo, o finirebbe anche sui profili online.
-    if(!p.passwordHash) p.passwordHash = simpleHash("1234");
   });
   return data;
 }

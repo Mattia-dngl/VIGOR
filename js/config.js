@@ -1,9 +1,9 @@
 // ============================================================
 // CONFIGURAZIONE — l'unico file da modificare
 // ============================================================
-// Lasciando i due valori vuoti, l'app funziona solo su questo telefono.
-// Mettendoli, i dati vanno online: stesso account da qualsiasi dispositivo,
-// da Safari e dall'app installata.
+// VIGOR gira sempre online, su Supabase: questi due valori sono
+// obbligatori. Senza, l'app si ferma sulla schermata di configurazione
+// mancante (vedi js/init.js) — non esiste un modo di usarla senza server.
 //
 // Li trovi su supabase.com: progetto > Settings > API
 //   url    = "Project URL"

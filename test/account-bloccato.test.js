@@ -119,7 +119,7 @@ test('sbloccato mentre la schermata di blocco è ancora aperta sulla stessa sche
 test('newProfile/migrazione: bloccato parte sempre a false (mai undefined)', async () => {
   const { window } = await loadApp();
   const r = await run(window, `
-    const nuovo = newProfile('Test', 't@test.it', '1234', true);
+    const nuovo = newProfile('Test', 't@test.it', true);
     const vecchio = { id:'v1', name:'Vecchio', email:'v@test.it', approvato:true, passwordHash:'x' };
     // simulo la migrazione di load() su un profilo salvato prima che bloccato esistesse
     if(vecchio.bloccato === undefined) vecchio.bloccato = false;
