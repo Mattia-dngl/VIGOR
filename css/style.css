@@ -57,14 +57,6 @@
   .eyebrow{font-family:'Inter',sans-serif; font-weight:700; font-size:10.5px; text-transform:uppercase;
     letter-spacing:0.06em; color:var(--text-faint);}
 
-  /* ---------- PROFILE GATE ---------- */
-  #profileGate{padding-bottom:calc(96px + env(safe-area-inset-bottom, 0px));
-    position:fixed; inset:0; background:var(--bg); z-index:100;
-    display:none; flex-direction:column; justify-content:flex-start; align-items:center;
-    padding:18px; padding-top:8vh; padding-bottom:8vh; overflow-y:auto;
-  }
-  #profileGate .gate-inner{width:100%; max-width:420px;}
-
   /* ---------- CONSOLE PIATTAFORMA: dashboard con sidebar ---------- */
   .platform-shell{width:100%; max-width:1100px; display:flex; flex-direction:column;}
   .platform-sidebar{
@@ -110,7 +102,6 @@
     .platform-account-chip{width:100%;}
     .platform-account-name{max-width:none;}
   }
-  #profileGate h1{font-size:22px; margin-bottom:5px;}
   /* con le Impostazioni aperte la barra di navigazione si nasconde: non serve,
      e ruberebbe spazio a una schermata già lunga */
   body.impostazioni-aperte nav.tabs{ display:none !important; }
@@ -400,30 +391,6 @@
   #settingsPanel .dato-riga, #accountPanel .dato-riga{padding:6px 0; font-size:12.5px;}
   #settingsPanel details.details-card > summary, #accountPanel details.details-card > summary{padding:9px 13px 9px 26px; font-size:12.5px;}
   #settingsPanel details.details-card .details-body, #accountPanel details.details-card .details-body{padding:12px 13px 11px;}
-  #profileGate .sub{color:var(--text-dim); font-size:12px; margin-bottom:18px;}
-  .profile-list{display:flex; flex-direction:column; gap:8px; margin-bottom:16px;}
-  .profile-chip{
-    background:var(--surface); border:1px solid var(--border); border-radius:9px;
-    padding:11px 11px 11px 14px; display:flex; justify-content:space-between; align-items:center; gap:8px;
-  }
-  .profile-chip .pname-btn{background:none; border:none; color:var(--text); font:inherit; letter-spacing:inherit;
-    flex:1; text-align:left; cursor:pointer; padding:0; font-family:var(--font-display); font-size:14.5px;}
-  .profile-chip .delete-profile{background:none; border:1px solid var(--accent-dim); color:var(--accent);
-    font-size:10px; padding:6px 10px; border-radius:12px; cursor:pointer; font-family:var(--font-display); letter-spacing:0.03em; white-space:nowrap;}
-  .gym-pick-row{
-    background:var(--surface); border:1px solid var(--border); border-radius:9px;
-    padding:11px 13px; margin-bottom:9px; display:flex; align-items:center; gap:11px; cursor:pointer;
-  }
-  .gym-pick-row:active{background:var(--surface2);}
-  .gym-pick-row .pname-btn{font-family:var(--font-display); font-size:14.5px; color:var(--text); margin-bottom:4px;}
-  .gym-pick-arrow{color:var(--text-faint); font-size:19px; flex:0 0 auto;}
-  .new-profile-box{border-top:1px solid var(--border); padding-top:14px;}
-  .new-profile-box label{display:block; font-size:10.5px; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.03em; margin-bottom:4px;}
-  .new-profile-box input{
-    width:100%; background:var(--surface2); border:1px solid var(--border); color:var(--text);
-    padding:9px 10px; border-radius:6px; font-size:14px; margin-bottom:8px;
-  }
-
   .sticky-top{position:relative; background:var(--bg);}   /* scorre via: in alto resta solo il timer */
   .acting-banner{display:flex; justify-content:space-between; align-items:center; gap:10px;
     background:rgba(221,69,38,0.1); border-bottom:1px solid var(--accent); padding:8px 14px; font-size:12px; color:var(--accent);}
@@ -987,7 +954,6 @@
     }
     .pulse{gap:10px;}
     .row{gap:14px;}
-    #profileGate .gate-inner{max-width:480px;}
   }
 
   /* ---------- RESPONSIVE: DESKTOP ---------- */
@@ -1003,7 +969,6 @@
     .btn{padding:12px 22px; font-size:13.5px;}
     .btn:hover{filter:brightness(1.12); cursor:pointer;}
     .chip:hover{border-color:var(--accent); color:var(--text); cursor:pointer;}
-    .profile-chip .pname-btn:hover{color:var(--accent);}
     nav.tabs button:hover{color:var(--text);}
     .log-head:hover .dayname{color:var(--accent);}
     .toast{font-size:14px; padding:12px 24px;}
@@ -1865,11 +1830,7 @@
   .cloud-stato.offline .pallino{background:var(--text-faint);}
     /* finché l'app non ha deciso quale schermata mostrare, non si vede nulla:
      prima comparivano per un attimo i profili locali, che confondono */
-  html.avvio #profileGate, html.avvio #lockScreen, html.avvio #appRoot, html.avvio #settingsPanel{ display:none !important; }
-  #lockScreen{position:fixed; inset:0; z-index:500; background:var(--bg);
-    display:flex; align-items:center; justify-content:center;
-    padding:22px 22px calc(40px + env(safe-area-inset-bottom, 0px)); overflow-y:auto;}
-  #lockScreen.show{display:flex;}
+  html.avvio #appRoot, html.avvio #settingsPanel{ display:none !important; }
   .lock-inner{width:100%; max-width:400px; background:var(--surface); border:1px solid var(--border);
     border-radius:16px; padding:26px 22px;}
   .lock-inner h1{font-size:21px; text-transform:uppercase; margin:0 0 4px;}

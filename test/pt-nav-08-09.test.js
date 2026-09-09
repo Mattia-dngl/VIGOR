@@ -29,7 +29,7 @@ async function entraNellAreaPT(window){
     utenteOnline = { id: 'pt-1', email: 'trainer@test.it' };
     sb = (${sbFinto})({
       id:'pt-1', email:'trainer@test.it', approvato:true, bloccato:false, is_pt:true, nome:'Trainer',
-      dati: Object.assign(newProfile('Trainer','trainer@test.it','x',true), {measurements:[]})
+      dati: Object.assign(newProfile('Trainer','trainer@test.it',true), {measurements:[]})
     });
     await dopoAccessoOnline();
   `);

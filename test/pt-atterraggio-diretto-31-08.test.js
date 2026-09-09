@@ -30,7 +30,7 @@ test('dopoAccessoOnline: un Personal Trainer atterra direttamente sull\'area PT,
     utenteOnline = { id: 'pt-1', email: 'trainer@test.it' };
     sb = (${sbFinto})({
       id:'pt-1', email:'trainer@test.it', approvato:true, bloccato:false, is_pt:true, nome:'Trainer',
-      dati: Object.assign(newProfile('Trainer','trainer@test.it','x',true), {measurements:[]})
+      dati: Object.assign(newProfile('Trainer','trainer@test.it',true), {measurements:[]})
     });
     await dopoAccessoOnline();
   `);
@@ -48,7 +48,7 @@ test('dopoAccessoOnline: un utente normale (non PT) continua ad atterrare sulla 
     utenteOnline = { id: 'u1', email: 'utente@test.it' };
     sb = (${sbFinto})({
       id:'u1', email:'utente@test.it', approvato:true, bloccato:false, is_pt:false, nome:'Utente',
-      dati: Object.assign(newProfile('Utente','utente@test.it','x',true), {measurements:[]})
+      dati: Object.assign(newProfile('Utente','utente@test.it',true), {measurements:[]})
     });
     await dopoAccessoOnline();
   `);

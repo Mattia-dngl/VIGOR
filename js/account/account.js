@@ -635,9 +635,7 @@ async function dopoAccessoOnline(){
 }
 
 function profiloVuotoPerCloud(){
-  const p = newProfile('', '', 'segnaposto', true);
-  delete p.passwordHash;   // la password la gestisce Supabase, non l'app
-  return p;
+  return newProfile('', '', true);
 }
 
 function applicaDatiOnline(){
