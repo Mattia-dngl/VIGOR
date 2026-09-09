@@ -4,6 +4,13 @@
    ============================================================ */
 
   :root{
+    /* L'app ha un solo tema (chiaro): senza questa dichiarazione, il "tema
+       scuro forzato" di Android/Chrome reinverte i colori pagina per pagina
+       con euristiche sue — è quello a rendere illeggibile la mappa muscolare
+       e altri elementi quando il telefono è in modalità scura, non una vera
+       modalità scura dell'app. Dichiarandolo esplicitamente, il browser non
+       tocca più i colori e resta quello pensato qui sotto. */
+    color-scheme: light;
     /* Restyling parziale (24/08/2026): solo toni più caldi, un arancio più
        deciso e angoli leggermente più morbidi. Nessun token è stato tolto —
        struttura, nav, glossario e mappa muscolare non dipendono da nient'altro
