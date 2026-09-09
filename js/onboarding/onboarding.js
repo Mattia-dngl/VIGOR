@@ -650,6 +650,21 @@ async function disattivaPromemoria(){
 document.getElementById('promemoriaToggle').addEventListener('change', (e)=>{
   if(e.target.checked) attivaPromemoria(); else disattivaPromemoria();
 });
+// Al primo accesso il promemoria deve partire da solo, senza che la persona
+// debba prima aprire Impostazioni e spuntare la casella: chiedo qui il
+// permesso di notifica (una sola volta, lp.promemoriaChiesto) appena il
+// profilo è pronto. Notification.requestPermission() dentro attivaPromemoria()
+// mostra il popup del telefono solo se non è già stato chiesto prima — se la
+// persona lo ha già concesso o negato in passato, richiede/nega all'istante
+// senza un nuovo popup, quindi richiamarla qui è sempre sicuro.
+async function chiediPromemoriaAlPrimoAccesso(){
+  if(modalitaPT) return;
+  const lp = loggedInProfile();
+  if(!lp || lp.promemoriaChiesto || !promemoriaSupportato()) return;
+  lp.promemoriaChiesto = true;
+  save();
+  await attivaPromemoria();
+}
 // 31/08/2026: il service worker (sw.js) si accorge da solo se il telefono
 // rinnova/scade l'iscrizione push (evento pushsubscriptionchange) e manda
 // qui la nuova iscrizione: la risalvo su Supabase con lo stesso upsert di

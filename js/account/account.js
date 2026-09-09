@@ -343,6 +343,14 @@ function toggleDatiProfilo(forzaVista){
   }
 }
 document.getElementById('acctDatiEditBtn').addEventListener('click', ()=>toggleDatiProfilo());
+// I singoli campi (sesso, data di nascita, altezza, attività) si salvano già
+// da soli al cambiamento — vedi js/ui/profile-gate.js — quindi qui basta
+// tornare alla vista compatta: è quel toggleDatiProfilo(true) che manca per
+// far comportare "Salva" come "Salva nome" qui sopra.
+document.getElementById('saveAcctDatiBtn').addEventListener('click', ()=>{
+  toggleDatiProfilo(true);
+  toast("Dati salvati ✓");
+});
 
 function chiudiAccountPanel(){
   document.getElementById('accountPanel').style.display = 'none';
