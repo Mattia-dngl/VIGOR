@@ -163,6 +163,8 @@ a.salta-al-contenuto:focus{ top:12px; }
 @media (prefers-reduced-motion: reduce){ .mock-phone{ animation:none; } }
 .mock-screen-wrap{ position:relative; width:100%; height:100%; background:var(--surface); border-radius:30px; overflow:hidden; }
 .mock-screen{ position:absolute; inset:0; padding:24px 18px; display:flex; flex-direction:column; gap:12px; }
+.mock-screen.has-img{ padding:0; }
+.mock-screen.has-img img{ width:100%; height:100%; object-fit:cover; object-position:top center; display:block; }
 .mock-screen.s1{ animation:mockFadeA 9s ease-in-out infinite; }
 .mock-screen.s2{ animation:mockFadeB 9s ease-in-out infinite; }
 @keyframes mockFadeA{ 0%,42%{opacity:1;} 50%,92%{opacity:0;} 100%{opacity:1;} }
@@ -353,6 +355,7 @@ footer.site-footer .copy{ font-size:12px; color:var(--text-faint); }
 .shot .phone-screen{ background:var(--bg); border-radius:23px; overflow:hidden; min-height:412px; display:flex; flex-direction:column; }
 .shot-notch{ height:20px; display:flex; align-items:center; justify-content:center; flex:none; }
 .shot-notch::after{ content:''; width:56px; height:5px; border-radius:99px; background:rgba(0,0,0,.16); }
+.shot-real-img{ flex:1; width:100%; min-height:0; object-fit:cover; object-position:top center; display:block; }
 
 .shot-scr{ position:relative; flex:1; overflow:hidden; padding:2px 11px 11px; display:flex; flex-direction:column; gap:9px; }
 .shot-topline{ display:flex; align-items:center; justify-content:space-between; }
