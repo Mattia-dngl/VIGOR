@@ -92,7 +92,24 @@ function renderSchedaView(){
             (ex.recupero && ex.supersetCon==null) ? `<span class="day-view-ex-recupero">⏱ ${ex.recupero}s recupero</span>` : '',
             `<a href="${escapeAttr(vi.url)}" data-ex-name="${escapeAttr(ex.name)}" class="video-link">▶ video</a>`
           ].filter(Boolean).join('');
-          const riga = `
+          // 09/09/2026 (richiesta esplicita, con mockup allegato): "nome ·
+          // Superset con nome-partner" nella riga1 era troppo lungo — andava
+          // a capo e spingeva tutto fuori asse. Un esercizio in superset
+          // riceve invece una card dedicata: badge "Superset" in cima, poi
+          // "nome · nome-partner" (senza la parola "Superset con", ridondante
+          // col badge) e le serie su righe separate — il resto (nota/
+          // recupero/video) resta identico agli esercizi normali.
+          const partner = trovaPartnerSuperset(ex, d);
+          const riga = partner ? `
+            <div class="day-view-ex-riga1">
+              <span class="day-view-ex-num">${ei+1}</span>
+              <div class="superset-ex-card">
+                <span class="superset-tag-badge">🔗 Superset</span>
+                <span class="day-view-ex-nome-testo">${ex.name} · ${partner.name}</span>
+                <span class="day-view-ex-stats">${descriviTargetSerie(ex)}</span>
+                <div class="day-view-ex-riga2">${riga2Parti}</div>
+              </div>
+            </div>` : `
             <div class="day-view-ex-riga1">
               <span class="day-view-ex-num">${ei+1}</span><span class="day-view-ex-nome-testo">${ex.name}${etichettaTecnica(ex,d)}</span>
               <span class="day-view-ex-stats">${descriviTargetSerie(ex)}</span>
