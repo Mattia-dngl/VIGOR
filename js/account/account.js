@@ -516,7 +516,14 @@ async function avvioOnline(){
       utenteOnline = data.session.user;
       await dopoAccessoOnline();
     } else {
-      mostraCloudGate('accedi');
+      // i tasti "Provalo gratis"/"Registrati gratis" della landing arrivano
+      // qui con ?app=1&gate=registra: senza questo controllo finivano
+      // comunque sulla schermata di accesso (stesso ?app=1 di "Accedi"),
+      // così chi non aveva ancora un account doveva cercarsi da solo il
+      // link "Non hai un account? Registrati" — segnalato dall'utente come
+      // "il tasto per registrarsi non funziona".
+      const gate = new URLSearchParams(location.search).get('gate');
+      mostraCloudGate(gate === 'registra' ? 'registra' : 'accedi');
     }
   }catch(e){
     console.error(e);

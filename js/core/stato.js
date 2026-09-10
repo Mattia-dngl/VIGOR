@@ -279,6 +279,7 @@ function puoModificareSistema(){ return sonoAmministratore(); }
 function activeProgram(){
   const prof = activeProfile();
   if(!prof) return null;
+  if(!prof.programs || !prof.programs.length) return null;
   if(!prof.activeProgramId) prof.activeProgramId = prof.programs[prof.programs.length-1].id;
   return prof.programs.find(p=>p.id===prof.activeProgramId);
 }
