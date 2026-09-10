@@ -12,15 +12,37 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const { loadApp, run } = require('./helpers/loadApp.js');
 
-test('normalizzaProfilo(): un profilo con "programs" del tutto assente (non solo vuoto) ottiene un array vuoto, non undefined', async () => {
+// 10/09/2026 (correzione di una regressione mia): la prima versione di questo
+// fix metteva un array VUOTO. Sbagliato: in tutta l'app vale l'invariante "un
+// profilo ha sempre almeno una scheda" (la garantiscono newProfile() e
+// pt-area.js), e chi usa activeProgram() lo dà per scontato — tabs-header.js:296
+// fa `p.name` sul risultato. Con l'array vuoto activeProgram() tornava null e
+// il primo renderHeader() dopo il login moriva con "Cannot read properties of
+// null (reading 'name')": l'accesso falliva col generico "Qualcosa non ha
+// funzionato" per qualunque profilo senza schede.
+test('normalizzaProfilo(): un profilo con "programs" del tutto assente riceve una scheda vuota di riserva (non un array vuoto)', async () => {
   const { window } = await loadApp();
   const r = await run(window, `
     const p = { id:'x', name:'X', email:'x@test.it' }; // niente "programs" né "activeProgramId"
     normalizzaProfilo(p);
-    return { programs: p.programs, activeProgramId: p.activeProgramId };
+    return { n: p.programs.length, primo: p.programs[0], activeProgramId: p.activeProgramId };
   `);
-  assert.deepEqual(r.programs, []);
+  assert.equal(r.n, 1, 'deve esserci sempre almeno una scheda');
+  assert.ok(r.primo && r.primo.id, 'la scheda di riserva deve essere una scheda vera, con un id');
+  assert.deepEqual(r.primo.days, [], 'ma vuota: nessun giorno di allenamento inventato');
   assert.equal(r.activeProgramId, null);
+});
+
+test('normalizzaProfilo(): un profilo con "programs" vuoto ([]) riceve anch\'esso la scheda di riserva, così activeProgram() non torna mai null', async () => {
+  const { window } = await loadApp();
+  const r = await run(window, `
+    const p = { id:'x', name:'X', email:'x@test.it', programs: [], activeProgramId: null };
+    normalizzaProfilo(p);
+    state.profiles = [p]; activeProfileId = 'x';
+    return { n: p.programs.length, schedaAttiva: !!activeProgram() };
+  `);
+  assert.equal(r.n, 1);
+  assert.equal(r.schedaAttiva, true, 'activeProgram() deve restituire una scheda, non null');
 });
 
 test('normalizzaProfilo(): un "programs" già valido non viene toccato', async () => {
@@ -62,7 +84,7 @@ test('normalizzaProfilo(): un profilo "minimo" (solo pochi campi, come capita a 
   assert.deepEqual(r.checkins, []);
   assert.deepEqual(r.customExercises, {});
   assert.deepEqual(r.customFoods, {});
-  assert.deepEqual(r.programs, []);
+  assert.equal(r.programs.length, 1, 'sempre almeno una scheda, altrimenti activeProgram() torna null e renderHeader() muore');
   assert.equal(r.activeProgramId, null);
   assert.equal(r.avatarUrl, null);
   assert.equal(r.sesso, null);

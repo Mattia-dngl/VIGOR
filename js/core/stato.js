@@ -64,7 +64,18 @@ function normalizzaProfilo(p){
   // normalizzaProfilo() gira su OGNI profilo caricato: è il posto giusto per
   // garantire l'array, una volta sola, invece di controllarlo in ogni punto
   // che lo usa.
-  if(!p.programs || !Array.isArray(p.programs)) p.programs = [];
+  // ATTENZIONE (10/09/2026, regressione mia): qui prima mettevo un array
+  // VUOTO. È sbagliato: in tutta l'app vale l'invariante "un profilo ha
+  // sempre almeno una scheda" — lo garantiscono già newProfile()
+  // (dati-default.js) e pt-area.js per il buffer del cliente — e chi legge
+  // activeProgram() lo dà per scontato senza controlli, es.
+  // tabs-header.js:296 fa `p.name` sul risultato. Con l'array vuoto
+  // activeProgram() tornava null e il primo renderHeader() dopo il login
+  // andava in "Cannot read properties of null (reading 'name')": l'accesso
+  // falliva con il generico "Qualcosa non ha funzionato" per qualunque
+  // profilo senza schede. Con una scheda vuota di riserva l'invariante
+  // regge e la Home mostra comunque "nessuna scheda attiva" (0 giorni).
+  if(!p.programs || !Array.isArray(p.programs) || !p.programs.length) p.programs = [blankProgram()];
   if(p.activeProgramId === undefined) p.activeProgramId = null;
   // Stesso profilo di cui sopra: mancava anche "logs" (non solo "programs"),
   // letto senza nessun controllo in home.js/registra.js/storico/dieta.js/

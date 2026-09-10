@@ -19,6 +19,10 @@ function mostraCloudGate(quale){
   // subito dopo (mai prima): pulirli qui in testa è quindi sempre sicuro.
   document.getElementById('cloudErr').style.display = 'none';
   document.getElementById('regErr').style.display = 'none';
+  // Stessa storia per la schermata di primo accesso: copre tutto lo schermo e
+  // uscendo dall'app mentre era aperta resterebbe sopra il login.
+  const onb = document.getElementById('onboardingGate');
+  if(onb) onb.style.display = 'none';
   document.getElementById('cloudAccedi').style.display     = quale === 'accedi'      ? 'block':'none';
   document.getElementById('cloudRegistra').style.display   = quale === 'registra'    ? 'block':'none';
   // Registrazione in due passi (01/09/2026): ogni volta che si apre "Registrati"
