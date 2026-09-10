@@ -698,7 +698,15 @@ window.addEventListener('offline', ()=>mostraStatoSync('offline', 'senza rete'))
 
 // ---------- pulsanti ----------
 function mostraErroreAccesso(msg){
-  const el = document.getElementById('cloudErr');
+  // #cloudErr vive dentro #cloudAccedi, #regErr dentro #cloudRegistra: le due
+  // schermate non sono mai visibili insieme. "Continua con Google" (googleRegBtn)
+  // gira nella stessa iniziaAccessoGoogle() di "Accedi" (googleAccediBtn) e
+  // chiamava sempre mostraErroreAccesso() che scriveva SOLO su #cloudErr — un
+  // errore reale (es. provider Google non abilitato) finiva scritto in un
+  // elemento nascosto mentre si era sulla schermata "Registrati": al tocco non
+  // succedeva visibilmente nulla, segnalato dall'utente come "non funziona".
+  const suRegistra = document.getElementById('cloudRegistra').style.display !== 'none';
+  const el = document.getElementById(suRegistra ? 'regErr' : 'cloudErr');
   el.textContent = traduciErrore(msg);
   el.style.display = 'block';
 }
