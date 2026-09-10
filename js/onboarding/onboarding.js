@@ -25,6 +25,12 @@ document.querySelectorAll('#onbSesso .seg-btn').forEach(btn=>{
     btn.classList.add('active');
   });
 });
+document.querySelectorAll('#onbPromemoria .seg-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('#onbPromemoria .seg-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+  });
+});
 
 function salvaSesso(nuovoSesso){
   const p = activeProfile();
@@ -90,6 +96,15 @@ document.getElementById('onbContinua').addEventListener('click', ()=>{
 
   save();
   if(typeof modalitaOnline === 'function' && modalitaOnline()) inviaOnline();
+
+  // Promemoria allenamento: qui il click su "Continua" è un vero gesto
+  // dell'utente, quindi Notification.requestPermission() dentro
+  // attivaPromemoria() può davvero mostrare il popup nativo del telefono
+  // (a differenza di una richiesta lanciata da sola durante il login).
+  const promemoriaBtn = document.querySelector('#onbPromemoria .seg-btn.active');
+  if(promemoriaBtn && promemoriaBtn.dataset.val === 'si' && typeof promemoriaSupportato === 'function' && promemoriaSupportato()){
+    attivaPromemoria();
+  }
 
   document.getElementById('onboardingGate').style.display = 'none';
   renderHeader();
@@ -650,33 +665,6 @@ async function disattivaPromemoria(){
 document.getElementById('promemoriaToggle').addEventListener('change', (e)=>{
   if(e.target.checked) attivaPromemoria(); else disattivaPromemoria();
 });
-// Al primo accesso il promemoria deve partire da solo, senza che la persona
-// debba prima aprire Impostazioni e spuntare la casella: chiedo qui il
-// permesso di notifica (una sola volta, lp.promemoriaChiesto) appena il
-// profilo è pronto. IMPORTANTE: Notification.requestPermission() mostra il
-// popup nativo del telefono solo se chiamata dentro un vero gesto dell'utente
-// (un click) — chiamata da sola dentro il flusso di login (che passa per
-// await su rete: accesso, lettura profilo...) il browser la ignora in
-// silenzio, senza mostrare nulla. Per questo qui non la chiamo subito: mostro
-// prima un mio popup con Sì/No (customConfirm, vedi stato.js) e solo il click
-// su "Conferma" — quello sì è un vero gesto dell'utente — fa scattare
-// attivaPromemoria()/Notification.requestPermission() dentro di essa.
-function chiediPromemoriaAlPrimoAccesso(){
-  if(modalitaPT) return;
-  const lp = loggedInProfile();
-  if(!lp || lp.promemoriaChiesto || !promemoriaSupportato()) return;
-  // Se è ancora aperta la schermata di primo accesso (sesso/peso/altezza/
-  // attività) non ci sovrappongo un secondo popup: aspetto il prossimo
-  // accesso, a onboarding ormai chiusa.
-  const gate = document.getElementById('onboardingGate');
-  if(gate && gate.style.display === 'block') return;
-  lp.promemoriaChiesto = true;
-  save();
-  customConfirm(
-    "Vuoi ricevere un avviso sul telefono nei giorni in cui la scheda prevede un allenamento e non hai ancora registrato nulla?",
-    ()=>attivaPromemoria()
-  );
-}
 // 31/08/2026: il service worker (sw.js) si accorge da solo se il telefono
 // rinnova/scade l'iscrizione push (evento pushsubscriptionchange) e manda
 // qui la nuova iscrizione: la risalvo su Supabase con lo stesso upsert di

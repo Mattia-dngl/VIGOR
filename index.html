@@ -1119,6 +1119,13 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
         <option value="intenso">Intenso — esercizio 6-7 giorni a settimana</option>
         <option value="molto_intenso">Molto intenso — esercizio quotidiano + lavoro fisico</option>
       </select>
+
+      <label style="margin-top:14px;">Promemoria allenamento</label>
+      <p class="hint" style="margin:2px 0 8px;">Un avviso sul telefono nei giorni in cui la scheda prevede un allenamento e non hai ancora registrato nulla.</p>
+      <div class="seg-toggle" id="onbPromemoria">
+        <button type="button" class="seg-btn active" data-val="si">Sì, avvisami</button>
+        <button type="button" class="seg-btn" data-val="no">No, grazie</button>
+      </div>
     </div>
 
     <button class="btn block" id="onbContinua" style="margin-top:14px;">Continua</button>
