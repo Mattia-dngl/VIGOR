@@ -747,9 +747,19 @@ async function iniziaAccessoGoogle(){
       provider: 'google',
       options:{ redirectTo: location.origin + location.pathname }
     });
-    if(error) mostraErroreAccesso(error.message);
+    if(error){
+      // Il messaggio mostrato passa da traduciErrore(), che per un testo
+      // "tecnico" o vuoto lo sostituisce con un generico "Qualcosa non ha
+      // funzionato" — utile per l'utente, ma nasconde la causa vera (es.
+      // provider Google non abilitato su Supabase, redirect non
+      // autorizzato). Il testo originale resta comunque salvato qui, sola
+      // scrittura, leggibile da chi ha accesso al progetto Supabase.
+      if(typeof segnalaErroreClient === 'function') segnalaErroreClient('accesso-google', error.message, null, { fase:'signInWithOAuth' });
+      mostraErroreAccesso(error.message);
+    }
   }catch(e){
     console.error(e);
+    if(typeof segnalaErroreClient === 'function') segnalaErroreClient('accesso-google', e && e.message, e && e.stack, { fase:'signInWithOAuth-eccezione' });
     mostraErroreAccesso(e && e.message);
   }
 }
