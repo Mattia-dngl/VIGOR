@@ -318,7 +318,7 @@ async function renderMioPT(){
     // sotto "Compila", come vero bottone separato da un bordo.
     box.innerHTML = `
       <div class="pt-riga pt-riga-compatta">
-        <div class="pt-avatar">${avatarContentHtml(nomeDi(pt), (pt.dati||{}).avatarUrl)}</div>
+        <div class="pt-avatar">${avatarContentHtml(nomeDi(pt), (pt && pt.dati || {}).avatarUrl)}</div>
         <div class="info">
           <div class="nome">${nomeDi(pt)}<span class="pt-badge">ti segue</span></div>
           <div class="meta">dal ${formatDate((attivo.accettato_il||'').slice(0,10))}</div>
