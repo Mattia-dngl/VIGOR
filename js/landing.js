@@ -128,6 +128,22 @@ function inizializzaLandingComune(){
   inizializzaHeaderScroll();
 }
 
+// Chi visita VIGOR per la prima volta arriva PRIMA qui (index.html rimanda
+// chi non ha ancora dati salvati su landing.html, vedi js/ui/redirect-landing.js)
+// e da qui la sezione "Come si installa" qui sopra lo manda al menu del
+// browser. Senza registrare il service worker anche in questa pagina (oltre
+// che nell'app vera, vedi js/sistema/offline-sistema.js), Chrome non la
+// riconosce come installabile — nessun manifest/SW attivo sulla pagina che
+// sta davvero guardando — e quella voce di menu resta una semplice
+// scorciatoia invece di una vera installazione (bug segnalato: "non c'era
+// il tasto per installarla" su Chrome, mentre su Internet di Samsung, meno
+// esigente, funzionava comunque).
+if('serviceWorker' in navigator && location.protocol.startsWith('http')){
+  window.addEventListener('load', ()=>{
+    navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).catch(()=>{});
+  });
+}
+
 if(typeof window !== 'undefined'){
   window.rilevaSistemaOperativo = rilevaSistemaOperativo;
   window.rilevaWebviewSocial = rilevaWebviewSocial;
