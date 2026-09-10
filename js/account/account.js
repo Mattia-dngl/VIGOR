@@ -232,8 +232,8 @@ async function renderAbbonamento(lp){
   const piano = (riga && riga.piano) || 'nessuno';
 
   if(stato === 'attivo'){
-    titolo.textContent = piano === 'pt_pro' ? 'Piano PT Pro attivo' : 'Piano PT attivo';
-    hint.textContent = piano === 'pt_pro' ? 'Clienti illimitati.' : 'Fino a 15 clienti collegati.';
+    titolo.textContent = piano === 'pt_studio' ? 'Piano PT Studio attivo' : piano === 'pt_pro' ? 'Piano PT Pro attivo' : 'Piano PT Starter attivo';
+    hint.textContent = piano === 'pt_studio' ? 'Clienti illimitati.' : piano === 'pt_pro' ? 'Fino a 20 clienti collegati.' : 'Fino a 5 clienti collegati.';
     card.className = 'card acct-highlight-card stato-ok';
   } else if(stato === 'prova'){
     titolo.textContent = 'Prova gratuita PT';
@@ -256,9 +256,9 @@ document.getElementById('pianiPTChiudi').addEventListener('click', ()=>
 document.getElementById('pianiPTOverlay').addEventListener('click', e=>{
   if(e.target.id === 'pianiPTOverlay') e.currentTarget.classList.remove('show');
 });
-// Nessuno di questi tre bottoni fa davvero qualcosa: i pagamenti non sono
+// Nessuno di questi quattro bottoni fa davvero qualcosa: i pagamenti non sono
 // ancora attivi (vedi il commento sopra renderAbbonamento).
-['pianoPTBtn','pianoPTProBtn','pianoGestisciBtn'].forEach(id=>{
+['pianoPTBtn','pianoPTProBtn','pianoPTStudioBtn','pianoGestisciBtn'].forEach(id=>{
   document.getElementById(id).addEventListener('click', ()=>
     toast("I pagamenti non sono ancora attivi. Torna presto!"));
 });

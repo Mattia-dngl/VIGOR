@@ -62,7 +62,7 @@ test('i tre bottoni dei piani non fanno nulla di reale: solo un avviso, nessuna 
     document.getElementById('abbonamentoRinnovaBtn').click();
   `);
   assert.ok(document.getElementById('pianiPTOverlay').classList.contains('show'));
-  ['pianoPTBtn','pianoPTProBtn','pianoGestisciBtn'].forEach(id=>{
+  ['pianoPTBtn','pianoPTProBtn','pianoPTStudioBtn','pianoGestisciBtn'].forEach(id=>{
     document.getElementById(id).click();
   });
   assert.equal(document.getElementById('toast').textContent, 'I pagamenti non sono ancora attivi. Torna presto!');
