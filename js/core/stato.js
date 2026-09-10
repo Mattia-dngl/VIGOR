@@ -56,6 +56,16 @@ function normalizzaProfilo(p){
   // chi c'era prima dell'approvazione resta abilitato
   if(p.approvato === undefined) p.approvato = true;
   if(p.bloccato === undefined) p.bloccato = false;
+  // 10/09/2026: trovato un profilo reale (creato senza passare da
+  // profiloVuotoPerCloud()/pt-area.js) con "programs" del tutto assente, non
+  // solo vuoto: prof.programs.find/.filter/.push in scheda-editor.js e
+  // volume-muscolare.js (oltre ad activeProgram() qui sotto) davano tutti
+  // "undefined is not an object" appena si apriva Scheda o Storico.
+  // normalizzaProfilo() gira su OGNI profilo caricato: è il posto giusto per
+  // garantire l'array, una volta sola, invece di controllarlo in ogni punto
+  // che lo usa.
+  if(!p.programs || !Array.isArray(p.programs)) p.programs = [];
+  if(p.activeProgramId === undefined) p.activeProgramId = null;
   if(!p.measurements) p.measurements = [];
   if(!p.mealLogs) p.mealLogs = [];
   if(!p.waterLogs) p.waterLogs = []; // 31/08/2026: contatore acqua, Fase 3 (dieta)
