@@ -653,17 +653,29 @@ document.getElementById('promemoriaToggle').addEventListener('change', (e)=>{
 // Al primo accesso il promemoria deve partire da solo, senza che la persona
 // debba prima aprire Impostazioni e spuntare la casella: chiedo qui il
 // permesso di notifica (una sola volta, lp.promemoriaChiesto) appena il
-// profilo è pronto. Notification.requestPermission() dentro attivaPromemoria()
-// mostra il popup del telefono solo se non è già stato chiesto prima — se la
-// persona lo ha già concesso o negato in passato, richiede/nega all'istante
-// senza un nuovo popup, quindi richiamarla qui è sempre sicuro.
-async function chiediPromemoriaAlPrimoAccesso(){
+// profilo è pronto. IMPORTANTE: Notification.requestPermission() mostra il
+// popup nativo del telefono solo se chiamata dentro un vero gesto dell'utente
+// (un click) — chiamata da sola dentro il flusso di login (che passa per
+// await su rete: accesso, lettura profilo...) il browser la ignora in
+// silenzio, senza mostrare nulla. Per questo qui non la chiamo subito: mostro
+// prima un mio popup con Sì/No (customConfirm, vedi stato.js) e solo il click
+// su "Conferma" — quello sì è un vero gesto dell'utente — fa scattare
+// attivaPromemoria()/Notification.requestPermission() dentro di essa.
+function chiediPromemoriaAlPrimoAccesso(){
   if(modalitaPT) return;
   const lp = loggedInProfile();
   if(!lp || lp.promemoriaChiesto || !promemoriaSupportato()) return;
+  // Se è ancora aperta la schermata di primo accesso (sesso/peso/altezza/
+  // attività) non ci sovrappongo un secondo popup: aspetto il prossimo
+  // accesso, a onboarding ormai chiusa.
+  const gate = document.getElementById('onboardingGate');
+  if(gate && gate.style.display === 'block') return;
   lp.promemoriaChiesto = true;
   save();
-  await attivaPromemoria();
+  customConfirm(
+    "Vuoi ricevere un avviso sul telefono nei giorni in cui la scheda prevede un allenamento e non hai ancora registrato nulla?",
+    ()=>attivaPromemoria()
+  );
 }
 // 31/08/2026: il service worker (sw.js) si accorge da solo se il telefono
 // rinnova/scade l'iscrizione push (evento pushsubscriptionchange) e manda

@@ -109,6 +109,7 @@ function apriImpostazioni(provenienza){
   document.getElementById('appRoot').style.display = 'none';
   document.getElementById('accountPanel').style.display = 'none';
   document.getElementById('settingsPanel').style.display = 'block';
+  document.body.classList.add('impostazioni-aperte');
   _impostazioniProvenienza = provenienza;
   renderImpostazioniInline();
   renderAmministrazioneOnline();
@@ -117,6 +118,7 @@ function apriImpostazioni(provenienza){
 // Chiude #settingsPanel tornando a dove si è aperta (vedi apriImpostazioni).
 function chiudiSettingsPanel(){
   document.getElementById('settingsPanel').style.display = 'none';
+  document.body.classList.remove('impostazioni-aperte');
   if(_impostazioniProvenienza === 'app'){
     _impostazioniProvenienza = null;
     document.getElementById('appRoot').style.display = 'block';

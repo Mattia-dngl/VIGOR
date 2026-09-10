@@ -343,6 +343,7 @@
   #navTabsGlobale{display:none;}
   body.app-pronta #navTabsGlobale{display:flex;}
   body.impostazioni-aperte #navTabsGlobale{display:none !important;}
+  body.account-aperto #navTabsGlobale{display:none !important;}
   body.modifica-pt #navTabsGlobale{display:none !important;}
   body.area-pt #navTabsGlobale{display:none !important;}
   /* "Modifica scheda"/"Nuova scheda" (26/08/2026): segnalato che restava
@@ -1002,8 +1003,8 @@
     body.app-pronta main{padding-bottom:36px !important;} /* non serve più spazio per la bottom-bar */
     body.app-pronta #navTabsGlobale{display:none;}
     body.app-pronta #sidebarNavGlobale{display:flex;}
-    body.impostazioni-aperte #sidebarNavGlobale, body.modifica-pt #sidebarNavGlobale, body.area-pt #sidebarNavGlobale{display:none !important;}
-    body.impostazioni-aperte, body.modifica-pt, body.area-pt{padding-left:0 !important;}
+    body.impostazioni-aperte #sidebarNavGlobale, body.account-aperto #sidebarNavGlobale, body.modifica-pt #sidebarNavGlobale, body.area-pt #sidebarNavGlobale{display:none !important;}
+    body.impostazioni-aperte, body.account-aperto, body.modifica-pt, body.area-pt{padding-left:0 !important;}
 
     .sidebar-nav{
       flex-direction:column; position:fixed; top:0; left:0; bottom:0; width:232px;
