@@ -9,11 +9,11 @@ function controllaOnboarding(){
   if(!p.sesso && !_onboardingMostrata){
     _onboardingMostrata = true;
     document.getElementById('onbDataNascita').value = p.dataNascita || '';
+    document.getElementById('onbAttivita').value = p.livelloAttivita || 'moderato';
     const prog = activeProgram();
     if(prog && prog.dietInfo){
       document.getElementById('onbPeso').value = prog.dietInfo.peso || '';
       document.getElementById('onbAltezza').value = prog.dietInfo.altezza || '';
-      document.getElementById('onbAttivita').value = prog.dietInfo.attivita || '';
     }
     gate.style.display = 'block';
   }
@@ -22,6 +22,12 @@ function controllaOnboarding(){
 document.querySelectorAll('#onbSesso .seg-btn').forEach(btn=>{
   btn.addEventListener('click', ()=>{
     document.querySelectorAll('#onbSesso .seg-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+  });
+});
+document.querySelectorAll('#onbPromemoria .seg-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('#onbPromemoria .seg-btn').forEach(b=>b.classList.remove('active'));
     btn.classList.add('active');
   });
 });
@@ -48,7 +54,7 @@ document.getElementById('onbContinua').addEventListener('click', ()=>{
 
   const peso = document.getElementById('onbPeso').value.trim();
   const altezza = document.getElementById('onbAltezza').value.trim();
-  const attivita = document.getElementById('onbAttivita').value.trim();
+  const attivita = document.getElementById('onbAttivita').value;
 
   if(p){
     // L'altezza va scritta anche nel profilo (Account → Dati fisici): è da lì,
@@ -58,6 +64,12 @@ document.getElementById('onbContinua').addEventListener('click', ()=>{
     // Segnalato il 25/08/2026.
     const altezzaNum = parseFloat(altezza);
     if(altezzaNum && altezzaNum > 0) p.altezza = altezzaNum;
+
+    // Stesso principio: il livello di attività va scritto sul profilo
+    // (Account → Il tuo profilo), non solo nella scheda alimentare — è lì,
+    // in prof.livelloAttivita, che il fabbisogno calorico lo legge davvero
+    // (vedi LIVELLI_ATTIVITA in dieta.js), non nel testo libero di prima.
+    p.livelloAttivita = attivita;
 
     // Il peso va registrato anche come misurazione in Storico → Misure: è da
     // lì, non dalla scheda alimentare, che il fabbisogno calorico prende il
@@ -80,11 +92,19 @@ document.getElementById('onbContinua').addEventListener('click', ()=>{
     if(!prog.dietInfo) prog.dietInfo = defaultDietInfo();
     if(peso) prog.dietInfo.peso = peso;
     if(altezza) prog.dietInfo.altezza = altezza;
-    if(attivita) prog.dietInfo.attivita = attivita;
   }
 
   save();
   if(typeof modalitaOnline === 'function' && modalitaOnline()) inviaOnline();
+
+  // Promemoria allenamento: qui il click su "Continua" è un vero gesto
+  // dell'utente, quindi Notification.requestPermission() dentro
+  // attivaPromemoria() può davvero mostrare il popup nativo del telefono
+  // (a differenza di una richiesta lanciata da sola durante il login).
+  const promemoriaBtn = document.querySelector('#onbPromemoria .seg-btn.active');
+  if(promemoriaBtn && promemoriaBtn.dataset.val === 'si' && typeof promemoriaSupportato === 'function' && promemoriaSupportato()){
+    attivaPromemoria();
+  }
 
   document.getElementById('onboardingGate').style.display = 'none';
   renderHeader();

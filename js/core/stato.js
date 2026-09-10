@@ -39,10 +39,6 @@ function load(){
   }
   data.profiles.forEach(p=>{
     normalizzaProfilo(p);
-    // l'hash locale serve solo a chi non è mai passato dal login online
-    // (vedi profiloVuotoPerCloud(), che lo elimina apposta): non va quindi
-    // dentro normalizzaProfilo, o finirebbe anche sui profili online.
-    if(!p.passwordHash) p.passwordHash = simpleHash("1234");
   });
   return data;
 }
@@ -446,12 +442,20 @@ function mpBuildFigure(svg, parts, outline){
 let HM_BUILT = false;
 let hmUid = 0;
 function hmBucketColor(v){
-  // Stessa scala a 4 livelli di sempre (0-3 allenamenti nella settimana),
-  // solo intonata alla nuova palette più calda — nessun'altra logica toccata.
-  if(!v || v<=0) return '#efeae0';
-  if(v===1) return '#ffcdad';
-  if(v===2) return '#ff7a3d';
-  return '#ff4b2b';
+  // Stessa scala a 4 livelli di sempre (0-3 allenamenti nella settimana).
+  // Colori presi dalle variabili CSS (--hm-lvl-0..3, vedi css/style.css)
+  // invece che scritti qui a fisso: solo così il livello "non allenato"
+  // può cambiare tonalità col tema scuro (gli altri tre vanno bene invariati
+  // su entrambi gli sfondi, ma passano dalla stessa variabile per coerenza).
+  // Ogni riferimento porta anche il colore originale come riserva: se per
+  // qualunque motivo la variabile non risultasse definita (es. un attimo di
+  // rete debole subito dopo un aggiornamento, con html/css non perfettamente
+  // allineati), l'SVG non deve mai cadere sul nero di default — che è
+  // esattamente il bug segnalato: mappa nera anche a telefono in chiaro.
+  if(!v || v<=0) return 'var(--hm-lvl-0,#efeae0)';
+  if(v===1) return 'var(--hm-lvl-1,#ffcdad)';
+  if(v===2) return 'var(--hm-lvl-2,#ff7a3d)';
+  return 'var(--hm-lvl-3,#ff4b2b)';
 }
 function hmSelectZone(slug, conteggio){
   document.querySelectorAll('#homeHeatmapCard .heatmap-zone-g').forEach(g=>{
@@ -573,6 +577,14 @@ function ricostruisciFiguraCorpo(){
   const gboxB = document.querySelector('#glFigBack .zoom-ctrl'); if(gboxB) gboxB.remove();
 
   if(typeof glBuildAll === 'function'){ glBuildAll(); }
+
+  // La mappa muscolare della Home ("La tua settimana") è una terza figura
+  // costruita da queste stesse geometrie (GEO/GEO_DONNA): senza ricostruirla
+  // anche qui, dopo aver scelto il sesso all'onboarding restava quella
+  // disegnata prima (con la figura del sesso sbagliato) finché non si
+  // usciva dalla Home e ci si tornava — unico momento in cui hmRefresh()
+  // veniva richiamato di nuovo (da renderHome()).
+  if(typeof hmRefresh === 'function') hmRefresh();
 }
 
 // ============================================================

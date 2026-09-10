@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<meta name="color-scheme" content="light dark">
 <title>Registro Allenamento</title>
 <script src="js/ui/redirect-landing.js"></script>
 <script>
@@ -743,6 +744,7 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
         <option value="intenso">Intenso — esercizio 6-7 giorni a settimana</option>
         <option value="molto_intenso">Molto intenso — esercizio quotidiano + lavoro fisico</option>
       </select>
+      <button type="button" class="btn secondary block" id="saveAcctDatiBtn" style="margin-top:16px;">Salva</button>
       </div>
 
       <p class="hint" style="margin-top:14px;">Password, privacy e le altre opzioni sono in <b>Impostazioni</b> (icona ⚙ in alto).</p>
@@ -823,7 +825,7 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
     <details class="card details-card acct-row" id="accPrivacy" style="margin-top:8px;">
       <summary>
         <div class="acct-row-icon privacy"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2 4 5v6c0 5 3.4 8.9 8 11 4.6-2.1 8-6 8-11V5l-8-3Z"/></svg></div>
-        <div class="acct-row-body"><div class="acct-row-title">Password e sicurezza</div><div class="acct-row-sub">Cambia password, codice di recupero</div></div>
+        <div class="acct-row-body"><div class="acct-row-title">Password e sicurezza</div><div class="acct-row-sub">Cambia la password del tuo account</div></div>
         <div class="acct-row-chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></div>
       </summary>
       <div class="details-body">
@@ -873,7 +875,7 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
         <details class="admin-sub">
           <summary>Sicurezza dei dati</summary>
           <div class="admin-sub-body">
-            <p class="hint">I tuoi allenamenti stanno solo su questo telefono.</p>
+            <p class="hint">I tuoi allenamenti sono salvati online: questa copia sul telefono serve solo a farti usare l'app anche senza connessione.</p>
             <div class="dato-riga"><span>Protezione dalla cancellazione</span><b id="statoPersistenza">—</b></div>
             <div class="dato-riga"><span>Spazio occupato</span><b id="statoSpazio">—</b></div>
 
@@ -1114,8 +1116,21 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
       <label>Altezza (cm)</label>
       <input type="text" id="onbAltezza" placeholder="Es. 178" inputmode="decimal">
 
-      <label>Attività fisica</label>
-      <input type="text" id="onbAttivita" placeholder="Es. Palestra 4 volte a settimana">
+      <label>Livello di attività fisica</label>
+      <select id="onbAttivita">
+        <option value="sedentario">Sedentario — lavoro da seduto, poco o nessun esercizio</option>
+        <option value="leggero">Leggero — esercizio 1-3 giorni a settimana</option>
+        <option value="moderato">Moderato — esercizio 3-5 giorni a settimana</option>
+        <option value="intenso">Intenso — esercizio 6-7 giorni a settimana</option>
+        <option value="molto_intenso">Molto intenso — esercizio quotidiano + lavoro fisico</option>
+      </select>
+
+      <label style="margin-top:14px;">Promemoria allenamento</label>
+      <p class="hint" style="margin:2px 0 8px;">Un avviso sul telefono nei giorni in cui la scheda prevede un allenamento e non hai ancora registrato nulla.</p>
+      <div class="seg-toggle" id="onbPromemoria">
+        <button type="button" class="seg-btn active" data-val="si">Sì, avvisami</button>
+        <button type="button" class="seg-btn" data-val="no">No, grazie</button>
+      </div>
     </div>
 
     <button class="btn block" id="onbContinua" style="margin-top:14px;">Continua</button>

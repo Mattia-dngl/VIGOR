@@ -71,7 +71,7 @@ test('onboarding: peso e altezza finiscono anche in Account e Storico → Misure
     document.getElementById('onbDataNascita').value = '1994-05-20';
     document.getElementById('onbPeso').value = '62.5';
     document.getElementById('onbAltezza').value = '167';
-    document.getElementById('onbAttivita').value = 'Palestra 3 volte a settimana';
+    document.getElementById('onbAttivita').value = 'intenso';
     document.getElementById('onbContinua').click();
 
     const p = state.profiles.find(x=>x.id==='io');
@@ -83,6 +83,7 @@ test('onboarding: peso e altezza finiscono anche in Account e Storico → Misure
       pesoInStorico: misurazioneOggi ? misurazioneOggi.weight : null,
       dietInfoPeso: p.programs.find(x=>x.id==='p1').dietInfo.peso,
       dietInfoAltezza: p.programs.find(x=>x.id==='p1').dietInfo.altezza,
+      livelloAttivita: p.livelloAttivita,
       fabbisognoMancanti: fabbisogno.mancanti,
     };
   `);
@@ -90,7 +91,33 @@ test('onboarding: peso e altezza finiscono anche in Account e Storico → Misure
   assert.equal(r.pesoInStorico, 62.5, 'il peso deve finire anche come misurazione in Storico');
   assert.equal(r.dietInfoPeso, '62.5', 'resta comunque visibile nella scheda alimentare, come prima');
   assert.equal(r.dietInfoAltezza, '167');
+  assert.equal(r.livelloAttivita, 'intenso', 'il livello scelto nella tendina di attività deve finire su prof.livelloAttivita, quello che il fabbisogno calorico legge davvero');
   assert.deepEqual(r.fabbisognoMancanti, [], 'col sesso, la data di nascita, il peso e l\'altezza appena inseriti il fabbisogno calorico deve poter essere calcolato subito, senza tornare in Account');
+  window.close();
+});
+
+test('onboarding: scegliendo "donna" la mappa muscolare della Home mostra subito la figura giusta, senza dover uscire e rientrare', async () => {
+  // Bug segnalato: la figura di "La tua settimana" in Home veniva costruita
+  // una volta sola (sesso ancora nullo -> figura uomo di default) e non si
+  // ricostruiva quando l'onboarding impostava il sesso, restando quella
+  // sbagliata finché non si usciva dalla Home e ci si tornava (unico altro
+  // punto che richiama hmRefresh()).
+  const { window } = await loadApp();
+  const r = await run(window, `
+    const profilo = ${JSON.stringify(profiloVuoto())};
+    state.profiles = [profilo];
+    activeProfileId = 'io';
+    mostraHome(); // prima apertura, col sesso ancora non impostato
+
+    document.querySelector('#onbSesso .seg-btn[data-val="donna"]').click();
+    document.getElementById('onbContinua').click();
+
+    return {
+      viewBox: document.getElementById('homeHeatmapFront').getAttribute('viewBox'),
+      atteso: GEO_DONNA.viewBoxFront.join(' ')
+    };
+  `);
+  assert.equal(r.viewBox, r.atteso, 'la mappa della Home deve aggiornarsi subito dopo la scelta del sesso, non solo alla prossima apertura della Home');
   window.close();
 });
 

@@ -109,6 +109,7 @@ function apriImpostazioni(provenienza){
   document.getElementById('appRoot').style.display = 'none';
   document.getElementById('accountPanel').style.display = 'none';
   document.getElementById('settingsPanel').style.display = 'block';
+  document.body.classList.add('impostazioni-aperte');
   _impostazioniProvenienza = provenienza;
   renderImpostazioniInline();
   renderAmministrazioneOnline();
@@ -117,6 +118,7 @@ function apriImpostazioni(provenienza){
 // Chiude #settingsPanel tornando a dove si è aperta (vedi apriImpostazioni).
 function chiudiSettingsPanel(){
   document.getElementById('settingsPanel').style.display = 'none';
+  document.body.classList.remove('impostazioni-aperte');
   if(_impostazioniProvenienza === 'app'){
     _impostazioniProvenienza = null;
     document.getElementById('appRoot').style.display = 'block';
@@ -343,6 +345,14 @@ function toggleDatiProfilo(forzaVista){
   }
 }
 document.getElementById('acctDatiEditBtn').addEventListener('click', ()=>toggleDatiProfilo());
+// I singoli campi (sesso, data di nascita, altezza, attività) si salvano già
+// da soli al cambiamento — vedi js/ui/profile-gate.js — quindi qui basta
+// tornare alla vista compatta: è quel toggleDatiProfilo(true) che manca per
+// far comportare "Salva" come "Salva nome" qui sopra.
+document.getElementById('saveAcctDatiBtn').addEventListener('click', ()=>{
+  toggleDatiProfilo(true);
+  toast("Dati salvati ✓");
+});
 
 function chiudiAccountPanel(){
   document.getElementById('accountPanel').style.display = 'none';
@@ -635,9 +645,7 @@ async function dopoAccessoOnline(){
 }
 
 function profiloVuotoPerCloud(){
-  const p = newProfile('', '', 'segnaposto', true);
-  delete p.passwordHash;   // la password la gestisce Supabase, non l'app
-  return p;
+  return newProfile('', '', true);
 }
 
 function applicaDatiOnline(){

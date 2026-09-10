@@ -77,25 +77,16 @@ function blankProgram(){
     diet: blankDietDays()
   };
 }
-function simpleHash(str){
-  let hash = 5381;
-  for(let i=0;i<str.length;i++){
-    hash = ((hash << 5) + hash) + str.charCodeAt(i);
-    hash = hash & hash;
-  }
-  return (hash >>> 0).toString(16);
-}
-
 function addDaysIso(iso, days){
   const d = new Date(iso+'T00:00:00');
   d.setDate(d.getDate()+days);
   return d.toISOString().slice(0,10);
 }
-function newProfile(name, email, password, approvato){
+function newProfile(name, email, approvato){
   const createdAt = new Date().toISOString().slice(0,10);
   return { id: uid(), name: name.trim(), email: (email||'').trim().toLowerCase(), createdAt,
     approvato: !!approvato, bloccato:false, richiestoIl: new Date().toISOString(),
-    passwordHash: simpleHash(password), sesso: null,
+    sesso: null,
     programs:[blankProgram()], activeProgramId:null, logs:[], measurements:[], mealLogs:[], waterLogs:[], checkins:[], customExercises:{}, customFoods:{}, avatarUrl:null,
     altezza:null, dataNascita:null, eta:null, livelloAttivita:'moderato', obiettivoCalorico:'mantenimento',
     obiettivoPeso:null, obiettivoRecord:null,
