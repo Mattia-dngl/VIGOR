@@ -490,7 +490,7 @@ footer.site-footer .copy{ font-size:12px; color:var(--text-faint); }
 @media (min-width:768px){
   .doppia-colonna{ grid-template-columns:1fr 1fr; align-items:start; }
   .griglia-motivi{ grid-template-columns:repeat(3,1fr); }
-  .griglia-prezzi{ grid-template-columns:repeat(3,1fr); align-items:center; }
+  .griglia-prezzi{ grid-template-columns:repeat(4,1fr); align-items:center; }
   section{ padding:72px 0; }
 }
 @media (min-width:1024px){
