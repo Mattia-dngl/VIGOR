@@ -745,11 +745,27 @@ async function iniziaAccessoGoogle(){
   try{
     const { error } = await sb.auth.signInWithOAuth({
       provider: 'google',
-      options:{ redirectTo: location.origin + location.pathname }
+      // prompt:'select_account' forza Google a mostrare SEMPRE la scelta
+      // dell'account, anche quando il browser ha già una sessione Google
+      // attiva: trovato un caso reale (10/09/2026) in cui "Continua con
+      // Google" entrava da solo, senza chiedere, in un account Google
+      // diverso da quello con cui la persona pensava di accedere — senza
+      // nessun errore visibile, sembrava solo "non funzionare".
+      options:{ redirectTo: location.origin + location.pathname, queryParams:{ prompt:'select_account' } }
     });
-    if(error) mostraErroreAccesso(error.message);
+    if(error){
+      // Il messaggio mostrato passa da traduciErrore(), che per un testo
+      // "tecnico" o vuoto lo sostituisce con un generico "Qualcosa non ha
+      // funzionato" — utile per l'utente, ma nasconde la causa vera (es.
+      // provider Google non abilitato su Supabase, redirect non
+      // autorizzato). Il testo originale resta comunque salvato qui, sola
+      // scrittura, leggibile da chi ha accesso al progetto Supabase.
+      if(typeof segnalaErroreClient === 'function') segnalaErroreClient('accesso-google', error.message, null, { fase:'signInWithOAuth' });
+      mostraErroreAccesso(error.message);
+    }
   }catch(e){
     console.error(e);
+    if(typeof segnalaErroreClient === 'function') segnalaErroreClient('accesso-google', e && e.message, e && e.stack, { fase:'signInWithOAuth-eccezione' });
     mostraErroreAccesso(e && e.message);
   }
 }
