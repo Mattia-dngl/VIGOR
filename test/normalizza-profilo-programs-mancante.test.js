@@ -33,3 +33,37 @@ test('normalizzaProfilo(): un "programs" già valido non viene toccato', async (
   assert.deepEqual(r.programs, [{id:'p1'}]);
   assert.equal(r.activeProgramId, 'p1');
 });
+
+// 10/09/2026 (stesso profilo, scoperto un attimo dopo): "programs" non era
+// l'unico campo mancante — il profilo reale aveva in "dati" SOLO
+// checkinVistaPtIl/dietaVistaPtIl (impostati da segnaVistaPT(), che scrive
+// senza mai passare da normalizzaProfilo()), niente altro. "logs" in
+// particolare è letto senza controlli in home.js/registra.js/storico/
+// dieta.js/tabs-header.js/costanti.js/recupero-codici.js: bastava aprire la
+// Home per andare in crash con "undefined is not an object (evaluating
+// 'prof.logs.forEach')" — esattamente ciò che succedeva subito dopo un
+// accesso riuscito con quel profilo (mostraHome() è l'ultimo passo di
+// dopoAccessoOnline()).
+test('normalizzaProfilo(): un profilo "minimo" (solo pochi campi, come capita a un cliente creato fuori dal percorso normale) ottiene tutti i default critici, non solo "programs"', async () => {
+  const { window } = await loadApp();
+  const r = await run(window, `
+    const p = { checkinVistaPtIl:'2026-09-10T19:19:47.634Z', dietaVistaPtIl:'2026-09-10T19:18:57.103Z' };
+    normalizzaProfilo(p);
+    return {
+      logs: p.logs, measurements: p.measurements, mealLogs: p.mealLogs, waterLogs: p.waterLogs,
+      checkins: p.checkins, customExercises: p.customExercises, customFoods: p.customFoods,
+      programs: p.programs, activeProgramId: p.activeProgramId, avatarUrl: p.avatarUrl, sesso: p.sesso
+    };
+  `);
+  assert.deepEqual(r.logs, [], 'logs mancante deve diventare un array vuoto, non restare undefined');
+  assert.deepEqual(r.measurements, []);
+  assert.deepEqual(r.mealLogs, []);
+  assert.deepEqual(r.waterLogs, []);
+  assert.deepEqual(r.checkins, []);
+  assert.deepEqual(r.customExercises, {});
+  assert.deepEqual(r.customFoods, {});
+  assert.deepEqual(r.programs, []);
+  assert.equal(r.activeProgramId, null);
+  assert.equal(r.avatarUrl, null);
+  assert.equal(r.sesso, null);
+});
