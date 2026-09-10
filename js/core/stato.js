@@ -66,6 +66,18 @@ function normalizzaProfilo(p){
   // che lo usa.
   if(!p.programs || !Array.isArray(p.programs)) p.programs = [];
   if(p.activeProgramId === undefined) p.activeProgramId = null;
+  // Stesso profilo di cui sopra: mancava anche "logs" (non solo "programs"),
+  // letto senza nessun controllo in home.js/registra.js/storico/dieta.js/
+  // tabs-header.js/costanti.js/recupero-codici.js — bastava aprire la Home
+  // per andare in crash. Il profilo in questione (creato fuori dal percorso
+  // normale di registrazione) aveva in realtà SOLO 3 campi in "dati": qui
+  // sotto anche gli altri difetti dello stesso newProfile() (dati-default.js)
+  // rimasti scoperti, per chiudere la falla una volta sola invece di un
+  // campo alla volta a ogni nuovo crash.
+  if(!p.logs) p.logs = [];
+  if(p.avatarUrl === undefined) p.avatarUrl = null;
+  if(p.sesso === undefined) p.sesso = null;
+  if(!p.createdAt) p.createdAt = new Date().toISOString().slice(0,10);
   if(!p.measurements) p.measurements = [];
   if(!p.mealLogs) p.mealLogs = [];
   if(!p.waterLogs) p.waterLogs = []; // 31/08/2026: contatore acqua, Fase 3 (dieta)

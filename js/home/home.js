@@ -6,6 +6,19 @@ function mostraCloudGate(quale){
   document.getElementById('accountPanel').style.display = 'none';
   const g = document.getElementById('cloudGate');
   g.style.display = 'flex';
+  // #cloudErr/#regErr non venivano MAI nascosti da qui: un errore mostrato
+  // durante un tentativo (es. "Continua con Google" fallito) restava scritto
+  // e visibile finché non si ritentava esplicitamente quella stessa azione —
+  // anche passando da "Accedi" a "Registrati" e viceversa, o rientrando nel
+  // gate dopo un'uscita, senza aver toccato nulla. Chi ha già toccato tutti
+  // questi errori più volte di fila (uscendo e rientrando con account
+  // diversi, come nel giro di test di questa sera) si ritrovava la frase
+  // "Qualcosa non ha funzionato" già scritta appena arrivato, senza aver
+  // ancora provato nulla in QUESTA schermata. Ogni chiamata a mostraCloudGate()
+  // che mostra davvero un errore lo fa SEMPRE chiamando mostraErroreAccesso()
+  // subito dopo (mai prima): pulirli qui in testa è quindi sempre sicuro.
+  document.getElementById('cloudErr').style.display = 'none';
+  document.getElementById('regErr').style.display = 'none';
   document.getElementById('cloudAccedi').style.display     = quale === 'accedi'      ? 'block':'none';
   document.getElementById('cloudRegistra').style.display   = quale === 'registra'    ? 'block':'none';
   // Registrazione in due passi (01/09/2026): ogni volta che si apre "Registrati"

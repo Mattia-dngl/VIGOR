@@ -527,6 +527,7 @@ async function avvioOnline(){
     }
   }catch(e){
     console.error(e);
+    if(typeof segnalaErroreClient === 'function') segnalaErroreClient('avvio-online', e && e.message, e && e.stack, { fase:'getSession' });
     mostraStatoSync('offline', 'senza rete');
     mostraCloudGate('accedi');
     mostraErroreAccesso((e && e.message) || 'Qualcosa non ha funzionato. Riprova.');
@@ -645,6 +646,15 @@ async function dopoAccessoOnline(){
     // sempre alla schermata di login, dove l'errore È visibile, con la
     // possibilità di riprovare.
     console.error(e);
+    // Come iniziaAccessoGoogle(): il messaggio mostrato passa da
+    // traduciErrore() e per un testo "tecnico" diventa un generico "Qualcosa
+    // non ha funzionato" — il testo originale resta comunque salvato qui
+    // (sola scrittura, leggibile da chi ha accesso al progetto Supabase),
+    // altrimenti un errore dopo un login riuscito (es. dentro applicaDatiOnline()
+    // o renderAll(), per un profilo con dati particolari) restava invisibile:
+    // catturato qui dentro, non arrivava mai al listener globale che scrive
+    // su error_logs.
+    if(typeof segnalaErroreClient === 'function') segnalaErroreClient('dopo-accesso-online', e && e.message, e && e.stack, { fase:'dopoAccessoOnline', profiloId: utenteOnline && utenteOnline.id });
     mostraStatoSync('offline', 'senza rete');
     mostraCloudGate('accedi');
     mostraErroreAccesso((e && e.message) || 'Qualcosa non ha funzionato. Riprova.');
