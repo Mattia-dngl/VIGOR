@@ -4,13 +4,17 @@
    ============================================================ */
 
   :root{
-    /* L'app ha un solo tema (chiaro): senza questa dichiarazione, il "tema
-       scuro forzato" di Android/Chrome reinverte i colori pagina per pagina
-       con euristiche sue — è quello a rendere illeggibile la mappa muscolare
-       e altri elementi quando il telefono è in modalità scura, non una vera
-       modalità scura dell'app. Dichiarandolo esplicitamente, il browser non
-       tocca più i colori e resta quello pensato qui sotto. */
-    color-scheme: light;
+    /* L'app dichiara di gestire da sola sia il chiaro che lo scuro (vedi il
+       blocco @media (prefers-color-scheme: dark) qui sotto): senza questa
+       dichiarazione E senza una vera dark mode nostra, col telefono in tema
+       scuro il "tema scuro forzato" del browser reinverte i colori pagina
+       per pagina con euristiche sue — è quello che rendeva illeggibile la
+       mappa muscolare e altri elementi. Solo "color-scheme: light" (senza
+       una dark mode reale accanto) non basta dappertutto: Chrome la rispetta,
+       ma Internet di Samsung — verificato — no, e continua a reinvertire.
+       Fornendo un vero tema scuro, ogni browser vede che il sito lo gestisce
+       già da solo e smette di toccarlo. */
+    color-scheme: light dark;
     /* Restyling parziale (24/08/2026): solo toni più caldi, un arancio più
        deciso e angoli leggermente più morbidi. Nessun token è stato tolto —
        struttura, nav, glossario e mappa muscolare non dipendono da nient'altro
@@ -49,6 +53,52 @@
     --shadow-lg:0 22px 44px -14px rgba(23,21,15,0.13);
     --shadow-accent:0 10px 22px -4px rgba(255,75,43,0.4);
     --font-display:'Plus Jakarta Sans',sans-serif;
+    /* Colori della figura corpo (selettore muscoli/glossario/Home) e delle
+       zone della mappa "questa settimana": prima erano scritti fissi dentro
+       le regole .mp-*/.heatmap-* più sotto, invece di passare da qui — per
+       questo restavano identici (e illeggibili) anche col tema scuro qui
+       sotto. Spostati in variabili apposta per poterli ridefinire lì. */
+    --mp-skin:#f7f2e8;
+    --mp-outline:#c2b8a3;
+    --mp-zone-fill:#d9d0bd;
+    --mp-zone-stroke:#fff;
+    --hm-lvl-0:#efeae0;
+    --hm-lvl-1:#ffcdad;
+    --hm-lvl-2:#ff7a3d;
+    --hm-lvl-3:#ff4b2b;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      /* Tema scuro vero (non solo un'inversione automatica): stessi nomi di
+         variabile di sopra, valori pensati apposta per restare leggibili su
+         sfondo scuro. --accent, --accent-2 e --ink restano invariati: il
+         primo funziona già bene su fondo scuro, il secondo è la base dei
+         pannelli "sempre scuri" (es. .home-cta-card) che devono restare
+         identici in entrambi i temi. */
+      --bg:#16140f;
+      --surface:#211e18;
+      --surface2:#2c2820;
+      --border:#3c362c;
+      --text:#f4f0e6;
+      --text-dim:#b6ad9c;
+      --text-faint:#8c8371;
+      --accent-dim:#8a3f2a;
+      --accent-soft:#3a2016;
+      --ok:#33d17c;
+      --warn:#e0a53a;
+      --skip:#9aa1ac;
+      --diet:#3fc0da;
+      --diet-soft:#123037;
+      --shadow-sm:0 1px 2px rgba(0,0,0,0.35), 0 1px 1px rgba(0,0,0,0.25);
+      --shadow-md:0 14px 30px -10px rgba(0,0,0,0.55), 0 2px 6px rgba(0,0,0,0.35);
+      --shadow-lg:0 22px 44px -14px rgba(0,0,0,0.6);
+      --shadow-accent:0 10px 22px -4px rgba(255,75,43,0.5);
+      --mp-skin:#4a4438;
+      --mp-outline:#8a7f68;
+      --mp-zone-fill:#5c5344;
+      --mp-zone-stroke:#16140f;
+      --hm-lvl-0:#3a352c;
+    }
   }
   *{box-sizing:border-box;}
   body{
@@ -293,10 +343,10 @@
   .heatmap-figwrap svg{display:none; width:100%; max-width:220px; height:auto; max-height:310px;}
   .heatmap-figwrap svg.show{display:block;}
   .heatmap-zone-g{cursor:pointer; outline:none;}
-  .heatmap-zone-g path{fill:var(--hm-fill,#dde0e6); stroke:#fff; stroke-width:1.1; stroke-linejoin:round;
+  .heatmap-zone-g path{fill:var(--hm-fill,var(--hm-lvl-0)); stroke:var(--mp-zone-stroke); stroke-width:1.1; stroke-linejoin:round;
     transition:filter .15s;}
   .heatmap-zone-g:hover path, .heatmap-zone-g:focus-visible path{filter:brightness(1.08);}
-  .heatmap-zone-g.selected path{stroke:var(--ink,#17150f); stroke-width:1.6;}
+  .heatmap-zone-g.selected path{stroke:var(--text); stroke-width:1.6;}
   .heatmap-info{text-align:center; font-size:12px; color:var(--text-dim); min-height:16px; margin:2px 0 12px;}
   .heatmap-info b{color:var(--text); font-weight:700;}
   .heatmap-legend{display:flex; align-items:center; justify-content:center; gap:10px; flex-wrap:wrap;
@@ -1629,11 +1679,11 @@
   /* Mappa muscolare (Scheda/Registra/Glossario + heatmap Home): stessa figura,
      stessa geometria e stessa logica di selezione di sempre — qui si tocca
      SOLO il colore, per intonarla alla nuova palette più calda. */
-  .mp-skin{fill:#f7f2e8;}
+  .mp-skin{fill:var(--mp-skin);}
   path.mp-skin{stroke:none;}
-  .mp-outline{fill:none; stroke:#c2b8a3; stroke-width:3; vector-effect:non-scaling-stroke; opacity:.75;}
+  .mp-outline{fill:none; stroke:var(--mp-outline); stroke-width:3; vector-effect:non-scaling-stroke; opacity:.75;}
   .mp-zone-g{cursor:pointer; outline:none;}
-  .mp-zone-g path{fill:#d9d0bd; stroke:#fff; stroke-width:1.1; stroke-linejoin:round; transition:fill .16s;}
+  .mp-zone-g path{fill:var(--mp-zone-fill); stroke:var(--mp-zone-stroke); stroke-width:1.1; stroke-linejoin:round; transition:fill .16s;}
   .mp-zone-g:hover path{fill:var(--accent-dim,#ffc7ae);}
   .mp-zone-g.active path{fill:var(--accent);}
   .mp-zone-g:focus-visible path{fill:var(--accent-dim,#ffc7ae);}

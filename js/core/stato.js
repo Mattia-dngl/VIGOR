@@ -442,12 +442,15 @@ function mpBuildFigure(svg, parts, outline){
 let HM_BUILT = false;
 let hmUid = 0;
 function hmBucketColor(v){
-  // Stessa scala a 4 livelli di sempre (0-3 allenamenti nella settimana),
-  // solo intonata alla nuova palette più calda — nessun'altra logica toccata.
-  if(!v || v<=0) return '#efeae0';
-  if(v===1) return '#ffcdad';
-  if(v===2) return '#ff7a3d';
-  return '#ff4b2b';
+  // Stessa scala a 4 livelli di sempre (0-3 allenamenti nella settimana).
+  // Colori presi dalle variabili CSS (--hm-lvl-0..3, vedi css/style.css)
+  // invece che scritti qui a fisso: solo così il livello "non allenato"
+  // può cambiare tonalità col tema scuro (gli altri tre vanno bene invariati
+  // su entrambi gli sfondi, ma passano dalla stessa variabile per coerenza).
+  if(!v || v<=0) return 'var(--hm-lvl-0)';
+  if(v===1) return 'var(--hm-lvl-1)';
+  if(v===2) return 'var(--hm-lvl-2)';
+  return 'var(--hm-lvl-3)';
 }
 function hmSelectZone(slug, conteggio){
   document.querySelectorAll('#homeHeatmapCard .heatmap-zone-g').forEach(g=>{
