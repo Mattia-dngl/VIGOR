@@ -447,10 +447,15 @@ function hmBucketColor(v){
   // invece che scritti qui a fisso: solo così il livello "non allenato"
   // può cambiare tonalità col tema scuro (gli altri tre vanno bene invariati
   // su entrambi gli sfondi, ma passano dalla stessa variabile per coerenza).
-  if(!v || v<=0) return 'var(--hm-lvl-0)';
-  if(v===1) return 'var(--hm-lvl-1)';
-  if(v===2) return 'var(--hm-lvl-2)';
-  return 'var(--hm-lvl-3)';
+  // Ogni riferimento porta anche il colore originale come riserva: se per
+  // qualunque motivo la variabile non risultasse definita (es. un attimo di
+  // rete debole subito dopo un aggiornamento, con html/css non perfettamente
+  // allineati), l'SVG non deve mai cadere sul nero di default — che è
+  // esattamente il bug segnalato: mappa nera anche a telefono in chiaro.
+  if(!v || v<=0) return 'var(--hm-lvl-0,#efeae0)';
+  if(v===1) return 'var(--hm-lvl-1,#ffcdad)';
+  if(v===2) return 'var(--hm-lvl-2,#ff7a3d)';
+  return 'var(--hm-lvl-3,#ff4b2b)';
 }
 function hmSelectZone(slug, conteggio){
   document.querySelectorAll('#homeHeatmapCard .heatmap-zone-g').forEach(g=>{

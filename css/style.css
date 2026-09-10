@@ -343,10 +343,10 @@
   .heatmap-figwrap svg{display:none; width:100%; max-width:220px; height:auto; max-height:310px;}
   .heatmap-figwrap svg.show{display:block;}
   .heatmap-zone-g{cursor:pointer; outline:none;}
-  .heatmap-zone-g path{fill:var(--hm-fill,var(--hm-lvl-0)); stroke:var(--mp-zone-stroke); stroke-width:1.1; stroke-linejoin:round;
+  .heatmap-zone-g path{fill:var(--hm-fill,var(--hm-lvl-0,#efeae0)); stroke:var(--mp-zone-stroke,#fff); stroke-width:1.1; stroke-linejoin:round;
     transition:filter .15s;}
   .heatmap-zone-g:hover path, .heatmap-zone-g:focus-visible path{filter:brightness(1.08);}
-  .heatmap-zone-g.selected path{stroke:var(--text); stroke-width:1.6;}
+  .heatmap-zone-g.selected path{stroke:var(--text,#17150f); stroke-width:1.6;}
   .heatmap-info{text-align:center; font-size:12px; color:var(--text-dim); min-height:16px; margin:2px 0 12px;}
   .heatmap-info b{color:var(--text); font-weight:700;}
   .heatmap-legend{display:flex; align-items:center; justify-content:center; gap:10px; flex-wrap:wrap;
@@ -1679,11 +1679,11 @@
   /* Mappa muscolare (Scheda/Registra/Glossario + heatmap Home): stessa figura,
      stessa geometria e stessa logica di selezione di sempre — qui si tocca
      SOLO il colore, per intonarla alla nuova palette più calda. */
-  .mp-skin{fill:var(--mp-skin);}
+  .mp-skin{fill:var(--mp-skin,#f7f2e8);}
   path.mp-skin{stroke:none;}
-  .mp-outline{fill:none; stroke:var(--mp-outline); stroke-width:3; vector-effect:non-scaling-stroke; opacity:.75;}
+  .mp-outline{fill:none; stroke:var(--mp-outline,#c2b8a3); stroke-width:3; vector-effect:non-scaling-stroke; opacity:.75;}
   .mp-zone-g{cursor:pointer; outline:none;}
-  .mp-zone-g path{fill:var(--mp-zone-fill); stroke:var(--mp-zone-stroke); stroke-width:1.1; stroke-linejoin:round; transition:fill .16s;}
+  .mp-zone-g path{fill:var(--mp-zone-fill,#d9d0bd); stroke:var(--mp-zone-stroke,#fff); stroke-width:1.1; stroke-linejoin:round; transition:fill .16s;}
   .mp-zone-g:hover path{fill:var(--accent-dim,#ffc7ae);}
   .mp-zone-g.active path{fill:var(--accent);}
   .mp-zone-g:focus-visible path{fill:var(--accent-dim,#ffc7ae);}
