@@ -1783,6 +1783,53 @@
   .status-badge.stimato{background:transparent; color:var(--warn); margin-left:6px;
     border:1px dashed var(--warn);}
 
+  /* ---------- MODALITÀ PROPRIETARIO (11/09/2026) ----------
+     L'account che gestisce VIGOR non è un atleta: Scheda, Registra, Dieta e
+     Storico spariscono dalla sua navigazione e la Home diventa la console.
+     Si spegne tutto da qui, con una sola classe sul body (stessa tecnica di
+     .area-pt / .registra-aperto), così nulla viene rimosso dal documento e
+     basta togliere la classe per tornare com'era.
+     NOTA: l'area PT NON si nasconde qui. Dipende dai clienti ancora
+     collegati, non dal ruolo — vedi js/admin/console-proprietario.js. */
+  #consoleHome{display:none;}
+  body.modalita-proprietario #consoleHome{display:block;}
+  body.modalita-proprietario #homeDayStrip,
+  body.modalita-proprietario .home-columns,
+  body.modalita-proprietario .home-hero,
+  body.modalita-proprietario #navTabsGlobale .nav-go-btn[data-go="program"],
+  body.modalita-proprietario #navTabsGlobale .nav-go-btn[data-go="diet"],
+  body.modalita-proprietario #navTabsGlobale .nav-go-btn[data-go="storico"],
+  body.modalita-proprietario #fabRegistraBtn,
+  body.modalita-proprietario #sidebarNavGlobale .nav-go-btn[data-go="program"],
+  body.modalita-proprietario #sidebarNavGlobale .nav-go-btn[data-go="diet"],
+  body.modalita-proprietario #sidebarNavGlobale .nav-go-btn[data-go="storico"],
+  body.modalita-proprietario #sidebarRegistraBtn{display:none !important;}
+  /* Restano Home e Account: due sole voci, che con lo spazio della barra
+     intera diventerebbero due isole lontanissime. Le riavvicino al centro. */
+  body.modalita-proprietario #navTabsGlobale{justify-content:center; gap:56px;}
+
+  .console-sez{font-family:var(--font-display); font-size:11px; font-weight:700;
+    letter-spacing:.14em; text-transform:uppercase; color:var(--text-faint); margin:4px 0 10px;}
+  .console-voce{display:flex; align-items:center; gap:12px; width:100%; text-align:left;
+    background:var(--surface); border:1px solid var(--border); box-shadow:var(--shadow-sm);
+    border-radius:var(--r-lg); padding:16px 17px; margin-bottom:10px; cursor:pointer;
+    font-family:var(--font-display); color:var(--text); transition:box-shadow .2s ease, transform .2s ease;}
+  .console-voce:hover{box-shadow:var(--shadow-md); transform:translateY(-1px);}
+  .console-voce:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
+  .console-voce-testo{flex:1; min-width:0;}
+  .console-voce-titolo{font-size:15px; font-weight:800; letter-spacing:-.015em;}
+  .console-voce-sub{font-size:12px; color:var(--text-dim); line-height:1.45; margin-top:3px;}
+  .console-voce-sub-allarme{color:var(--warn); font-weight:600;}
+  .console-voce-freccia{flex:none; color:var(--text-faint); display:flex;}
+  .console-voce-freccia svg{width:20px; height:20px;}
+  /* La voce dei clienti rimasti è una cosa da sbrigare, non una funzione:
+     fondo tinto come gli avvisi, per distinguerla dalle voci normali. */
+  .console-voce-attesa{background:var(--accent-soft); border-color:var(--accent-dim);}
+  .console-voce-attesa .console-voce-titolo{color:var(--accent-2);}
+  .console-voce-num{flex:none; font-size:22px; font-weight:800; color:var(--accent-2);
+    letter-spacing:-.04em; font-variant-numeric:tabular-nums;}
+  .console-nota{font-size:12px; color:var(--text-faint); margin:14px 0 0; text-align:center;}
+
   /* ---------- SALUTE APP (console proprietario, 11/09/2026) ----------
      Riusa .card, .acct-highlight-card, .pt-riepilogo-stats e .seg-toggle
      che esistono già: qui sotto c'è solo la riga d'errore, che non ha un

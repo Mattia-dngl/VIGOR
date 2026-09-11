@@ -483,6 +483,11 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
     <!-- Striscia dei giorni della settimana, oggi in evidenza -->
     <div class="home-daystrip" id="homeDayStrip"></div>
 
+    <!-- Home della console (solo account proprietario). Il CSS la mostra e
+         nasconde la parte da atleta solo con body.modalita-proprietario —
+         vedi js/admin/console-proprietario.js. -->
+    <div id="consoleHome"></div>
+
     <!-- 02/09/2026: le due colonne qui sotto (home-columns/home-col) sono solo
          contenitori nuovi attorno alle stesse card di sempre — nessun id
          toccato. Su mobile restano una sola colonna (nessuna regola CSS le
@@ -2098,6 +2103,7 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
 <script src="js/onboarding/onboarding.js"></script>
 <script src="js/admin/gestione-utenti.js"></script>
 <script src="js/admin/salute-app.js"></script>
+<script src="js/admin/console-proprietario.js"></script>
 <script src="js/home/home.js"></script>
 <script src="js/account/account.js"></script>
 <script src="js/pt/pt-collegamento.js"></script>
