@@ -62,6 +62,9 @@ function autoSkipAttivo(){
 }
 function autoRegistraSaltati(){
   if(!autoSkipAttivo()) return 0;
+  // l'account proprietario non si allena: segnargli giorni "saltati" vorrebbe
+  // dire riempire di assenze un profilo che non ha più una scheda da seguire
+  if(typeof modalitaProprietarioAttiva === 'function' && modalitaProprietarioAttiva()) return 0;
   const prof = activeProfile();
   const p = activeProgram();
   if(!prof || !p || !p.days || p.days.length===0) return 0;

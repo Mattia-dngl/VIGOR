@@ -5,7 +5,7 @@
 // l'app se ne accorge da sola e si aggiorna in automatico (vedi
 // js/sistema/offline-sistema.js), senza bisogno che nessuno tocchi nulla.
 // ============================================================
-const VERSIONE = "vigor-v140";
+const VERSIONE = "vigor-v144";
 
 const DA_TENERE = [
   "./",
@@ -25,6 +25,9 @@ const DA_TENERE = [
   "./js/storico/allenamenti-stimati.js",
   "./js/admin/gestione-utenti.js",
   "./js/admin/salute-app.js",
+  "./js/admin/registro-accessi.js",
+  "./js/admin/console-proprietario.js",
+  "./js/admin/console-pagine.js",
   "./js/home/home.js",
   "./js/account/account.js",
   "./js/account/messaggi.js",

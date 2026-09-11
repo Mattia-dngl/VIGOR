@@ -495,6 +495,10 @@ function mostraHome(){
   aggiornaCampanellaHome();
   document.getElementById('homeScreen').style.display = 'block';
   aggiornaNavGlobale('home');
+  // In coda, non prima: mostraHome() qui sopra riscrive #homeSaluto con
+  // "Bentornato" ogni volta, e sull'account proprietario quel saluto va
+  // sostituito dall'intestazione della console (vedi renderConsoleHome).
+  if(typeof aggiornaModalitaProprietario === 'function') aggiornaModalitaProprietario();
 }
 
 // Striscia Lun-Dom della settimana in corso, oggi in evidenza.
