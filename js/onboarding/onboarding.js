@@ -1,13 +1,25 @@
 // PRIMO ACCESSO: sesso, peso, altezza, attività fisica
 // ============================================================
-let _onboardingMostrata = false;
+// Per QUALE profilo è già stata mostrata in questa sessione (prima era un
+// semplice true/false): serve a non riproporla ad ogni renderAll() a chi l'ha
+// già vista o saltata, ma senza confondere due profili diversi.
+let _onboardingMostrataPer = null;
 function controllaOnboarding(){
   if(modalitaPT) return;   // mai sopra la sessione di modifica come PT
   const p = activeProfile();
   const gate = document.getElementById('onboardingGate');
-  if(!gate || !p) return;
-  if(!p.sesso && !_onboardingMostrata){
-    _onboardingMostrata = true;
+  if(!gate) return;
+  // Questa schermata copre tutto lo schermo (position:fixed, z-index:200) e
+  // prima veniva solo MOSTRATA, mai nascosta. Uscendo da un account ed
+  // entrando in un altro senza ricaricare la pagina — cioè esattamente quello
+  // che fa il tasto "Esci" — l'onboarding aperto per un profilo incompleto
+  // restava sovrapposto alla sessione successiva: chi rientrava con un
+  // account che quei dati li aveva già impostati da tempo se li vedeva
+  // richiedere di nuovo (segnalato il 10/09/2026). Ora chi non ne ha bisogno
+  // la nasconde sempre, invece di lasciare lì quella del profilo precedente.
+  if(!p || p.sesso){ gate.style.display = 'none'; return; }
+  if(_onboardingMostrataPer !== p.id){
+    _onboardingMostrataPer = p.id;
     document.getElementById('onbDataNascita').value = p.dataNascita || '';
     document.getElementById('onbAttivita').value = p.livelloAttivita || 'moderato';
     const prog = activeProgram();
