@@ -237,7 +237,13 @@ function selectDay(key){
       const conDati = Object.keys(b.serie||{}).some(n =>
         (b.serie[n]||[]).some(s => CAMPI_SERIE.some(k=>s[k]))) || (b.note||'').trim();
       if(conDati){
-        const nomeGiorno = b.dayKey === "LIBERO" ? "Allenamento libero" : "giorno " + b.dayKey;
+        // 11/09/2026: qui finiva nel messaggio la CHIAVE interna del giorno
+        // ("giorno mtwuf4p6ipo91"), che per chi legge non vuol dire niente.
+        // Meglio il nome vero del giorno, con la chiave solo come ripiego se
+        // quel giorno non è più nella scheda.
+        const giornoBozza = (activeProgram()?.days || []).find(d=>d.key===b.dayKey);
+        const nomeGiorno = b.dayKey === "LIBERO" ? "Allenamento libero"
+                         : giornoBozza ? giornoBozza.name : "un giorno non più in scheda";
         customConfirm(
           `Hai una registrazione in corso (${nomeGiorno}) non ancora salvata. Passando a un altro giorno la perdi. Vuoi continuare?`,
           ()=>{ _p.bozzaLog = null; save(); selectDay(key); }
@@ -801,9 +807,16 @@ document.getElementById('saveLogBtn').addEventListener('click', ()=>{
     id: uid(), date: iso, programId: p.id,
     status: selectedDayKey==="SKIP" ? "saltato" : "registrato",
     dayKey: selectedDayKey==="SKIP" ? null : selectedDayKey,
+    // Ultima rete sul nome del giorno: se per qualunque motivo il giorno
+    // scelto non è più nella scheda (11/09/2026 — ci si arrivava da una bozza
+    // ripristinata su un giorno cancellato nel frattempo, vedi
+    // ripristinaBozza), qui find() tornava undefined e il .name buttava giù
+    // il salvataggio: l'allenamento appena fatto andava perso invece di
+    // essere registrato. Un allenamento svolto va salvato comunque — al
+    // massimo senza il nome del giorno che non esiste più.
     dayName: selectedDayKey==="SKIP" ? null
              : selectedDayKey==="LIBERO" ? "Allenamento libero"
-             : p.days.find(d=>d.key===selectedDayKey).name,
+             : (p.days.find(d=>d.key===selectedDayKey) || {}).name || "Allenamento libero",
     exercises: [], notes: document.getElementById('logNotes').value.trim()
   };
   if(selectedDayKey!=="SKIP"){

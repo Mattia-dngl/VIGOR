@@ -764,7 +764,7 @@ function renderDietDayEditors(){
       </div>
       <div class="free-fields" data-wd="${wd}" style="display:${day.libera?'block':'none'};">
         <label>Note giorno libero</label>
-        <textarea class="dfree" data-wd="${wd}">${day.testo||''}</textarea>
+        <textarea class="dfree" data-wd="${wd}">${escapeAttr(day.testo||'')}</textarea>
       </div>
     </div>`;
   }).join('');
@@ -941,12 +941,12 @@ function renderProgramDetailHtml(p){
   const dietHtml = !haDieta ? '' : WD_ORDER.map(wd=>{
     const day = p.diet[wd];
     if(!day) return "";
-    if(day.libera) return `<div class="diet-day-card"><div class="diet-day-head"><span class="wd">${wd}</span><span class="diet-free-badge">Libero</span></div><div class="diet-meal-row">${day.testo||''}</div></div>`;
+    if(day.libera) return `<div class="diet-day-card"><div class="diet-day-head"><span class="wd">${wd}</span><span class="diet-free-badge">Libero</span></div><div class="diet-meal-row">${escapeAttr(day.testo||'')}</div></div>`;
     return `<div class="diet-day-card"><div class="diet-day-head"><span class="wd">${wd}</span></div>
-      <div class="diet-meal-row"><b>Colazione</b>${day.colazione||'-'}</div>
-      <div class="diet-meal-row"><b>Pranzo</b>${day.pranzo||'-'}</div>
-      <div class="diet-meal-row"><b>Spuntino</b>${day.spuntino||'-'}</div>
-      <div class="diet-meal-row"><b>Cena</b>${day.cena||'-'}</div></div>`;
+      <div class="diet-meal-row"><b>Colazione</b>${escapeAttr(day.colazione||'-')}</div>
+      <div class="diet-meal-row"><b>Pranzo</b>${escapeAttr(day.pranzo||'-')}</div>
+      <div class="diet-meal-row"><b>Spuntino</b>${escapeAttr(day.spuntino||'-')}</div>
+      <div class="diet-meal-row"><b>Cena</b>${escapeAttr(day.cena||'-')}</div></div>`;
   }).join('');
 
   return `

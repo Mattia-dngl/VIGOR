@@ -512,13 +512,13 @@ async function renderDettaglioPT(sezione){
         if(!day) return '';
         if(day.libera){
           return `<div class="pt-scheda-ro"><b>${wd}</b> <span class="hint">giorno libero / sgarro</span>
-              ${day.testo ? `<div class="hint" style="margin-top:4px;">${day.testo}</div>` : ''}</div>`;
+              ${day.testo ? `<div class="hint" style="margin-top:4px;">${escapeAttr(day.testo)}</div>` : ''}</div>`;
         }
         return `<div class="pt-scheda-ro"><b>${wd}</b>
-            <div class="hint">Colazione: ${day.colazione||'-'}</div>
-            <div class="hint">Pranzo: ${day.pranzo||'-'}</div>
-            <div class="hint">Spuntino: ${day.spuntino||'-'}</div>
-            <div class="hint">Cena: ${day.cena||'-'}</div></div>`;
+            <div class="hint">Colazione: ${escapeAttr(day.colazione||'-')}</div>
+            <div class="hint">Pranzo: ${escapeAttr(day.pranzo||'-')}</div>
+            <div class="hint">Spuntino: ${escapeAttr(day.spuntino||'-')}</div>
+            <div class="hint">Cena: ${escapeAttr(day.cena||'-')}</div></div>`;
       }).join('');
     }
     const nomeCliente = nomeDi(_clienteAperto.riga);

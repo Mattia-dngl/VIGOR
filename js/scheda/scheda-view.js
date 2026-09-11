@@ -51,7 +51,7 @@ function renderSchedaView(){
   const infoCardHtml = `
     <div class="card scheda-info-card">
       <div class="scheda-info-top">
-        <h3 class="scheda-info-nome">${p.name}</h3>
+        <h3 class="scheda-info-nome">${escapeAttr(p.name)}</h3>
         ${badgeHtml}
       </div>
       ${settimanaHtml}
@@ -71,10 +71,10 @@ function renderSchedaView(){
     return `
     <details class="day-editor day-view-accordion"${i===idxOggi ? ' open' : ''}>
       <summary>
-        <div class="letter">${d.key}</div>
+        <div class="letter">${escapeAttr(d.key)}</div>
         <div class="day-name-block">
-          <div class="dname-riepilogo">${d.name}</div>
-          <div class="hint">${d.weekday}${eOggi ? ' · oggi' : ''} · ${nEx} esercizi${nEx===1?'o':''}</div>
+          <div class="dname-riepilogo">${escapeAttr(d.name)}</div>
+          <div class="hint">${escapeAttr(d.weekday)}${eOggi ? ' · oggi' : ''} · ${nEx} esercizi${nEx===1?'o':''}</div>
         </div>
         ${cat ? `<span class="workout-tag ${cat.classe}">${cat.label}</span>` : ''}
         <span class="day-accordion-chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></span>
@@ -89,7 +89,7 @@ function renderSchedaView(){
           // finiscono più a fianco del nome su schermi larghi.
           const riga2Parti = [
             ex.note ? `<span class="ex-note-badge">📌<svg class="ex-note-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></span>` : '',
-            (ex.recupero && ex.supersetCon==null) ? `<span class="day-view-ex-recupero">⏱ ${ex.recupero}s recupero</span>` : '',
+            (ex.recupero && ex.supersetCon==null) ? `<span class="day-view-ex-recupero">⏱ ${escapeAttr(ex.recupero)}s recupero</span>` : '',
             `<a href="${escapeAttr(vi.url)}" data-ex-name="${escapeAttr(ex.name)}" class="video-link">▶ video</a>`
           ].filter(Boolean).join('');
           // 09/09/2026 (richiesta esplicita, con mockup allegato): "nome ·
@@ -105,28 +105,34 @@ function renderSchedaView(){
               <span class="day-view-ex-num">${ei+1}</span>
               <div class="superset-ex-card">
                 <span class="superset-tag-badge">🔗 Superset</span>
-                <span class="day-view-ex-nome-testo">${ex.name} · ${partner.name}</span>
+                <span class="day-view-ex-nome-testo">${escapeAttr(ex.name)} · ${escapeAttr(partner.name)}</span>
                 <span class="day-view-ex-stats">${descriviTargetSerie(ex)}</span>
                 <div class="day-view-ex-riga2">${riga2Parti}</div>
               </div>
             </div>` : `
             <div class="day-view-ex-riga1">
-              <span class="day-view-ex-num">${ei+1}</span><span class="day-view-ex-nome-testo">${ex.name}${etichettaTecnica(ex,d)}</span>
+              <span class="day-view-ex-num">${ei+1}</span><span class="day-view-ex-nome-testo">${escapeAttr(ex.name)}${etichettaTecnica(ex,d)}</span>
               <span class="day-view-ex-stats">${descriviTargetSerie(ex)}</span>
             </div>
             <div class="day-view-ex-riga2">${riga2Parti}</div>`;
           return ex.note
-            ? `<details class="day-view-ex ex-note-toggle"><summary class="day-view-ex-riga">${riga}</summary><div class="day-view-ex-note exercise-note">${ex.note}</div></details>`
+            ? `<details class="day-view-ex ex-note-toggle"><summary class="day-view-ex-riga">${riga}</summary><div class="day-view-ex-note exercise-note">${escapeAttr(ex.note)}</div></details>`
             : `<div class="day-view-ex"><div class="day-view-ex-riga">${riga}</div></div>`;
         }).join('') || '<div class="empty">Nessun esercizio in questo giorno.</div>'}
       </div>
     </details>`;
   }).join('');
 
+  // 11/09/2026 — "Note del PT" e i campi della dieta qui sotto sono i testi più
+  // liberi di tutta l'app (il PT ci scrive prosa) e finivano in innerHTML senza
+  // passare da escapeAttr. Non è solo una questione di sicurezza (il PT scrive,
+  // il cliente legge): una nota del tutto innocente come "carico < 70% del
+  // massimale" veniva letta come l'inizio di un tag e si mangiava tutto il
+  // resto della card, che al cliente risultava tagliata a metà senza motivo.
   const noteHtml = p.notePT ? `
     <div class="card scheda-note-pt-card">
       <h4>Note del PT</h4>
-      <p>${p.notePT}</p>
+      <p>${escapeAttr(p.notePT)}</p>
     </div>` : '';
 
   wrap.innerHTML = infoCardHtml + giorniHtml + noteHtml;
@@ -158,15 +164,15 @@ function renderDietPlanView(){
     if(day.libera){
       return `<div class="diet-day-card${wd==='Domenica'?' full-width-card':''}">
         <div class="diet-day-head"><span class="wd">${wd}</span><span class="diet-free-badge">Libero</span></div>
-        <div class="diet-meal-row">${day.testo||''}</div>
+        <div class="diet-meal-row">${escapeAttr(day.testo||'')}</div>
       </div>`;
     }
     return `<div class="diet-day-card${wd==='Domenica'?' full-width-card':''}">
       <div class="diet-day-head"><span class="wd">${wd}${gymBadge}</span></div>
-      <div class="diet-meal-row"><b>Colazione</b>${day.colazione||'-'}</div>
-      <div class="diet-meal-row"><b>Pranzo</b>${day.pranzo||'-'}</div>
-      <div class="diet-meal-row"><b>Spuntino</b>${day.spuntino||'-'}</div>
-      <div class="diet-meal-row"><b>Cena</b>${day.cena||'-'}</div>
+      <div class="diet-meal-row"><b>Colazione</b>${escapeAttr(day.colazione||'-')}</div>
+      <div class="diet-meal-row"><b>Pranzo</b>${escapeAttr(day.pranzo||'-')}</div>
+      <div class="diet-meal-row"><b>Spuntino</b>${escapeAttr(day.spuntino||'-')}</div>
+      <div class="diet-meal-row"><b>Cena</b>${escapeAttr(day.cena||'-')}</div>
     </div>`;
   }).join('');
 }
