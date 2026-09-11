@@ -752,17 +752,19 @@ function preparaClienteBuffer(p){
   buffer.id = p.id;
   buffer.name = nomeDi(p);
   buffer.approvato = true;
-  if(!buffer.programs || !buffer.programs.length) buffer.programs = [blankProgram()];
+  // 11/09/2026 — qui c'era una copia a mano di una PARTE dei controlli di
+  // normalizzaProfilo() (js/core/stato.js), e mancava proprio "logs": in
+  // modalità PT activeProfile() restituisce questo buffer, quindi renderAll()
+  // girava sul profilo del cliente con prof.logs undefined e renderHeader()
+  // moriva su `prof.logs.find(...)`. Risultato: il PT che toccava "Modifica
+  // scheda"/"Modifica dieta" su un cliente il cui profilo non ha l'array dei
+  // logs (creato fuori dal percorso normale) si trovava la schermata rotta —
+  // esattamente il crash già corretto il 10/09 per l'accesso del cliente
+  // stesso, rimasto aperto su questo lato. Meglio chiamare la funzione vera
+  // che tenerne due versioni da ricordarsi di aggiornare assieme: copre logs
+  // e tutto il resto, compresa la forma di days/exercises/entries.
+  normalizzaProfilo(buffer);
   if(!buffer.activeProgramId) buffer.activeProgramId = buffer.programs[buffer.programs.length-1].id;
-  if(!buffer.customExercises) buffer.customExercises = {};
-  Object.keys(buffer.customExercises).forEach(name=>{
-    if(Array.isArray(buffer.customExercises[name])) buffer.customExercises[name] = {muscles: buffer.customExercises[name], video:''};
-  });
-  if(!buffer.measurements) buffer.measurements = [];
-  if(!buffer.mealLogs) buffer.mealLogs = [];
-  if(!buffer.waterLogs) buffer.waterLogs = [];
-  if(!buffer.checkins) buffer.checkins = [];
-  if(!buffer.customFoods) buffer.customFoods = {};
   _clienteBufferApertoIl = p.aggiornato_il || null;
   return buffer;
 }

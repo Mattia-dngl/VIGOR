@@ -109,6 +109,37 @@ function normalizzaProfilo(p){
       p.customExercises[name] = {muscles: p.customExercises[name], video:''};
     }
   });
+  // 11/09/2026 — stessa falla di "programs"/"logs" assenti (vedi sopra), ma un
+  // livello più in fondo: finora garantivamo gli array di PRIMO livello e
+  // davamo per scontata la forma di quello che c'è DENTRO. Un programma senza
+  // "days", un giorno senza "exercises", un allenamento registrato senza
+  // "entries" (o una voce senza "sets") mandavano in crash le stesse
+  // schermate di prima — Scheda, Storico, Dieta, l'intestazione — con lo
+  // stesso "undefined is not an object". Sono forme che nascono fuori dal
+  // percorso normale (dati scritti da una versione precedente dell'app, il
+  // buffer del cliente lato PT, una sincronizzazione a metà), quindi la
+  // garanzia va qui: una volta sola su ogni profilo caricato, invece di un
+  // controllo in ognuno dei ~25 punti che li leggono.
+  p.programs.forEach(prog=>{
+    if(!Array.isArray(prog.days)) prog.days = [];
+    prog.days.forEach(d=>{
+      if(!Array.isArray(d.exercises)) d.exercises = [];
+      d.exercises.forEach(e=>{ if(!Array.isArray(e.sets)) e.sets = []; });
+    });
+  });
+  p.logs.forEach(l=>{
+    if(!Array.isArray(l.exercises)) l.exercises = [];
+    l.exercises.forEach(e=>{ if(!Array.isArray(e.sets)) e.sets = []; });
+  });
+  // activeProgramId che punta a una scheda che non esiste più (cancellata su un
+  // altro dispositivo, sostituita dal PT, o rimasta indietro dopo una
+  // sincronizzazione): activeProgram() tornava undefined e TUTTI i suoi
+  // chiamanti fanno `.name`/`.days`/`.dietInfo` senza controlli. Finora
+  // garantivamo solo che il campo esistesse, non che fosse ancora valido:
+  // qui lo rimettiamo sulla scheda più recente, l'unico valore sensato.
+  if(p.activeProgramId && !p.programs.some(x=>x.id===p.activeProgramId)){
+    p.activeProgramId = p.programs[p.programs.length-1].id;
+  }
   return p;
 }
 function save(){
@@ -314,7 +345,18 @@ function activeProgram(){
   if(!prof) return null;
   if(!prof.programs || !prof.programs.length) return null;
   if(!prof.activeProgramId) prof.activeProgramId = prof.programs[prof.programs.length-1].id;
-  return prof.programs.find(p=>p.id===prof.activeProgramId);
+  const trovata = prof.programs.find(p=>p.id===prof.activeProgramId);
+  if(trovata) return trovata;
+  // 11/09/2026 — activeProgramId che non corrisponde a nessuna scheda (scheda
+  // cancellata altrove, id rimasto indietro dopo una sincronizzazione, dati
+  // scritti da una versione precedente): find() tornava undefined e chi chiama
+  // fa `.name`/`.days`/`.dietInfo` senza controlli — Home, Scheda, Dieta,
+  // Storico e l'intestazione andavano in crash tutte assieme.
+  // normalizzaProfilo() ripara l'id al caricamento, ma questa è l'ultima
+  // rete: se l'id si rompe DURANTE la sessione, qui ripiega comunque sulla
+  // scheda più recente invece di far cadere l'app.
+  prof.activeProgramId = prof.programs[prof.programs.length-1].id;
+  return prof.programs[prof.programs.length-1];
 }
 
 // Sostituisce confirm() nativo: alcuni browser, dopo che una pagina ha mostrato più finestre di

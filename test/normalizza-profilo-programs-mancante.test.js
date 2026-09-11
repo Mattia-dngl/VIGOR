@@ -45,14 +45,22 @@ test('normalizzaProfilo(): un profilo con "programs" vuoto ([]) riceve anch\'ess
   assert.equal(r.schedaAttiva, true, 'activeProgram() deve restituire una scheda, non null');
 });
 
-test('normalizzaProfilo(): un "programs" già valido non viene toccato', async () => {
+// 11/09/2026: da questo giro normalizzaProfilo() garantisce anche la forma di
+// quello che c'è DENTRO a programs (days, e dentro i giorni exercises/sets) —
+// prima si fermava agli array di primo livello. Quindi la scheda che c'era già
+// resta la stessa scheda (stesso id, non viene sostituita da una vuota: è
+// questo che il test vuole difendere), ma esce con "days" garantito. Senza,
+// un programma senza "days" mandava in crash Scheda/Storico/intestazione.
+test('normalizzaProfilo(): una scheda già presente non viene sostituita, ma esce con "days" garantito', async () => {
   const { window } = await loadApp();
   const r = await run(window, `
     const p = { id:'x', name:'X', email:'x@test.it', programs:[{id:'p1'}], activeProgramId:'p1' };
     normalizzaProfilo(p);
     return { programs: p.programs, activeProgramId: p.activeProgramId };
   `);
-  assert.deepEqual(r.programs, [{id:'p1'}]);
+  assert.equal(r.programs.length, 1, 'la scheda che c\'era non va né duplicata né buttata');
+  assert.equal(r.programs[0].id, 'p1', 'deve restare la STESSA scheda, non una nuova vuota');
+  assert.deepEqual(r.programs[0].days, [], '"days" va garantito anche se mancava');
   assert.equal(r.activeProgramId, 'p1');
 });
 
