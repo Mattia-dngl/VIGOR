@@ -142,7 +142,11 @@ const SOGLIA_INATTIVITA_PT_GIORNI = 7;
 // potenzialmente, da altri punti che vorranno gli stessi calcoli in futuro.
 function segnaliPT(p){
   const d = (p && p.dati) || {};
-  const logsFatti = (d.logs || []).filter(l => l.status === 'registrato');
+  // le stime del cliente (allenamenti-stimati.js) restano fuori: qui si
+  // calcola da quanto è fermo, e un giorno riempito da una media non è una
+  // seduta — segnalarlo come tale nasconderebbe proprio quello che serve
+  // sapere a chi lo segue
+  const logsFatti = (d.logs || []).filter(l => l.status === 'registrato' && !l.stimato);
   const ultimo = logsFatti.map(l => l.date).sort().pop() || null;
   const giorniFermo = giorniDaOggi(ultimo);
   const prog = (d.programs || []).find(pr => pr.id === d.activeProgramId) || (d.programs || [])[0] || null;
@@ -311,7 +315,7 @@ async function renderAreaPT(){
 
   function schedaCard(r, p, s){
     const d = p.dati || {};
-    const allen = (d.logs||[]).filter(l=>l.status==='registrato').length;
+    const allen = (d.logs||[]).filter(l=>l.status==='registrato' && !l.stimato).length;
     return clienteRow('', r, p, `${allen} allenament${allen===1?'o':'i'}`, freshnessDi(s));
   }
 
@@ -409,11 +413,12 @@ async function renderDettaglioPT(sezione){
   const d = _clienteAperto.riga.dati || {};
   const r = _clienteAperto.rapporto;
   const box = document.getElementById('ptDettaglioCorpo');
-  const logs = (d.logs || []).filter(l=>l.status === 'registrato').sort((a,b)=>b.date.localeCompare(a.date));
+  const logs = (d.logs || []).filter(l=>l.status === 'registrato' && !l.stimato).sort((a,b)=>b.date.localeCompare(a.date));
   const prog = (d.programs || []).find(p=>p.id === d.activeProgramId) || (d.programs||[])[0];
 
   if(sezione === 'riepilogo'){
     const saltati = (d.logs||[]).filter(l=>l.status === 'saltato').length;
+    const stimati = (d.logs||[]).filter(l=>l.stimato).length;
     const ultimo = logs[0];
     const mis = (d.measurements||[]).slice().sort((a,b)=>a.date.localeCompare(b.date));
     const primoPeso = mis.find(m=>m.weight), ultimoPeso = [...mis].reverse().find(m=>m.weight);
@@ -423,6 +428,7 @@ async function renderDettaglioPT(sezione){
         <div class="pt-riepilogo-stats">
           <div class="pt-riepilogo-stat"><b>${logs.length}</b><span>Allenamenti</span></div>
           <div class="pt-riepilogo-stat"><b>${saltati}</b><span>Saltati</span></div>
+          ${stimati ? `<div class="pt-riepilogo-stat"><b>${stimati}</b><span>Stimati</span></div>` : ''}
           <div class="pt-riepilogo-stat"><b>${ultimo ? formatDate(ultimo.date) : '—'}</b><span>Ultimo</span></div>
         </div>
         <div class="dato-riga"><span>Scheda attiva</span><b>${prog ? prog.name : 'nessuna'}</b></div>

@@ -362,6 +362,10 @@ function recordPersonale(prof, exName){
   const timeBased = isTimeBasedExercise(exName);
   let migliore = null;
   prof.logs.forEach(l=>{
+    // 11/09/2026 — gli allenamenti stimati (allenamenti-stimati.js) sono una
+    // media di sedute passate, non un peso sollevato davvero: qui non entrano
+    // mai, altrimenti l'app festeggerebbe un record per un giorno saltato.
+    if(l.stimato) return;
     const ex = l.exercises && l.exercises.find(e=>e.name===exName);
     if(!ex) return;
     const valore = timeBased

@@ -574,7 +574,7 @@ function renderHistory(){
       item.innerHTML = `
         <div class="log-head">
           <div><span class="date">${formatDate(log.date)}</span><span class="dayname">${log.dayKey ? log.dayKey+' · ' : ''}${badgeText}</span></div>
-          <span class="status-badge ${badgeClass}">${log.status==='saltato'?'Saltato':'Registrato'}</span>${log.auto?'<span class="status-badge auto">automatico</span>':''}
+          <span class="status-badge ${badgeClass}">${log.status==='saltato'?'Saltato':(log.stimato?'Stimato':'Registrato')}</span>${log.auto?'<span class="status-badge auto">automatico</span>':''}${log.stimato?'<span class="status-badge stimato">stimato</span>':''}
         </div>
         <div class="log-details">
           ${log.exercises.map(ex=>`
@@ -584,6 +584,7 @@ function renderHistory(){
             </div>`).join('') || '<div class="hint">Nessun dettaglio esercizi.</div>'}
           ${log.notes ? `<div class="hint" style="margin-top:8px;">"${log.notes}"</div>` : ''}
           ${log.auto ? '<div class="hint" style="margin-top:8px;">Segnato in automatico perché era un giorno previsto dalla scheda e non hai registrato nulla. Se ti sei allenato lo stesso, registra quel giorno dalla scheda Registra: questa voce verrà sostituita.</div>' : ''}
+          ${log.stimato ? '<div class="hint" style="margin-top:8px;">Questo allenamento non lo hai registrato: i carichi qui sopra sono la media delle tue ultime sedute di questi esercizi. Non conta per i record personali. Se ti sei allenato davvero, registra quel giorno dalla scheda Registra e questa stima verrà sostituita.</div>' : ''}
           <button class="btn danger" style="margin-top:10px;" data-id="${log.id}">Elimina registrazione</button>
         </div>`;
       const head = item.querySelector('.log-head');
@@ -591,7 +592,9 @@ function renderHistory(){
       head.addEventListener('click', ()=>details.classList.toggle('open'));
       item.querySelector('.btn.danger').addEventListener('click', (e)=>{
         e.stopPropagation();
-        const msg = log.auto
+        const msg = log.stimato
+          ? "Eliminare questa stima? Quel giorno tornerà segnato come saltato."
+          : log.auto
           ? "Eliminare questa registrazione automatica? Quel giorno non verrà più segnato come saltato."
           : "Eliminare questa registrazione?";
         customConfirm(msg, ()=>{

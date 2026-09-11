@@ -313,6 +313,7 @@ function renderHeader(){
     let dotClass = "";
     if(log){
       if(log.status==='saltato') dotClass='skip';
+      else if(log.stimato) dotClass='stimato';   // riempito da una media, non svolto
       else if(scheduled && log.dayKey===scheduled.key) dotClass='ok';
       else dotClass='warn';
     } else if(scheduled && d <= today){
