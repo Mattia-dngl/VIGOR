@@ -99,6 +99,15 @@
       --mp-zone-stroke:#16140f;
       --hm-lvl-0:#3a352c;
     }
+    /* 11/09/2026 — .acct-highlight-card.stato-warn/.stato-ok avevano i fondi
+       scritti fissi (#fbf0dd, #e3f7ea) e nessuna variante qui: col telefono
+       in tema scuro restavano color crema, con sopra il testo ocra/verde —
+       illeggibili. Stesso difetto che il commento in cima al file descrive
+       per la mappa muscolare: un colore che non passa da una variabile non
+       può seguire il tema. Qui le due tinte mancanti, scure quanto le altre
+       superfici, con i bordi nella stessa famiglia. */
+    .acct-highlight-card.stato-warn{background:#342a13; border-color:rgba(224,165,58,0.3);}
+    .acct-highlight-card.stato-ok{background:#12301e; border-color:rgba(51,209,124,0.3);}
   }
   *{box-sizing:border-box;}
   body{
@@ -1773,6 +1782,40 @@
      d'occhio — vuoto dentro, non pieno come quelli davvero registrati */
   .status-badge.stimato{background:transparent; color:var(--warn); margin-left:6px;
     border:1px dashed var(--warn);}
+
+  /* ---------- SALUTE APP (console proprietario, 11/09/2026) ----------
+     Riusa .card, .acct-highlight-card, .pt-riepilogo-stats e .seg-toggle
+     che esistono già: qui sotto c'è solo la riga d'errore, che non ha un
+     equivalente altrove nell'app. */
+  .salute-corpo{padding:14px 16px 18px; overflow-y:auto; display:flex; flex-direction:column; gap:12px;}
+  .salute-corpo .card{margin-bottom:0;}
+  .salute-corpo .seg-toggle{margin-bottom:0;}
+  .salute-corpo .pt-riepilogo-stats{margin:0;}
+
+  .salute-riga{border-bottom:1px solid var(--border); padding:10px 0;}
+  .salute-riga:first-child{padding-top:0;}
+  .salute-riga:last-child{border-bottom:none; padding-bottom:0;}
+  .salute-riga-testa{display:flex; gap:10px; align-items:stretch; cursor:pointer;}
+  .salute-riga-corpo{flex:1; min-width:0;}
+  /* La barra dice lo stato con la FORMA oltre che col colore: piena = vivo,
+     tratteggiata = zitto da un pezzo, chiara = non diagnosticabile. Chi non
+     distingue i colori legge comunque la stessa cosa dal testo accanto. */
+  .salute-barra{width:3px; border-radius:2px; flex:none; background:var(--skip);}
+  .salute-barra.vivo{background:var(--accent);}
+  .salute-barra.quieto{background:var(--warn); opacity:.5;}
+  .salute-barra.muto{background:var(--border);}
+  .salute-msg{font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:11.5px;
+    line-height:1.35; color:var(--text); word-break:break-word;}
+  .salute-meta{font-size:10.5px; color:var(--text-faint); margin-top:3px; line-height:1.35;}
+  .salute-meta b{color:var(--text-dim); font-weight:600;}
+
+  .salute-dettaglio{margin-top:10px; padding-left:13px;}
+  .salute-kv{display:flex; gap:8px; font-size:11px; margin-bottom:4px;}
+  .salute-kv span{color:var(--text-faint); flex:none; min-width:64px;}
+  .salute-kv b{color:var(--text-dim); font-weight:500; word-break:break-all;}
+  .salute-stack{margin:8px 0 0; padding:10px; border-radius:var(--r-sm); background:var(--surface2);
+    font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:10.5px; line-height:1.45;
+    color:var(--text-dim); white-space:pre-wrap; word-break:break-word; max-height:190px; overflow-y:auto;}
 
   /* ---------- popup video ---------- */
   .vid-overlay{display:none; position:fixed; inset:0; background:rgba(15,18,23,.72); z-index:340;

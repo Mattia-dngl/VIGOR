@@ -263,6 +263,21 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
      ogni bottone qui dentro mostra solo un avviso ("torna presto"), niente
      porta davvero a Stripe. Lo stato vero (se un domani sarà attivo) lo
      scrive solo il server via webhook, mai questo overlay. -->
+<!-- SALUTE APP — riservata all'amministratore (js/admin/salute-app.js).
+     Riusa .mp-overlay/.mp-modal come le altre finestre dell'app. -->
+<div class="mp-overlay" id="saluteOverlay">
+  <div class="mp-modal" style="max-width:460px;">
+    <div class="mp-head">
+      <h3>Salute dell'app</h3>
+      <div style="display:flex; gap:8px; align-items:center;">
+        <button class="mp-close" id="saluteRicarica" type="button" aria-label="Ricarica" title="Ricarica">&#8635;</button>
+        <button class="mp-close" id="saluteChiudi" type="button" aria-label="Chiudi">&#10005;</button>
+      </div>
+    </div>
+    <div class="salute-corpo" id="saluteCorpo"></div>
+  </div>
+</div>
+
 <div class="mp-overlay" id="pianiPTOverlay">
   <div class="mp-modal" style="max-width:460px;">
     <div class="mp-head">
@@ -995,6 +1010,11 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
       </summary>
       <div class="details-body admin-body">
         <p class="hint">Sezione riservata al tuo account. Qui decidi chi entra e rimetti in piedi gli account di chi resta fuori.</p>
+
+        <!-- Console del proprietario, primo pezzo (11/09/2026): gli errori
+             veri che l'app raccoglie in produzione. Vive qui dentro finché
+             la console non avrà una sua navigazione. -->
+        <button type="button" class="btn secondary block" id="apriSaluteBtn" style="margin-bottom:10px;">Salute dell'app</button>
 
         <!-- Prima erano 4 liste srotolate tutte insieme (era qui che ci si
              perdeva su telefono): ora ogni gruppo è un accordion annidato,
@@ -2077,6 +2097,7 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
 <script src="js/core/stato.js"></script>
 <script src="js/onboarding/onboarding.js"></script>
 <script src="js/admin/gestione-utenti.js"></script>
+<script src="js/admin/salute-app.js"></script>
 <script src="js/home/home.js"></script>
 <script src="js/account/account.js"></script>
 <script src="js/pt/pt-collegamento.js"></script>
