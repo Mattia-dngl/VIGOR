@@ -1803,7 +1803,12 @@
   body.modalita-proprietario #sidebarNavGlobale .nav-go-btn[data-go="program"],
   body.modalita-proprietario #sidebarNavGlobale .nav-go-btn[data-go="diet"],
   body.modalita-proprietario #sidebarNavGlobale .nav-go-btn[data-go="storico"],
-  body.modalita-proprietario #sidebarRegistraBtn{display:none !important;}
+  body.modalita-proprietario #sidebarRegistraBtn,
+  /* La card "Area Personal Trainer" in Home non sta dentro .home-columns:
+     senza questa riga resterebbe visibile anche a console attiva. In
+     modalità proprietario l'unica strada verso l'area PT è la voce della
+     console, che compare solo se ci sono davvero clienti collegati. */
+  body.modalita-proprietario #homePTBtn{display:none !important;}
   /* Restano Home e Account: due sole voci, che con lo spazio della barra
      intera diventerebbero due isole lontanissime. Le riavvicino al centro. */
   body.modalita-proprietario #navTabsGlobale{justify-content:center; gap:56px;}

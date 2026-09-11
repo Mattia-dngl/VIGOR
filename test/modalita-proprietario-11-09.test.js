@@ -44,6 +44,9 @@ test('sull\'account proprietario la parte da atleta sparisce dalla navigazione',
   }
   assert.match(CSS_REALE, /body\.modalita-proprietario #fabRegistraBtn/);
   assert.match(CSS_REALE, /body\.modalita-proprietario #sidebarRegistraBtn/);
+  // #homePTBtn vive fuori da .home-columns: se non fosse spento a parte
+  // resterebbe visibile in Home anche senza nessun cliente collegato
+  assert.match(CSS_REALE, /body\.modalita-proprietario #homePTBtn/);
   window.close();
 });
 
