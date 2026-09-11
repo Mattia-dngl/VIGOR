@@ -108,6 +108,7 @@
        superfici, con i bordi nella stessa famiglia. */
     .acct-highlight-card.stato-warn{background:#342a13; border-color:rgba(224,165,58,0.3);}
     .acct-highlight-card.stato-ok{background:#12301e; border-color:rgba(51,209,124,0.3);}
+    .tag-console.attesa{background:#342a13;}
   }
   *{box-sizing:border-box;}
   body{
@@ -1834,6 +1835,35 @@
   .console-voce-num{flex:none; font-size:22px; font-weight:800; color:var(--accent-2);
     letter-spacing:-.04em; font-variant-numeric:tabular-nums;}
   .console-nota{font-size:12px; color:var(--text-faint); margin:14px 0 0; text-align:center;}
+
+  /* ---------- righe delle pagine console (Persone, Incassi) ----------
+     Stessa forma di .riga-profilo/.log-item: righe divise da una linea, non
+     da spazi. A 390px una tabella uscirebbe dallo schermo. */
+  .r-console{display:flex; align-items:center; gap:10px; padding:10px 0; border-bottom:1px solid var(--border);}
+  .r-console:first-child{padding-top:0;}
+  .r-console:last-child{border-bottom:none; padding-bottom:0;}
+  .grow-console{flex:1; min-width:0;}
+  .nome-console{font-family:var(--font-display); font-size:13.5px; font-weight:600; letter-spacing:-.01em;}
+  .mail-console{font-size:11px; color:var(--text-faint); margin-top:1px;
+    overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .meta-console{flex:none; font-size:12px; font-weight:600; color:var(--text-dim); font-variant-numeric:tabular-nums;}
+  .meta-warn{color:var(--warn);}
+  .meta-skip{color:var(--text-faint); font-weight:500;}
+  .av-console{width:32px; height:32px; border-radius:var(--r-pill); flex:none;
+    display:grid; place-items:center; font-family:var(--font-display);
+    font-size:12.5px; font-weight:700; background:var(--surface2); color:var(--text-dim);}
+  .dot-console{width:8px; height:8px; border-radius:999px; flex:none; background:var(--skip);}
+  .dot-console.ok{background:var(--ok);}
+  .dot-console.warn{background:var(--warn);}
+  .tag-console{font-size:10px; font-weight:700; letter-spacing:.03em; padding:4px 9px;
+    border-radius:var(--r-pill); flex:none; line-height:1.2; white-space:nowrap;
+    background:var(--surface2); color:var(--text-dim);}
+  .tag-console.pt{background:var(--accent-soft); color:var(--accent-2);}
+  .tag-console.attesa{background:var(--warn-soft-console,#fbf0dd); color:var(--warn);}
+  .tag-console.bloccato{background:var(--surface2); color:var(--skip);}
+  .mini-console{flex:none; font-family:var(--font-display); font-size:11px; font-weight:700;
+    padding:6px 12px; border-radius:var(--r-pill); border:none; cursor:pointer;
+    background:var(--accent); color:#fff;}
 
   /* ---------- SALUTE APP (console proprietario, 11/09/2026) ----------
      Riusa .card, .acct-highlight-card, .pt-riepilogo-stats e .seg-toggle

@@ -64,6 +64,7 @@ async function renderConsoleHome(){
     </button>` : '';
 
   box.innerHTML = `
+    <div id="consoleAdesso"></div>
     <div class="console-sez">Console</div>
     <button type="button" class="console-voce" id="consoleVerSalute">
       <div class="console-voce-testo">
@@ -79,8 +80,21 @@ async function renderConsoleHome(){
       </div>
       <span class="console-voce-freccia">${FRECCIA_CONSOLE}</span>
     </button>
-    ${cardClienti}
-    <p class="console-nota">In arrivo: registro accessi, persone e incassi.</p>`;
+    <button type="button" class="console-voce" id="consoleVerPersone">
+      <div class="console-voce-testo">
+        <div class="console-voce-titolo">Persone</div>
+        <div class="console-voce-sub">Gli account e da quanto non entrano.</div>
+      </div>
+      <span class="console-voce-freccia">${FRECCIA_CONSOLE}</span>
+    </button>
+    <button type="button" class="console-voce" id="consoleVerIncassi">
+      <div class="console-voce-testo">
+        <div class="console-voce-titolo">Incassi</div>
+        <div class="console-voce-sub">I Personal Trainer che pagano VIGOR.</div>
+      </div>
+      <span class="console-voce-freccia">${FRECCIA_CONSOLE}</span>
+    </button>
+    ${cardClienti}`;
 
   document.getElementById('consoleVerSalute')?.addEventListener('click', () => {
     if(typeof apriSaluteApp === 'function') apriSaluteApp();
@@ -90,11 +104,18 @@ async function renderConsoleHome(){
     const card = document.getElementById('cardAmministrazione');
     if(card){ card.open = true; card.scrollIntoView({ behavior:'smooth', block:'start' }); }
   });
+  document.getElementById('consoleVerPersone')?.addEventListener('click', () => {
+    if(typeof apriPersone === 'function') apriPersone();
+  });
+  document.getElementById('consoleVerIncassi')?.addEventListener('click', () => {
+    if(typeof apriIncassi === 'function') apriIncassi();
+  });
   document.getElementById('consoleVersoPT')?.addEventListener('click', () => {
     if(typeof apriAreaPT === 'function') apriAreaPT();
   });
 
   aggiornaRiassuntoSalute();
+  renderConsoleAdesso();
 }
 
 // Il numero sotto "Salute dell'app": quanti errori nelle ultime 24 ore.
@@ -114,4 +135,42 @@ async function aggiornaRiassuntoSalute(){
       : count === 1 ? '1 errore nelle ultime 24 ore.' : `${count} errori nelle ultime 24 ore.`;
     sub.classList.toggle('console-voce-sub-allarme', count > 0);
   }catch(e){ console.error('riassunto salute', e); }
+}
+
+
+// ============================================================
+// "ADESSO" — il colpo d'occhio di oggi, in cima alla console.
+// Legge il registro accessi (js/admin/registro-accessi.js): chi è entrato
+// oggi e quanti tentativi sono falliti. Il registro è nato l'11/09/2026,
+// quindi all'inizio queste righe sono vuote — e dire "nessuno oggi" quando
+// è vero vale quanto elencare dieci nomi.
+// ============================================================
+async function renderConsoleAdesso(){
+  const box = document.getElementById('consoleAdesso');
+  if(!box || typeof sb === 'undefined' || !sb) return;
+  try{
+    const mezzanotte = new Date(); mezzanotte.setHours(0,0,0,0);
+    const da = mezzanotte.toISOString();
+    const { data, error } = await sb.from('accessi')
+      .select('profilo_id,esito,metodo,email,creato_il')
+      .gte('creato_il', da)
+      .order('creato_il', { ascending:false })
+      .limit(100);
+    if(error || !data) return;
+
+    const riusciti = data.filter(r => r.esito === 'riuscito');
+    const falliti  = data.filter(r => r.esito === 'fallito');
+    const persone  = new Set(riusciti.map(r => r.profilo_id).filter(Boolean)).size;
+
+    if(riusciti.length === 0 && falliti.length === 0){
+      box.innerHTML = '<p class="console-nota" style="margin:0 0 16px;">Oggi non è ancora entrato nessuno.</p>';
+      return;
+    }
+    box.innerHTML = `
+      <div class="pt-riepilogo-stats" style="margin:0 0 14px;">
+        <div class="pt-riepilogo-stat"><b>${persone}</b><span>dentro oggi</span></div>
+        <div class="pt-riepilogo-stat"><b>${riusciti.length}</b><span>ingressi</span></div>
+        <div class="pt-riepilogo-stat"><b>${falliti.length}</b><span>falliti</span></div>
+      </div>`;
+  }catch(e){ console.error('console adesso', e); }
 }

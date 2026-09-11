@@ -263,6 +263,27 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
      ogni bottone qui dentro mostra solo un avviso ("torna presto"), niente
      porta davvero a Stripe. Lo stato vero (se un domani sarà attivo) lo
      scrive solo il server via webhook, mai questo overlay. -->
+<!-- PERSONE e INCASSI — console del proprietario (js/admin/console-pagine.js) -->
+<div class="mp-overlay" id="personeOverlay">
+  <div class="mp-modal" style="max-width:460px;">
+    <div class="mp-head">
+      <h3>Persone</h3>
+      <button class="mp-close" id="personeChiudi" type="button" aria-label="Chiudi">&#10005;</button>
+    </div>
+    <div class="salute-corpo" id="personeCorpo"></div>
+  </div>
+</div>
+
+<div class="mp-overlay" id="incassiOverlay">
+  <div class="mp-modal" style="max-width:460px;">
+    <div class="mp-head">
+      <h3>Incassi</h3>
+      <button class="mp-close" id="incassiChiudi" type="button" aria-label="Chiudi">&#10005;</button>
+    </div>
+    <div class="salute-corpo" id="incassiCorpo"></div>
+  </div>
+</div>
+
 <!-- SALUTE APP — riservata all'amministratore (js/admin/salute-app.js).
      Riusa .mp-overlay/.mp-modal come le altre finestre dell'app. -->
 <div class="mp-overlay" id="saluteOverlay">
@@ -2103,7 +2124,9 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
 <script src="js/onboarding/onboarding.js"></script>
 <script src="js/admin/gestione-utenti.js"></script>
 <script src="js/admin/salute-app.js"></script>
+<script src="js/admin/registro-accessi.js"></script>
 <script src="js/admin/console-proprietario.js"></script>
+<script src="js/admin/console-pagine.js"></script>
 <script src="js/home/home.js"></script>
 <script src="js/account/account.js"></script>
 <script src="js/pt/pt-collegamento.js"></script>

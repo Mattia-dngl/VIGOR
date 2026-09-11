@@ -622,6 +622,7 @@ async function dopoAccessoOnline(){
     // porto i dati online dentro il motore locale dell'app
     applicaDatiOnline();
     if(typeof segnaEVerificaRitorno === 'function') segnaEVerificaRitorno();
+    if(typeof registraAccessoRiuscito === 'function') registraAccessoRiuscito();
     // la card per l'area riservata compare solo a chi è Personal Trainer
     document.getElementById('homePTBtn').style.display = sonoPT() ? 'flex' : 'none';
     aggiornaModalitaProprietario();
@@ -794,7 +795,13 @@ document.getElementById('cloudEntraBtn').addEventListener('click', async ()=>{
   if(!emailValida(email) || !pw){ mostraErroreAccesso("Inserisci email e password."); return; }
   try{
     const { data, error } = await sb.auth.signInWithPassword({ email, password: pw });
-    if(error){ mostraErroreAccesso(error.message); return; }
+    if(error){
+      // Il tentativo fallito finisce nel registro (js/admin/registro-accessi.js):
+      // non si aspetta la risposta, perché la schermata d'errore deve comparire
+      // subito e un registro non deve mai rallentare chi sta riprovando.
+      if(typeof registraAccessoFallito === 'function') registraAccessoFallito(email, 'password');
+      mostraErroreAccesso(error.message); return;
+    }
     utenteOnline = data.user;
     await dopoAccessoOnline();
   }catch(e){
