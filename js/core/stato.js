@@ -109,6 +109,37 @@ function normalizzaProfilo(p){
       p.customExercises[name] = {muscles: p.customExercises[name], video:''};
     }
   });
+  // 11/09/2026 — stessa falla di "programs"/"logs" assenti (vedi sopra), ma un
+  // livello più in fondo: finora garantivamo gli array di PRIMO livello e
+  // davamo per scontata la forma di quello che c'è DENTRO. Un programma senza
+  // "days", un giorno senza "exercises", un allenamento registrato senza
+  // "entries" (o una voce senza "sets") mandavano in crash le stesse
+  // schermate di prima — Scheda, Storico, Dieta, l'intestazione — con lo
+  // stesso "undefined is not an object". Sono forme che nascono fuori dal
+  // percorso normale (dati scritti da una versione precedente dell'app, il
+  // buffer del cliente lato PT, una sincronizzazione a metà), quindi la
+  // garanzia va qui: una volta sola su ogni profilo caricato, invece di un
+  // controllo in ognuno dei ~25 punti che li leggono.
+  p.programs.forEach(prog=>{
+    if(!Array.isArray(prog.days)) prog.days = [];
+    prog.days.forEach(d=>{
+      if(!Array.isArray(d.exercises)) d.exercises = [];
+      d.exercises.forEach(e=>{ if(!Array.isArray(e.sets)) e.sets = []; });
+    });
+  });
+  p.logs.forEach(l=>{
+    if(!Array.isArray(l.exercises)) l.exercises = [];
+    l.exercises.forEach(e=>{ if(!Array.isArray(e.sets)) e.sets = []; });
+  });
+  // activeProgramId che punta a una scheda che non esiste più (cancellata su un
+  // altro dispositivo, sostituita dal PT, o rimasta indietro dopo una
+  // sincronizzazione): activeProgram() tornava undefined e TUTTI i suoi
+  // chiamanti fanno `.name`/`.days`/`.dietInfo` senza controlli. Finora
+  // garantivamo solo che il campo esistesse, non che fosse ancora valido:
+  // qui lo rimettiamo sulla scheda più recente, l'unico valore sensato.
+  if(p.activeProgramId && !p.programs.some(x=>x.id===p.activeProgramId)){
+    p.activeProgramId = p.programs[p.programs.length-1].id;
+  }
   return p;
 }
 function save(){
@@ -291,12 +322,48 @@ function segnaVistaCliente(tipo){
 // Lato PT: marca come vista la scheda/dieta del cliente aperto. Scrittura diretta
 // e leggera su Supabase (non passa dal salvataggio pesante di salvaModifichePT,
 // che serve solo quando il PT ha davvero modificato qualcosa).
+// 11/09/2026 — questa funzione cancellava i dati dei clienti, ed è la stessa da
+// cui era uscito il profilo reale che aveva in "dati" SOLO
+// checkinVistaPtIl/dietaVistaPtIl (vedi il commento in normalizzaProfilo).
+// Il difetto: scriveva l'INTERO blob "dati" partendo da
+// _clienteAperto.riga.dati, che è la fotografia scattata quando il PT ha
+// caricato l'elenco clienti e può essere vecchia di minuti. Siccome parte a
+// ogni singolo tocco sulle linguette Scheda/Dieta/Check-in del cliente, bastava:
+//   il PT apre l'elenco alle 10:00 → il cliente si allena e salva alle 10:05 →
+//   il PT tocca "Scheda" alle 10:10 → qui si riscriveva la fotografia delle
+//   10:00 e l'allenamento delle 10:05 sparuva.
+// salvaModifichePT() (pt-area.js) tutto questo lo gestisce già con cura —
+// scrittura condizionata su aggiornato_il, e in caso di conflitto rilegge e
+// riapplica SOLO scheda/dieta, mai storico/misure/check-in che sono del
+// cliente. Qui invece non c'era nessuna protezione. Ora:
+//  1) rileggo i dati freschi invece di fidarmi della fotografia in memoria;
+//  2) ci aggiungo SOLO il marcatore "visto", senza toccare nient'altro;
+//  3) scrivo in modo condizionato: se qualcuno ha salvato nel frattempo la
+//     scrittura non avviene e non insisto — è solo un marcatore, si rimette
+//     al prossimo giro, non vale la pena rischiare di sovrascrivere dati veri.
+// Non alzo aggiornato_il di proposito: è il riferimento con cui l'editor del PT
+// riconosce i conflitti, e cambiarlo per un marcatore lo farebbe scattare a
+// vuoto.
+// Chi chiama non aspetta il risultato (renderDettaglioPT la lancia e va avanti):
+// un marcatore "visto" non deve poter disturbare NIENTE. Qualunque problema —
+// rete assente, permessi, una risposta inattesa — si ferma qui dentro, invece di
+// diventare un errore che nessuno raccoglie mentre il PT sta guardando la
+// schermata del cliente.
 async function segnaVistaPT(tipo){
-  if(!_clienteAperto || !sb) return;
-  const d = _clienteAperto.riga.dati || {};
-  d[tipo + 'VistaPtIl'] = new Date().toISOString();
-  _clienteAperto.riga.dati = d;
-  await sb.from('profili').update({dati: d}).eq('id', _clienteAperto.riga.id);
+  try{
+    if(!_clienteAperto || !sb) return;
+    const id = _clienteAperto.riga.id;
+    const { data: fresco, error } = await sb.from('profili')
+      .select('dati,aggiornato_il').eq('id', id).maybeSingle();
+    if(error || !fresco) return;
+    const d = Object.assign({}, fresco.dati || {});
+    d[tipo + 'VistaPtIl'] = new Date().toISOString();
+    let q = sb.from('profili').update({ dati: d }).eq('id', id);
+    if(fresco.aggiornato_il) q = q.eq('aggiornato_il', fresco.aggiornato_il);
+    const { data: scritto } = await q.select('id');
+    if(!scritto || !scritto.length) return;
+    _clienteAperto.riga.dati = d;
+  }catch(e){ console.error('segnaVistaPT', e); }
 }
 function loggedInProfile(){ return state.profiles.find(p=>p.id===activeProfileId); }
 function isManager(){ return false; } // nessun ruolo owner/staff nella versione personale
@@ -314,7 +381,18 @@ function activeProgram(){
   if(!prof) return null;
   if(!prof.programs || !prof.programs.length) return null;
   if(!prof.activeProgramId) prof.activeProgramId = prof.programs[prof.programs.length-1].id;
-  return prof.programs.find(p=>p.id===prof.activeProgramId);
+  const trovata = prof.programs.find(p=>p.id===prof.activeProgramId);
+  if(trovata) return trovata;
+  // 11/09/2026 — activeProgramId che non corrisponde a nessuna scheda (scheda
+  // cancellata altrove, id rimasto indietro dopo una sincronizzazione, dati
+  // scritti da una versione precedente): find() tornava undefined e chi chiama
+  // fa `.name`/`.days`/`.dietInfo` senza controlli — Home, Scheda, Dieta,
+  // Storico e l'intestazione andavano in crash tutte assieme.
+  // normalizzaProfilo() ripara l'id al caricamento, ma questa è l'ultima
+  // rete: se l'id si rompe DURANTE la sessione, qui ripiega comunque sulla
+  // scheda più recente invece di far cadere l'app.
+  prof.activeProgramId = prof.programs[prof.programs.length-1].id;
+  return prof.programs[prof.programs.length-1];
 }
 
 // Sostituisce confirm() nativo: alcuni browser, dopo che una pagina ha mostrato più finestre di

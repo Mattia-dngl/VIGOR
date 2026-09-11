@@ -346,6 +346,18 @@ function ripristinaBozza(){
   const p = activeProgram();
   const b = prof && prof.bozzaLog;
   if(!b || !p || b.programId !== p.id) return false;
+  // 11/09/2026 — il controllo qui sopra verifica che la bozza sia di QUESTA
+  // scheda, ma non che il giorno a cui si riferisce esista ancora. "Aggiorna
+  // scheda" sostituisce i giorni SENZA cambiare l'id della scheda, quindi:
+  // inizio un allenamento sul giorno X (bozza salvata) → vado in Scheda e
+  // toglio il giorno X → "Aggiorna scheda" → torno in Registra. Qui la bozza
+  // veniva ripristinata su un giorno che non c'è più, selectDay() accettava la
+  // chiave senza controllarla, e al "Salva allenamento" saveLogBtn cercava
+  // quel giorno per prenderne il nome e cadeva: l'allenamento appena
+  // registrato andava perso. Se il giorno non c'è più la bozza non è
+  // ripristinabile: si riparte dalla scelta del giorno, come già succede per
+  // una bozza di un'altra scheda.
+  if(b.dayKey !== "LIBERO" && !p.days.some(d=>d.key===b.dayKey)) return false;
 
   _bozzaPronta = false;
   const _dateEl = document.getElementById('logDate');

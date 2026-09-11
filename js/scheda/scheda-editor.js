@@ -109,9 +109,17 @@ function renderArchiveList(){
   // nuovo), non ha senso tenerla in giro solo per ingombrare l'elenco —
   // la scartiamo qui, non solo per le nuove archiviazioni da questo giro
   // in poi (vedi i tre punti più sotto che impostano archivedAt).
-  const daScartare = prof.programs.filter(p=>p.archivedAt && programmaVuoto(p));
-  if(daScartare.length){
-    prof.programs = prof.programs.filter(p=>!daScartare.includes(p));
+  // ATTENZIONE (11/09/2026): la pulizia non deve MAI svuotare del tutto
+  // l'elenco. In tutta l'app vale l'invariante "un profilo ha sempre almeno
+  // una scheda" (vedi normalizzaProfilo/activeProgram in js/core/stato.js): se
+  // l'unica scheda del profilo era archiviata e mai compilata — proprio la
+  // scheda "bianca" di partenza che questa pulizia ha lo scopo di togliere —
+  // qui restava `programs: []`, activeProgram() tornava null e Home, Scheda,
+  // Dieta, Storico e l'intestazione andavano in crash tutte assieme. Peggio:
+  // il save() qui sotto scriveva l'elenco vuoto anche online.
+  const restano = prof.programs.filter(p=>!(p.archivedAt && programmaVuoto(p)));
+  if(restano.length && restano.length !== prof.programs.length){
+    prof.programs = restano;
     save();
   }
   const list = document.getElementById('archiveList');
@@ -756,7 +764,7 @@ function renderDietDayEditors(){
       </div>
       <div class="free-fields" data-wd="${wd}" style="display:${day.libera?'block':'none'};">
         <label>Note giorno libero</label>
-        <textarea class="dfree" data-wd="${wd}">${day.testo||''}</textarea>
+        <textarea class="dfree" data-wd="${wd}">${escapeAttr(day.testo||'')}</textarea>
       </div>
     </div>`;
   }).join('');
@@ -874,8 +882,19 @@ document.getElementById('saveDietBtn').addEventListener('click', ()=>{
     current.archivedAt = today;
   }
 
+  // 11/09/2026 — salvare la DIETA crea una nuova versione della scheda, e qui
+  // si portavano dietro solo nome/scadenza/giorni: durataSettimane, dataInizio
+  // e notePT restavano indietro. Effetto concreto: dopo un salvataggio della
+  // dieta la scheda perdeva durata, data d'inizio e le note del PT senza dirlo
+  // a nessuno, e al successivo "Aggiorna scheda" calcolaScadenzaScheda()
+  // ripartiva da una dataInizio rimessa a oggi con durata null — la scadenza
+  // impostata dal PT spariva del tutto. La nuova versione deve essere la
+  // stessa scheda con solo la dieta cambiata.
   const newProgram = {
     id: uid(), name: current.name, createdAt: today, archivedAt: null, scadenza: current.scadenza || null,
+    durataSettimane: current.durataSettimane || null,
+    dataInizio: current.dataInizio || null,
+    notePT: current.notePT || null,
     days: current.days, dietInfo: editingDietInfo, diet: editingDiet
   };
   prof.programs.push(newProgram);
@@ -922,12 +941,12 @@ function renderProgramDetailHtml(p){
   const dietHtml = !haDieta ? '' : WD_ORDER.map(wd=>{
     const day = p.diet[wd];
     if(!day) return "";
-    if(day.libera) return `<div class="diet-day-card"><div class="diet-day-head"><span class="wd">${wd}</span><span class="diet-free-badge">Libero</span></div><div class="diet-meal-row">${day.testo||''}</div></div>`;
+    if(day.libera) return `<div class="diet-day-card"><div class="diet-day-head"><span class="wd">${wd}</span><span class="diet-free-badge">Libero</span></div><div class="diet-meal-row">${escapeAttr(day.testo||'')}</div></div>`;
     return `<div class="diet-day-card"><div class="diet-day-head"><span class="wd">${wd}</span></div>
-      <div class="diet-meal-row"><b>Colazione</b>${day.colazione||'-'}</div>
-      <div class="diet-meal-row"><b>Pranzo</b>${day.pranzo||'-'}</div>
-      <div class="diet-meal-row"><b>Spuntino</b>${day.spuntino||'-'}</div>
-      <div class="diet-meal-row"><b>Cena</b>${day.cena||'-'}</div></div>`;
+      <div class="diet-meal-row"><b>Colazione</b>${escapeAttr(day.colazione||'-')}</div>
+      <div class="diet-meal-row"><b>Pranzo</b>${escapeAttr(day.pranzo||'-')}</div>
+      <div class="diet-meal-row"><b>Spuntino</b>${escapeAttr(day.spuntino||'-')}</div>
+      <div class="diet-meal-row"><b>Cena</b>${escapeAttr(day.cena||'-')}</div></div>`;
   }).join('');
 
   return `
