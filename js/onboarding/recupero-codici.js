@@ -118,6 +118,11 @@ function controllaSaltati(avvisa){
     toast(n===1 ? "1 giorno non registrato segnato come saltato"
                 : `${n} giorni non registrati segnati come saltati`);
   }
+  // subito dopo, se la persona l'ha chiesto, quei giorni vengono riempiti con
+  // una stima dei carichi (js/storico/allenamenti-stimati.js): è l'unico punto
+  // in cui l'app ci pensa da sola, e parte sempre DOPO autoRegistraSaltati()
+  // perché lavora proprio sui log che quella funzione ha appena creato.
+  if(typeof controllaStime === 'function') controllaStime(avvisa && n === 0);
 }
 
 

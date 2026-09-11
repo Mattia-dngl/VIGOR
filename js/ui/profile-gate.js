@@ -66,6 +66,43 @@ document.getElementById('autoSkipToggle').addEventListener('change', (e)=>{
   }
 });
 
+// ---------- Allenamenti stimati (vedi js/storico/allenamenti-stimati.js) ----------
+document.getElementById('autoStimaToggle').addEventListener('change', (e)=>{
+  const prof = loggedInProfile();
+  if(!prof) return;
+  prof.autoStima = e.target.checked;
+  save();
+  if(e.target.checked){
+    _autoStimaFatto = null;
+    const n = riempiSaltatiConStima();
+    toast(n>0 ? `Attivato — ${n} giorni riempiti con una stima` : "Attivato");
+    renderHeader(); renderHistory(); renderVolume();
+    if(document.getElementById('calGiorni')) renderCalendarioStorico();
+  } else {
+    toast("Disattivato — i giorni saltati non verranno più riempiti da soli");
+  }
+});
+
+document.getElementById('riempiStimeBtn').addEventListener('click', ()=>{
+  const n = riempiSaltatiConStima();
+  if(n===0){ toast("Nessun giorno da riempire: servono sedute già registrate di quegli esercizi."); return; }
+  toast(n===1 ? "1 giorno riempito con una stima ✓" : `${n} giorni riempiti con una stima ✓`);
+  renderHeader(); renderHistory(); renderVolume();
+  if(document.getElementById('calGiorni')) renderCalendarioStorico();
+});
+
+document.getElementById('rimuoviStimeBtn').addEventListener('click', ()=>{
+  const prof = loggedInProfile();
+  const quante = prof ? (prof.logs||[]).filter(l=>l.stimato).length : 0;
+  if(quante===0){ toast("Non c'è nessuna stima da rimuovere."); return; }
+  customConfirm(`Rimuovere ${quante===1?'la stima':'tutte e '+quante+' le stime'}? Quei giorni tornano segnati come saltati. Gli allenamenti registrati davvero non vengono toccati.`, ()=>{
+    const n = rimuoviStime();
+    toast(n===1 ? "Stima rimossa ✓" : `${n} stime rimosse ✓`);
+    renderHeader(); renderHistory(); renderVolume();
+    if(document.getElementById('calGiorni')) renderCalendarioStorico();
+  });
+});
+
 document.getElementById('saveAccountNameBtn').addEventListener('click', ()=>{
   const newName = document.getElementById('accountNameInput').value.trim();
   if(!newName){ toast("Inserisci un nome."); return; }

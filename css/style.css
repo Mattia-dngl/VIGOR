@@ -906,6 +906,7 @@
   .pulse .day .dot.ok{background:var(--ok); border-color:var(--ok);}
   .pulse .day .dot.warn{background:var(--warn); border-color:var(--warn);}
   .pulse .day .dot.skip{background:var(--skip); border-color:var(--skip);}
+  .pulse .day .dot.stimato{background:transparent; border-color:var(--ok); border-style:dashed;}
   .pulse .day.selected{background:var(--grad-accent); box-shadow:var(--shadow-accent);}
   .pulse .day.selected .wd, .pulse .day.selected .num{color:#fff;}
   .pulse .day.selected .dot{background:#fff; border-color:#fff;}
@@ -1768,6 +1769,10 @@
   .zoom-ctrl button:disabled{opacity:.35; cursor:default;}
   .zoom-ctrl button.reset{font-size:12px;}
   .status-badge.auto{background:var(--surface2); color:var(--text-faint); margin-left:6px;}
+  /* stima: stesso posto di un allenamento vero, ma sempre distinguibile a colpo
+     d'occhio — vuoto dentro, non pieno come quelli davvero registrati */
+  .status-badge.stimato{background:transparent; color:var(--warn); margin-left:6px;
+    border:1px dashed var(--warn);}
 
   /* ---------- popup video ---------- */
   .vid-overlay{display:none; position:fixed; inset:0; background:rgba(15,18,23,.72); z-index:340;

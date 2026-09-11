@@ -906,6 +906,20 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
           </div>
         </details>
 
+        <details class="admin-sub">
+          <summary>Allenamenti stimati</summary>
+          <div class="admin-sub-body">
+            <p class="hint">Riempie i giorni segnati saltati in automatico con una <b>stima</b> dei carichi: per ogni esercizio del giorno fa la media delle sue ultime tre sedute vere. Gli esercizi che non hai mai registrato restano fuori, e un giorno che hai segnato saltato tu a mano non viene mai toccato.</p>
+            <p class="hint" style="margin-top:8px;">Sono allenamenti che non hai fatto, quindi restano riconoscibili: nello storico hanno l&rsquo;etichetta &laquo;stimato&raquo;, non contano per i record personali, non vengono usati come &laquo;ultima volta&raquo; quando registri, e chi ti segue li vede contati a parte. Nel calendario e nel volume muscolare invece ci sono &mdash; serve a questo.</p>
+            <label style="display:flex; align-items:center; gap:9px; margin-top:10px; cursor:pointer;">
+              <input type="checkbox" id="autoStimaToggle" style="width:auto; margin:0;">
+              <span>Riempi da solo i giorni saltati</span>
+            </label>
+            <button class="btn secondary block" id="riempiStimeBtn" style="margin-top:10px;">Riempi adesso i giorni saltati</button>
+            <button class="btn danger block" id="rimuoviStimeBtn" style="margin-top:8px;">Rimuovi tutte le stime</button>
+          </div>
+        </details>
+
         <div class="settings-subhead" style="margin-top:22px;">Esercizi</div>
         <p class="sub" id="exSectionsIntro" style="margin-top:2px;"></p>
 
@@ -2070,6 +2084,7 @@ setTimeout(function(){ document.documentElement.classList.remove("avvio"); }, 60
 <script src="js/pt/checkin-cliente.js"></script>
 <script src="js/account/messaggi.js"></script>
 <script src="js/onboarding/recupero-codici.js"></script>
+<script src="js/storico/allenamenti-stimati.js"></script>
 <script src="js/sistema/offline-sistema.js"></script>
 <script src="js/esercizi/esercizi-video.js"></script>
 <script src="js/esercizi/glossario-libero.js"></script>

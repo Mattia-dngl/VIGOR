@@ -143,6 +143,7 @@ function renderImpostazioniInline(){
   renderPromemoria();
   const _lpAuto = loggedInProfile();
   document.getElementById('autoSkipToggle').checked = !_lpAuto || _lpAuto.autoSkip !== false;
+  document.getElementById('autoStimaToggle').checked = !!(_lpAuto && _lpAuto.autoStima);
 
   const canManage = canManageExercises();
   // 31/08/2026: testo accorciato (era un doppio periodo lungo) — l'informazione

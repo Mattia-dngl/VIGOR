@@ -135,6 +135,10 @@ function mostraDettaglioGiornoCalendario(iso){
     return;
   }
 
+  const avvisoStima = log.stimato
+    ? `<div class="card"><p class="hint" style="margin:0; color:var(--warn);">Allenamento <b>stimato</b>: non lo hai registrato, i carichi sono la media delle tue ultime sedute di questi esercizi.</p></div>`
+    : '';
+
   const categoria = categoriaDelLog(prof, log);
   const daSchedaPT = (typeof mioRapportoAttivo === 'function') && !!mioRapportoAttivo();
   const tagsHtml = (categoria || daSchedaPT) ? `<div class="workout-tags">
@@ -152,6 +156,7 @@ function mostraDettaglioGiornoCalendario(iso){
   ).join('') || '<p class="hint" style="margin:4px 0 0;">Nessun esercizio registrato.</p>';
 
   box.innerHTML = `<h3 class="storico-giorno-titolo">${titolo}</h3>
+    ${avvisoStima}
     <div class="card workout-day-card">
       ${tagsHtml}
       <div class="workout-title">${escapeAttr(log.dayName || 'Allenamento')}</div>

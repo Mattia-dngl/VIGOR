@@ -788,7 +788,9 @@ function ultimaPrestazione(nomeEsercizio, escludiData){
   if(!prof) return null;
   const nome = (nomeEsercizio||'').trim().toLowerCase();
   const candidati = (prof.logs||[])
-    .filter(l => l.status === 'registrato' && l.date !== escludiData)
+    // le stime restano fuori: il carico da cui partire oggi lo decide
+    // l'ultima volta che sei stato davvero sotto il bilanciere
+    .filter(l => l.status === 'registrato' && !l.stimato && l.date !== escludiData)
     .sort((a,b) => b.date.localeCompare(a.date));
   for(const log of candidati){
     const ex = (log.exercises||[]).find(e => (e.name||'').trim().toLowerCase() === nome);
