@@ -1,0 +1,671 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>VIGOR — Mockup Home Atleta (senza dieta)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   Mockup Home Atleta — senza sezione dieta.
+   Token identici a css/style.css: nessun colore/raggio inventato.
+   ============================================================ */
+:root{
+  --bg:#f7f7f6; --surface:#fff; --surface2:#eeeeec; --border:#e2e2df;
+  --text:#17150f; --text-dim:#6d6656; --text-faint:#a39c8a;
+  --accent:#ff4b2b; --accent-2:#ff3018; --accent-dim:#ffc7ae; --accent-soft:#ffe4d8;
+  --ok:#1fb15f; --ink:#17150f;
+  --grad-accent:linear-gradient(155deg,var(--accent),var(--accent-2));
+  --grad-ink:linear-gradient(150deg,var(--ink),#2a2015);
+  --r-lg:28px; --r-md:20px; --r-sm:14px; --r-pill:999px;
+  --shadow-sm:0 1px 2px rgba(23,21,15,.04), 0 1px 1px rgba(23,21,15,.03);
+  --shadow-md:0 14px 30px -10px rgba(23,21,15,.09), 0 2px 6px rgba(23,21,15,.04);
+  --shadow-accent:0 10px 22px -4px rgba(255,75,43,.4);
+  --font:'Plus Jakarta Sans',system-ui,sans-serif;
+  --hm0:#efeae0; --hm1:#ffcdad; --hm2:#ff7a3d; --hm3:#ff4b2b;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font);background:#e8e6e1;color:var(--text);
+  padding:56px 40px 72px;-webkit-font-smoothing:antialiased}
+
+/* ---------- canvas di presentazione ---------- */
+.canvas-head{max-width:1320px;margin:0 auto 40px}
+.canvas-kicker{font-size:11px;font-weight:800;letter-spacing:.14em;color:var(--accent);text-transform:uppercase}
+.canvas-title{font-size:34px;font-weight:800;letter-spacing:-.03em;margin:8px 0 8px}
+.canvas-sub{font-size:14.5px;color:var(--text-dim);max-width:760px;line-height:1.6}
+.boards{max-width:1320px;margin:0 auto;display:flex;gap:56px;align-items:flex-start;flex-wrap:wrap}
+.board-label{font-size:11px;font-weight:800;letter-spacing:.12em;color:var(--text-faint);
+  text-transform:uppercase;margin-bottom:14px}
+
+/* ---------- telaio telefono ---------- */
+.phone{width:390px;background:var(--bg);border-radius:44px;padding:0 0 0;overflow:hidden;
+  box-shadow:0 40px 80px -30px rgba(23,21,15,.4),0 0 0 10px #17150f,0 0 0 11px #35302a;position:relative}
+.status{display:flex;align-items:center;justify-content:space-between;padding:14px 26px 2px;
+  font-size:12.5px;font-weight:700}
+.status-icons{display:flex;gap:5px;align-items:center}
+.status-icons i{display:block;width:16px;height:10px;border:1.4px solid var(--text);border-radius:3px;opacity:.9}
+.screen{padding:10px 18px 0;display:flex;flex-direction:column;gap:16px}
+
+/* ---------- topbar ---------- */
+.topbar{display:flex;align-items:center;justify-content:space-between}
+.logo{font-size:25px;font-weight:800;letter-spacing:-.04em;font-style:italic}
+.logo span{color:var(--accent)}
+.topbar-actions{display:flex;gap:10px;align-items:center}
+.icon-btn{width:42px;height:42px;border-radius:50%;background:var(--surface);border:1px solid var(--border);
+  display:grid;place-items:center;box-shadow:var(--shadow-sm);position:relative}
+.icon-btn svg{width:19px;height:19px}
+.dot{position:absolute;top:9px;right:10px;width:8px;height:8px;border-radius:50%;
+  background:var(--accent);border:2px solid var(--surface)}
+.avatar{width:42px;height:42px;border-radius:50%;background:var(--grad-accent);color:#fff;
+  display:grid;place-items:center;font-size:14px;font-weight:700;box-shadow:var(--shadow-accent)}
+
+/* ---------- hero ---------- */
+.hero{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.greeting{font-size:30px;font-weight:800;line-height:1.14;letter-spacing:-.035em}
+.hero-date{font-size:12.5px;color:var(--text-dim);margin-top:6px;font-weight:500}
+.hero-art{width:132px;height:122px;border-radius:26px;background:var(--grad-accent);position:relative;
+  overflow:hidden;flex:0 0 auto;display:grid;place-items:center;box-shadow:var(--shadow-accent)}
+.hero-art .blob{position:absolute;right:-34px;top:-34px;width:96px;height:96px;border-radius:50%;
+  background:rgba(255,255,255,.18)}
+.hero-art .ring{position:absolute;left:-22px;bottom:-22px;width:72px;height:72px;border-radius:50%;
+  border:2px solid rgba(255,255,255,.35)}
+.hero-art svg{position:relative;z-index:1;width:54px;height:54px}
+
+/* ---------- striscia giorni ---------- */
+.daystrip{display:flex;gap:7px}
+.day{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:16px;
+  padding:9px 0 10px;text-align:center;box-shadow:var(--shadow-sm)}
+.day .dow{font-size:9px;font-weight:700;letter-spacing:.06em;color:var(--text-faint)}
+.day .num{font-size:17px;font-weight:700;margin-top:2px}
+.day.oggi{background:var(--grad-accent);border-color:transparent;box-shadow:var(--shadow-accent)}
+.day.oggi .dow,.day.oggi .num{color:#fff}
+.day.fatto{position:relative}
+.day.fatto::after{content:"";position:absolute;left:50%;bottom:5px;transform:translateX(-50%);
+  width:5px;height:5px;border-radius:50%;background:var(--ok)}
+
+/* ---------- CTA allenamento di oggi ---------- */
+.cta{background:var(--grad-ink);border-radius:var(--r-lg);padding:18px;color:#fff;position:relative;
+  overflow:hidden;box-shadow:0 18px 34px -12px rgba(23,21,15,.45)}
+.cta::after{content:"";position:absolute;right:-40px;top:-40px;width:150px;height:150px;
+  border-radius:50%;background:rgba(255,75,43,.18)}
+.cta-eyebrow{font-size:10px;font-weight:700;letter-spacing:.08em;opacity:.8;position:relative;z-index:1}
+.cta-title{font-size:20px;font-weight:800;margin:6px 0 9px;letter-spacing:-.02em;position:relative;z-index:1}
+.cta-meta{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:15px;position:relative;z-index:1}
+.chip{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;
+  background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.16);
+  border-radius:var(--r-pill);padding:5px 10px;color:rgba(255,255,255,.94)}
+.chip svg{width:12px;height:12px;opacity:.85}
+.cta-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;
+  background:var(--accent);color:#fff;border:none;border-radius:var(--r-pill);padding:14px;
+  font-family:var(--font);font-weight:800;font-size:14.5px;box-shadow:var(--shadow-accent);
+  position:relative;z-index:1}
+.cta-btn svg{width:17px;height:17px}
+.cta-link{display:block;text-align:center;font-size:11.5px;color:rgba(255,255,255,.9);
+  margin-top:11px;text-decoration:underline;position:relative;z-index:1}
+
+/* ---------- riga statistiche ---------- */
+.stats{display:flex;gap:10px;align-items:stretch}
+.stat{flex:1;min-width:0;background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--r-lg);box-shadow:var(--shadow-sm);padding:14px 16px}
+.stat-label{font-size:10px;font-weight:700;letter-spacing:.05em;color:var(--text-faint)}
+.stat-num{font-size:23px;font-weight:800;color:var(--accent);margin:4px 0 1px;letter-spacing:-.02em}
+.stat-num .dim{color:var(--text)}
+.stat-sub{font-size:11px;color:var(--text-dim);margin-bottom:9px}
+.bar{height:6px;border-radius:6px;background:var(--surface2);overflow:hidden}
+.bar i{display:block;height:100%;border-radius:6px;background:var(--accent)}
+.streak{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.ring-wrap{position:relative;width:66px;height:66px;margin-top:7px}
+.ring-wrap svg{width:66px;height:66px;transform:rotate(-90deg)}
+.ring-wrap .tr{fill:none;stroke:var(--surface2);stroke-width:6}
+.ring-wrap .fl{fill:none;stroke:var(--accent);stroke-width:6;stroke-linecap:round}
+.ring-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.ring-center svg{width:13px;height:13px;transform:none;color:var(--accent);margin-bottom:-1px}
+.ring-num{font-size:19px;font-weight:800;line-height:1.05;letter-spacing:-.02em}
+.ring-lbl{font-size:10px;color:var(--text-dim);font-weight:600;margin-top:7px}
+
+/* ---------- riga card (scheda attiva / PT) ---------- */
+.rowcard{display:flex;align-items:center;gap:13px;width:100%;text-align:left;background:var(--surface);
+  border:1px solid var(--border);border-radius:var(--r-lg);padding:14px 15px;box-shadow:var(--shadow-sm)}
+.rowcard-icon{width:42px;height:42px;border-radius:13px;flex:0 0 auto;background:var(--grad-accent);
+  display:grid;place-items:center}
+.rowcard-icon svg{width:19px;height:19px}
+.rowcard-body{flex:1;min-width:0}
+.rowcard-eyebrow{font-size:9.5px;font-weight:700;letter-spacing:.07em;color:var(--text-faint)}
+.rowcard-title{font-size:14px;font-weight:700;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rowcard-sub{font-size:11.5px;color:var(--text-dim);margin-top:2px}
+.pill{flex:0 0 auto;display:flex;align-items:center;gap:3px;font-size:12px;font-weight:700;
+  color:var(--accent);background:var(--accent-soft);border-radius:var(--r-pill);padding:7px 11px}
+.pill svg{width:13px;height:13px}
+.rowcard.pt{background:var(--accent-soft);border-color:transparent}
+.rowcard.pt .rowcard-title{color:var(--accent)}
+.circle-arrow{flex:0 0 auto;width:31px;height:31px;border-radius:50%;background:var(--accent);color:#fff;
+  display:grid;place-items:center}
+.circle-arrow svg{width:15px;height:15px}
+
+/* ---------- obiettivi ---------- */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);
+  padding:16px;box-shadow:var(--shadow-sm)}
+.card-title{font-size:10px;font-weight:700;letter-spacing:.05em;color:var(--text-faint);
+  text-transform:uppercase;margin-bottom:13px}
+.ob{display:flex;align-items:center;gap:12px;margin-bottom:13px}
+.ob-body{flex:1;min-width:0}
+.ob-name{font-size:12.5px;font-weight:700}
+.ob-sub{font-size:11px;color:var(--text-dim);margin-top:2px}
+.ob-bar{flex:0 0 62px}
+.ob-pct{flex:0 0 auto;font-size:11px;font-weight:800;color:var(--text-faint);width:30px;text-align:right}
+.ob-add{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700;color:var(--accent);
+  border-top:1px dashed var(--border);padding-top:12px}
+.ob-add span{width:20px;height:20px;border-radius:50%;background:var(--accent-soft);
+  display:grid;place-items:center;font-size:14px;line-height:1}
+
+/* ---------- heatmap ---------- */
+.hm-head{display:flex;align-items:flex-start;justify-content:space-between}
+.hm-title{font-size:14.5px;font-weight:700}
+.hm-sub{font-size:11px;color:var(--text-faint);margin-top:3px}
+.hm-badge{font-size:10.5px;font-weight:700;color:var(--accent);background:var(--accent-soft);
+  border-radius:var(--r-pill);padding:5px 10px}
+.toggle{display:flex;gap:4px;background:var(--surface2);padding:4px;border-radius:13px;margin:13px 0 4px}
+.toggle button{flex:1;border:none;background:none;padding:8px;border-radius:10px;
+  font-family:var(--font);font-weight:700;font-size:11.5px;color:var(--text-dim)}
+.toggle button.active{background:var(--surface);color:var(--accent);box-shadow:var(--shadow-sm)}
+.figwrap{display:flex;justify-content:center;padding:6px 0 2px}
+.figwrap svg{width:186px;height:auto}
+.hm-info{text-align:center;font-size:12px;color:var(--text-dim);margin:6px 0 13px}
+.hm-info b{color:var(--text)}
+.legend{display:flex;align-items:center;justify-content:center;gap:11px;flex-wrap:wrap;
+  border-top:1px solid var(--border);padding-top:12px}
+.legend div{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--text-faint);font-weight:500}
+.legend i{width:9px;height:9px;border-radius:50%;display:block}
+
+/* ---------- nav ---------- */
+.navspace{height:16px}
+.nav{margin-top:auto;display:flex;align-items:flex-end;justify-content:space-around;
+  background:var(--surface);border-top:1px solid var(--border);padding:11px 8px 22px;position:relative}
+.tab{display:flex;flex-direction:column;align-items:center;gap:4px;width:62px;color:var(--text-faint)}
+.tab svg{width:21px;height:21px}
+.tab span{font-size:10px;font-weight:700}
+.tab.on{color:var(--accent)}
+.fab{width:56px;height:56px;border-radius:50%;background:var(--grad-accent);color:#fff;display:grid;
+  place-items:center;box-shadow:var(--shadow-accent);margin-top:-30px}
+.fab svg{width:26px;height:26px}
+.fab-wrap{display:flex;flex-direction:column;align-items:center;gap:4px;width:62px}
+.fab-wrap span{font-size:10px;font-weight:700;color:var(--text-faint)}
+
+/* ---------- artboard desktop ---------- */
+.desk{width:1120px;background:var(--bg);border-radius:22px;overflow:hidden;
+  box-shadow:0 40px 80px -30px rgba(23,21,15,.35),0 0 0 1px var(--border)}
+.desk-chrome{display:flex;align-items:center;gap:7px;padding:13px 18px;background:#e9e7e2;
+  border-bottom:1px solid var(--border)}
+.desk-chrome i{width:11px;height:11px;border-radius:50%;background:#cfcbc3;display:block}
+.desk-body{padding:26px 34px 34px;display:flex;flex-direction:column;gap:20px}
+.desk-cols{display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start}
+.desk-col{display:flex;flex-direction:column;gap:14px}
+.desk .greeting{font-size:34px}
+.desk .hero-art{width:168px;height:132px}
+.desk .cta-title{font-size:24px}
+.desk .figwrap svg{width:210px}
+.desk-nav{display:flex;gap:8px;align-items:center}
+.desk-nav .dtab{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;color:var(--text-dim);
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--r-pill);padding:9px 16px}
+.desk-nav .dtab svg{width:17px;height:17px}
+.desk-nav .dtab.on{background:var(--accent-soft);border-color:transparent;color:var(--accent)}
+.desk-nav .dtab.cta{background:var(--grad-accent);border-color:transparent;color:#fff;box-shadow:var(--shadow-accent)}
+
+/* ---------- annotazioni ---------- */
+.notes{width:340px;flex:0 0 auto}
+.note{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);
+  padding:15px 16px;margin-bottom:12px;box-shadow:var(--shadow-sm)}
+.note-tag{display:inline-block;font-size:9.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;
+  border-radius:var(--r-pill);padding:4px 9px;margin-bottom:8px}
+.note-tag.out{background:#ffe2e2;color:#b3261e}
+.note-tag.new{background:var(--accent-soft);color:var(--accent)}
+.note-tag.keep{background:#e4f6ec;color:#137a44}
+.note h4{font-size:13.5px;font-weight:800;margin-bottom:5px;letter-spacing:-.01em}
+.note p{font-size:12.5px;line-height:1.55;color:var(--text-dim)}
+.tokens{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}
+.tok{display:flex;align-items:center;gap:6px;font-size:10.5px;font-weight:600;color:var(--text-dim);
+  background:var(--bg);border:1px solid var(--border);border-radius:var(--r-pill);padding:5px 9px}
+.tok i{width:12px;height:12px;border-radius:4px;display:block}
+</style>
+</head>
+<body>
+
+<div class="canvas-head">
+  <div class="canvas-kicker">VIGOR · Mockup</div>
+  <h1 class="canvas-title">Home Atleta — senza la dieta</h1>
+  <p class="canvas-sub">La card “Dieta di oggi” e la voce “Dieta” della barra in basso sono state rimosse.
+  Lo spazio liberato è stato riassorbito riordinando la Home su una gerarchia
+  <b>agisci → misura → approfondisci</b>, con gli stessi token, colori e componenti già in <code>css/style.css</code>.</p>
+</div>
+
+<div class="boards">
+
+  <!-- ============ ARTBOARD MOBILE ============ -->
+  <div>
+    <div class="board-label">Mobile · 390 × 844</div>
+    <div class="phone">
+      <div class="status">
+        <span>9:41</span>
+        <span class="status-icons"><i></i></span>
+      </div>
+
+      <div class="screen">
+        <!-- topbar -->
+        <div class="topbar">
+          <div class="logo">VIG<span>OR</span></div>
+          <div class="topbar-actions">
+            <div class="icon-btn">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.5a1 1 0 0 1 1 1v.63A6.5 6.5 0 0 1 18.5 10.5v3.02c0 .84.33 1.65.93 2.24L20.4 16.7c.8.8.23 2.17-.9 2.17H4.5c-1.13 0-1.7-1.37-.9-2.17l.97-.94c.6-.59.93-1.4.93-2.24V10.5a6.5 6.5 0 0 1 5.5-6.37V3.5a1 1 0 0 1 1-1Z"/><path d="M9.5 19.2a2.7 2.7 0 0 0 5 0 .5.5 0 0 0-.47-.7H9.97a.5.5 0 0 0-.47.7Z"/></svg>
+              <span class="dot"></span>
+            </div>
+            <div class="avatar">MR</div>
+          </div>
+        </div>
+
+        <!-- hero -->
+        <div class="hero">
+          <div>
+            <div class="greeting">Bentornato,<br>Marco!</div>
+            <div class="hero-date">Mercoledì 9 settembre</div>
+          </div>
+          <div class="hero-art">
+            <span class="blob"></span><span class="ring"></span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 6.5 17.5 17.5"/><path d="m21 21-1-1"/><path d="m3 3 1 1"/><path d="m18 22 4-4"/><path d="m2 6 4-4"/><path d="m3 10 7-7"/><path d="m14 21 7-7"/></svg>
+          </div>
+        </div>
+
+        <!-- giorni -->
+        <div class="daystrip">
+          <div class="day fatto"><div class="dow">LUN</div><div class="num">7</div></div>
+          <div class="day"><div class="dow">MAR</div><div class="num">8</div></div>
+          <div class="day oggi"><div class="dow">MER</div><div class="num">9</div></div>
+          <div class="day"><div class="dow">GIO</div><div class="num">10</div></div>
+          <div class="day"><div class="dow">VEN</div><div class="num">11</div></div>
+          <div class="day"><div class="dow">SAB</div><div class="num">12</div></div>
+          <div class="day"><div class="dow">DOM</div><div class="num">13</div></div>
+        </div>
+
+        <!-- CTA -->
+        <div class="cta">
+          <div class="cta-eyebrow">ALLENAMENTO DI OGGI · SETTIMANA 2</div>
+          <div class="cta-title">Dorso + Spalle</div>
+          <div class="cta-meta">
+            <span class="chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg>8 esercizi</span>
+            <span class="chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>~55 min</span>
+            <span class="chip">Dorso · Bicipiti</span>
+          </div>
+          <div class="cta-btn">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13a1 1 0 0 0 1.53.85l10-6.5a1 1 0 0 0 0-1.7l-10-6.5A1 1 0 0 0 8 5.5Z"/></svg>
+            Inizia allenamento
+          </div>
+          <div class="cta-link">Vedi la scheda completa</div>
+        </div>
+
+        <!-- statistiche -->
+        <div class="stats">
+          <div class="stat">
+            <div class="stat-label">QUESTA SETTIMANA</div>
+            <div class="stat-num">3<span class="dim"> / 4</span></div>
+            <div class="stat-sub">allenamenti fatti</div>
+            <div class="bar"><i style="width:75%"></i></div>
+          </div>
+          <div class="stat streak">
+            <div class="stat-label">SERIE ATTIVA</div>
+            <div class="ring-wrap">
+              <svg viewBox="0 0 66 66">
+                <circle class="tr" cx="33" cy="33" r="28"/>
+                <circle class="fl" cx="33" cy="33" r="28" stroke-dasharray="176" stroke-dashoffset="35"/>
+              </svg>
+              <div class="ring-center">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2c1 3-3 4-3 8a3 3 0 0 0 6 0c1 1 1.5 2.5 1.5 4A6.5 6.5 0 0 1 5 14C5 8 9 6 12 2z"/></svg>
+                <div class="ring-num">5</div>
+              </div>
+            </div>
+            <div class="ring-lbl">settimane di fila</div>
+          </div>
+        </div>
+
+        <!-- scheda attiva -->
+        <div class="rowcard">
+          <div class="rowcard-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8"><rect x="5" y="3.5" width="14" height="17" rx="2.5"/><path d="M9 8.5h6M9 12h6M9 15.5h4" stroke-linecap="round"/></svg>
+          </div>
+          <div class="rowcard-body">
+            <div class="rowcard-eyebrow">SCHEDA ATTIVA</div>
+            <div class="rowcard-title">Ipertrofia Upper/Lower</div>
+            <div class="rowcard-sub">4 giorni · settimana 2 di 8</div>
+          </div>
+          <div class="pill">Vedi <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></div>
+        </div>
+
+        <!-- obiettivi -->
+        <div class="card">
+          <div class="card-title">I tuoi obiettivi</div>
+          <div class="ob">
+            <div class="ob-body"><div class="ob-name">Costanza del mese</div><div class="ob-sub">9 / 16 allenamenti</div></div>
+            <div class="bar ob-bar"><i style="width:56%"></i></div>
+            <div class="ob-pct">56%</div>
+          </div>
+          <div class="ob">
+            <div class="ob-body"><div class="ob-name">Peso</div><div class="ob-sub">78,4 → 75 kg · 42 giorni rimasti</div></div>
+            <div class="bar ob-bar"><i style="width:41%"></i></div>
+            <div class="ob-pct">41%</div>
+          </div>
+          <div class="ob">
+            <div class="ob-body"><div class="ob-name">Panca piana</div><div class="ob-sub">85 → 100 kg</div></div>
+            <div class="bar ob-bar"><i style="width:85%"></i></div>
+            <div class="ob-pct">85%</div>
+          </div>
+          <div class="ob-add"><span>+</span> Aggiungi un obiettivo</div>
+        </div>
+
+        <!-- heatmap -->
+        <div class="card">
+          <div class="hm-head">
+            <div>
+              <div class="hm-title">La tua settimana</div>
+              <div class="hm-sub">Zone allenate negli ultimi 7 giorni</div>
+            </div>
+            <div class="hm-badge">3 sessioni</div>
+          </div>
+          <div class="toggle"><button class="active">Fronte</button><button>Retro</button></div>
+          <div class="figwrap">
+            <svg viewBox="0 0 220 300" fill="none">
+              <g stroke="#fff" stroke-width="1.4" stroke-linejoin="round">
+                <!-- testa / collo -->
+                <ellipse cx="110" cy="20" rx="15" ry="17" fill="#f7f2e8"/>
+                <rect x="101" y="32" width="18" height="16" rx="6" fill="#f7f2e8"/>
+                <!-- torso -->
+                <path d="M110 44c17 0 31 5 37 15l5 33-10 52c-2 12-14 18-32 18s-30-6-32-18L68 92l5-33c6-10 20-15 37-15Z" fill="#f7f2e8"/>
+                <!-- deltoidi -->
+                <ellipse cx="71" cy="58" rx="16" ry="14" fill="#ff7a3d"/>
+                <ellipse cx="149" cy="58" rx="16" ry="14" fill="#ff7a3d"/>
+                <!-- pettorali -->
+                <rect x="85" y="58" width="23" height="25" rx="9" fill="#ff4b2b"/>
+                <rect x="112" y="58" width="23" height="25" rx="9" fill="#ff4b2b"/>
+                <!-- addome -->
+                <rect x="95" y="90" width="13" height="11" rx="4" fill="#ffcdad"/>
+                <rect x="112" y="90" width="13" height="11" rx="4" fill="#ffcdad"/>
+                <rect x="95" y="104" width="13" height="11" rx="4" fill="#ffcdad"/>
+                <rect x="112" y="104" width="13" height="11" rx="4" fill="#ffcdad"/>
+                <rect x="96" y="118" width="12" height="11" rx="4" fill="#efeae0"/>
+                <rect x="112" y="118" width="12" height="11" rx="4" fill="#efeae0"/>
+                <!-- braccia -->
+                <rect x="55" y="60" width="18" height="50" rx="9" fill="#ff4b2b" transform="rotate(-8 64 85)"/>
+                <rect x="147" y="60" width="18" height="50" rx="9" fill="#ff4b2b" transform="rotate(8 156 85)"/>
+                <rect x="49" y="106" width="15" height="46" rx="7.5" fill="#ffcdad" transform="rotate(-6 56 129)"/>
+                <rect x="156" y="106" width="15" height="46" rx="7.5" fill="#ffcdad" transform="rotate(6 163 129)"/>
+                <!-- gambe -->
+                <rect x="83" y="160" width="25" height="66" rx="12" fill="#efeae0"/>
+                <rect x="112" y="160" width="25" height="66" rx="12" fill="#efeae0"/>
+                <rect x="86" y="230" width="19" height="52" rx="9.5" fill="#efeae0"/>
+                <rect x="115" y="230" width="19" height="52" rx="9.5" fill="#efeae0"/>
+              </g>
+            </svg>
+          </div>
+          <div class="hm-info">Zona più allenata: <b>Pettorali</b> · 3 sessioni</div>
+          <div class="legend">
+            <div><i style="background:var(--hm0)"></i>Non allenato</div>
+            <div><i style="background:var(--hm1)"></i>Leggero</div>
+            <div><i style="background:var(--hm2)"></i>Moderato</div>
+            <div><i style="background:var(--hm3)"></i>Intenso</div>
+          </div>
+        </div>
+
+        <!-- PT -->
+        <div class="rowcard pt">
+          <div class="rowcard-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 20v-1.5a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4V20"/><circle cx="9.5" cy="7.5" r="3.5"/><path d="M17 11h4M19 9v4"/></svg>
+          </div>
+          <div class="rowcard-body">
+            <div class="rowcard-title">Area Personal Trainer</div>
+            <div class="rowcard-sub">Gestisci i tuoi clienti</div>
+          </div>
+          <div class="circle-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg></div>
+        </div>
+
+        <div class="navspace"></div>
+      </div>
+
+      <!-- nav: 4 voci + FAB (la voce "Dieta" non c'è più) -->
+      <div class="nav">
+        <div class="tab on">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5.5 9.5V20h13V9.5"/></svg>
+          <span>Home</span>
+        </div>
+        <div class="tab">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3.5" width="14" height="17" rx="2.5"/><path d="M9 8.5h6M9 12h6M9 15.5h4"/></svg>
+          <span>Scheda</span>
+        </div>
+        <div class="fab-wrap">
+          <div class="fab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></div>
+          <span>Registra</span>
+        </div>
+        <div class="tab">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 12a8.5 8.5 0 1 0 2.6-6.1"/><path d="M3 4v4.5h4.5"/><path d="M12 7.5V12l3 2"/></svg>
+          <span>Storico</span>
+        </div>
+        <div class="tab">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.6"/><path d="M4.5 20a7.5 7.5 0 0 1 15 0"/></svg>
+          <span>Profilo</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ ARTBOARD DESKTOP ============ -->
+  <div style="width:100%">
+    <div class="board-label" style="margin-top:44px">Desktop · 1120 px — due colonne (breakpoint 1024px già in css/style.css)</div>
+    <div class="desk">
+      <div class="desk-chrome"><i></i><i></i><i></i></div>
+      <div class="desk-body">
+
+        <div class="topbar">
+          <div class="logo" style="font-size:28px">VIG<span>OR</span></div>
+          <div class="desk-nav">
+            <div class="dtab on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5.5 9.5V20h13V9.5"/></svg>Home</div>
+            <div class="dtab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3.5" width="14" height="17" rx="2.5"/><path d="M9 8.5h6M9 12h6M9 15.5h4"/></svg>Scheda</div>
+            <div class="dtab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 12a8.5 8.5 0 1 0 2.6-6.1"/><path d="M3 4v4.5h4.5"/><path d="M12 7.5V12l3 2"/></svg>Storico</div>
+            <div class="dtab cta"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Registra</div>
+          </div>
+          <div class="topbar-actions">
+            <div class="icon-btn"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.5a1 1 0 0 1 1 1v.63A6.5 6.5 0 0 1 18.5 10.5v3.02c0 .84.33 1.65.93 2.24L20.4 16.7c.8.8.23 2.17-.9 2.17H4.5c-1.13 0-1.7-1.37-.9-2.17l.97-.94c.6-.59.93-1.4.93-2.24V10.5a6.5 6.5 0 0 1 5.5-6.37V3.5a1 1 0 0 1 1-1Z"/></svg><span class="dot"></span></div>
+            <div class="avatar">MR</div>
+          </div>
+        </div>
+
+        <div class="hero">
+          <div>
+            <div class="greeting">Bentornato, Marco!</div>
+            <div class="hero-date">Mercoledì 9 settembre · settimana 2 di 8</div>
+          </div>
+          <div class="hero-art">
+            <span class="blob"></span><span class="ring"></span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 6.5 17.5 17.5"/><path d="m21 21-1-1"/><path d="m3 3 1 1"/><path d="m18 22 4-4"/><path d="m2 6 4-4"/><path d="m3 10 7-7"/><path d="m14 21 7-7"/></svg>
+          </div>
+        </div>
+
+        <div class="daystrip">
+          <div class="day fatto"><div class="dow">LUN</div><div class="num">7</div></div>
+          <div class="day"><div class="dow">MAR</div><div class="num">8</div></div>
+          <div class="day oggi"><div class="dow">MER</div><div class="num">9</div></div>
+          <div class="day"><div class="dow">GIO</div><div class="num">10</div></div>
+          <div class="day"><div class="dow">VEN</div><div class="num">11</div></div>
+          <div class="day"><div class="dow">SAB</div><div class="num">12</div></div>
+          <div class="day"><div class="dow">DOM</div><div class="num">13</div></div>
+        </div>
+
+        <div class="desk-cols">
+          <div class="desk-col">
+            <div class="cta">
+              <div class="cta-eyebrow">ALLENAMENTO DI OGGI · SETTIMANA 2</div>
+              <div class="cta-title">Dorso + Spalle</div>
+              <div class="cta-meta">
+                <span class="chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg>8 esercizi</span>
+                <span class="chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>~55 min</span>
+                <span class="chip">Dorso · Bicipiti</span>
+              </div>
+              <div class="cta-btn"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13a1 1 0 0 0 1.53.85l10-6.5a1 1 0 0 0 0-1.7l-10-6.5A1 1 0 0 0 8 5.5Z"/></svg>Inizia allenamento</div>
+              <div class="cta-link">Vedi la scheda completa</div>
+            </div>
+
+            <div class="card">
+              <div class="hm-head">
+                <div><div class="hm-title">La tua settimana</div><div class="hm-sub">Zone allenate negli ultimi 7 giorni</div></div>
+                <div class="hm-badge">3 sessioni</div>
+              </div>
+              <div class="toggle"><button class="active">Fronte</button><button>Retro</button></div>
+              <div class="figwrap">
+                <svg viewBox="0 0 220 300" fill="none">
+                  <g stroke="#fff" stroke-width="1.4" stroke-linejoin="round">
+                    <ellipse cx="110" cy="20" rx="15" ry="17" fill="#f7f2e8"/>
+                    <rect x="101" y="32" width="18" height="16" rx="6" fill="#f7f2e8"/>
+                    <path d="M110 44c17 0 31 5 37 15l5 33-10 52c-2 12-14 18-32 18s-30-6-32-18L68 92l5-33c6-10 20-15 37-15Z" fill="#f7f2e8"/>
+                    <ellipse cx="71" cy="58" rx="16" ry="14" fill="#ff7a3d"/>
+                    <ellipse cx="149" cy="58" rx="16" ry="14" fill="#ff7a3d"/>
+                    <rect x="85" y="58" width="23" height="25" rx="9" fill="#ff4b2b"/>
+                    <rect x="112" y="58" width="23" height="25" rx="9" fill="#ff4b2b"/>
+                    <rect x="95" y="90" width="13" height="11" rx="4" fill="#ffcdad"/>
+                    <rect x="112" y="90" width="13" height="11" rx="4" fill="#ffcdad"/>
+                    <rect x="95" y="104" width="13" height="11" rx="4" fill="#ffcdad"/>
+                    <rect x="112" y="104" width="13" height="11" rx="4" fill="#ffcdad"/>
+                    <rect x="96" y="118" width="12" height="11" rx="4" fill="#efeae0"/>
+                    <rect x="112" y="118" width="12" height="11" rx="4" fill="#efeae0"/>
+                    <rect x="55" y="60" width="18" height="50" rx="9" fill="#ff4b2b" transform="rotate(-8 64 85)"/>
+                    <rect x="147" y="60" width="18" height="50" rx="9" fill="#ff4b2b" transform="rotate(8 156 85)"/>
+                    <rect x="49" y="106" width="15" height="46" rx="7.5" fill="#ffcdad" transform="rotate(-6 56 129)"/>
+                    <rect x="156" y="106" width="15" height="46" rx="7.5" fill="#ffcdad" transform="rotate(6 163 129)"/>
+                    <rect x="83" y="160" width="25" height="66" rx="12" fill="#efeae0"/>
+                    <rect x="112" y="160" width="25" height="66" rx="12" fill="#efeae0"/>
+                    <rect x="86" y="230" width="19" height="52" rx="9.5" fill="#efeae0"/>
+                    <rect x="115" y="230" width="19" height="52" rx="9.5" fill="#efeae0"/>
+                  </g>
+                </svg>
+              </div>
+              <div class="hm-info">Zona più allenata: <b>Pettorali</b> · 3 sessioni</div>
+              <div class="legend">
+                <div><i style="background:var(--hm0)"></i>Non allenato</div>
+                <div><i style="background:var(--hm1)"></i>Leggero</div>
+                <div><i style="background:var(--hm2)"></i>Moderato</div>
+                <div><i style="background:var(--hm3)"></i>Intenso</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="desk-col">
+            <div class="stats">
+              <div class="stat">
+                <div class="stat-label">QUESTA SETTIMANA</div>
+                <div class="stat-num">3<span class="dim"> / 4</span></div>
+                <div class="stat-sub">allenamenti fatti</div>
+                <div class="bar"><i style="width:75%"></i></div>
+              </div>
+              <div class="stat streak">
+                <div class="stat-label">SERIE ATTIVA</div>
+                <div class="ring-wrap">
+                  <svg viewBox="0 0 66 66"><circle class="tr" cx="33" cy="33" r="28"/><circle class="fl" cx="33" cy="33" r="28" stroke-dasharray="176" stroke-dashoffset="35"/></svg>
+                  <div class="ring-center">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2c1 3-3 4-3 8a3 3 0 0 0 6 0c1 1 1.5 2.5 1.5 4A6.5 6.5 0 0 1 5 14C5 8 9 6 12 2z"/></svg>
+                    <div class="ring-num">5</div>
+                  </div>
+                </div>
+                <div class="ring-lbl">settimane di fila</div>
+              </div>
+            </div>
+
+            <div class="rowcard">
+              <div class="rowcard-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8"><rect x="5" y="3.5" width="14" height="17" rx="2.5"/><path d="M9 8.5h6M9 12h6M9 15.5h4" stroke-linecap="round"/></svg></div>
+              <div class="rowcard-body">
+                <div class="rowcard-eyebrow">SCHEDA ATTIVA</div>
+                <div class="rowcard-title">Ipertrofia Upper/Lower</div>
+                <div class="rowcard-sub">4 giorni · settimana 2 di 8</div>
+              </div>
+              <div class="pill">Vedi <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></div>
+            </div>
+
+            <div class="card">
+              <div class="card-title">I tuoi obiettivi</div>
+              <div class="ob"><div class="ob-body"><div class="ob-name">Costanza del mese</div><div class="ob-sub">9 / 16 allenamenti</div></div><div class="bar ob-bar"><i style="width:56%"></i></div><div class="ob-pct">56%</div></div>
+              <div class="ob"><div class="ob-body"><div class="ob-name">Peso</div><div class="ob-sub">78,4 → 75 kg · 42 giorni rimasti</div></div><div class="bar ob-bar"><i style="width:41%"></i></div><div class="ob-pct">41%</div></div>
+              <div class="ob"><div class="ob-body"><div class="ob-name">Panca piana</div><div class="ob-sub">85 → 100 kg</div></div><div class="bar ob-bar"><i style="width:85%"></i></div><div class="ob-pct">85%</div></div>
+              <div class="ob-add"><span>+</span> Aggiungi un obiettivo</div>
+            </div>
+
+            <div class="rowcard pt">
+              <div class="rowcard-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 20v-1.5a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4V20"/><circle cx="9.5" cy="7.5" r="3.5"/><path d="M17 11h4M19 9v4"/></svg></div>
+              <div class="rowcard-body">
+                <div class="rowcard-title">Area Personal Trainer</div>
+                <div class="rowcard-sub">Gestisci i tuoi clienti</div>
+              </div>
+              <div class="circle-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ ANNOTAZIONI ============ -->
+  <div class="notes">
+    <div class="board-label">Cosa cambia</div>
+
+    <div class="note">
+      <span class="note-tag out">Rimosso</span>
+      <h4>Card “Dieta di oggi”</h4>
+      <p>Spariscono kcal, macro e il pasto del giorno dalla Home. Il diario alimentare resta
+      raggiungibile altrove: qui non compete più con l’allenamento.</p>
+    </div>
+
+    <div class="note">
+      <span class="note-tag out">Rimosso</span>
+      <h4>Voce “Dieta” nella barra in basso</h4>
+      <p>La nav passa da 5 a 4 voci + FAB. Per non lasciarla sbilanciata (2 a sinistra, 1 a destra)
+      entra <b>Profilo</b>, oggi raggiungibile solo dall’avatar in alto: ora la barra è simmetrica
+      e il pollice arriva ovunque.</p>
+    </div>
+
+    <div class="note">
+      <span class="note-tag new">Riordinato</span>
+      <h4>Gerarchia agisci → misura → approfondisci</h4>
+      <p>1. Allenamento di oggi · 2. Settimana e serie · 3. Scheda attiva · 4. Obiettivi ·
+      5. Mappa muscolare · 6. Area PT. La mappa muscolare scende: è un consuntivo, non un’azione,
+      e prima spingeva gli obiettivi sotto la piega.</p>
+    </div>
+
+    <div class="note">
+      <span class="note-tag new">Nuovo</span>
+      <h4>Chip informativi sulla CTA</h4>
+      <p>“8 esercizi” diventa <b>8 esercizi · ~55 min · Dorso · Bicipiti</b>, e l’occhiello porta
+      la settimana di programma (“ALLENAMENTO DI OGGI · SETTIMANA 2”). Costano zero spazio in più
+      e rispondono alle due domande vere prima di iniziare: quanto ci metto e cosa alleno.</p>
+    </div>
+
+    <div class="note">
+      <span class="note-tag new">Nuovo</span>
+      <h4>Dettagli che riempiono il vuoto</h4>
+      <p>Percentuale accanto a ogni barra degli obiettivi, riga “+ Aggiungi un obiettivo” sempre
+      visibile, badge “3 sessioni” e riga “zona più allenata” sulla mappa, puntino verde sui giorni
+      già allenati, sottotitolo sulla scheda attiva (“settimana 2 di 8”).</p>
+    </div>
+
+    <div class="note">
+      <span class="note-tag keep">Invariato</span>
+      <h4>Identità visiva</h4>
+      <p>Nessun token nuovo: stessi colori, raggi, ombre e tipografia già in <code>css/style.css</code>.</p>
+      <div class="tokens">
+        <span class="tok"><i style="background:#ff4b2b"></i>--accent</span>
+        <span class="tok"><i style="background:#17150f"></i>--ink</span>
+        <span class="tok"><i style="background:#f7f7f6;border:1px solid #e2e2df"></i>--bg</span>
+        <span class="tok"><i style="background:#ffe4d8"></i>--accent-soft</span>
+        <span class="tok">--r-lg 28px</span>
+        <span class="tok">Plus Jakarta Sans</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>
