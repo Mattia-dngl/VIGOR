@@ -52,6 +52,22 @@ function load(){
 // per chi aveva un account online creato prima di un campo come waterLogs,
 // prof.waterLogs restava undefined e aggiungiAcqua() lanciava un errore
 // silenzioso al primo tap su +/- (bug segnalato: "l'acqua non funziona").
+// Numero di serie di un esercizio di scheda (es. 4). Se manca o non è valido lo
+// ricostruisce: l'ultimo allenamento registrato con quell'esercizio (i profili
+// già danneggiati dal difetto descritto in normalizzaProfilo hanno "sets" = [])
+// e in mancanza di quello 3, il valore che l'editor propone per un esercizio nuovo.
+function ripristinaSerieScheda(e, logs){
+  if(typeof e.sets === 'number' && isFinite(e.sets) && e.sets >= 0) return;
+  if(typeof e.sets === 'string' && e.sets.trim() !== '' && isFinite(Number(e.sets))){ e.sets = parseInt(e.sets, 10) || 0; return; }
+  let n = 0;
+  for(let i = (logs||[]).length - 1; i >= 0 && !n; i--){
+    const l = logs[i];
+    if(!l || l.status !== 'registrato' || !Array.isArray(l.exercises)) continue;
+    const voce = l.exercises.find(x => x && x.name === e.name && Array.isArray(x.sets));
+    if(voce) n = voce.sets.length;
+  }
+  e.sets = n || 3;
+}
 function normalizzaProfilo(p){
   // chi c'era prima dell'approvazione resta abilitato
   if(p.approvato === undefined) p.approvato = true;
@@ -124,7 +140,14 @@ function normalizzaProfilo(p){
     if(!Array.isArray(prog.days)) prog.days = [];
     prog.days.forEach(d=>{
       if(!Array.isArray(d.exercises)) d.exercises = [];
-      d.exercises.forEach(e=>{ if(!Array.isArray(e.sets)) e.sets = []; });
+      // ATTENZIONE (30/09/2026, regressione del 11/09): qui prima c'era
+      // `if(!Array.isArray(e.sets)) e.sets = []`, la stessa riga dei log
+      // qui sotto. Ma negli esercizi di una SCHEDA "sets" è il NUMERO di serie
+      // programmate (es. 4), non un array: la riga lo sostituiva con [] a ogni
+      // caricamento del profilo e il save() successivo lo scriveva anche
+      // online. Risultato: le schede perdevano le serie da sole e in Registra
+      // non comparivano righe da compilare. Solo i log hanno "sets" come array.
+      d.exercises.forEach(e=>{ ripristinaSerieScheda(e, p.logs); });
     });
   });
   p.logs.forEach(l=>{
