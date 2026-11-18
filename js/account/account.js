@@ -582,7 +582,7 @@ async function dopoAccessoOnline(){
         id: utenteOnline.id,
         email: utenteOnline.email,
         nome: meta.nome || meta.full_name || meta.name || utenteOnline.email.split('@')[0],
-        approvato: (utenteOnline.email || '').toLowerCase() === EMAIL_AMMINISTRATORE,
+        approvato: true, // registrazione libera: nessuna attesa (il trigger sul database fa lo stesso, vedi supabase/migrations)
         dati: datiIniziali
       };
       const res = await sb.from('profili').insert(nuova).select().maybeSingle();
