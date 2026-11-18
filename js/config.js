@@ -11,5 +11,14 @@
 // ============================================================
 window.APP_CONFIG = {
   url: "https://oyllkwjcfszehugqdxlb.supabase.co",
+  // MODALITÀ SOLO REGISTRO (18/11/2026): l'app è per gli atleti — schede,
+  // registro, storico, dieta, misure, timer. Tutta la parte Personal Trainer
+  // (area PT, collegamenti, check-in, messaggi), gli abbonamenti/pagamenti e
+  // la console del proprietario sono CONGELATI: il codice resta, ma
+  // nessuna schermata li raggiunge. Per riaccenderli: metti false.
+  soloRegistro: true,
   chiave: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im95bGxrd2pjZnN6ZWh1Z3FkeGxiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY0NDUwNDYsImV4cCI6MjEwMjAyMTA0Nn0.d0H9WogBEpTaAXZQswtJF3S4YPKzN_5ycIZGG2sk3Y8"
 };
+
+// Classe sull'<html> per nascondere via CSS gli ingressi congelati (css/style.css).
+if(window.APP_CONFIG.soloRegistro) document.documentElement.classList.add('solo-registro');

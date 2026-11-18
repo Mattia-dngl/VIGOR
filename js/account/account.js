@@ -626,7 +626,11 @@ async function dopoAccessoOnline(){
     // la card per l'area riservata compare solo a chi è Personal Trainer
     document.getElementById('homePTBtn').style.display = sonoPT() ? 'flex' : 'none';
     aggiornaModalitaProprietario();
-    caricaRapporti().then(()=>{ renderMioPT(); aggiornaCampanellaHome(); aggiornaPuntinoMessaggi(); ascoltaNotificheRealtime(); aggiornaModalitaProprietario(); }).catch(()=>{});
+    if(soloRegistro()){
+      aggiornaCampanellaHome();
+    } else {
+      caricaRapporti().then(()=>{ renderMioPT(); aggiornaCampanellaHome(); aggiornaPuntinoMessaggi(); ascoltaNotificheRealtime(); aggiornaModalitaProprietario(); }).catch(()=>{});
+    }
     ascoltaMioProfilo();
     document.documentElement.classList.remove('avvio');
     nascondiCloudGate();
@@ -644,7 +648,7 @@ async function dopoAccessoOnline(){
     // Il proprietario non è un PT come gli altri: il suo account è una
     // console, e atterrare nell'area clienti era proprio la schermata che
     // non deve più vedere per prima. Gli altri PT restano come prima.
-    if(sonoPT() && !modalitaProprietarioAttiva()) apriAreaPT();
+    if(sonoPT() && !modalitaProprietarioAttiva()) apriAreaPT(); // mai in modalità solo-registro: sonoPT() è false
     else mostraHome();
   }catch(e){
     // Qualunque errore qui (rete, timeout, server) non deve lasciare la
