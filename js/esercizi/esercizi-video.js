@@ -414,6 +414,7 @@ function ripristinaBozza(){
       }
     });
   });
+  Object.keys(b.serie||{}).forEach(nome=>{ if(currentSetInputs[nome]) aggiornaSuggerimenti(nome); });
   document.getElementById('logNotes').value = b.note || "";
 
   const quando = b.quando ? new Date(b.quando) : null;
