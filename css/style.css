@@ -2785,3 +2785,13 @@
     }
     .timer-elapsed-ring::after{ animation: none !important; display: none; }
   }
+
+/* ===== MODALITÀ SOLO REGISTRO (18/11/2026) =====
+   Congela PT, messaggi, abbonamenti e check-in senza rimuovere nulla: la
+   classe arriva da js/config.js (soloRegistro). Togli il flag per riaccenderli. */
+html.solo-registro #homePTBtn,
+html.solo-registro #cardMioPT,
+html.solo-registro #acctAbbonamentoCard,
+html.solo-registro #acctVaiMessaggiBtn,
+html.solo-registro #checkinCompilaOverlay,
+html.solo-registro #pianiPTOverlay{display:none !important;}

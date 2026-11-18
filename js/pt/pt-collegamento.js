@@ -12,7 +12,8 @@ let _rapporti = [];        // rapporti che mi riguardano (come cliente o come tr
 let _mioPTNomeCache = null;
 let _clienteAperto = null; // cliente che sto guardando nell'area PT
 
-function sonoPT(){ return !!(rigaOnline && rigaOnline.is_pt); }
+function soloRegistro(){ return !!(window.APP_CONFIG && window.APP_CONFIG.soloRegistro); }
+function sonoPT(){ return !soloRegistro() && !!(rigaOnline && rigaOnline.is_pt); }
 function nomeDi(riga){ return (riga && (riga.nome_pubblico || riga.nome)) || 'Senza nome'; }
 
 // ---------- resto in ascolto del mio stesso profilo ----------
@@ -277,9 +278,11 @@ async function caricaRapporti(){
 }
 
 function mioRapportoAttivo(){
+  if(soloRegistro()) return undefined;
   return _rapporti.find(r => r.cliente_id === (utenteOnline||{}).id && r.stato === 'attivo');
 }
 function miaRichiestaInSospeso(){
+  if(soloRegistro()) return undefined;
   return _rapporti.find(r => r.cliente_id === (utenteOnline||{}).id && r.stato === 'in_attesa');
 }
 
