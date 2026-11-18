@@ -80,14 +80,14 @@ test('Registra: "+" e "−" partono dal valore suggerito e il ✓ non sovrascriv
   const { window, document } = await loadApp();
   await run(window, PROFILO(LOG_PRECEDENTE));
   const r = riga(document, 'Rematore', 2);              // suggerito: 9 × 42,5
-  r.querySelectorAll('.step-btn[data-dir="1"]')[1].click();   // kg: 42,5 + 2,5
+  r.querySelectorAll('.step-btn[data-dir="1"]')[1].click();   // kg: 42,5 + 0,5
   r.querySelectorAll('.step-btn[data-dir="-1"]')[0].click();  // rip.: 9 − 1
-  assert.equal(inp(document, 'Rematore', 2, 'kg').value, '45');
+  assert.equal(inp(document, 'Rematore', 2, 'kg').value, '43');
   assert.equal(inp(document, 'Rematore', 2, 'reps').value, '8');
   r.querySelector('.set-fatta-btn').click();
-  assert.equal(inp(document, 'Rematore', 2, 'kg').value, '45', 'il ✓ non riporta il campo al suggerito');
+  assert.equal(inp(document, 'Rematore', 2, 'kg').value, '43', 'il ✓ non riporta il campo al suggerito');
   const s = await run(window, `return currentSetInputs['Rematore'][2]`);
-  assert.equal(s.kg, '45');
+  assert.equal(s.kg, '43');
   assert.equal(s.reps, '8');
   window.close();
 });
@@ -116,11 +116,11 @@ test('Registra: senza storico la serie dopo suggerisce i valori della serie appe
   const r0 = riga(document, 'Lat Machine', 0);
   assert.equal(inp(document, 'Lat Machine', 0, 'kg').dataset.ghost, undefined, 'nessun peso da suggerire la prima volta');
   assert.equal(inp(document, 'Lat Machine', 0, 'reps').dataset.ghost, '12', 'rip.: il target della scheda');
-  r0.querySelectorAll('.step-btn[data-dir="1"]')[1].click();   // kg 0 → 2,5
-  r0.querySelectorAll('.step-btn[data-dir="1"]')[1].click();   // → 5
+  r0.querySelectorAll('.step-btn[data-dir="1"]')[1].click();   // kg 0 → 0,5
+  r0.querySelectorAll('.step-btn[data-dir="1"]')[1].click();   // → 1
   r0.querySelector('.set-fatta-btn').click();
-  assert.equal(inp(document, 'Lat Machine', 0, 'kg').value, '5');
-  assert.equal(inp(document, 'Lat Machine', 1, 'kg').dataset.ghost, '5', 'la serie 2 propone il peso della serie 1');
+  assert.equal(inp(document, 'Lat Machine', 0, 'kg').value, '1');
+  assert.equal(inp(document, 'Lat Machine', 1, 'kg').dataset.ghost, '1', 'la serie 2 propone il peso della serie 1');
   assert.equal(inp(document, 'Lat Machine', 1, 'reps').dataset.ghost, '12');
   window.close();
 });
@@ -202,10 +202,58 @@ test('Registra: la bozza ripristinata mostra i valori e aggiorna i suggeriti del
   await run(window, PROFILO([]));
   const r0 = riga(document, 'Lat Machine', 0);
   r0.querySelectorAll('.step-btn[data-dir="1"]')[1].click();
-  r0.querySelector('.set-fatta-btn').click();            // 12 × 2,5
+  r0.querySelector('.set-fatta-btn').click();            // 12 × 0,5
   await run(window, `_bozzaPronta = true; salvaBozza();`);
   await run(window, `ripristinaBozza();`);
-  assert.equal(inp(document, 'Lat Machine', 0, 'kg').value, '2.5');
-  assert.equal(inp(document, 'Lat Machine', 1, 'kg').dataset.ghost, '2.5');
+  assert.equal(inp(document, 'Lat Machine', 0, 'kg').value, '0.5');
+  assert.equal(inp(document, 'Lat Machine', 1, 'kg').dataset.ghost, '0.5');
+  window.close();
+});
+
+// ---- 18/11/2026, secondo giro: kg a 0,5 e accelerazione tenendo premuto ----
+test('Registra: un tocco su + / − cambia i kg di 0,5 (si raggiunge qualunque peso reale)', async () => {
+  const { window, document } = await loadApp();
+  await run(window, PROFILO([]));
+  const r = riga(document, 'Rematore', 0);
+  const piu = r.querySelectorAll('.step-btn[data-dir="1"]')[1];
+  const meno = r.querySelectorAll('.step-btn[data-dir="-1"]')[1];
+  piu.click(); piu.click(); piu.click();                 // 0,5 → 1 → 1,5
+  assert.equal(inp(document, 'Rematore', 0, 'kg').value, '1.5');
+  meno.click();
+  assert.equal(inp(document, 'Rematore', 0, 'kg').value, '1');
+  window.close();
+});
+
+test('Registra: tenendo premuto il salto cresce a gradini (kg: 0,5 → 1 → 2 → 5 per scatto) e non scende mai', async () => {
+  const { window } = await loadApp();
+  const m = await run(window, `
+    const out = [];
+    for(let n=0;n<60;n++) out.push(moltiplicatoreHold(n,'kg'));
+    return { kg: out, reps: [0,5,10,24,50].map(n=>moltiplicatoreHold(n,'reps')) };
+  `);
+  assert.equal(m.kg[0], 1, 'la prima pressione è sempre un solo passo (0,5 kg)');
+  for(let i=1;i<m.kg.length;i++) assert.ok(m.kg[i] >= m.kg[i-1], 'il moltiplicatore non deve mai diminuire');
+  assert.equal(m.kg[59], 10, 'mai oltre 5 kg a scatto: ' + 'dopo una pressione lunga si salta di diversi kg alla volta');
+  assert.deepEqual(m.reps, [1,1,2,5,5], 'ripetizioni: salto più prudente, mai oltre ×5');
+  window.close();
+});
+
+test('Registra: tenendo premuto + il valore sale da solo, sempre più in fretta, e si ferma al rilascio', async () => {
+  const { window, document } = await loadApp();
+  await run(window, PROFILO([]));
+  const piu = riga(document, 'Rematore', 0).querySelectorAll('.step-btn[data-dir="1"]')[1];
+  const kg = inp(document, 'Rematore', 0, 'kg');
+  const giu = new window.Event('pointerdown', { bubbles:true, cancelable:true });
+  piu.dispatchEvent(giu);
+  assert.equal(kg.value, '0.5', 'subito: un solo passo');
+  await new Promise(r => setTimeout(r, 1900));           // 450ms di attesa + ripetizioni
+  const durante = parseFloat(kg.value);
+  assert.ok(durante > 3, `dopo ~2s premuto deve essere salito molto più di un tocco (era ${durante})`);
+  piu.dispatchEvent(new window.Event('pointerup', { bubbles:true }));
+  const alRilascio = kg.value;
+  await new Promise(r => setTimeout(r, 400));
+  assert.equal(kg.value, alRilascio, 'rilasciando, il valore smette di cambiare');
+  const s = await run(window, `return currentSetInputs['Rematore'][0].kg`);
+  assert.equal(s, alRilascio, 'e il valore è stato registrato nei dati');
   window.close();
 });

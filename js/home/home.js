@@ -440,6 +440,7 @@ document.getElementById('homeBellBtn').addEventListener('click', apriNotifiche);
 document.getElementById('notifChiudiBtn').addEventListener('click', chiudiNotifiche);
 
 function mostraHome(){
+  if(document.body.classList.contains('registra-aperto') && typeof fermaCronometriAllenamento === 'function') fermaCronometriAllenamento();
   document.getElementById('appRoot').style.display = 'none';
   document.getElementById('accountPanel').style.display = 'none';
   document.getElementById('areaPT').style.display = 'none';

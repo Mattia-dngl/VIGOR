@@ -26,6 +26,24 @@ document.getElementById('dayChoiceChips').addEventListener('change', (e)=>{ if(e
 // basta, bloccando l'intera suite (node --test non termina finché restano
 // timer attivi).
 let _cronometroInterval = null;
+// "Registra è la schermata aperta adesso": la classe sul <body> la mette
+// apriRegistra() (account.js) e la tolgono showAppRoot()/mostraHome().
+function registraAperta(){ return document.body.classList.contains('registra-aperto'); }
+// Cronometro dell'allenamento: parte da zero quando si apre Registra con un
+// giorno scelto, si spegne (insieme al timer di recupero) quando la si chiude
+// senza salvare. I dati già inseriti restano nella bozza, il tempo no.
+function avviaCronometroAllenamento(){
+  if(!selectedDayKey || selectedDayKey === 'SKIP') return;
+  _logIniziatoAlle = new Date().toISOString();
+  aggiornaCronometroAllenamento();
+}
+function fermaCronometriAllenamento(){
+  _logIniziatoAlle = null;
+  if(typeof timerFerma === 'function') timerFerma();
+  aggiornaCronometroAllenamento();
+  // la bozza non si tocca: i dati restano, e l'orario di inizio lì dentro
+  // non viene più ripristinato (vedi ripristinaBozza)
+}
 function formatDurataCronometro(sec){
   const h = Math.floor(sec/3600), m = Math.floor((sec%3600)/60), s = sec%60;
   const mm = String(m).padStart(2,'0'), ss = String(s).padStart(2,'0');
@@ -267,8 +285,12 @@ function selectDay(key){
   // resta l'unico caso legittimo) lo fa scrivendo _logIniziatoAlle SUBITO
   // DOPO aver chiamato selectDay — quindi qui si può azzerare sempre senza
   // rompere quel percorso.
-  if(key === "SKIP"){ _logIniziatoAlle = null; }
-  else { _logIniziatoAlle = new Date().toISOString(); }
+  // 18/11/2026: il cronometro parte SOLO se Registra è aperta davvero. Prima
+  // partiva appena si sceglieva il giorno — anche in sottofondo: al login
+  // renderAll() sceglie da solo il giorno di oggi, quindi aprendo Registra
+  // più tardi si trovava un tempo già in corso. Se Registra non è aperta lo
+  // avvia apriRegistra() (vedi avviaCronometroAllenamento) al momento giusto.
+  _logIniziatoAlle = (key !== "SKIP" && registraAperta()) ? new Date().toISOString() : null;
   // stesso discorso di _logIniziatoAlle qui sopra: riparte azzerato a ogni
   // scelta di giorno, e chi deve riprendere una bozza in corso (ripristinaBozza)
   // lo sovrascrive subito dopo con quanto salvato.
@@ -667,15 +689,26 @@ function addSetRow(exName, tappa, isFineRound, rimovibile){
 
 // ---------- Stepper e valori suggeriti (serie) ----------
 // Quanto cambia un campo a ogni tocco: il passo "tecnico" del campo (1 rip.,
-// 5 sec, 0,1 km…) tranne il carico, che va a 2,5 kg — la misura dei dischi
-// più usata. Tenendo premuto si ripete e accelera.
+// 0,5 kg, 5 sec, 0,1 km…). Con 0,5 kg a tocco si raggiunge QUALUNQUE peso reale
+// (dischi da mezzo chilo inclusi); per i salti grandi si tiene premuto.
 function passoStepper(exName, chiave){
   const c = campiDi(exName).find(x=>x.chiave===chiave);
-  if(!c) return 1;
-  return chiave === 'kg' ? 2.5 : c.passo;
+  return c ? c.passo : 1;
 }
-function applicaStep(inp, dir){
-  const passo = passoStepper(inp.dataset.ex, inp.dataset.field);
+// Tenendo premuto la velocità e l'ampiezza crescono a gradini: per i kg si parte
+// da 0,5 a tocco, poi 1, 2 e 5 kg alla volta. `n` = quante ripetizioni
+// automatiche sono già scattate. Per ripetizioni, secondi, km il salto è più
+// prudente (mai oltre ×5 il passo). Un solo tocco resta sempre ×1.
+function moltiplicatoreHold(n, chiave){
+  const gradini = chiave === 'kg'
+    ? [[0,1],[6,2],[14,4],[26,10]]
+    : [[0,1],[10,2],[24,5]];
+  let m = 1;
+  gradini.forEach(([da, mol])=>{ if(n >= da) m = mol; });
+  return m;
+}
+function applicaStep(inp, dir, moltiplicatore){
+  const passo = passoStepper(inp.dataset.ex, inp.dataset.field) * (moltiplicatore || 1);
   let base = parseFloat(inp.value);
   // primo tocco su un campo mai toccato: parte dal suggerito. Se invece l'hai
   // appena portato a zero con "−" resti a zero (niente rimbalzo al suggerito
@@ -700,7 +733,11 @@ function collegaStepper(row){
         e.preventDefault();
         ferma(); n = 0;
         applicaStep(inp, dir);
-        const ripeti = ()=>{ applicaStep(inp, dir); n++; giro = setTimeout(ripeti, n > 8 ? 50 : 120); };
+        const ripeti = ()=>{
+          applicaStep(inp, dir, moltiplicatoreHold(n, inp.dataset.field));
+          n++;
+          giro = setTimeout(ripeti, n > 12 ? 70 : 120);
+        };
         attesa = setTimeout(ripeti, 450);
       });
       ['pointerup','pointercancel','pointerleave'].forEach(ev=>btn.addEventListener(ev, ferma));

@@ -5,6 +5,8 @@
 // appRoot) invece di reimplementare la logica di cambio schermata.
 // ============================================================
 function showAppRoot(){
+  // si esce da Registra (se era aperta): cronometro e timer di recupero si spengono
+  if(document.body.classList.contains('registra-aperto') && typeof fermaCronometriAllenamento === 'function') fermaCronometriAllenamento();
   document.getElementById('homeScreen').style.display = 'none';
   document.getElementById('accountPanel').style.display = 'none';
   document.getElementById('appRoot').style.display = 'block';
@@ -57,6 +59,9 @@ function apriRegistra(){
   const sticky = document.querySelector('.sticky-top');
   if(sticky) sticky.style.display = 'none';
   document.body.classList.add('registra-aperto');
+  // Registra è aperta: se c'è già un giorno scelto (anche scelto in sottofondo
+  // al login, o con dati in bozza) il cronometro parte ora da zero.
+  if(typeof avviaCronometroAllenamento === 'function') avviaCronometroAllenamento();
 }
 document.getElementById('registraTornaSchedaBtn').addEventListener('click', ()=>vaiA('program'));
 // Storico: stesso contenuto che vive dentro Scheda (programStoricoBlock), ma ora

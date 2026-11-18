@@ -375,11 +375,11 @@ function ripristinaBozza(){
   } else {
     selectDay(b.dayKey);
   }
-  // selectDay (sopra) fa già ripartire il cronometro da "adesso": qui lo
-  // rimpiazzo con l'orario vero di inizio, salvato nella bozza — altrimenti
-  // ogni volta che riapri l'app durante un allenamento in corso la durata
-  // registrata alla fine ripartirebbe da zero.
-  _logIniziatoAlle = b.iniziatoAlle || _logIniziatoAlle;
+  // 18/11/2026: l'orario di inizio della bozza NON si ripristina più. Chi
+  // riapre una registrazione lasciata a metà (o riavvia l'app) trovava un
+  // cronometro già avviato, con ore di "allenamento" mai fatte. Il tempo
+  // riparte da zero quando si apre Registra (apriRegistra); restano solo i
+  // dati inseriti.
   // stessa idea di _logIniziatoAlle qui sopra: selectDay (dentro buildExerciseForm,
   // vedi mostraPopupAllenamentoATempo) le aveva già azzerate e nel frattempo ha
   // pure riaperto il popup "Prima di iniziare" — qui rimetto la scelta com'era

@@ -211,6 +211,7 @@ test('cronometro: selezionare un giorno vero avvia il conteggio, e salvare regis
   `);
   const r = await run(window, `
     logDateInput.value = '2026-08-04';
+    apriRegistra();   // il cronometro parte solo con Registra aperta (18/11/2026)
     selectDay('A');
     const partito = _logIniziatoAlle !== null;
     // simulo 12 minuti trascorsi, senza aspettare per davvero nel test
