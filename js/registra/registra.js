@@ -609,12 +609,24 @@ function addSetRow(exName, tappa, isFineRound, rimovibile){
   // struttura è gestita dalla "Tecnica speciale" (aggiungi/rimuovi tappa),
   // non ha senso avere anche un tasto × indipendente su ogni riga.
   const diRound = typeof tappa === 'number';
-  const pezzi = campi.map((c, i)=>
-    `${i > 0 ? '<span class="x">×</span>' : ''}
-     <input type="number" inputmode="${c.passo < 1 ? 'decimal' : 'numeric'}" step="${c.passo}"
-            placeholder="${c.etichetta}" data-ex="${escapeAttr(exName)}" data-idx="${idx}"
-            data-field="${c.chiave}"${campi.length === 1 ? ' style="flex:1;"' : ''}>
-     ${c.unita ? `<span class="x">${c.unita}</span>` : ''}`).join('');
+  // Stepper al posto dei campi da digitare (18/11/2026): in palestra niente
+  // tastiera. Ogni campo è un <input> VERO (stessi data-ex/data-idx/data-field di
+  // sempre: salvataggio, bozza, dropset e "riporta" ci si appoggiano) ma
+  // readonly — si cambia con − / +, tenendo premuto si ripete. Il valore
+  // suggerito (ultima volta / serie prima / target) è il placeholder in grigio
+  // (data-ghost) e si conferma con un tocco sul ✓. Per scrivere a mano un peso
+  // preciso (es. 17,5 kg) resta la pressione lunga sul numero.
+  const pezzi = campi.map(c=>
+    `<div class="step">
+       <button type="button" class="step-btn" data-dir="-1" tabindex="-1" aria-label="Diminuisci ${escapeAttr(c.etichetta)}">−</button>
+       <div class="step-val">
+         <input type="number" inputmode="${c.passo < 1 ? 'decimal' : 'numeric'}" step="${c.passo}" readonly
+                placeholder="–" data-ex="${escapeAttr(exName)}" data-idx="${idx}"
+                data-field="${c.chiave}" aria-label="${escapeAttr(c.etichetta)}">
+         <small>${escapeAttr(c.etichetta)}</small>
+       </div>
+       <button type="button" class="step-btn" data-dir="1" tabindex="-1" aria-label="Aumenta ${escapeAttr(c.etichetta)}">+</button>
+     </div>`).join('');
   row.innerHTML = `<span class="set-num">${idx+1}</span>${pezzi}
      <button type="button" class="set-fatta-btn" aria-label="Segna serie completata" title="Segna serie completata">✓</button>
      ${(diRound || !puoiRimuovere) ? '' : '<button type="button" class="set-remove-btn" aria-label="Togli questa serie" title="Togli questa serie">×</button>'}`;
@@ -624,8 +636,10 @@ function addSetRow(exName, tappa, isFineRound, rimovibile){
     inp.addEventListener('input', ()=>{
       currentSetInputs[inp.dataset.ex][inp.dataset.idx][inp.dataset.field] = valoreDaCampo(inp.dataset.ex, inp.dataset.field, inp.value);
       salvaBozza();
+      aggiornaSuggerimenti(inp.dataset.ex);
     });
   });
+  collegaStepper(row);
   // Segna la serie come fatta: unico trigger del recupero automatico
   // (Task "allenamento a tempo") — vedi avviaRecuperoSeATtempo(). La scelta
   // "a tempo" è già bloccata dal popup "Prima di iniziare" molto prima che
@@ -635,15 +649,133 @@ function addSetRow(exName, tappa, isFineRound, rimovibile){
   // quell'attributo viene aggiornato, la variabile "idx" catturata alla
   // creazione invece resterebbe quella vecchia e scriverebbe sulla serie sbagliata.
   row.querySelector('.set-fatta-btn').addEventListener('click', ()=>{
+    // Un tocco = serie fatta: se i campi sono ancora vuoti prendono il valore
+    // suggerito (grigio). I campi già toccati con −/+ non si sovrascrivono.
+    if(!row.classList.contains('fatta')) confermaSuggerimenti(row);
     row.classList.toggle('fatta');
     const fatta = row.classList.contains('fatta');
     currentSetInputs[exName][parseInt(row.dataset.idx)]._fatta = fatta;
     if(fatta && fineRound) avviaRecuperoSeATtempo(exName);
+    aggiornaSuggerimenti(exName);
     salvaBozza();
   });
   const removeBtn = row.querySelector('.set-remove-btn');
   if(removeBtn) removeBtn.addEventListener('click', ()=>rimuoviSetRow(exName, row));
   aggiornaVisibilitaRimuoviSet(exName);
+  aggiornaSuggerimenti(exName);
+}
+
+// ---------- Stepper e valori suggeriti (serie) ----------
+// Quanto cambia un campo a ogni tocco: il passo "tecnico" del campo (1 rip.,
+// 5 sec, 0,1 km…) tranne il carico, che va a 2,5 kg — la misura dei dischi
+// più usata. Tenendo premuto si ripete e accelera.
+function passoStepper(exName, chiave){
+  const c = campiDi(exName).find(x=>x.chiave===chiave);
+  if(!c) return 1;
+  return chiave === 'kg' ? 2.5 : c.passo;
+}
+function applicaStep(inp, dir){
+  const passo = passoStepper(inp.dataset.ex, inp.dataset.field);
+  let base = parseFloat(inp.value);
+  // primo tocco su un campo mai toccato: parte dal suggerito. Se invece l'hai
+  // appena portato a zero con "−" resti a zero (niente rimbalzo al suggerito
+  // tenendo premuto).
+  if(isNaN(base) && !inp.dataset.svuotato) base = parseFloat(inp.dataset.ghost);
+  if(isNaN(base)) base = 0;
+  let nuovo = Math.round((base + dir*passo) * 100) / 100;
+  if(nuovo <= 0) nuovo = 0;
+  inp.value = nuovo > 0 ? String(nuovo) : '';   // 0 = campo vuoto (un '0' conterebbe come serie compilata)
+  if(nuovo > 0) delete inp.dataset.svuotato; else inp.dataset.svuotato = '1';
+  inp.dispatchEvent(new Event('input', {bubbles:true}));
+}
+function collegaStepper(row){
+  row.querySelectorAll('.step').forEach(step=>{
+    const inp = step.querySelector('input');
+    step.querySelectorAll('.step-btn').forEach(btn=>{
+      const dir = parseInt(btn.dataset.dir, 10);
+      let attesa = null, giro = null, n = 0;
+      const ferma = ()=>{ clearTimeout(attesa); clearTimeout(giro); attesa = giro = null; };
+      btn.addEventListener('pointerdown', e=>{
+        if(e.button > 0) return;
+        e.preventDefault();
+        ferma(); n = 0;
+        applicaStep(inp, dir);
+        const ripeti = ()=>{ applicaStep(inp, dir); n++; giro = setTimeout(ripeti, n > 8 ? 50 : 120); };
+        attesa = setTimeout(ripeti, 450);
+      });
+      ['pointerup','pointercancel','pointerleave'].forEach(ev=>btn.addEventListener(ev, ferma));
+      // tastiera (Invio/Spazio) e click "sintetici": detail 0. Il tocco vero
+      // è già stato gestito da pointerdown, qui sarebbe un doppio conteggio.
+      btn.addEventListener('click', e=>{ if(e.detail === 0) applicaStep(inp, dir); });
+    });
+    // Pressione lunga sul numero = scrivere a mano (es. 17,5 kg). Mai in automatico.
+    let lunga = null;
+    const valore = step.querySelector('.step-val');
+    valore.addEventListener('pointerdown', ()=>{
+      clearTimeout(lunga);
+      lunga = setTimeout(()=>{ inp.readOnly = false; inp.focus(); try{ inp.select(); }catch(e){} }, 500);
+    });
+    ['pointerup','pointercancel','pointerleave'].forEach(ev=>valore.addEventListener(ev, ()=>clearTimeout(lunga)));
+    inp.addEventListener('blur', ()=>{ inp.readOnly = true; });
+  });
+}
+// Valore suggerito per un campo: stessa serie dell'ultima volta → serie
+// precedente di oggi → ultima serie dell'ultima volta → ripetizioni target.
+// Solo per serie normali: le tappe di dropset/rest-pause si ricalcolano da sole.
+function aggiornaSuggerimenti(exName){
+  const container = document.querySelector(`.sets-container[data-ex="${CSS.escape(exName)}"]`);
+  if(!container) return;
+  const righe = Array.from(container.querySelectorAll('.set-row'));
+  const prec = ultimaPrestazione(exName, document.getElementById('logDate').value);
+  const ex = _exerciseByName[exName];
+  righe.forEach((riga, i)=>{
+    if(riga.classList.contains('drop-row')){
+      // tappe di dropset: nessun suggerimento (si ricalcolano da sole)
+      riga.querySelectorAll('input[data-field]').forEach(inp=>{
+        delete inp.dataset.ghost;
+        if(!inp.classList.contains('drop-kg-auto')) inp.placeholder = '–';
+      });
+      return;
+    }
+    riga.querySelectorAll('input[data-field]').forEach(inp=>{
+      const f = inp.dataset.field;
+      let g = '';
+      if(inp.value === ''){
+        const hist = k => (prec && prec.serie[k] && prec.serie[k][f] !== undefined && prec.serie[k][f] !== '')
+          ? mostraValoreCampo(exName, f, prec.serie[k][f]) : '';
+        g = hist(i);
+        for(let j=i-1; j>=0 && g===''; j--){
+          const pv = righe[j].querySelector(`input[data-field="${f}"]`);
+          if(pv && pv.value !== '') g = pv.value;
+        }
+        if(g === '' && prec) g = hist(prec.serie.length-1);
+        // il target della scheda è nell'unità del PRIMO campo dell'esercizio
+        // (rip., ma anche secondi del plank o km della corsa — vedi descriviTargetSerie)
+        if(g === '' && ex && f === campiDi(exName)[0].chiave){ const m = String(ex.reps||'').match(/\d+(?:[.,]\d+)?/); if(m) g = m[0].replace(',', '.'); }
+      }
+      if(g !== ''){ inp.dataset.ghost = g; inp.placeholder = g; }
+      else { delete inp.dataset.ghost; inp.placeholder = '–'; }
+    });
+  });
+  aggiornaProssimaSerie();
+}
+// Un solo anello arancione in tutto l'allenamento: la prossima serie da fare.
+function aggiornaProssimaSerie(){
+  let trovata = false;
+  document.querySelectorAll('#exerciseFormList .set-row').forEach(r=>{
+    const prossima = !trovata && !r.classList.contains('fatta');
+    if(prossima) trovata = true;
+    r.classList.toggle('next', prossima);
+  });
+}
+function confermaSuggerimenti(riga){
+  if(riga.classList.contains('drop-row')) return;
+  riga.querySelectorAll('input[data-field]').forEach(inp=>{
+    if(inp.value === '' && inp.dataset.ghost){
+      inp.value = inp.dataset.ghost;
+      inp.dispatchEvent(new Event('input', {bubbles:true}));
+    }
+  });
 }
 
 // Toglie UNA serie normale (richiesta esplicita: "seleziono un esercizio, mi
@@ -667,6 +799,7 @@ function rimuoviSetRow(exName, row){
   });
   salvaBozza();
   aggiornaVisibilitaRimuoviSet(exName);
+  aggiornaSuggerimenti(exName);
 }
 // Con una sola serie rimasta non ha senso poterla togliere: nasconde il
 // tasto invece di lasciarlo lì a non fare nulla.
@@ -791,6 +924,7 @@ function buildDropsetRound(exName, numeroRound, dropset, targetReps){
     repsPrincipale.addEventListener('input', ricalcolaRipetizioni);
     ricalcolaRipetizioni();
   }
+  aggiornaSuggerimenti(exName);   // ora le righe sono marcate drop-row: niente suggeriti sulle tappe
 }
 function etichettaRiga(riga, testo){
   const num = riga.querySelector('.set-num');

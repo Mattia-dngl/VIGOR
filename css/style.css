@@ -2795,3 +2795,69 @@ html.solo-registro #acctAbbonamentoCard,
 html.solo-registro #acctVaiMessaggiBtn,
 html.solo-registro #checkinCompilaOverlay,
 html.solo-registro #pianiPTOverlay{display:none !important;}
+
+/* ============================================================
+   SERIE CON STEPPER (18/11/2026) — in Registra niente tastiera: ogni campo
+   si cambia con − / + (tenendo premuto si ripete), il valore suggerito è in
+   grigio-arancio e un tocco sul ✓ lo conferma. Gli <input> restano gli
+   stessi (readonly) — vedi addSetRow in js/registra/registra.js.
+   Aree di tocco 48px (almeno 44px consigliati su mobile).
+   ============================================================ */
+.set-row{ display:flex; align-items:center; gap:6px; margin-bottom:8px; }
+.set-row .set-num{ flex:0 0 16px; width:16px; text-align:center; }
+.set-row .step{
+  flex:1 1 0; min-width:0; height:48px; display:grid;
+  grid-template-columns:28px minmax(0,1fr) 28px; align-items:center;
+  background:var(--surface2); border-radius:14px; overflow:hidden;
+}
+.set-row .step-btn{
+  height:48px; padding:0; border:0; background:none; cursor:pointer;
+  font-size:20px; font-weight:600; line-height:1; color:var(--text-dim);
+  touch-action:manipulation; user-select:none; -webkit-user-select:none; -webkit-touch-callout:none;
+}
+.set-row .step-btn:active{ background:var(--accent-soft); color:var(--accent); }
+.set-row .step-val{ display:flex; flex-direction:column; align-items:center; justify-content:center; min-width:0; }
+.set-row .step-val input{
+  width:100%; height:auto; padding:0; margin:0; border:0; border-radius:0; background:transparent; box-shadow:none;
+  text-align:center; font-family:'Roboto Mono',monospace; font-size:min(16px,3.9vw); font-weight:700; line-height:1.1; letter-spacing:-.02em;
+  color:var(--text); -moz-appearance:textfield; appearance:textfield; caret-color:var(--accent);
+}
+.set-row .step-val input:focus{ outline:none; background:var(--surface); }
+.set-row .step-val input::-webkit-outer-spin-button,
+.set-row .step-val input::-webkit-inner-spin-button{ -webkit-appearance:none; margin:0; }
+.set-row .step-val input::placeholder{ color:var(--text-faint); opacity:1; }
+.set-row .step-val input[data-ghost]::placeholder{ color:var(--accent-dim); }
+.set-row .step-val small{
+  margin-top:2px; font-size:9.5px; font-weight:600; line-height:1; letter-spacing:.06em;
+  text-transform:uppercase; color:var(--text-faint); white-space:nowrap; font-family:var(--font-body,inherit);
+}
+.set-row .set-fatta-btn{
+  width:48px; height:48px; font-size:22px; font-weight:700; border-width:1.5px; background:var(--surface);
+  touch-action:manipulation;
+}
+.set-row.next .set-fatta-btn{ border-color:var(--accent); color:var(--accent); box-shadow:0 0 0 4px var(--accent-soft); }
+.set-row.next .step{ box-shadow:inset 0 0 0 1.5px var(--accent-dim); }
+.set-row.fatta{ opacity:1; }
+.set-row.fatta .step{ background:rgba(31,177,95,.14); box-shadow:none; }
+.set-row.fatta .step-val input{ color:var(--ok); }
+.set-row.fatta .set-fatta-btn{ box-shadow:none; }
+.set-row{ position:relative; }
+/* × per le serie aggiunte a mano: badge sopra l'angolo del ✓, fuori dal flusso
+   (in riga toglieva spazio ai numeri sui telefoni stretti) */
+.set-row .set-remove-btn{
+  position:absolute; top:-7px; right:-5px; width:24px; height:24px; min-width:24px; min-height:24px;
+  border-radius:50%; border:1px solid var(--border); background:var(--surface); color:var(--text-dim);
+  font-size:14px; line-height:1; padding:0; z-index:1;
+}
+/* tappe di dropset / rest-pause: l'etichetta va sopra, i campi sotto */
+.set-row.drop-row{ flex-wrap:wrap; }
+.set-row.drop-row .set-num.drop-row-label{ flex:0 0 100%; width:100%; text-align:left; margin:0 0 -2px; }
+.set-row input.drop-kg-auto{ color:var(--accent); }
+.add-set{
+  display:flex; align-items:center; justify-content:center; width:100%; min-height:44px; margin-top:4px;
+  border:1.5px dashed var(--border); border-radius:14px; font-size:13.5px; font-weight:700; padding:0;
+}
+@media (max-width:380px){
+  .set-row{ gap:4px; }
+  .set-row .set-fatta-btn{ width:44px; height:44px; }
+}
